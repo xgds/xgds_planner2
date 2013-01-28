@@ -1,0 +1,34 @@
+<!-- So far I haven't gotten this to work. dojox.json.schema isn't loading properly. -->
+
+Validating... <div id="output"></div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.2/dojo/dojo.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+  var schema, plan;
+
+  function handleData() {
+    if (schema && plan) {
+      var results = dojox.json.schema.validate(plan, schema);
+      if (results.valid) {
+        $('#output').html("PASSED");
+      } else {
+        $('#output').html("FAILED");
+      }
+    }
+  }
+
+  $(function () {
+    dojo.require('dojox.json.schema');
+
+    $.getJSON("xpjsonSchema.json", function (obj) {
+      schema = obj;
+      handleData();
+    });
+    $.getJSON("examplePlan.json", function (obj) {
+      plan = obj;
+      handleData();
+    });
+  });
+</script>

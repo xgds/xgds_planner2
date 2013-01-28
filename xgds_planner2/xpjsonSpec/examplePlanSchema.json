@@ -1,0 +1,97 @@
+{
+  "xpjson": "0.1",
+  "type": "PlanSchema",
+
+  "name": "Robot Science Schema",
+  "description": "Define available robot science commands",
+  "id": "http://example.com/robotScienceSchema.json",
+
+  "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
+  "pathElementIdFormat": "%(pathElement.index)02d",
+  "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s",
+
+  "segmentParams": [
+    {
+      "type": "ParamSpec",
+      "id": "speed",
+      "name": "speed (m/s)",
+      "valueType": "number",
+      "minimum": 0,
+      "description": "Estimated mean speed of drive (m/s)"
+    },
+    {
+      "type": "ParamSpec",
+      "id": "tolerance",
+      "name": "tolerance (m)",
+      "valueType": "number",
+      "minimum": 0,
+      "default": 1.0,
+      "description": "How close we need to get to the target coordinates (meters)"
+    }
+  ],
+
+  "commandSpecs": [
+    {
+      "type": "CommandSpec",
+      "id": "CommandWithDuration",
+      "parent": "Command",
+      "abstract": true,
+      "params": [
+        {
+          "type": "ParamSpec",
+          "name": "duration",
+          "valueType": "number",
+          "minimum": 0,
+          "description": "Estimated time required to execute command (minutes)"
+        }
+      ]
+    },
+    {
+      "type": "CommandSpec",
+      "id": "Image",
+      "parent": "CommandWithDuration",
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "whiteBalance",
+          "name": "White balance",
+          "valueType": "string",
+          "choices": [
+            ["A", "Auto"],
+            ["D", "Daylight"],
+            ["C", "Cloudy"]
+          ],
+          "description": "White balance setting for camera; auto is usually ok"
+        },
+        {
+          "type": "ParamSpec",
+          "id": "focalLengthMm",
+          "name": "Focal length (mm)",
+          "valueType": "number",
+          "minimum": 7.4,
+          "maximum": 44,
+          "description": "Actual (not 35 mm-equivalent) focal length of camera."
+        }
+      ]
+    },
+    {
+      "type": "CommandSpec",
+      "id": "MicroImage",
+      "parent": "Image"
+    },
+    {
+      "type": "CommandSpec",
+      "id": "PeriodicPancam",
+      "parent": "Image",
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "intervalSeconds",
+          "name": "Interval between images (seconds)",
+          "valueType": "number",
+          "minimum": 2
+        }
+      ]
+    }
+  ]
+}

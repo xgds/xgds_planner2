@@ -1,0 +1,210 @@
+{
+    "type": "object",
+    "properties": {
+
+        "type": {
+            "enum": ["PlanLibrary"],
+            "required": true
+        },
+
+        "name": {
+            "type": "string"
+        },
+
+        "description": {
+            "type": "string"
+        },
+
+        "id": {
+            "type": "string"
+        },
+
+        "xpjson": {
+            "type": "string",
+            "required": true
+        },
+
+        "subject": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+
+        "creator": {
+            "type": "string"
+        },
+
+        "contributors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+
+        "dateCreated": {
+            "type": ["number", "string"]
+        },
+
+        "dateModified": {
+            "type": ["number", "string"]
+        },
+
+        "schemaUrl": {
+            "type": "string"
+        },
+
+        "sites": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["Site"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "crs": {
+                        "type": "object"
+                    },
+                    "bbox": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+
+        "platforms": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["Platform"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+
+        "stations": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["Station"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "coords": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                }
+            }
+        },
+
+        "targets": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["Platform"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+
+        "segments": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["Platform"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+
+        "commands": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "libraryId": {
+                        "type": "string"
+                    },
+                    "stationId": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

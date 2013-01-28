@@ -1,0 +1,437 @@
+{
+    "type": "object",
+    "properties": {
+
+        "type": {
+            "enum": ["PlanSchema"],
+            "required": true
+        },
+
+        "name": {
+            "type": "string"
+        },
+
+        "description": {
+            "type": "string"
+        },
+
+        "id": {
+            "type": "string"
+        },
+
+        "xpjson": {
+            "type": "string",
+            "required": true
+        },
+
+        "subject": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+
+        "creator": {
+            "type": "string"
+        },
+
+        "contributors": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+
+        "dateCreated": {
+            "type": ["number", "string"]
+        },
+
+        "dateModified": {
+            "type": ["number", "string"]
+        },
+
+        "paramSpecs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["ParamSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "valueType": {
+                        "enum": [
+                            "string",
+                            "integer",
+                            "boolean",
+                            "number",
+                            "coords"
+                        ],
+                        "required": true
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "default": {
+                        "type": "any"
+                    },
+                    "choices": {
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": [
+                                {
+                                    "type": "any"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ]
+                        }
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "commandSpecs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["CommandSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "abstract": {
+                        "type": "boolean"
+                    },
+                    "params": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "type": {
+                                    "enum": ["ParamSpec"],
+                                    "required": true
+                                },
+                                "name": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string"
+                                },
+                                "parent": {
+                                    "type": "string"
+                                },
+                                "valueType": {
+                                    "enum": [
+                                        "string",
+                                        "integer",
+                                        "boolean",
+                                        "number",
+                                        "coords"
+                                    ],
+                                    "required": true
+                                },
+                                "minimum": {
+                                    "type": "number"
+                                },
+                                "maximum": {
+                                    "type": "number"
+                                },
+                                "enum": {
+                                    "type": "array"
+                                },
+                                "default": {
+                                    "type": "any"
+                                },
+                                "required": {
+                                    "type": "boolean"
+                                },
+                                "visible": {
+                                    "type": "boolean"
+                                },
+                                "editable": {
+                                    "type": "boolean"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        "planParams": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["ParamSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "valueType": {
+                        "enum": [
+                            "string",
+                            "integer",
+                            "boolean",
+                            "number",
+                            "coords"
+                        ],
+                        "required": true
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "enum": {
+                        "type": "array"
+                    },
+                    "default": {
+                        "type": "any"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "targetParams": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["ParamSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "valueType": {
+                        "enum": [
+                            "string",
+                            "integer",
+                            "boolean",
+                            "number",
+                            "coords"
+                        ],
+                        "required": true
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "enum": {
+                        "type": "array"
+                    },
+                    "default": {
+                        "type": "any"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "stationParams": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["ParamSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "valueType": {
+                        "enum": [
+                            "string",
+                            "integer",
+                            "boolean",
+                            "number",
+                            "coords"
+                        ],
+                        "required": true
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "enum": {
+                        "type": "array"
+                    },
+                    "default": {
+                        "type": "any"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "segmentParams": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                        "enum": ["ParamSpec"],
+                        "required": true
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string"
+                    },
+                    "valueType": {
+                        "enum": [
+                            "string",
+                            "integer",
+                            "boolean",
+                            "number",
+                            "coords"
+                        ],
+                        "required": true
+                    },
+                    "minimum": {
+                        "type": "number"
+                    },
+                    "maximum": {
+                        "type": "number"
+                    },
+                    "enum": {
+                        "type": "array"
+                    },
+                    "default": {
+                        "type": "any"
+                    },
+                    "required": {
+                        "type": "boolean"
+                    },
+                    "visible": {
+                        "type": "boolean"
+                    },
+                    "editable": {
+                        "type": "boolean"
+                    }
+                }
+            }
+        },
+
+        "planIdFormat": {
+            "type": "string"
+        },
+
+        "pathElementIdFormat": {
+            "type": "string"
+        },
+
+        "commandIdFormat": {
+            "type": "string"
+        }
+    }
+}
