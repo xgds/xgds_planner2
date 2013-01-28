@@ -567,20 +567,20 @@ schema:
  * Per-parameter choices: Restrict users to a limited range of choices
    for each parameter using the ``choices`` member.
 
- * Command profiles: Sometimes we want to pre-define a set of profiles
-   for a command, where each profile sets most or all of the parameter
+ * Command presets: Sometimes we want to pre-define a collection of presets
+   for a command, where each preset sets most or all of the parameter
    values for the command. Restricting users to choose from among these
-   profiles has some advantages in terms of allowing the schema
-   designer to choose descriptive names for the profiles ("wide low-res
-   panorama", "narrow high-res panorama"), and allowing each profile to
+   presets has some advantages in terms of allowing the schema
+   designer to choose descriptive names for the presets ("wide low-res
+   panorama", "narrow high-res panorama"), and allowing each preset to
    be thoroughly tested before deployment, for example to empirically
-   measure the average time it takes to execute. To use profiles:
+   measure the average time it takes to execute. To use presets:
 
-   * Place the profiles in the ``commands`` section of the
+   * Place the presets in the ``commands`` section of the
      PlanLibrary_.
 
-   * Once the user has chosen a profile in the planning interface, their
-     ability to further edit the parameter values set by the profile is
+   * Once the user has chosen a preset in the planning interface, their
+     ability to further edit the parameter values set by the preset is
      controlled by the ``editable`` member of each ParamSpec_, so the
      plan schema designer can choose how much flexibility to grant the
      user.
@@ -1045,15 +1045,15 @@ Inherits from:
 |                  |            |                |                                    |
 |                  |            |                |The user should be able to add a    |
 |                  |            |                |command to their Plan_ by selecting |
-|                  |            |                |from a menu of profiles based on the|
+|                  |            |                |from a menu of presets based on the |
 |                  |            |                |PlanLibrary_.  After selecting a    |
-|                  |            |                |profile, the ability to further edit|
+|                  |            |                |preset, the ability to further edit |
 |                  |            |                |each command parameter is controlled|
 |                  |            |                |by the ``editable`` member of its   |
 |                  |            |                |ParamSpec_.                         |
 |                  |            |                |                                    |
 |                  |            |                |If the PlanLibrary_ doesn't specify |
-|                  |            |                |any profiles for a given command    |
+|                  |            |                |any presets for a given command     |
 |                  |            |                |type, the user should still be able |
 |                  |            |                |to instantiate a generic instance of|
 |                  |            |                |that command type with each         |
