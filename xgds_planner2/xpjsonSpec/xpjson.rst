@@ -112,7 +112,6 @@ An XPJSON Plan_::
             "type": "PeriodicPancam",
             "id": "01_0_SPP",
             "libraryId": "SPP",
-            "blocking": false,
             "whiteBalance": "A",
             "focalLengthMm": 7.4,
             "intervalSeconds": 5
@@ -242,6 +241,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "type": "CommandSpec",
         "id": "PeriodicPancam",
         "parent": "Image",
+        "blocking": false,
         "params": [
           {
             "type": "ParamSpec",
@@ -524,7 +524,7 @@ Inherits from:
 |                   |                |                 |the ``id`` really depends on the    |
 |                   |                |                 |format of the ``id``, which varies  |
 |                   |                |                 |from application to application. For|
-|                   |                |                 |example, the ``id`` might be        |    
+|                   |                |                 |example, the ``id`` might be        |
 |                   |                |                 |shortened for display by removing a |
 |                   |                |                 |common prefix that appears in all   |
 |                   |                |                 |commands belonging to a particular  |
@@ -542,44 +542,6 @@ Inherits from:
 |                   |                |                 |``id`` member of the original       |
 |                   |                |                 |command into the ``libraryId``      |
 |                   |                |                 |member of the copy.                 |
-+-------------------+----------------+-----------------+------------------------------------+
-|``blocking``       |boolean         |``true``         |This command is blocking. Blocking  |
-|                   |                |(default)        |commands have their own termination |
-|                   |                |                 |conditions and run until those      |
-|                   |                |                 |conditions are satisfied. The next  |
-|                   |                |                 |command should be executed after    |
-|                   |                |                 |this command completes.             |
-|                   |                +-----------------+------------------------------------+
-|                   |                |``false``        |This command is                     |
-|                   |                |                 |non-blocking. Non-blocking commands |
-|                   |                |                 |generally do not terminate on their |
-|                   |                |                 |own. The executive should terminate |
-|                   |                |                 |this command in either of two cases:|
-|                   |                |                 |                                    |
-|                   |                |                 | * It reaches an explicit           |
-|                   |                |                 |   StopCommand_ that references this|
-|                   |                |                 |   command.                         |
-|                   |                |                 |                                    |
-|                   |                |                 | * It reaches the end               |
-|                   |                |                 |   of the scope containing this     |
-|                   |                |                 |   command. (E.g.  the end of the   |
-|                   |                |                 |   Station if this                  |
-|                   |                |                 |   command is contained in a        |
-|                   |                |                 |   Station.)                        |
-|                   |                |                 |                                    |
-|                   |                |                 |The next command should be executed |
-|                   |                |                 |immediately after this command is   |
-|                   |                |                 |executed, without waiting for this  |
-|                   |                |                 |command to complete.                |
-+-------------------+----------------+-----------------+------------------------------------+
-|``scopeTerminate`` |boolean         |``true``         |(Non-blocking commands only.)  The  |
-|                   |                |(default)        |executive should terminate this     |
-|                   |                |                 |command when it reaches the end of  |
-|                   |                |                 |the scope containing the command.   |
-|                   |                +-----------------+------------------------------------+
-|                   |                |``false``        |The executive should not terminate  |
-|                   |                |                 |this command when it reaches the end|
-|                   |                |                 |of its scope.                       |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Command Subclasses
@@ -681,17 +643,55 @@ Abstract class:
 Inherits from:
   ClassSpec
 
-+------------------+----------------+-----------------+------------------------------------+
-|Member            |Type            |Values           |Meaning                             |
-+==================+================+=================+====================================+
-|``color``         |string          |optional         |The color to use to distinguish this|
-|                  |                |                 |command type in the planning        |
-|                  |                |                 |interface (for example, when an     |
-|                  |                |                 |instance of the command appears in a|
-|                  |                |                 |timeline).                          |
-|                  |                |                 |                                    |
-|                  |                |                 |Format: HTML-style ``"#rrggbb"``.   |
-+------------------+----------------+-----------------+------------------------------------+
++-------------------+----------------+-----------------+-------------------------------------+
+|Member             |Type            |Values           |Meaning                              |
++===================+================+=================+=====================================+
+|``blocking``       |boolean         |``true``         |This command is blocking. Blocking   |
+|                   |                |(default)        |commands have their own termination  |
+|                   |                |                 |conditions and run until those       |
+|                   |                |                 |conditions are satisfied. The next   |
+|                   |                |                 |command should be executed after     |
+|                   |                |                 |this command completes.              |
+|                   |                +-----------------+-------------------------------------+
+|                   |                |``false``        |This command is                      |
+|                   |                |                 |non-blocking. Non-blocking commands  |
+|                   |                |                 |generally do not terminate on their  |
+|                   |                |                 |own. The executive should terminate  |
+|                   |                |                 |this command in either of two cases: |
+|                   |                |                 |                                     |
+|                   |                |                 | * It reaches an explicit            |
+|                   |                |                 |   StopCommand_ that references this |
+|                   |                |                 |   command.                          |
+|                   |                |                 |                                     |
+|                   |                |                 | * It reaches the end                |
+|                   |                |                 |   of the scope containing this      |
+|                   |                |                 |   command. (E.g.  the end of the    |
+|                   |                |                 |   Station if this                   |
+|                   |                |                 |   command is contained in a         |
+|                   |                |                 |   Station.)                         |
+|                   |                |                 |                                     |
+|                   |                |                 |The next command should be executed  |
+|                   |                |                 |immediately after this command is    |
+|                   |                |                 |executed, without waiting for this   |
+|                   |                |                 |command to complete.                 |
++-------------------+----------------+-----------------+-------------------------------------+
+|``scopeTerminate`` |boolean         |``true``         |(Non-blocking commands only.)  The   |
+|                   |                |(default)        |executive should terminate this      |
+|                   |                |                 |command when it reaches the end of   |
+|                   |                |                 |the scope containing the command.    |
+|                   |                +-----------------+-------------------------------------+
+|                   |                |``false``        |The executive should not terminate   |
+|                   |                |                 |this command when it reaches the end |
+|                   |                |                 |of its scope.                        |
++-------------------+----------------+-----------------+-------------------------------------+
+|``color``          |string          |optional         |The color to use to distinguish this |
+|                   |                |                 |command type in the planning         |
+|                   |                |                 |interface (for example, when an      |
+|                   |                |                 |instance of the command appears in a |
+|                   |                |                 |timeline).                           |
+|                   |                |                 |                                     |
+|                   |                |                 |Format: HTML-style ``"#rrggbb"``.    |
++-------------------+----------------+-----------------+-------------------------------------+
 
 Example
 -------
@@ -712,6 +712,11 @@ Example
       { (ParamSpec 1) },
       ...
     ]
+
+    // defined in CommandSpec
+    "blocking": true,
+    "scopeTerminate": true,
+    "color": "#ff0000"
   }
 
 .. _Document:

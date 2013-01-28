@@ -146,6 +146,15 @@
                     "abstract": {
                         "type": "boolean"
                     },
+                    "blocking": {
+                        "type": "boolean"
+                    },
+                    "scopeTerminate": {
+                        "type": "boolean"
+                    },
+                    "color": {
+                        "type": "string"
+                    },
                     "params": {
                         "type": "array",
                         "items": {

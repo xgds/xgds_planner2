@@ -83,6 +83,7 @@
       "type": "CommandSpec",
       "id": "PeriodicPancam",
       "parent": "Image",
+      "blocking": false,
       "params": [
         {
           "type": "ParamSpec",
