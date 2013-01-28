@@ -767,70 +767,74 @@ Abstract class:
 Inherits from:
   TypedObject
 
-+------------------+----------------+-----------------+------------------------------------+
-|Member            |Type            |Values           |Meaning                             |
-+==================+================+=================+====================================+
-|``parent``        |string          |optional         |The ``id`` of ParamSpec_ in the     |
-|                  |                |                 |``paramSpecs`` section of the       |
-|                  |                |                 |PlanSchema_, from which this        |
-|                  |                |                 |ParamSpec_ inherits members.        |
-|                  |                |                 |                                    |
-|                  |                |                 |The ``id`` member is not inherited. |
-|                  |                |                 |                                    |
-+------------------+----------------+-----------------+------------------------------------+
-|``valueType``     |string          |``"string"``     |Parameter has string value.         |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``"integer"``    |Parameter has integer value.        |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``"number"``     |Parameter has numerical (floating   |
-|                  |                |                 |point) value.                       |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``"boolean"``    |Parameter has boolean value.        |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``"geometry"``   |Parameter value is GeoJSON geometry |
-|                  |                |                 |object, with values that make sense |
-|                  |                |                 |in the CRS for the Site_.           |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``"date-time"``  |A date and time. Specified as a     |
-|                  |                |                 |number (milliseconds since UNIX     |
-|                  |                |                 |epoch, Java style), or as a string  |
-|                  |                |                 |in `ISO 8601`_ format               |
-|                  |                |                 |``yyyy-mm-ddTHH:MM:SSZ``.           |
-+------------------+----------------+-----------------+------------------------------------+
-|``minimum``       |``valueType``   |optional         |Minimum legal value for parameter   |
-|                  |                |                 |(parameter must have integer or     |
-|                  |                |                 |number type).                       |
-+------------------+----------------+-----------------+------------------------------------+
-|``maximum``       |``valueType``   |optional         |Maximum legal value for parameter.  |
-+------------------+----------------+-----------------+------------------------------------+
-|``choices``       |array of        |optional         |If specified, the parameter value   |
-|                  |[``valueType``, |                 |must be set to one of these choices.|
-|                  |string] pairs   |                 |Each choice is a pair whose first   |
-|                  |                |                 |element is a possible value for the |
-|                  |                |                 |parameter and whose second value is |
-|                  |                |                 |a text label used to describe the   |
-|                  |                |                 |choice to a user of the planning    |
-|                  |                |                 |interface.                          |
-+------------------+----------------+-----------------+------------------------------------+
-|``default``       |``valueType`` or|optional         |The default value of the            |
-|                  |``null``        |                 |parameter. If not specified, the    |
-|                  |                |                 |default value is ``null``.          |
-+------------------+----------------+-----------------+------------------------------------+
-|``required``      |boolean         |``true``         |The parameter must be specified.    |
-|                  |                |(default)        |                                    |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``false``        |The parameter is optional.          |
-+------------------+----------------+-----------------+------------------------------------+
-|``visible``       |boolean         |``true``         |Display the parameter in the detail |
-|                  |                |(default)        |view for the command.               |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``false``        |Hide the parameter                  |
-+------------------+----------------+-----------------+------------------------------------+
-|``editable``      |boolean         |``true``         |Allow the user to edit the          |
-|                  |                |(default)        |parameter.                          |
-|                  |                +-----------------+------------------------------------+
-|                  |                |``false``        |Don't allow editing.                |
-+------------------+----------------+-----------------+------------------------------------+
++------------------+----------------+------------------------+------------------------------------+
+|Member            |Type            |Values                  |Meaning                             |
++==================+================+========================+====================================+
+|``parent``        |string          |optional                |The ``id`` of ParamSpec_ in the     |
+|                  |                |                        |``paramSpecs`` section of the       |
+|                  |                |                        |PlanSchema_, from which this        |
+|                  |                |                        |ParamSpec_ inherits members.        |
+|                  |                |                        |                                    |
+|                  |                |                        |The ``id`` member is not inherited. |
+|                  |                |                        |                                    |
++------------------+----------------+------------------------+------------------------------------+
+|``valueType``     |string          |``"string"``            |Parameter has string value.         |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"integer"``           |Parameter has integer value.        |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"number"``            |Parameter has numerical (floating   |
+|                  |                |                        |point) value.                       |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"boolean"``           |Parameter has boolean value.        |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"Point"``,            |Parameter value is a GeoJSON        |
+|                  |                |``"MultiPoint"``,       |geometry object whose ``type`` field|
+|                  |                |``"LineString"``,       |is set to the specified value, with |
+|                  |                |``"MultiLineString"``,  |coordinates that make sense in the  |
+|                  |                |``"Polygon"``,          |CRS for the Site_.                  |
+|                  |                |``"MultiPolygon"``, or  |                                    |
+|                  |                |``"GeometryCollection"``|                                    |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"date-time"``         |A date and time. Specified as a     |
+|                  |                |                        |number (milliseconds since UNIX     |
+|                  |                |                        |epoch, Java style), or as a string  |
+|                  |                |                        |in `ISO 8601`_ format               |
+|                  |                |                        |``yyyy-mm-ddTHH:MM:SSZ``.           |
++------------------+----------------+------------------------+------------------------------------+
+|``minimum``       |``valueType``   |optional                |Minimum legal value for parameter   |
+|                  |                |                        |(parameter must have integer or     |
+|                  |                |                        |number type).                       |
++------------------+----------------+------------------------+------------------------------------+
+|``maximum``       |``valueType``   |optional                |Maximum legal value for parameter.  |
++------------------+----------------+------------------------+------------------------------------+
+|``choices``       |array of        |optional                |If specified, the parameter value   |
+|                  |[``valueType``, |                        |must be set to one of these choices.|
+|                  |string] pairs   |                        |Each choice is a pair whose first   |
+|                  |                |                        |element is a possible value for the |
+|                  |                |                        |parameter and whose second value is |
+|                  |                |                        |a text label used to describe the   |
+|                  |                |                        |choice to a user of the planning    |
+|                  |                |                        |interface.                          |
++------------------+----------------+------------------------+------------------------------------+
+|``default``       |``valueType`` or|optional                |The default value of the            |
+|                  |``null``        |                        |parameter. If not specified, the    |
+|                  |                |                        |default value is ``null``.          |
++------------------+----------------+------------------------+------------------------------------+
+|``required``      |boolean         |``true``                |The parameter must be specified.    |
+|                  |                |(default)               |                                    |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``false``               |The parameter is optional.          |
++------------------+----------------+------------------------+------------------------------------+
+|``visible``       |boolean         |``true``                |Display the parameter in the detail |
+|                  |                |(default)               |view for the command.               |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``false``               |Hide the parameter                  |
++------------------+----------------+------------------------+------------------------------------+
+|``editable``      |boolean         |``true``                |Allow the user to edit the          |
+|                  |                |(default)               |parameter.                          |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``false``               |Don't allow editing.                |
++------------------+----------------+------------------------+------------------------------------+
 
 Example
 -------
@@ -1141,6 +1145,18 @@ Inherits from:
 |``segmentParams``      |array of    |optional        |Extra parameters that may be        |
 |                       |ParamSpec_  |                |specified in Segment_ instances.    |
 +-----------------------+------------+----------------+------------------------------------+
+|``stationGeometryType``|string      |optional        |The ``geometry`` field of Stations  |
+|                       |            |                |must be of this type. Defaults to   |
+|                       |            |                |``Point``.  See `GeoJSON geometry`_ |
+|                       |            |                |for a list of possible types.       |
++-----------------------+------------+----------------+------------------------------------+
+|``segmentGeometryType``|string      |optional        |The ``geometry`` field of Segments, |
+|                       |            |                |when specified, must be of this     |
+|                       |            |                |type. Defaults to                   |
+|                       |            |                |``LineString``. See `GeoJSON        |
+|                       |            |                |geometry`_ for a list of possible   |
+|                       |            |                |types.                              |
++-----------------------+------------+----------------+------------------------------------+
 |``planIdFormat``       |`format     |optional        |A format string used to             |
 |                       |string`_    |                |auto-generate the ``id`` of Plan_   |
 |                       |            |                |objects.                            |
@@ -1276,16 +1292,19 @@ Inherits from:
 +------------------+------------+----------------+------------------------------------+
 |Member            |Type        |Values          |Meaning                             |
 +==================+============+================+====================================+
-|``geometry``      |`GeoJSON    |optional        |The destination of a Segment's      |
-|                  |geometry`_  |                |motion is typically the ``geometry``|
-|                  |            |                |of the Station following the        |
-|                  |            |                |Segment.                            |
+|``geometry``      |`GeoJSON    |optional        |For many applications this field is |
+|                  |geometry`_  |                |always unspecified and the implicit |
+|                  |            |                |geometry of the Segment is the      |
+|                  |            |                |LineString connecting the Stations  |
+|                  |            |                |that bracket the segment.           |
 |                  |            |                |                                    |
 |                  |            |                |In applications where the user needs|
 |                  |            |                |to specify a detailed path between  |
 |                  |            |                |Stations, each Segment can include  |
-|                  |            |                |its own ``geometry``, typically of  |
-|                  |            |                |``LineString`` type.                |
+|                  |            |                |its own ``geometry``, which must    |
+|                  |            |                |match the ``segmentGeometryType`` in|
+|                  |            |                |the PlanSchema (defaults to         |
+|                  |            |                |``LineString``).                    |
 +------------------+------------+----------------+------------------------------------+
 |``sequence``      |array       |optional        |Commands to be executed while moving|
 |                  |containing  |                |along the Segment.                  |
@@ -1396,8 +1415,10 @@ Inherits from:
 +-------------------+----------------+-----------------+------------------------------------+
 |Member             |Type            |Values           |Meaning                             |
 +===================+================+=================+====================================+
-|``geometry``       |`GeoJSON        |required         |The location of the station. Usually|
-|                   |geometry`_      |                 |``Point`` geometry.                 |
+|``geometry``       |`GeoJSON        |required         |The location of the station. The    |
+|                   |geometry`_      |                 |geometry type must match the        |
+|                   |                |                 |``stationGeometryType`` of the      |
+|                   |                |                 |PlanSchema (defaults to ``Point``). |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Example

@@ -75,9 +75,16 @@
                         "enum": [
                             "string",
                             "integer",
-                            "boolean",
                             "number",
-                            "coords"
+                            "boolean",
+                            "Point",
+                            "MultiPoint",
+                            "LineString",
+                            "MultiLineString",
+                            "Polygon",
+                            "MultiPolygon",
+                            "GeometryCollection",
+                            "date-time"
                         ],
                         "required": true
                     },
@@ -164,11 +171,17 @@
                                     "enum": [
                                         "string",
                                         "integer",
-                                        "boolean",
                                         "number",
-                                        "coords"
-                                    ],
-                                    "required": true
+                                        "boolean",
+                                        "Point",
+                                        "MultiPoint",
+                                        "LineString",
+                                        "MultiLineString",
+                                        "Polygon",
+                                        "MultiPolygon",
+                                        "GeometryCollection",
+                                        "date-time"
+                                    ]
                                 },
                                 "minimum": {
                                     "type": "number"
@@ -223,11 +236,17 @@
                         "enum": [
                             "string",
                             "integer",
-                            "boolean",
                             "number",
-                            "coords"
-                        ],
-                        "required": true
+                            "boolean",
+                            "Point",
+                            "MultiPoint",
+                            "LineString",
+                            "MultiLineString",
+                            "Polygon",
+                            "MultiPolygon",
+                            "GeometryCollection",
+                            "date-time"
+                        ]
                     },
                     "minimum": {
                         "type": "number"
@@ -279,11 +298,17 @@
                         "enum": [
                             "string",
                             "integer",
-                            "boolean",
                             "number",
-                            "coords"
-                        ],
-                        "required": true
+                            "boolean",
+                            "Point",
+                            "MultiPoint",
+                            "LineString",
+                            "MultiLineString",
+                            "Polygon",
+                            "MultiPolygon",
+                            "GeometryCollection",
+                            "date-time"
+                        ]
                     },
                     "minimum": {
                         "type": "number"
@@ -335,11 +360,17 @@
                         "enum": [
                             "string",
                             "integer",
-                            "boolean",
                             "number",
-                            "coords"
-                        ],
-                        "required": true
+                            "boolean",
+                            "Point",
+                            "MultiPoint",
+                            "LineString",
+                            "MultiLineString",
+                            "Polygon",
+                            "MultiPolygon",
+                            "GeometryCollection",
+                            "date-time"
+                        ]
                     },
                     "minimum": {
                         "type": "number"
@@ -391,11 +422,17 @@
                         "enum": [
                             "string",
                             "integer",
-                            "boolean",
                             "number",
-                            "coords"
-                        ],
-                        "required": true
+                            "boolean",
+                            "Point",
+                            "MultiPoint",
+                            "LineString",
+                            "MultiLineString",
+                            "Polygon",
+                            "MultiPolygon",
+                            "GeometryCollection",
+                            "date-time"
+                        ]
                     },
                     "minimum": {
                         "type": "number"
