@@ -77,7 +77,8 @@
     {
       "type": "CommandSpec",
       "id": "MicroImage",
-      "parent": "Image"
+      "parent": "Image",
+      "allowedInSegment": false
     },
     {
       "type": "CommandSpec",

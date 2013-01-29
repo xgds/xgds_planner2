@@ -152,6 +152,15 @@
                     "scopeTerminate": {
                         "type": "boolean"
                     },
+                    "allowedInPlan": {
+                        "type": "boolean"
+                    },
+                    "allowedInStation": {
+                        "type": "boolean"
+                    },
+                    "allowedInSegment": {
+                        "type": "boolean"
+                    },
                     "color": {
                         "type": "string"
                     },
