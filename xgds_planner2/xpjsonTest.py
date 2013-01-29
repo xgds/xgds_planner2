@@ -17,22 +17,20 @@ from xgds_planner2 import xpjson
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SCHEMA_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanSchema.json')
+PLAN_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlan.json')
 
 
 class PlanSchemaTest(unittest.TestCase):
     def test_load(self):
-        schema = xpjson.PlanSchema.load(SCHEMA_PATH)
-        print xpjson.prettyDumps(schema)
+        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
+        # print xpjson.prettyDumps(schema)
+
+
+class PlanTest(unittest.TestCase):
+    def test_load(self):
+        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
+        plan = xpjson.Plan(xpjson.loadPath(PLAN_PATH), schema)
 
 
 if __name__ == '__main__':
-    import optparse
-    parser = optparse.OptionParser('%prog')
-    parser.add_option('--schema',
-                      help='Schema to test with [%default]',
-                      default=SCHEMA_PATH)
-    opts, args = parser.parse_args()
-
-    SCHEMA_PATH = opts.schema
-
-    unittest.main(argv=sys.argv[:1])
+    unittest.main()

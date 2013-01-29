@@ -22,6 +22,13 @@ from geocamUtil import dotDict
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_SCHEMA_PATH_PLAN_SCHEMA = os.path.join(THIS_DIR, 'xpjsonSpec', 'xpjsonPlanSchemaDocumentSchema.json')
 
+CRS84 = dotDict.DotDict({
+    "type": "name",
+    "properties": {
+        "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    }
+})
+
 GEOMETRY_TYPE_CHOICES = (
     'Point',
     'MultiPoint',
@@ -41,28 +48,35 @@ VALUE_TYPE_CHOICES = (
 ) + GEOMETRY_TYPE_CHOICES
 
 
-def jsonVars(obj):
+def objToDict(obj):
     if isinstance(obj, (dict, dotDict.DotDict)):
-        return dict([(k, jsonVars(v)) for k, v in obj.iteritems()])
+        if hasattr(obj, 'id'):
+            print obj.id
+        return dict([(k, objToDict(v)) for k, v in obj.iteritems()])
     elif isinstance(obj, list):
-        return [jsonVars(elt) for elt in obj]
+        return [objToDict(elt) for elt in obj]
     elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
         return obj
+    elif hasattr(obj, 'toDict'):
+        return obj.toDict()
     else:
-        return jsonVars(vars(obj))
+        return objToDict(vars(obj))
 
 
 def prettyDumps(obj):
-    return json.dumps(jsonVars(obj), indent=4, sort_keys=True)
+    return json.dumps(objToDict(obj), indent=4, sort_keys=True)
 
 
 def isValueOfType(val, valueType):
     """
-    Check whether the type of *val* conforms to *valueType* as defined
-    in the XPJSON spec. Just rough validation.
+    Check whether the type of *val* conforms to *valueType*. Supports
+    the valueTypes defined in the XPJSON spec as well as some others
+    we use in this parsing library.
     """
 
-    if valueType == 'string':
+    if valueType == 'custom':
+        return True  # skip validation
+    elif valueType == 'string':
         return isinstance(val, (str, unicode))
     elif valueType == 'integer':
         return isinstance(val, int)
@@ -72,7 +86,7 @@ def isValueOfType(val, valueType):
         return isinstance(val, bool)
     elif valueType == 'date-time':
         # must be explicitly in UTC time zone
-        if not valueType.endswith('Z'):
+        if not val.endswith('Z'):
             return False
 
         # must conform to ISO 8601 date-time format
@@ -88,290 +102,399 @@ def isValueOfType(val, valueType):
         return (hasattr(val, 'type')
                 and val.type == valueType)
 
+    # our extra types not defined in XPJSON spec
+    elif valueType.startswith('array.'):
+        # for example, 'array.integer' -> array of integer
+        if not isinstance(val, (list, tuple)):
+            return False
+        eltType = re.sub(r'^array\.', '', valueType)
+        return all((isValueOfType(elt, eltType) for elt in val))
+    elif valueType.startswith('dict.'):
+        # for example, 'dict.integer' -> object with string member names
+        # and integer member values
+        if not isinstance(val, (dict, dotDict.DotDict)):
+            return False
+        vType = re.sub(r'^dict\.', '', valueType)
+        return all(((isValueOfType(k, 'string') and isValueOfType(v, vType))
+                     for k, v in val.itervalues()))
+    else:
+        if isinstance(val, (dict, dotDict.DotDict)) and val.type == valueType:
+            # for example, 'ParamSpec' -> object with 'type' member equal
+            # to 'ParamSpec'
+            return True
+        else:
+            raise KeyError('unknown valueType %s' % valueType)
+
 
 def isGeometryType(s):
     return s in GEOMETRY_TYPE_CHOICES
 
 
-def isColorString(s):
-    return re.match('\#[0-9a-fA-F]{6}', s)
-
-
-def getMember(objDict, fieldName, valueType, defaultVal):
-    val = objDict.get(fieldName)
-    if val is None:
-        assert defaultVal is not 'required', \
-               'required field %s missing from %s' % (fieldName, objDict)
-        val = defaultVal
-    if val is not None and valueType != 'custom':
-        assert isValueOfType(val, valueType), \
-               '%s should have valueType %s in %s' % (fieldName, valueType, objDict)
-    return val
-
-
 def getIdDict(lst):
-    return dict([(elt.id, elt) for elt in lst])
+    return dict([(elt.get('id'), elt) for elt in lst])
 
 
-def joinById(childList, parentList):
-    if parentList is None:
-        parentList = []
-
-    # everything should have an id
-    assert all(['id' in x for x in childList])
-    assert all(['id' in x for x in parentList])
-
-    result = list(parentList)  # copy
-    parentIndexLookup = dict([(x.id, i) for i, x in enumerate(parentList)])
-    for c in childList:
-        parentIndex = parentIndexLookup.get(c.id, None)
-        if parentIndex:
-            # if child item and parent item have the same id, child overwrites
-            # parent
-            result[parentIndex] = c
-        else:
-            # otherwise, add new id
-            result.append(c)
-
-    return result
-
-
-def inherit(child, parent, recurseFields=[]):
+def loads(s):
     """
-    Return the DotDict formed by taking fields from *parent*
-    and overriding them with fields from *child*.
-
-    If a field is in *recurseFields* (must be a list of objects), the
-    result for that field will be the union of the values from parent
-    and child, joined by the 'id' field of each object in the list.
+    Load a Document from the JSON-format string *s*.
     """
-    if parent == None:
-        result = child.copy()
-    else:
-        result = parent.copy()
+    return dotDict.convertToDotDictRecurse(json.loads(s))
 
-        # these fields are explicitly not inherited (see ClassSpec section in spec)
-        for f in ('id', 'name', 'abstract'):
-            result.pop(f, None)
-
-        for key, childVal in child.iteritems():
-            if key in recurseFields:
-                result[key] = joinById(childVal, parent.get(key))
-            else:
-                result[key] = childVal
-
-    # to avoid confusion, remove parent field after inheritance is resolved
-    result.pop('parent', None)
-
-    return result
-
-
-def resolveInheritance(specs, recurseFields=[]):
+def load(f):
     """
-    Given a list of objects with ids that can inherit from a parent by
-    specifying its id (such as the value of the paramSpecs or the
-    commandSpecs field in the PlanSchema), return a look-up table that
-    maps ids to objects with all the inheritance relationships resolved.
+    Load a Document from the JSON-format file *f*.
     """
-    for spec in specs:
-        assert 'id' in spec
+    return dotDict.convertToDotDictRecurse(json.load(f))
 
-    specLookup = dict.fromkeys([s.id for s in specs])
-
-    result = {}
-    i = 0
-    MAX_ITERATIONS = 10000
-    q = deque(specs)
-
-    while q:
-        i += 1
-        if i > MAX_ITERATIONS:
-            print 'processed so far:', pprint.pformat(result.keys())
-            print 'child, parent:', pprint.pformat([(elt.id, elt.get('parent', None)) for elt in q])
-            raise RuntimeError('resolveInheritance: not done after %s iterations, may have an inheritance loop'
-                               % MAX_ITERATIONS)
-
-        inSpec = q.popleft()
-        parentId = inSpec.get('parent')
-        if parentId:
-            # make child inherit from parent
-            if parentId not in result:
-                specLookup[parentId]  # ensure parent exists
-                # postpone child until after parent is processed
-                q.append(inSpec)
-                continue
-            parent = result[parentId]
-            result[inSpec.id] = inherit(inSpec, parent,
-                                        recurseFields)
-        else:
-            # no parent
-            result[inSpec.id] = inherit(inSpec, None,
-                                        recurseFields)
-
-    return result
-
-
-def paramInherit(paramSpecObj, rawParamSpecsDict):
-    return ParamSpec(inherit(paramSpecObj, rawParamSpecsDict.get(paramSpecObj.parent)))
-
-
-def paramsInherit(paramSpecList, rawParamSpecsDict):
-    return [paramInherit(p, rawParamSpecsDict) for p in paramSpecList]
+def loadPath(path):
+    """
+    Load an XPJSON plan schema from the JSON-format file at path *path*.
+    """
+    return load(file(path, 'r'))
 
 
 class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
     """
-    def __init__(self, objDict):
-        # objDict should already have parent inheritance resolved
-        # before this function is called.
 
-        fields = (
-            ('type', 'string', 'required'),
-            ('name', 'string', None),
-            ('description', 'string', None),
-            ('id', 'string', None),
-        )
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = {
+        'type': ('string', 'required', None),
+        'name': ('string', None, None),
+        'description': ('string', None, None),
+        'id': ('string', None, None),
+    }
 
-        for fieldName, valueType, defaultVal in fields:
-            val = getMember(objDict, fieldName, valueType, defaultVal)
-            setattr(self, fieldName, val)
+    def __init__(self, objDict, schema=None):
+        self.schema = schema
+        self.objDict = objDict
+        self.checkFields()
+
+    def get(self, fieldName, defaultVal='__unspecified__'):
+        if defaultVal == '__unspecified__':
+            if fieldName in self.fields:
+                defaultVal = self.fields[fieldName][1]
+            else:
+                defaultVal = None
+        return self.objDict.get(fieldName, defaultVal)
+
+    def checkFields(self):
+        assert self.get('type') == self.__class__.__name__, \
+               'expected object of type %s, got %s' % (self.__class__.__name__,
+                                                       self.get('type'))
+
+        for fieldName, (valueType, defaultVal, validFuncName) in self.fields.iteritems():
+            val = self.get(fieldName)
+            if val is None:
+                assert defaultVal is not 'required', \
+               'required field %s missing from %s' % (fieldName, self.objDict)
+                val = defaultVal
+            if val is not None:
+                assert isValueOfType(val, valueType), \
+                       '%s should have valueType %s in %s' % (fieldName, valueType, self.objDict)
+            if val is not None and validFuncName is not None:
+                validFunc = getattr(self, validFuncName)
+                assert validFunc(val), \
+                       '%s should satisfy %s in %s' % (fieldName, validFunc, self.objDict)
+
+        for k, v in self.objDict.iteritems():
+            if k not in self.fields:
+                print ('unknown field %s in object with id %s'
+                       % (k, self.objDict.get('id')))
 
 
-class ParamSpec(TypedObject):
+class ObjectWithInheritance(TypedObject):
+    """
+    A TypedObject that implements lazy inheritance based on the 'parent'
+    member in its objDict.
+    """
+
+    nonInheritedFields = set(('id', 'name', 'abstract'))
+
+    def __init__(self, objDict, parentLookup):
+        self.parentLookup = parentLookup
+        self.parent = parentLookup.get(objDict.get('parent'))
+        super(ObjectWithInheritance, self).__init__(objDict)
+
+    def get(self, fieldName, defaultVal=None):
+        result = self.objDict.get(fieldName, '__not_set__')
+        if result == '__not_set__':
+            if self.parent is not None and fieldName not in self.nonInheritedFields:
+                return self.parent.get(fieldName, defaultVal)
+            else:
+                return defaultVal
+        else:
+            return result
+
+
+class ParamSpec(ObjectWithInheritance):
     """
     Implements the ParamSpec type from the XPJSON spec.
     """
-    def __init__(self, objDict):
-        super(ParamSpec, self).__init__(objDict)
 
-        assert objDict.valueType in VALUE_TYPE_CHOICES, \
-               ('unknown valueType %s in %s'
-                % (objDict.valueType, objDict))
-        self.valueType = objDict.valueType
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'valueType': ('custom', 'required', 'isValidValueType'),
+        'minimum': ('custom', None, 'matchesValueType'),
+        'maximum': ('custom', None, 'matchesValueType'),
+        'choices': ('custom', None, 'isEnumValid'),
+        'default': ('custom', None, 'matchesValueType'),
+        'required': ('boolean', True, None),
+        'visible': ('boolean', True, None),
+        'editable': ('boolean', True, None),
+    })
 
-        fields = (
-            ('minimum', self.valueType, None),
-            ('maximum', self.valueType, None),
-            ('choices', 'custom', None),
-            ('default', self.valueType, None),
-            ('required', 'boolean', True),
-            ('visible', 'boolean', True),
-            ('editable', 'boolean', True),
-        )
+    def __init__(self, objDict, parentLookup):
+        super(ParamSpec, self).__init__(objDict, parentLookup)
+        self.valueType = self.get('valueType')
 
-        for fieldName, valueType, defaultVal in fields:
-            val = getMember(objDict, fieldName, valueType, defaultVal)
-            setattr(self, fieldName, val)
+    def isValidValueType(self, val):
+        return val in VALUE_TYPE_CHOICES
 
-        # custom fields and validation
+    def matchesValueType(self, val):
+        return isValueOfType(val, self.get('valueType'))
 
-        if self.choices is not None:
-            for val, desc in self.choices:
-                assert isValueOfType(val, self.valueType)
-                assert isinstance(desc, (str, unicode))
+    def isEnumValid(self, enum):
+        for val, desc in enum:
+            if (not isValueOfType(val, self.get('valueType'))
+                or not isinstance(desc, (str, unicode))):
+                return False
+        return True
 
 
-class CommandSpec(TypedObject):
+class ClassSpec(ObjectWithInheritance):
+    """
+    Implements the ClassSpec type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'parent': ('string', None, None),
+        'abstract': ('boolean', False, None),
+        'params': ('array.ParamSpec', [], None),
+    })
+
+    def __init__(self, objDict, parentLookup, paramParentLookup):
+        self.paramParentLookup = paramParentLookup
+        super(ClassSpec, self).__init__(objDict, parentLookup)
+        self.paramLookup = getIdDict([ParamSpec(p, self.paramParentLookup)
+                                      for p in self.get('params')])
+
+    def getParam(self, paramId):
+        return self.paramLookup[paramId]
+
+
+class CommandSpec(ClassSpec):
     """
     Implements the CommandSpec type from the XPJSON spec.
     """
-    def __init__(self, objDict, rawParamSpecsDict):
-        super(CommandSpec, self).__init__(objDict)
 
-        fields = (
-            ('abstract', 'boolean', False),
-            ('blocking', 'boolean', True),
-            ('scopeTerminate', 'boolean', True),
-            ('allowedInPlan', 'boolean', True),
-            ('allowedInStation', 'boolean', True),
-            ('allowedInSegment', 'boolean', True),
-            ('color', 'string', None),
-        )
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = ClassSpec.fields.copy()
+    fields.update({
+        'blocking': ('boolean', True, None),
+        'scopeTerminate': ('boolean', True, None),
+        'allowedInPlan': ('boolean', True, None),
+        'allowedInStation': ('boolean', True, None),
+        'allowedInSegment': ('boolean', True, None),
+        'color': ('string', 'isColorString', None),
+    })
 
-        for fieldName, valueType, defaultVal in fields:
-            val = getMember(objDict, fieldName, valueType, defaultVal)
-            setattr(self, fieldName, val)
+    def __init__(self, objDict, parentLookup, paramParentLookup):
+        super(CommandSpec, self).__init__(objDict, parentLookup, paramParentLookup)
 
-        # custom fields and validation
-
-        if self.color is not None:
-            assert isColorString(self.color)
-
-        rawParams = objDict.get('params', [])
-        self.params = paramsInherit(rawParams, rawParamSpecsDict)
+    def isColorString(self, s):
+        # should be in HTML hex format '#rrggbb'
+        return re.match('\#[0-9a-fA-F]{6}', s) is not None
 
 
-class PlanSchema(TypedObject):
+class Document(TypedObject):
+    """
+    Implements the Document type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'xpjson': ('string', 'required', 'isValidXpjsonVersion'),
+        'subject': ('array.string', None, None),
+        'creator': ('string', None, None),
+        'contributors': ('array.string', None, None),
+        'dateCreated': ('date-time', None, None),
+        'dateModified': ('date-time', None, None),
+    })
+
+    def __init__(self, objDict, schema=None):
+        super(Document, self).__init__(objDict, schema=schema)
+
+    def isValidXpjsonVersion(self, val):
+        return val == '0.1'
+
+
+class PlanSchema(Document):
     """
     Implements the PlanSchema type from the XPJSON spec.
     """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = Document.fields.copy()
+    fields.update({
+        'paramSpecs': ('array.ParamSpec', [], None),
+        'commandSpecs': ('array.CommandSpec', [], None),
+        'planParams': ('array.ParamSpec', [], None),
+        'targetParams': ('array.ParamSpec', [], None),
+        'stationParams': ('array.ParamSpec', [], None),
+        'segmentParams': ('array.ParamSpec', [], None),
+        'stationGeometryType': ('string', 'Point', None),
+        'segmentGeometryType': ('string', 'LineString', None),
+        'planIdFormat': ('string', None, None),
+        'pathElementIdFormat': ('string', None, None),
+        'commandIdFormat': ('string', None, None),
+    })
+
     def __init__(self, objDict, validate=True):
+        super(Document, self).__init__(objDict)
+
         if validate:
             schemaSpec = file(JSON_SCHEMA_PATH_PLAN_SCHEMA, 'r')
             jsonschema.validate(objDict,
                                 json.load(schemaSpec))
 
-        assert objDict.xpjson == '0.1'
+        self.paramParentLookup = {}
+        for p in self.get('paramSpecs'):
+            self.paramParentLookup[p.id] = ParamSpec(p, self.paramParentLookup)
 
-        fields = (
-            ('stationGeometryType', 'string', 'Point'),
-            ('segmentGeometryType', 'string', 'LineString'),
-            ('planIdFormat', 'string', None),
-            ('pathElementIdFormat', 'string', 'LineString'),
-            ('commandIdFormat', 'string', 'LineString'),
-        )
-
-        for fieldName, valueType, defaultVal in fields:
-            val = getMember(objDict, fieldName, valueType, defaultVal)
-            setattr(self, fieldName, val)
-
-        # custom fields and validation
-
-        # schema.paramSpecs field
-        rawParamSpecs = objDict.get('paramSpecs', [])
-        self.rawParamSpecsDict = resolveInheritance(rawParamSpecs)
-
-        # schema.commandSpecs field
-
-        # in case a CommandSpec explicitly inherits from 'Command',
-        # basically the same as no parent
-        rootCommandSpec = dotDict.DotDict({
-            'type': 'CommandSpec',
-            'id': 'Command',
-            'abstract': True,
-        })
-        rawCommandSpecs = [rootCommandSpec] + objDict.get('commandSpecs', [])
-        rawCommandSpecsDict = resolveInheritance(rawCommandSpecs,
-                                                 recurseFields=('params'))
-        self.commandSpecsDict = dict([(i, CommandSpec(s, self.rawParamSpecsDict))
-                                      for i, s in rawCommandSpecsDict.iteritems()])
-
-        # schema.xxxParams fields
         paramsFields = (
             'planParams',
-            'targetParams',
             'stationParams',
             'segmentParams',
+            'targetParams',
         )
 
+        # for example, set self.planParamsLookup = dict of id ->
+        # ParamSpec, based on planParams field in input json.
         for fieldName in paramsFields:
-            paramsTmp = objDict.get(fieldName, [])
-            setattr(self, fieldName, paramsInherit(paramsTmp, self.rawParamSpecsDict))
-            setattr(self, fieldName + 'Dict', getIdDict(getattr(self, fieldName)))
+            setattr(self, fieldName + 'Lookup',
+                    getIdDict([ParamSpec(p, self.paramParentLookup)
+                               for p in self.get('planParams')]))
 
-    @staticmethod
-    def loads(s):
-        """
-        Load an XPJSON plan schema from the JSON-format string *s*.
-        """
-        return PlanSchema(dotDict.convertToDotDictRecurse(json.loads(s)))
+        self.commandParentLookup = {}
+        for s in self.get('commandSpecs'):
+            self.commandParentLookup[s.id] = (CommandSpec
+                                              (s,
+                                               self.commandParentLookup,
+                                               self.paramParentLookup))
 
-    @staticmethod
-    def load(path):
-        """
-        Load an XPJSON plan schema from the JSON-format file specified in *path*.
-        """
-        f = open(path, 'r')
-        return PlanSchema.loads(f.read())
+
+class PathElement(TypedObject):
+    """
+    Implements the PathElement type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'geometry': ('custom', None, None),
+        'sequence': ('array.custom', None, None),
+        'libraryId': ('string', None, None),
+    })
+
+
+class Station(PathElement):
+    """
+    Implements the Station type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = PathElement.fields.copy()
+    fields.update({
+        # 'geometry': ('Point', None, None),
+    })
+
+
+class Segment(PathElement):
+    """
+    Implements the Segment type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = PathElement.fields.copy()
+    fields.update({
+        # 'geometry': ('Point', None, None),
+    })
+
+
+class Site(TypedObject):
+    """
+    Implements the Site type from the XPJSON spec.
+    """
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'crs': ('custom', CRS84, None),
+        'bbox': ('custom', None, None),
+    })
+
+
+class Platform(TypedObject):
+    """
+    Implements the Site type from the XPJSON spec.
+    """
+    # no extra fields beyond TypedObject
+    pass
+
+
+class Target(TypedObject):
+    """
+    Implements the Target type from the XPJSON spec.
+    """
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'geometry': ('custom', 'required', None),
+    })
+
+
+class Plan(Document):
+    """
+    Implements the Plan type from the XPJSON spec.
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = Document.fields.copy()
+    fields.update({
+        'schemaUrl': ('string', None, None),
+        'libraryUrls': ('array.string', None, None),
+        'planNumber': ('integer', None, None),
+        'planVersion': ('string', None, None),
+        'site': ('Site', None, None),
+        'platform': ('Platform', None, None),
+        'targets': ('array.Target', [], None),
+        'sequence': ('array.custom', [], None),
+    })
+
+    def __init__(self, objDict, schema):
+        super(Plan, self).__init__(objDict, schema=schema)
+
+        self.site = self.get('site')
+        if self.site is not None:
+            self.site = Site(self.site)
+
+        self.platform = self.get('platform')
+        if self.platform is not None:
+            self.platform = Platform(self.platform)
+
+        self.targets = getIdDict([Target(t) for t in self.get('targets')])
+
+    # def validateAgainstSchema(self):
+    #     pass
+
+    # def validateSequenceAgainstSchema(self, sequence):
+    #     # FIX: handle e.g. allowedInPlan
+    #     validElementTypes = [id
+    #                          for id, spec in self.schema.commandSpecsLookup.iteritems()
+    #                          if not spec.get('abstract')]
+
