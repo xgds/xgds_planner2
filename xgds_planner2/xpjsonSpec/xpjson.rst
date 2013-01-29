@@ -197,7 +197,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "params": [
           {
             "type": "ParamSpec",
-            "name": "duration",
+            "id": "duration",
             "valueType": "number",
             "minimum": 0,
             "description": "Estimated time required to execute command (minutes)"

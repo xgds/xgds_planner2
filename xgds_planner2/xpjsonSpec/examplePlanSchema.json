@@ -39,7 +39,7 @@
       "params": [
         {
           "type": "ParamSpec",
-          "name": "duration",
+          "id": "duration",
           "valueType": "number",
           "minimum": 0,
           "description": "Estimated time required to execute command (minutes)"
