@@ -807,11 +807,11 @@ Inherits from:
 |                  |                +------------------------+------------------------------------+
 |                  |                |``"boolean"``           |Parameter has boolean value.        |
 |                  |                +------------------------+------------------------------------+
-|                  |                |``"Point"``,            |Parameter value is a GeoJSON        |
-|                  |                |``"MultiPoint"``,       |geometry object whose ``type`` field|
-|                  |                |``"LineString"``,       |is set to the specified value, with |
-|                  |                |``"MultiLineString"``,  |coordinates that make sense in the  |
-|                  |                |``"Polygon"``,          |CRS for the Site_.                  |
+|                  |                |``"Point"``,            |Parameter value is a `GeoJSON       |
+|                  |                |``"MultiPoint"``,       |geometry`_ object whose ``type``    |
+|                  |                |``"LineString"``,       |field is set to the specified value,|
+|                  |                |``"MultiLineString"``,  |with coordinates that make sense in |
+|                  |                |``"Polygon"``,          |the CRS for the Site_.              |
 |                  |                |``"MultiPolygon"``, or  |                                    |
 |                  |                |``"GeometryCollection"``|In principle, a planning interface  |
 |                  |                |                        |could support editing parameters    |
@@ -905,9 +905,6 @@ Inherits from:
 +------------------+----------------+-----------------+------------------------------------+
 |Member            |Type            |Values           |Meaning                             |
 +==================+================+=================+====================================+
-|``geometry``      |`GeoJSON        |optional         |The location of the PathElement_.   |
-|                  |geometry`_      |                 |                                    |
-+------------------+----------------+-----------------+------------------------------------+
 |``sequence``      |array containing|optional         |A sequence of commands that should  |
 |                  |Command_ and    |                 |be executed at this PathElement.    |
 |                  |StopCommand_    |                 |                                    |
@@ -1172,18 +1169,6 @@ Inherits from:
 |``segmentParams``      |array of    |optional        |Extra parameters that may be        |
 |                       |ParamSpec_  |                |specified in Segment_ instances.    |
 +-----------------------+------------+----------------+------------------------------------+
-|``stationGeometryType``|string      |optional        |The ``geometry`` field of Stations  |
-|                       |            |                |must be of this type. Defaults to   |
-|                       |            |                |``Point``.  See `GeoJSON geometry`_ |
-|                       |            |                |for a list of possible types.       |
-+-----------------------+------------+----------------+------------------------------------+
-|``segmentGeometryType``|string      |optional        |The ``geometry`` field of Segments, |
-|                       |            |                |when specified, must be of this     |
-|                       |            |                |type. Defaults to                   |
-|                       |            |                |``LineString``. See `GeoJSON        |
-|                       |            |                |geometry`_ for a list of possible   |
-|                       |            |                |types.                              |
-+-----------------------+------------+----------------+------------------------------------+
 |``planIdFormat``       |`format     |optional        |A format string used to             |
 |                       |string`_    |                |auto-generate the ``id`` of Plan_   |
 |                       |            |                |objects.                            |
@@ -1319,19 +1304,19 @@ Inherits from:
 +------------------+------------+----------------+------------------------------------+
 |Member            |Type        |Values          |Meaning                             |
 +==================+============+================+====================================+
-|``geometry``      |`GeoJSON    |optional        |For many applications this field is |
-|                  |geometry`_  |                |always unspecified and the implicit |
-|                  |            |                |geometry of the Segment is the      |
-|                  |            |                |LineString connecting the Stations  |
+|``geometry``      |LineString  |optional        |For many applications this field is |
+|                  |(see        |                |always unspecified and the implicit |
+|                  |`GeoJSON    |                |geometry of the Segment is the      |
+|                  |geometry`_) |                |LineString connecting the Stations  |
 |                  |            |                |that bracket the segment.           |
 |                  |            |                |                                    |
-|                  |            |                |In applications where the user needs|
+|                  |            |                |In some domains, the user may want  |
 |                  |            |                |to specify a detailed path between  |
-|                  |            |                |Stations, each Segment can include  |
-|                  |            |                |its own ``geometry``, which must    |
-|                  |            |                |match the ``segmentGeometryType`` in|
-|                  |            |                |the PlanSchema (defaults to         |
-|                  |            |                |``LineString``).                    |
+|                  |            |                |Segments by providing an explicit   |
+|                  |            |                |LineString geometry. (But planning  |
+|                  |            |                |interfaces are not required to      |
+|                  |            |                |support editing the Segment         |
+|                  |            |                |geometry.)                          |
 +------------------+------------+----------------+------------------------------------+
 |``sequence``      |array       |optional        |Commands to be executed while moving|
 |                  |containing  |                |along the Segment.                  |
@@ -1442,10 +1427,9 @@ Inherits from:
 +-------------------+----------------+-----------------+------------------------------------+
 |Member             |Type            |Values           |Meaning                             |
 +===================+================+=================+====================================+
-|``geometry``       |`GeoJSON        |required         |The location of the station. The    |
-|                   |geometry`_      |                 |geometry type must match the        |
-|                   |                |                 |``stationGeometryType`` of the      |
-|                   |                |                 |PlanSchema (defaults to ``Point``). |
+|``geometry``       |Point geometry  |required         |The location of the station.        |
+|                   |(see `GeoJSON   |                 |                                    |
+|                   |geometry`_)     |                 |                                    |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Example
@@ -1530,13 +1514,9 @@ Inherits from:
 +-------------------+----------------+-----------------+------------------------------------+
 |Member             |Type            |Values           |Meaning                             |
 +===================+================+=================+====================================+
-|``geometry``       |`GeoJSON        |required         |The geometry of the Target.         |
-|                   |geometry`_      |                 |                                    |
-|                   |                |                 |For simple applications, Targets    |
-|                   |                |                 |have ``Point`` type geometry, and   |
-|                   |                |                 |when a PathElement_ refers to the   |
-|                   |                |                 |Target, a line is drawn between the |
-|                   |                |                 |two in the map display.             |
+|``geometry``       |Point (see      |required         |The location of the Target.         |
+|                   |`GeoJSON        |                 |                                    |
+|                   |geometry`_)     |                 |                                    |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Example
