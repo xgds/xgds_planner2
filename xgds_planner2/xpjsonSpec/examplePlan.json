@@ -56,7 +56,6 @@
           "type": "PeriodicPancam",
           "id": "01_0_SPP",
           "libraryId": "SPP",
-          "blocking": false,
           "whiteBalance": "A",
           "focalLengthMm": 7.4,
           "intervalSeconds": 5

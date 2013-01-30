@@ -10,9 +10,10 @@ Utilities for parsing and modeling XPJSON format plans, plan schemas, and plan l
 
 import os
 import json
-from collections import deque
+from collections import deque, Mapping
 import pprint
 import re
+import logging
 
 import jsonschema
 import iso8601
@@ -153,6 +154,35 @@ def loadPath(path):
     return load(file(path, 'r'))
 
 
+class InheritDict(Mapping):
+    """
+    A dict-like object that draws from localVals first
+    then falls back to parent (if not None).
+
+    Used to implement lazy inheritance of ClassSpec params.
+    """
+    def __init__(self, localVals, parent):
+        self.localDict = dict(localVals)
+        self.parent = parent
+
+    def __getitem__(self, key):
+        try:
+            return self.localDict[key]
+        except KeyError:
+            return self.parent[key]
+
+    def __iter__(self):
+        for k in self.localDict.iterkeys():
+            yield k
+        for k in self.parent.iterkeys():
+            if k not in self.localDict:
+                yield k
+
+    def __len__(self):
+        # unfortunately O(1) not possible with lazy design
+        return sum(1 for _ in iter(self))
+
+
 class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
@@ -166,9 +196,10 @@ class TypedObject(object):
         'id': ('string', None, None),
     }
 
-    def __init__(self, objDict, schema=None):
-        self.schema = schema
+    def __init__(self, objDict, schema=None, schemaParams={}):
         self.objDict = objDict
+        self.schema = schema
+        self.schemaParams = schemaParams
         self.checkFields()
 
     def get(self, fieldName, defaultVal='__unspecified__'):
@@ -180,10 +211,6 @@ class TypedObject(object):
         return self.objDict.get(fieldName, defaultVal)
 
     def checkFields(self):
-        assert self.get('type') == self.__class__.__name__, \
-               'expected object of type %s, got %s' % (self.__class__.__name__,
-                                                       self.get('type'))
-
         for fieldName, (valueType, defaultVal, validFuncName) in self.fields.iteritems():
             val = self.get(fieldName)
             if val is None:
@@ -198,8 +225,14 @@ class TypedObject(object):
                 assert validFunc(val), \
                        '%s should satisfy %s in %s' % (fieldName, validFunc, self.objDict)
 
+        for fieldName, paramSpec in self.schemaParams.iteritems():
+            reason = paramSpec.invalidParamValueReason(self.get(fieldName))
+            assert reason is None, \
+                   ('%s; %s should match ParamSpec %s in %s'
+                    % (reason, fieldName, paramSpec.id, self.objDict))
+
         for k, v in self.objDict.iteritems():
-            if k not in self.fields:
+            if k not in self.fields and k not in self.schemaParams:
                 print ('unknown field %s in object with id %s'
                        % (k, self.objDict.get('id')))
 
@@ -248,7 +281,13 @@ class ParamSpec(ObjectWithInheritance):
 
     def __init__(self, objDict, parentLookup):
         super(ParamSpec, self).__init__(objDict, parentLookup)
-        self.valueType = self.get('valueType')
+
+        for fieldName in self.fields.keys():
+            setattr(self, fieldName, self.get(fieldName))
+        if self.choices is None:
+            self.enum = None
+        else:
+            self.enum = [c[0] for c in self.choices]
 
     def isValidValueType(self, val):
         return val in VALUE_TYPE_CHOICES
@@ -262,6 +301,27 @@ class ParamSpec(ObjectWithInheritance):
                 or not isinstance(desc, (str, unicode))):
                 return False
         return True
+
+    def invalidParamValueReason(self, val):
+        # None is valid unless value is required, short-circuits other tests
+        if not self.required and val is None:
+            return None
+
+        if not isValueOfType(val, self.valueType):
+            return 'value %s should have type %s' % (val, repr(self.valueType))
+        elif self.minimum is not None and val < self.minimum:
+            return 'value %s should be exceed minimum %s' % (val, repr(self.minimum))
+        elif self.maximum is not None and val > self.maximum:
+            return 'value %s should not exceed maximum %s' % (val, repr(self.maximum))
+        elif self.enum is not None and val not in self.enum:
+            return 'value %s should be one of %s' % (val, repr(self.enum))
+        return None
+
+    def isValidParamValue(self, val):
+        reason = self.invalidParamValueReason(val)
+        if reason:
+            logging.warning(reason)
+        return reason is not None
 
 
 class ClassSpec(ObjectWithInheritance):
@@ -277,14 +337,14 @@ class ClassSpec(ObjectWithInheritance):
         'params': ('array.ParamSpec', [], None),
     })
 
-    def __init__(self, objDict, parentLookup, paramParentLookup):
-        self.paramParentLookup = paramParentLookup
+    def __init__(self, objDict, parentLookup, paramSpecLookup):
+        self.paramSpecLookup = paramSpecLookup
         super(ClassSpec, self).__init__(objDict, parentLookup)
-        self.paramLookup = getIdDict([ParamSpec(p, self.paramParentLookup)
+        self.paramLookup = getIdDict([ParamSpec(p, self.paramSpecLookup)
                                       for p in self.get('params')])
-
-    def getParam(self, paramId):
-        return self.paramLookup[paramId]
+        if self.parent is not None:
+            self.paramLookup = InheritDict(self.paramLookup,
+                                           self.parent.paramLookup)
 
 
 class CommandSpec(ClassSpec):
@@ -303,12 +363,17 @@ class CommandSpec(ClassSpec):
         'color': ('string', 'isColorString', None),
     })
 
-    def __init__(self, objDict, parentLookup, paramParentLookup):
-        super(CommandSpec, self).__init__(objDict, parentLookup, paramParentLookup)
+    def __init__(self, objDict, parentLookup, paramSpecLookup):
+        super(CommandSpec, self).__init__(objDict, parentLookup, paramSpecLookup)
 
     def isColorString(self, s):
         # should be in HTML hex format '#rrggbb'
         return re.match('\#[0-9a-fA-F]{6}', s) is not None
+
+    def isValidCommand(self, cmd):
+        for fieldName, paramSpec in self.paramLookup.iteritems():
+            if not paramSpec.isValidParamValue(cmd.get(fieldName)):
+                return False
 
 
 class Document(TypedObject):
@@ -363,9 +428,9 @@ class PlanSchema(Document):
             jsonschema.validate(objDict,
                                 json.load(schemaSpec))
 
-        self.paramParentLookup = {}
+        self.paramSpecLookup = {}
         for p in self.get('paramSpecs'):
-            self.paramParentLookup[p.id] = ParamSpec(p, self.paramParentLookup)
+            self.paramSpecLookup[p.id] = ParamSpec(p, self.paramSpecLookup)
 
         paramsFields = (
             'planParams',
@@ -378,15 +443,21 @@ class PlanSchema(Document):
         # ParamSpec, based on planParams field in input json.
         for fieldName in paramsFields:
             setattr(self, fieldName + 'Lookup',
-                    getIdDict([ParamSpec(p, self.paramParentLookup)
-                               for p in self.get('planParams')]))
+                    getIdDict([ParamSpec(p, self.paramSpecLookup)
+                               for p in self.get(fieldName)]))
 
-        self.commandParentLookup = {}
+        self.commandSpecLookup = {}
         for s in self.get('commandSpecs'):
-            self.commandParentLookup[s.id] = (CommandSpec
+            self.commandSpecLookup[s.id] = (CommandSpec
                                               (s,
-                                               self.commandParentLookup,
-                                               self.paramParentLookup))
+                                               self.commandSpecLookup,
+                                               self.paramSpecLookup))
+
+    def isValidCommand(self, cmd):
+        return self.commandSpecLookup[cmd.type].isValidCommand(cmd)
+
+    def isValidPlan(self, plan):
+        pass
 
 
 class PathElement(TypedObject):
@@ -398,7 +469,7 @@ class PathElement(TypedObject):
     fields = TypedObject.fields.copy()
     fields.update({
         'geometry': ('custom', None, None),
-        'sequence': ('array.custom', None, None),
+        'sequence': ('array.custom', [], None),
         'libraryId': ('string', None, None),
     })
 
@@ -414,6 +485,14 @@ class Station(PathElement):
         # 'geometry': ('Point', None, None),
     })
 
+    def __init__(self, objDict, schema):
+        super(Station, self).__init__(objDict,
+                                      schema=schema,
+                                      schemaParams=schema.stationParamsLookup)
+
+        self.sequence = [Command(elt, self.schema)
+                         for elt in self.get('sequence')]
+
 
 class Segment(PathElement):
     """
@@ -425,6 +504,35 @@ class Segment(PathElement):
     fields.update({
         # 'geometry': ('Point', None, None),
     })
+
+    def __init__(self, objDict, schema):
+        super(Segment, self).__init__(objDict,
+                                      schema=schema,
+                                      schemaParams=schema.segmentParamsLookup)
+
+        self.sequence = [Command(elt, self.schema)
+                         for elt in self.get('sequence')]
+
+
+class Command(TypedObject):
+    """
+    Implements the Command type from the XPJSON spec (as well as
+    inherited types defined by CommandSpecs in the PlanSchema)
+    """
+
+    # fieldName: (valueType, defaultVal, validFuncName)
+    fields = TypedObject.fields.copy()
+    fields.update({
+        'libraryId': ('string', None, None),
+    })
+
+    def __init__(self, objDict, schema):
+        schemaParams = (schema
+                        .commandSpecLookup[objDict.type]
+                        .paramLookup)
+        super(Command, self).__init__(objDict,
+                                      schema=schema,
+                                      schemaParams=schemaParams)
 
 
 class Site(TypedObject):
@@ -481,20 +589,22 @@ class Plan(Document):
 
         self.site = self.get('site')
         if self.site is not None:
-            self.site = Site(self.site)
+            self.site = Site(self.site, schema=self.schema)
 
         self.platform = self.get('platform')
         if self.platform is not None:
-            self.platform = Platform(self.platform)
+            self.platform = Platform(self.platform, schema=self.schema)
 
         self.targets = getIdDict([Target(t) for t in self.get('targets')])
 
-    # def validateAgainstSchema(self):
-    #     pass
+        self.sequence = [self.getSequenceElement(elt) for elt in self.get('sequence')]
 
-    # def validateSequenceAgainstSchema(self, sequence):
-    #     # FIX: handle e.g. allowedInPlan
-    #     validElementTypes = [id
-    #                          for id, spec in self.schema.commandSpecsLookup.iteritems()
-    #                          if not spec.get('abstract')]
-
+    def getSequenceElement(self, elt):
+        if elt.type == 'Segment':
+            return Segment(elt, self.schema)
+        elif elt.type == 'Station':
+            return Station(elt, self.schema)
+        elif elt.type in self.schema.commandSpecLookup:
+            return Command(elt, self.schema)
+        else:
+            raise ValueError('unknown element type %s' % elt.type)
