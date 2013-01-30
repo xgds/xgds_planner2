@@ -827,6 +827,18 @@ Inherits from:
 |                  |                |                        |epoch, Java style), or as a string  |
 |                  |                |                        |in `ISO 8601`_ format               |
 |                  |                |                        |``yyyy-mm-ddTHH:MM:SSZ``.           |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``"targetId"``          |Parameter is a string referring to  |
+|                  |                |                        |the id of one of the targets found  |
+|                  |                |                        |in the ``targets`` member of the    |
+|                  |                |                        |Plan.                               |
+|                  |                |                        |                                    |
+|                  |                |                        |If the planning interface supports  |
+|                  |                |                        |this ``valueType``, it may provide a|
+|                  |                |                        |menu for the user to select a Target|
+|                  |                |                        |and may draw a link in the map      |
+|                  |                |                        |between the location of the referrer|
+|                  |                |                        |and the location of the Target.     |
 +------------------+----------------+------------------------+------------------------------------+
 |``minimum``       |``valueType``   |optional                |Minimum legal value for parameter   |
 |                  |                |                        |(parameter must have integer or     |

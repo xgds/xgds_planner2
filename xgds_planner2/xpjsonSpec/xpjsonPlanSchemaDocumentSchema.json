@@ -84,7 +84,8 @@
                             "Polygon",
                             "MultiPolygon",
                             "GeometryCollection",
-                            "date-time"
+                            "date-time",
+                            "targetId"
                         ],
                         "required": true
                     },
@@ -198,7 +199,8 @@
                                         "Polygon",
                                         "MultiPolygon",
                                         "GeometryCollection",
-                                        "date-time"
+                                        "date-time",
+                                        "targetId"
                                     ]
                                 },
                                 "minimum": {
@@ -263,7 +265,8 @@
                             "Polygon",
                             "MultiPolygon",
                             "GeometryCollection",
-                            "date-time"
+                            "date-time",
+                            "targetId"
                         ]
                     },
                     "minimum": {
@@ -325,7 +328,8 @@
                             "Polygon",
                             "MultiPolygon",
                             "GeometryCollection",
-                            "date-time"
+                            "date-time",
+                            "targetId"
                         ]
                     },
                     "minimum": {
@@ -387,7 +391,8 @@
                             "Polygon",
                             "MultiPolygon",
                             "GeometryCollection",
-                            "date-time"
+                            "date-time",
+                            "targetId"
                         ]
                     },
                     "minimum": {
@@ -449,7 +454,8 @@
                             "Polygon",
                             "MultiPolygon",
                             "GeometryCollection",
-                            "date-time"
+                            "date-time",
+                            "targetId"
                         ]
                     },
                     "minimum": {
