@@ -813,7 +813,14 @@ Inherits from:
 |                  |                |``"MultiLineString"``,  |coordinates that make sense in the  |
 |                  |                |``"Polygon"``,          |CRS for the Site_.                  |
 |                  |                |``"MultiPolygon"``, or  |                                    |
-|                  |                |``"GeometryCollection"``|                                    |
+|                  |                |``"GeometryCollection"``|In principle, a planning interface  |
+|                  |                |                        |could support editing parameters    |
+|                  |                |                        |whose ``valueType`` is any of these |
+|                  |                |                        |geometry types. In practice, the    |
+|                  |                |                        |interface will probably only support|
+|                  |                |                        |a subset of geometry types (or none)|
+|                  |                |                        |and the schema designer will need to|
+|                  |                |                        |choose from among that subset.      |
 |                  |                +------------------------+------------------------------------+
 |                  |                |``"date-time"``         |A date and time. Specified as a     |
 |                  |                |                        |number (milliseconds since UNIX     |
