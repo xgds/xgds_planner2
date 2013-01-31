@@ -141,8 +141,7 @@
                         "type": "string"
                     },
                     "parent": {
-                        "type": "string",
-                        "required": true
+                        "type": "string"
                     },
                     "abstract": {
                         "type": "boolean"
