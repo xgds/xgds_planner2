@@ -7,6 +7,7 @@ Authors
   | Trey Smith (Carnegie Mellon University)
   | Tamar Cohen (NASA Ames Research Center)
   | David Lees (Carnegie Mellon University)
+  | Ted Scharff (NASA Ames Research Center)
 
 Revision
   Pre-0.1 draft
