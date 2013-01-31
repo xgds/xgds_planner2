@@ -12,6 +12,7 @@ Test xpjson.py.
 import unittest
 import os
 import sys
+import json
 
 from xgds_planner2 import xpjson
 
@@ -21,9 +22,15 @@ PLAN_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlan.json')
 
 
 class PlanSchemaTest(unittest.TestCase):
+    def test_resolve(self):
+        schemaDict = xpjson.loadPath(SCHEMA_PATH)
+        xpjson.resolveSchemaInheritance(schemaDict)
+        if 1:
+            # debug
+            xpjson.normalizeSchema(SCHEMA_PATH, '/tmp/outSchema.json')
+
     def test_load(self):
         schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
-        # print xpjson.prettyDumps(schema)
 
 
 class PlanTest(unittest.TestCase):
