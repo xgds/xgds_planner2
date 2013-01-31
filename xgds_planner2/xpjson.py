@@ -168,7 +168,7 @@ class NoSchemaError(Exception):
     pass
 
 
-def loadDocumentFromDict(docDict, schema=None):
+def loadDocumentFromDict(docDict, schema=None, parseOpts=None):
     assert docDict.xpjson == '0.1'
     docTypes = {
         'PlanSchema': PlanSchema,
@@ -176,17 +176,14 @@ def loadDocumentFromDict(docDict, schema=None):
         'PlanLibrary': PlanLibrary
     }
     docParser = docTypes[docDict.type]
-    if docDict.type == 'PlanSchema':
-        return docParser(docDict)
-    else:
-        if schema is None:
-            raise NoSchemaError(docDict.type)
-        return docParser(docDict, schema=schema)
+    if docDict.type != 'PlanSchema' and schema is None:
+        raise NoSchemaError(docDict.type)
+    return docParser(docDict, schema=schema, parseOpts=parseOpts)
 
 
-def loadDocument(docPath, schema=None):
+def loadDocument(docPath, schema=None, parseOpts=None):
     docDict = loadPath(docPath)
-    return loadDocumentFromDict(docDict, schema)
+    return loadDocumentFromDict(docDict, schema, parseOpts)
 
 
 def dumpPath(path, obj):
@@ -372,10 +369,12 @@ class TypedObject(object):
     def __init__(self, objDict,
                  schema=None,
                  schemaParams={},
-                 parseOpts=ParseOpts()):
+                 parseOpts=None):
         self.objDict = objDict
         self.schema = schema
         self.schemaParams = schemaParams
+        if parseOpts is None:
+            parseOpts = ParseOpts()
         self.parseOpts = parseOpts
         self.checkFields()
 

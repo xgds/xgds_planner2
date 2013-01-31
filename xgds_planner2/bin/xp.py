@@ -29,21 +29,21 @@ def main():
     parser.add_option('-s', '--schema',
                       help='Schema to use when validating Plan or PlanLibrary')
     opts, args = parser.parse_args()
+
     if not args:
         parser.error('expected a command')
-
     cmd = args[0]
+
+    if opts.schema is not None:
+        schema = xpjson.PlanSchema(xpjson.loadPath(opts.schema))
+    else:
+        schema = None
 
     ######################################################################
     if cmd == 'validate':
-        if len(args) < 2:
-            parser.error('validate requires an argument')
+        if len(args) != 2:
+            parser.error('validate requires exactly 1 argument')
         docPath = args[1]
-
-        if opts.schema is not None:
-            schema = xpjson.PlanSchema(xpjson.loadPath(opts.schema))
-        else:
-            schema = None
 
         try:
             doc = xpjson.loadDocument(docPath, schema)
@@ -64,21 +64,18 @@ def main():
         outPath = args[2]
 
         try:
-            docDict = xpjson.loadPath(docPath)
-            docType = docDict.get('type')
-            if docType not in ('PlanSchema', 'Plan', 'PlanLibrary'):
-                raise ValueError('Unknown document type %s')
+            parseOpts = xpjson.ParseOpts(fillInDefaults=True)
+            doc = xpjson.loadDocument(docPath, schema, parseOpts)
+            xpjson.dumpPath(outPath, doc.objDict)
+            print 'wrote simplified %s to %s' % (doc.get('type'), outPath)
+        except xpjson.NoSchemaError, t:
+            parser.error('you must specify the --schema argument to validate a document of type %s'
+                         % t)
         except:
             traceback.print_exc()
             print
-            print 'ERROR could not parse %s' % docPath
+            print 'ERROR could not simplify %s' % docPath
 
-        with ipdb.launch_ipdb_on_exception():
-            schemaDict = xpjson.loadPath(inSchemaPath)
-            parseOpts = xpjson.ParseOpts(fillInDefaults=True)
-            schema = xpjson.PlanSchema(schemaDict, parseOpts=parseOpts)
-            xpjson.dumpPath(outSchemaPath, schema.objDict)
-            print 'wrote simplified PlanSchema to %s' % outSchemaPath
 
     ######################################################################
     else:
