@@ -462,7 +462,7 @@ Inherits from:
 +------------------+----------------+-----------------+------------------------------------+
 |``id``            |string          |required         |The CamelCaseClassName for this     |
 |                  |                |                 |class.                              |
-|                  |                |                 |                                    |    
+|                  |                |                 |                                    |
 |                  |                |                 |If this class in the plan schema has|
 |                  |                |                 |a corresponding implementation as a |
 |                  |                |                 |Java class or an IDL message        |
@@ -550,12 +550,12 @@ Command Subclasses
 
 Each CommandSpec_ object in the PlanSchema_ defines a new subclass of
 the Command_ class. Instances of these subclasses may appear in the
-``commands`` sequence of a Plan_.
+``sequence`` member of a Plan_, Station_, or Segment_ object.
 
 The subclasses are arranged in their own class hierarchy, with
 inheritance relationships specified by the ``parent`` member. Abstract
 subclasses exist only to act as parents of other classes and must not be
-included in the Plan_.
+used in a Plan_.
 
 The PlanSchema_ designer can control how much flexibility is offered in
 the planning interface. There are several possible conventions for a
@@ -684,18 +684,6 @@ Inherits from:
 |                    |                |                 |is, the end of the ``sequence``      |
 |                    |                |                 |member containing the command.       |
 +--------------------+----------------+-----------------+-------------------------------------+
-|``allowedInPlan``   |boolean         |optional (default|If ``true``, this command may appear |
-|                    |                |``true``)        |as a top-level element in the        |
-|                    |                |                 |``sequence`` member of a Plan_.      |
-+--------------------+----------------+-----------------+-------------------------------------+
-|``allowedInStation``|boolean         |optional (default|If ``true``, this command may appear |
-|                    |                |``true``)        |as an element in the ``sequence``    |
-|                    |                |                 |member of a Station_.                |
-+--------------------+----------------+-----------------+-------------------------------------+
-|``allowedInSegment``|boolean         |optional (default|If ``true``, this command may appear |
-|                    |                |``true``)        |an element in the ``sequence`` member|
-|                    |                |                 |of a Segment_.                       |
-+--------------------+----------------+-----------------+-------------------------------------+
 |``color``           |string          |optional         |The color to use to distinguish this |
 |                    |                |                 |command type in the planning         |
 |                    |                |                 |interface (for example, when an      |
@@ -728,9 +716,6 @@ Example
     // defined in CommandSpec
     "blocking": true,
     "scopeTerminate": true,
-    "allowedInPlan": true,
-    "allowedInStation": true,
-    "allowedInSegment": true,
     "color": "#ff0000"
   }
 
@@ -1159,40 +1144,70 @@ Abstract class:
 Inherits from:
   TypedObject
 
-+-----------------------+------------+----------------+------------------------------------+
-|Member                 |Type        |Values          |Meaning                             |
-+=======================+============+================+====================================+
-|``paramSpecs``         |array of    |optional        |A place to put extra ParamSpec_     |
-|                       |ParamSpec_  |                |objects that are used elsewhere as  |
-|                       |            |                |parents for inheritance.            |
-+-----------------------+------------+----------------+------------------------------------+
-|``commandSpecs``       |array of    |optional        |Commands available in the planning  |
-|                       |CommandSpec_|                |interface.                          |
-+-----------------------+------------+----------------+------------------------------------+
-|``planParams``         |array of    |optional        |Extra parameters that may be        |
-|                       |ParamSpec_  |                |specified in Plan_ instances.       |
-+-----------------------+------------+----------------+------------------------------------+
-|``targetParams``       |array of    |optional        |Extra parameters that may be        |
-|                       |ParamSpec_  |                |specified in Target_ instances.     |
-+-----------------------+------------+----------------+------------------------------------+
-|``stationParams``      |array of    |optional        |Extra parameters that may be        |
-|                       |ParamSpec_  |                |specified in Station_ instances.    |
-+-----------------------+------------+----------------+------------------------------------+
-|``segmentParams``      |array of    |optional        |Extra parameters that may be        |
-|                       |ParamSpec_  |                |specified in Segment_ instances.    |
-+-----------------------+------------+----------------+------------------------------------+
-|``planIdFormat``       |`format     |optional        |A format string used to             |
-|                       |string`_    |                |auto-generate the ``id`` of Plan_   |
-|                       |            |                |objects.                            |
-+-----------------------+------------+----------------+------------------------------------+
-|``pathElementIdFormat``|`format     |optional        |A format string used to             |
-|                       |string`_    |                |auto-generate the ``id`` of         |
-|                       |            |                |PathElement_ objects.               |
-+-----------------------+------------+----------------+------------------------------------+
-|``commandIdFormat``    |`format     |optional        |A format string used to             |
-|                       |string`_    |                |auto-generate the ``id`` of Command_|
-|                       |            |                |objects.                            |
-+-----------------------+------------+----------------+------------------------------------+
++---------------------------+------------+----------------+------------------------------------+
+|Member                     |Type        |Values          |Meaning                             |
++===========================+============+================+====================================+
+|``paramSpecs``             |array of    |optional        |A place to put extra ParamSpec_     |
+|                           |ParamSpec_  |                |objects that are used elsewhere as  |
+|                           |            |                |parents for inheritance.            |
++---------------------------+------------+----------------+------------------------------------+
+|``commandSpecs``           |array of    |optional        |Commands available in the planning  |
+|                           |CommandSpec_|                |interface.                          |
++---------------------------+------------+----------------+------------------------------------+
+|``planParams``             |array of    |optional        |Extra parameters that may be        |
+|                           |ParamSpec_  |                |specified in Plan_ instances.       |
++---------------------------+------------+----------------+------------------------------------+
+|``stationParams``          |array of    |optional        |Extra parameters that may be        |
+|                           |ParamSpec_  |                |specified in Station_ instances.    |
++---------------------------+------------+----------------+------------------------------------+
+|``segmentParams``          |array of    |optional        |Extra parameters that may be        |
+|                           |ParamSpec_  |                |specified in Segment_ instances.    |
++---------------------------+------------+----------------+------------------------------------+
+|``targetParams``           |array of    |optional        |Extra parameters that may be        |
+|                           |ParamSpec_  |                |specified in Target_ instances.     |
++---------------------------+------------+----------------+------------------------------------+
+|``planSequenceCommands``   |array of    |optional        |Indicates which `Command            |
+|                           |CommandSpec_|                |Subclasses`_ are allowed to appear  |
+|                           |ids         |                |as top-level elements in the        |
+|                           |            |                |``sequence`` member of the Plan_.   |
+|                           |            |                |                                    |
+|                           |            |                |The ``*SequenceCommands`` fields    |
+|                           |            |                |allow the schema designer to        |
+|                           |            |                |restrict Command types to be used   |
+|                           |            |                |only in certain contexts (top-level |
+|                           |            |                |Plan ``sequence``, Station          |
+|                           |            |                |``sequence``, or Segment            |
+|                           |            |                |``sequence``). The order in which   |
+|                           |            |                |the Commands are listed may also    |
+|                           |            |                |affect the order of presentation in |
+|                           |            |                |the planning interface.             |
+|                           |            |                |                                    |
+|                           |            |                |If not specified, all non-abstract  |
+|                           |            |                |`Command Subclasses`_ defined in    |
+|                           |            |                |``commandSpecs`` are allowed.       |
++---------------------------+------------+----------------+------------------------------------+
+|``stationSequenceCommands``|array of    |optional        |Indicates which `Command            |
+|                           |CommandSpec_|                |Subclasses`_ are allowed to appear  |
+|                           |ids         |                |in the ``sequence`` member of a     |
+|                           |            |                |Station_.                           |
++---------------------------+------------+----------------+------------------------------------+
+|``segmentSequenceCommands``|array of    |optional        |Indicates which `Command            |
+|                           |CommandSpec_|                |Subclasses`_ are allowed to appear  |
+|                           |ids         |                |in the ``sequence`` member of a     |
+|                           |            |                |Segment_.                           |
++---------------------------+------------+----------------+------------------------------------+
+|``planIdFormat``           |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Plan_   |
+|                           |            |                |objects.                            |
++---------------------------+------------+----------------+------------------------------------+
+|``pathElementIdFormat``    |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of         |
+|                           |            |                |PathElement_ objects.               |
++---------------------------+------------+----------------+------------------------------------+
+|``commandIdFormat``        |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Command_|
+|                           |            |                |objects.                            |
++---------------------------+------------+----------------+------------------------------------+
 
 Example
 -------
