@@ -89,7 +89,6 @@
       "type": "CommandSpec",
       "id": "MicroImage",
       "parent": "Image",
-      "allowedInSegment": false,
       "params": [
         {
           "type": "ParamSpec",
@@ -114,5 +113,15 @@
         }
       ]
     }
+  ],
+
+  "planSequenceCommands": [],
+
+  "stationSequenceCommands": [
+    "MicroImage"
+  ],
+
+  "segmentSequenceCommands": [
+    "PeriodicPancam"
   ]
 }

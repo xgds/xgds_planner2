@@ -248,7 +248,6 @@ The PlanSchema_ that the Plan_ conforms to::
         "type": "CommandSpec",
         "id": "MicroImage",
         "parent": "Image",
-        "allowedInSegment": false,
         "params": [
           {
             "type": "ParamSpec",
@@ -273,6 +272,16 @@ The PlanSchema_ that the Plan_ conforms to::
           }
         ]
       }
+    ],
+
+    "planSequenceCommands": [],
+
+    "stationSequenceCommands": [
+      "MicroImage"
+    ],
+
+    "segmentSequenceCommands": [
+      "PeriodicPancam"
     ]
   }
 
@@ -490,7 +499,7 @@ Inherits from:
 |                  |                |                 |matches the class name on those     |
 |                  |                |                 |platforms.                          |
 +------------------+----------------+-----------------+------------------------------------+
-|``parent``        |string          |optional         |The ``id`` of a parent ClassSpec_   |    
+|``parent``        |string          |optional         |The ``id`` of a parent ClassSpec_   |
 |                  |                |                 |from which this ClassSpec_ inherits |
 |                  |                |                 |members.                            |
 |                  |                |                 |                                    |
