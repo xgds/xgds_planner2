@@ -21,6 +21,8 @@ import iso8601
 from geocamUtil import dotDict
 from geocamUtil.dotDict import DotDict
 
+from xgds_planner2 import xpjsonFields
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_SCHEMA_PATH_PLAN_SCHEMA = os.path.join(THIS_DIR, 'xpjsonSpec', 'xpjsonPlanSchemaDocumentSchema.json')
 
@@ -46,7 +48,8 @@ VALUE_TYPE_CHOICES = (
     'integer',
     'number',
     'boolean',
-    'date-time'
+    'date-time',
+    'targetId',
 ) + GEOMETRY_TYPE_CHOICES
 
 
@@ -134,33 +137,38 @@ def isValueOfType(val, valueType):
             raise KeyError('unknown valueType %s' % valueType)
 
 
-def isGeometryType(s):
-    return s in GEOMETRY_TYPE_CHOICES
-
-
 def getIdDict(lst):
     return dict([(elt.get('id'), elt) for elt in lst])
 
 
 def loads(s):
     """
-    Load a Document from the JSON-format string *s*.
+    Load a DotDict from the JSON-format string *s*.
     """
     return dotDict.convertToDotDictRecurse(json.loads(s))
 
 
 def load(f):
     """
-    Load a Document from the JSON-format file *f*.
+    Load a DotDict from the JSON-format file *f*.
     """
     return dotDict.convertToDotDictRecurse(json.load(f))
 
 
 def loadPath(path):
     """
-    Load an XPJSON plan schema from the JSON-format file at path *path*.
+    Load a DotDict from the JSON-format file at path *path*.
     """
     return load(file(path, 'r'))
+
+
+def dumpPath(path, obj):
+    """
+    Dump a DotDict in to the specified path in (pretty indented) JSON format.
+    """
+    f = open(path, 'w')
+    f.write(json.dumps(obj, sort_keys=True, indent=4))
+    f.close()
 
 
 def joinById(localList, parentList):
@@ -307,26 +315,27 @@ def resolveSchemaInheritance(schemaDict):
     schemaDict.commandSpecs = commandSpecs
 
 
-def normalizeSchema(inPath, outPath):
-    schemaDict = loadPath(inPath)
-    resolveSchemaInheritance(schemaDict)
-    f = open(outPath, 'w')
-    f.write(json.dumps(schemaDict, sort_keys=True, indent=4))
-    f.close()
+def getFields(className):
+    """
+    Lookup up field definitions for the given class from
+    xpjsonFields.py.
+    """
+    cls = getattr(xpjsonFields, className)
+    fieldNames = dir(cls)
+    return dict([(k, getattr(cls, k))
+                 for k in dir(cls)
+                 if not k.startswith('_')])
 
+
+######################################################################
+# XPJSON CLASSES
+######################################################################
 
 class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
     """
-
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = {
-        'type': ('string', 'required', None),
-        'name': ('string', None, None),
-        'description': ('string', None, None),
-        'id': ('string', None, None),
-    }
+    fields = getFields('TypedObject')
 
     def __init__(self, objDict, schema=None, schemaParams={}):
         self.objDict = objDict
@@ -377,19 +386,7 @@ class ParamSpec(TypedObject):
     """
     Implements the ParamSpec type from the XPJSON spec.
     """
-
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'valueType': ('custom', 'required', 'isValidValueType'),
-        'minimum': ('custom', None, 'matchesValueType'),
-        'maximum': ('custom', None, 'matchesValueType'),
-        'choices': ('custom', None, 'isEnumValid'),
-        'default': ('custom', None, 'matchesValueType'),
-        'required': ('boolean', True, None),
-        'visible': ('boolean', True, None),
-        'editable': ('boolean', True, None),
-    })
+    fields = getFields('ParamSpec')
 
     def __init__(self, objDict):
         super(ParamSpec, self).__init__(objDict)
@@ -407,7 +404,7 @@ class ParamSpec(TypedObject):
     def matchesValueType(self, val):
         return isValueOfType(val, self.get('valueType'))
 
-    def isEnumValid(self, enum):
+    def isChoicesValid(self, enum):
         for val, desc in enum:
             if (not isValueOfType(val, self.get('valueType'))
                 or not isinstance(desc, (str, unicode))):
@@ -441,12 +438,7 @@ class ClassSpec(TypedObject):
     Implements the ClassSpec type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'abstract': ('boolean', False, None),
-        'params': ('array.ParamSpec', [], None),
-    })
+    fields = getFields('ClassSpec')
 
     def __init__(self, objDict):
         super(ClassSpec, self).__init__(objDict)
@@ -459,16 +451,7 @@ class CommandSpec(ClassSpec):
     Implements the CommandSpec type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = ClassSpec.fields.copy()
-    fields.update({
-        'blocking': ('boolean', True, None),
-        'scopeTerminate': ('boolean', True, None),
-        'allowedInPlan': ('boolean', True, None),
-        'allowedInStation': ('boolean', True, None),
-        'allowedInSegment': ('boolean', True, None),
-        'color': ('string', 'isColorString', None),
-    })
+    fields = getFields('CommandSpec')
 
     def __init__(self, objDict):
         super(CommandSpec, self).__init__(objDict)
@@ -488,16 +471,7 @@ class Document(TypedObject):
     Implements the Document type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'xpjson': ('string', 'required', 'isValidXpjsonVersion'),
-        'subject': ('array.string', None, None),
-        'creator': ('string', None, None),
-        'contributors': ('array.string', [], None),
-        'dateCreated': ('date-time', None, None),
-        'dateModified': ('date-time', None, None),
-    })
+    fields = getFields('Document')
 
     def __init__(self, objDict, schema=None, schemaParams=None):
         super(Document, self).__init__(objDict,
@@ -513,20 +487,7 @@ class PlanSchema(Document):
     Implements the PlanSchema type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = Document.fields.copy()
-    fields.update({
-        'commandSpecs': ('array.CommandSpec', [], None),
-        'planParams': ('array.ParamSpec', [], None),
-        'targetParams': ('array.ParamSpec', [], None),
-        'stationParams': ('array.ParamSpec', [], None),
-        'segmentParams': ('array.ParamSpec', [], None),
-        'stationGeometryType': ('string', 'Point', None),
-        'segmentGeometryType': ('string', 'LineString', None),
-        'planIdFormat': ('string', None, None),
-        'pathElementIdFormat': ('string', None, None),
-        'commandIdFormat': ('string', None, None),
-    })
+    fields = getFields('PlanSchema')
 
     def __init__(self, objDict, validate=True):
         resolveSchemaInheritance(objDict)
@@ -564,13 +525,7 @@ class PathElement(TypedObject):
     Implements the PathElement type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'geometry': ('custom', None, None),
-        'sequence': ('array.custom', [], None),
-        'libraryId': ('string', None, None),
-    })
+    fields = getFields('PathElement')
 
 
 class Station(PathElement):
@@ -578,11 +533,7 @@ class Station(PathElement):
     Implements the Station type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = PathElement.fields.copy()
-    fields.update({
-        # 'geometry': ('Point', None, None),
-    })
+    fields = getFields('Station')
 
     def __init__(self, objDict, schema):
         super(Station, self).__init__(objDict,
@@ -598,11 +549,7 @@ class Segment(PathElement):
     Implements the Segment type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = PathElement.fields.copy()
-    fields.update({
-        # 'geometry': ('Point', None, None),
-    })
+    fields = getFields('Segment')
 
     def __init__(self, objDict, schema):
         super(Segment, self).__init__(objDict,
@@ -619,11 +566,7 @@ class Command(TypedObject):
     inherited types defined by CommandSpecs in the PlanSchema)
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'libraryId': ('string', None, None),
-    })
+    fields = getFields('Command')
 
     def __init__(self, objDict, schema):
         schemaParams = (schema
@@ -638,31 +581,24 @@ class Site(TypedObject):
     """
     Implements the Site type from the XPJSON spec.
     """
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'crs': ('custom', CRS84, None),
-        'bbox': ('custom', None, None),
-    })
+
+    fields = getFields('Site')
 
 
 class Platform(TypedObject):
     """
     Implements the Site type from the XPJSON spec.
     """
-    # no extra fields beyond TypedObject
-    pass
+
+    fields = getFields('Platform')
 
 
 class Target(TypedObject):
     """
     Implements the Target type from the XPJSON spec.
     """
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = TypedObject.fields.copy()
-    fields.update({
-        'geometry': ('custom', 'required', None),
-    })
+
+    fields = getFields('Target')
 
     def __init__(self, objDict, schema):
         super(Target, self).__init__(self,
@@ -675,18 +611,7 @@ class Plan(Document):
     Implements the Plan type from the XPJSON spec.
     """
 
-    # fieldName: (valueType, defaultVal, validFuncName)
-    fields = Document.fields.copy()
-    fields.update({
-        'schemaUrl': ('string', None, None),
-        'libraryUrls': ('array.string', None, None),
-        'planNumber': ('integer', None, None),
-        'planVersion': ('string', None, None),
-        'site': ('Site', None, None),
-        'platform': ('Platform', None, None),
-        'targets': ('array.Target', [], None),
-        'sequence': ('array.custom', [], None),
-    })
+    fields = getFields('Plan')
 
     def __init__(self, objDict, schema):
         super(Plan, self).__init__(objDict,
