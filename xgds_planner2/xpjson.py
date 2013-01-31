@@ -327,6 +327,11 @@ def getFields(className):
                  if not k.startswith('_')])
 
 
+class ParseOpts(object):
+    def __init__(self, fillInDefaults=False):
+        self.fillInDefaults = fillInDefaults
+
+
 ######################################################################
 # XPJSON CLASSES
 ######################################################################
@@ -337,10 +342,14 @@ class TypedObject(object):
     """
     fields = getFields('TypedObject')
 
-    def __init__(self, objDict, schema=None, schemaParams={}):
+    def __init__(self, objDict,
+                 schema=None,
+                 schemaParams={},
+                 parseOpts=ParseOpts()):
         self.objDict = objDict
         self.schema = schema
         self.schemaParams = schemaParams
+        self.parseOpts = parseOpts
         self.checkFields()
 
     def get(self, fieldName, defaultVal='__unspecified__'):
@@ -370,6 +379,9 @@ class TypedObject(object):
                 assert validFunc(val), \
                        '%s should satisfy %s in %s' % (fieldName, validFunc, self.objDict)
 
+            if self.parseOpts.fillInDefaults:
+                self.objDict[fieldName] = val
+
         for fieldName, paramSpec in self.schemaParams.iteritems():
             reason = paramSpec.invalidParamValueReason(self.get(fieldName))
             assert reason is None, \
@@ -388,8 +400,8 @@ class ParamSpec(TypedObject):
     """
     fields = getFields('ParamSpec')
 
-    def __init__(self, objDict):
-        super(ParamSpec, self).__init__(objDict)
+    def __init__(self, objDict, **kwargs):
+        super(ParamSpec, self).__init__(objDict, **kwargs)
 
         for fieldName in self.fields.keys():
             setattr(self, fieldName, self.get(fieldName))
@@ -440,9 +452,9 @@ class ClassSpec(TypedObject):
 
     fields = getFields('ClassSpec')
 
-    def __init__(self, objDict):
-        super(ClassSpec, self).__init__(objDict)
-        self.paramLookup = getIdDict([ParamSpec(p)
+    def __init__(self, objDict, **kwargs):
+        super(ClassSpec, self).__init__(objDict, **kwargs)
+        self.paramLookup = getIdDict([ParamSpec(p, **kwargs)
                                       for p in self.get('params')])
 
 
@@ -452,9 +464,6 @@ class CommandSpec(ClassSpec):
     """
 
     fields = getFields('CommandSpec')
-
-    def __init__(self, objDict):
-        super(CommandSpec, self).__init__(objDict)
 
     def isColorString(self, s):
         # should be in HTML hex format '#rrggbb'
@@ -473,11 +482,6 @@ class Document(TypedObject):
 
     fields = getFields('Document')
 
-    def __init__(self, objDict, schema=None, schemaParams=None):
-        super(Document, self).__init__(objDict,
-                                       schema=schema,
-                                       schemaParams=schemaParams)
-
     def isValidXpjsonVersion(self, val):
         return val == '0.1'
 
@@ -489,15 +493,14 @@ class PlanSchema(Document):
 
     fields = getFields('PlanSchema')
 
-    def __init__(self, objDict, validate=True):
+    def __init__(self, objDict, **kwargs):
         resolveSchemaInheritance(objDict)
 
-        super(Document, self).__init__(objDict)
+        super(Document, self).__init__(objDict, **kwargs)
 
-        if validate:
-            schemaSpec = file(JSON_SCHEMA_PATH_PLAN_SCHEMA, 'r')
-            jsonschema.validate(objDict,
-                                json.load(schemaSpec))
+        #schemaSpec = file(JSON_SCHEMA_PATH_PLAN_SCHEMA, 'r')
+        #jsonschema.validate(objDict,
+        #                    json.load(schemaSpec))
 
         paramsFields = (
             'planParams',
@@ -510,10 +513,10 @@ class PlanSchema(Document):
         # ParamSpec, based on planParams field in input json.
         for fieldName in paramsFields:
             setattr(self, fieldName + 'Lookup',
-                    getIdDict([ParamSpec(p)
+                    getIdDict([ParamSpec(p, **kwargs)
                                for p in self.get(fieldName)]))
 
-        self.commandSpecLookup = getIdDict([CommandSpec(s)
+        self.commandSpecLookup = getIdDict([CommandSpec(s, **kwargs)
                                             for s in self.get('commandSpecs')])
 
     def isValidCommand(self, cmd):
@@ -535,12 +538,11 @@ class Station(PathElement):
 
     fields = getFields('Station')
 
-    def __init__(self, objDict, schema):
-        super(Station, self).__init__(objDict,
-                                      schema=schema,
-                                      schemaParams=schema.stationParamsLookup)
+    def __init__(self, objDict, **kwargs):
+        kwargs['schemaParams'] = kwargs['schema'].stationParamsLookup
+        super(Station, self).__init__(objDict, **kwargs)
 
-        self.sequence = [Command(elt, self.schema)
+        self.sequence = [Command(elt, **kwargs)
                          for elt in self.get('sequence')]
 
 
@@ -551,12 +553,11 @@ class Segment(PathElement):
 
     fields = getFields('Segment')
 
-    def __init__(self, objDict, schema):
-        super(Segment, self).__init__(objDict,
-                                      schema=schema,
-                                      schemaParams=schema.segmentParamsLookup)
+    def __init__(self, objDict, **kwargs):
+        kwargs['schemaParams'] = kwargs['schema'].segmentParamsLookup
+        super(Segment, self).__init__(objDict, **kwargs)
 
-        self.sequence = [Command(elt, self.schema)
+        self.sequence = [Command(elt, **kwargs)
                          for elt in self.get('sequence')]
 
 
@@ -568,13 +569,11 @@ class Command(TypedObject):
 
     fields = getFields('Command')
 
-    def __init__(self, objDict, schema):
-        schemaParams = (schema
-                        .commandSpecLookup[objDict.type]
-                        .paramLookup)
-        super(Command, self).__init__(objDict,
-                                      schema=schema,
-                                      schemaParams=schemaParams)
+    def __init__(self, objDict, **kwargs):
+        kwargs['schemaParams'] = (kwargs['schema']
+                                  .commandSpecLookup[objDict.type]
+                                  .paramLookup)
+        super(Command, self).__init__(objDict, **kwargs)
 
 
 class Site(TypedObject):
@@ -600,10 +599,9 @@ class Target(TypedObject):
 
     fields = getFields('Target')
 
-    def __init__(self, objDict, schema):
-        super(Target, self).__init__(self,
-                                     schema=schema,
-                                     schemaParams=schema.targetParamsLookup)
+    def __init__(self, objDict, **kwargs):
+        kwargs['schemaParams'] = kwargs['schema'].targetParamsLookup
+        super(Target, self).__init__(self, **kwargs)
 
 
 class Plan(Document):
@@ -613,29 +611,30 @@ class Plan(Document):
 
     fields = getFields('Plan')
 
-    def __init__(self, objDict, schema):
-        super(Plan, self).__init__(objDict,
-                                   schema=schema,
-                                   schemaParams=schema.planParamsLookup)
+    def __init__(self, objDict, **kwargs):
+        kwargs['schemaParams'] = kwargs['schema'].planParamsLookup
+        super(Plan, self).__init__(objDict, **kwargs)
 
         self.site = self.get('site')
         if self.site is not None:
-            self.site = Site(self.site, schema=self.schema)
+            self.site = Site(self.site, **kwargs)
 
         self.platform = self.get('platform')
         if self.platform is not None:
-            self.platform = Platform(self.platform, schema=self.schema)
+            self.platform = Platform(self.platform, **kwargs)
 
-        self.targets = getIdDict([Target(t) for t in self.get('targets')])
+        self.targets = getIdDict([Target(t, **kwargs)
+                                  for t in self.get('targets')])
 
-        self.sequence = [self.getSequenceElement(elt) for elt in self.get('sequence')]
+        self.sequence = [self.getSequenceElement(elt, **kwargs)
+                         for elt in self.get('sequence')]
 
-    def getSequenceElement(self, elt):
+    def getSequenceElement(self, elt, **kwargs):
         if elt.type == 'Segment':
-            return Segment(elt, self.schema)
+            return Segment(elt, **kwargs)
         elif elt.type == 'Station':
-            return Station(elt, self.schema)
+            return Station(elt, **kwargs)
         elif elt.type in self.schema.commandSpecLookup:
-            return Command(elt, self.schema)
+            return Command(elt, **kwargs)
         else:
-            raise ValueError('unknown element type %s' % elt.type)
+            raise ValueError('unknown sequence element type %s in Plan' % elt.type)

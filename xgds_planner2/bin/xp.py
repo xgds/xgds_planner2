@@ -11,6 +11,7 @@ Command-line utility for performing common operations on XPJSON documents.
 
 import json
 import traceback
+import ipdb
 
 from xgds_planner2 import xpjson
 
@@ -19,9 +20,14 @@ def main():
     import optparse
     parser = optparse.OptionParser('''usage: %prog [opts] <cmd> ...
 
-    validateSchema <schema.json>            Validate PlanSchema
-    validatePlan <plan.json> <schema.json>  Validate Plan
-    simplify <schema.json> <out.json>       Simplify PlanSchema (compile out inheritance)
+ %prog validateSchema <schema.json>
+   Validate PlanSchema
+
+ %prog validatePlan <plan.json> <schema.json>
+   Validate Plan
+
+ %prog simplify <schema.json> <out.json>
+   Simplify PlanSchema (compile out inheritance, fill defaults)
     ''')
     opts, args = parser.parse_args()
     if not args:
@@ -52,7 +58,7 @@ def main():
 
         schema = xpjson.PlanSchema(xpjson.loadPath(schemaPath))
         try:
-            xpjson.Plan(xpjson.loadPath(planPath), schema)
+            xpjson.Plan(xpjson.loadPath(planPath), schema=schema)
             print 'VALID Plan %s' % planPath
         except:
             traceback.print_exc()
@@ -66,10 +72,12 @@ def main():
         inSchemaPath = args[1]
         outSchemaPath = args[2]
 
-        schemaDict = xpjson.loadPath(inSchemaPath)
-        xpjson.resolveSchemaInheritance(schemaDict)
-        xpjson.dumpPath(outSchemaPath, schemaDict)
-        print 'wrote simplified PlanSchema to %s' % outSchemaPath
+        with ipdb.launch_ipdb_on_exception():
+            schemaDict = xpjson.loadPath(inSchemaPath)
+            parseOpts = xpjson.ParseOpts(fillInDefaults=True)
+            schema = xpjson.PlanSchema(schemaDict, parseOpts=parseOpts)
+            xpjson.dumpPath(outSchemaPath, schema.objDict)
+            print 'wrote simplified PlanSchema to %s' % outSchemaPath
 
     ######################################################################
     else:

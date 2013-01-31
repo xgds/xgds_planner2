@@ -36,7 +36,7 @@ class PlanSchemaTest(unittest.TestCase):
 class PlanTest(unittest.TestCase):
     def test_load(self):
         schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
-        plan = xpjson.Plan(xpjson.loadPath(PLAN_PATH), schema)
+        plan = xpjson.Plan(xpjson.loadPath(PLAN_PATH), schema=schema)
 
 
 if __name__ == '__main__':

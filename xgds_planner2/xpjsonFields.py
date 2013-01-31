@@ -20,7 +20,7 @@ Details:
 
   defaultVal - Specify a default value or 'required' to flag an error if
                the value isn't specified. Note in some cases the default
-               is too complicated, so we specify None use code to fill
+               is too complicated, so we specify None and use code to fill
                it in later.
 
   validFuncName - Refers to custom validation functions defined
@@ -69,9 +69,6 @@ class ClassSpec(TypedObject):
 class CommandSpec(ClassSpec):
     blocking = ('boolean', True, None)
     scopeTerminate = ('boolean', True, None)
-    allowedInPlan = ('boolean', True, None)
-    allowedInStation = ('boolean', True, None)
-    allowedInSegment = ('boolean', True, None)
     color = ('string', 'isColorString', None)
 
 
@@ -90,9 +87,9 @@ class PlanSchema(Document):
     stationParams = ('array.ParamSpec', [], None)
     segmentParams = ('array.ParamSpec', [], None)
     targetParams = ('array.ParamSpec', [], None)
-    planSequenceParams = ('array.string', None, None)
-    stationSequenceParams = ('array.string', None, None)
-    segmentSequenceParams = ('array.string', None, None)
+    planSequenceCommands = ('array.string', None, None)
+    stationSequenceCommands = ('array.string', None, None)
+    segmentSequenceCommands = ('array.string', None, None)
     planIdFormat = ('string', None, None)
     pathElementIdFormat = ('string', None, None)
     commandIdFormat = ('string', None, None)
