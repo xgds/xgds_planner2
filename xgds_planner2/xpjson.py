@@ -128,6 +128,8 @@ def isValueOfType(val, valueType):
         vType = re.sub(r'^dict\.', '', valueType)
         return all(((isValueOfType(k, 'string') and isValueOfType(v, vType))
                      for k, v in val.itervalues()))
+    elif valueType in ('url',):
+        return isinstance(val, (str, unicode))
     else:
         if isinstance(val, (dict, dotDict.DotDict)) and val.type == valueType:
             # for example, 'ParamSpec' -> object with 'type' member equal
@@ -160,6 +162,31 @@ def loadPath(path):
     Load a DotDict from the JSON-format file at path *path*.
     """
     return load(file(path, 'r'))
+
+
+class NoSchemaError(Exception):
+    pass
+
+
+def loadDocumentFromDict(docDict, schema=None):
+    assert docDict.xpjson == '0.1'
+    docTypes = {
+        'PlanSchema': PlanSchema,
+        'Plan': Plan,
+        'PlanLibrary': PlanLibrary
+    }
+    docParser = docTypes[docDict.type]
+    if docDict.type == 'PlanSchema':
+        return docParser(docDict)
+    else:
+        if schema is None:
+            raise NoSchemaError(docDict.type)
+        return docParser(docDict, schema=schema)
+
+
+def loadDocument(docPath, schema=None):
+    docDict = loadPath(docPath)
+    return loadDocumentFromDict(docDict, schema)
 
 
 def dumpPath(path, obj):
@@ -638,3 +665,21 @@ class Plan(Document):
             return Command(elt, **kwargs)
         else:
             raise ValueError('unknown sequence element type %s in Plan' % elt.type)
+
+
+class PlanLibrary(Document):
+    """
+    Implements the PlanLibrary type from the XPJSON spec.
+    """
+
+    fields = getFields('PlanLibrary')
+
+    def __init__(self, objDict, **kwargs):
+        super(PlanLibrary, self).__init__(objDict, **kwargs)
+
+        self.sites = [Site(s, **kwargs) for s in self.get('sites', [])]
+        self.platforms = [Platform(s, **kwargs) for s in self.get('platforms', [])]
+        self.stations = [Station(s, **kwargs) for s in self.get('stations', [])]
+        self.segments = [Segment(s, **kwargs) for s in self.get('segments', [])]
+        self.targets = [Target(s, **kwargs) for s in self.get('targets', [])]
+        self.commands = [Command(s, **kwargs) for s in self.get('commands', [])]

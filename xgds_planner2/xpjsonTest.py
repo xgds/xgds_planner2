@@ -19,24 +19,24 @@ from xgds_planner2 import xpjson
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SCHEMA_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanSchema.json')
 PLAN_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlan.json')
+LIBRARY_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanLibrary.json')
 
 
-class PlanSchemaTest(unittest.TestCase):
+class XpjsonTest(unittest.TestCase):
     def test_resolve(self):
         schemaDict = xpjson.loadPath(SCHEMA_PATH)
         xpjson.resolveSchemaInheritance(schemaDict)
-        if 1:
-            # debug
-            xpjson.normalizeSchema(SCHEMA_PATH, '/tmp/outSchema.json')
 
-    def test_load(self):
+    def test_schema(self):
         schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
 
-
-class PlanTest(unittest.TestCase):
-    def test_load(self):
+    def test_plan(self):
         schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
         plan = xpjson.Plan(xpjson.loadPath(PLAN_PATH), schema=schema)
+
+    def test_library(self):
+        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
+        plan = xpjson.PlanLibrary(xpjson.loadPath(LIBRARY_PATH), schema=schema)
 
 
 if __name__ == '__main__':

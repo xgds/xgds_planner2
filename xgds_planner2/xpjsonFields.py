@@ -126,11 +126,21 @@ class Target(TypedObject):
 
 
 class Plan(Document):
-    schemaUrl = ('string', None, None)
-    libraryUrls = ('array.string', None, None)
+    schemaUrl = ('url', None, None)
+    libraryUrls = ('array.url', None, None)
     planNumber = ('integer', None, None)
     planVersion = ('string', None, None)
     site = ('Site', None, None)
     platform = ('Platform', None, None)
     targets = ('array.Target', [], None)
     sequence = ('array.custom', [], None)
+
+
+class PlanLibrary(Document):
+    schemaUrl = ('url', None, None)
+    sites = ('array.Site', [], None)
+    platforms = ('array.Platform', [], None)
+    stations = ('array.Station', [], None)
+    segments = ('array.Segment', [], None)
+    targets = ('array.Target', [], None)
+    commands = ('array.custom', [], None)

@@ -20,15 +20,14 @@ def main():
     import optparse
     parser = optparse.OptionParser('''usage: %prog [opts] <cmd> ...
 
- %prog validateSchema <schema.json>
-   Validate PlanSchema
+ %prog validate <doc.json>
+   Validate XPJSON document
 
- %prog validatePlan <plan.json> <schema.json>
-   Validate Plan
-
- %prog simplify <schema.json> <out.json>
-   Simplify PlanSchema (compile out inheritance, fill defaults)
+ %prog simplify <doc.json> <out.json>
+   Simplify XPJSON document (compile out inheritance, fill defaults)
     ''')
+    parser.add_option('-s', '--schema',
+                      help='Schema to use when validating Plan or PlanLibrary')
     opts, args = parser.parse_args()
     if not args:
         parser.error('expected a command')
@@ -36,41 +35,43 @@ def main():
     cmd = args[0]
 
     ######################################################################
-    if cmd == 'validateSchema':
-        if len(args) != 2:
-            parser.error('validateSchema requires exactly 1 argument')
-        schemaPath = args[1]
+    if cmd == 'validate':
+        if len(args) < 2:
+            parser.error('validate requires an argument')
+        docPath = args[1]
+
+        if opts.schema is not None:
+            schema = xpjson.PlanSchema(xpjson.loadPath(opts.schema))
+        else:
+            schema = None
 
         try:
-            xpjson.PlanSchema(xpjson.loadPath(schemaPath))
-            print 'VALID PlanSchema %s' % schemaPath
+            doc = xpjson.loadDocument(docPath, schema)
+            print 'VALID %s %s' % (doc.get('type'), docPath)
+        except xpjson.NoSchemaError, t:
+            parser.error('you must specify the --schema argument to validate a document of type %s'
+                         % t)
         except:
             traceback.print_exc()
             print
-            print 'INVALID PlanSchema %s' % schemaPath
-
-    ######################################################################
-    elif cmd == 'validatePlan':
-        if len(args) != 3:
-            parser.error('validatePlan requires exactly 2 arguments')
-        planPath = args[1]
-        schemaPath = args[2]
-
-        schema = xpjson.PlanSchema(xpjson.loadPath(schemaPath))
-        try:
-            xpjson.Plan(xpjson.loadPath(planPath), schema=schema)
-            print 'VALID Plan %s' % planPath
-        except:
-            traceback.print_exc()
-            print
-            print 'INVALID Plan %s' % planPath
+            print 'INVALID %s' % docPath
 
     ######################################################################
     elif cmd == 'simplify':
         if len(args) != 3:
             parser.error('simplify requires exactly 2 arguments')
-        inSchemaPath = args[1]
-        outSchemaPath = args[2]
+        docPath = args[1]
+        outPath = args[2]
+
+        try:
+            docDict = xpjson.loadPath(docPath)
+            docType = docDict.get('type')
+            if docType not in ('PlanSchema', 'Plan', 'PlanLibrary'):
+                raise ValueError('Unknown document type %s')
+        except:
+            traceback.print_exc()
+            print
+            print 'ERROR could not parse %s' % docPath
 
         with ipdb.launch_ipdb_on_exception():
             schemaDict = xpjson.loadPath(inSchemaPath)
