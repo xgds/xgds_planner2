@@ -176,6 +176,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "name": "speed (m/s)",
         "valueType": "number",
         "minimum": 0,
+        "default": 0.4,
         "description": "Estimated mean speed of drive (m/s)"
       },
       {
@@ -189,6 +190,17 @@ The PlanSchema_ that the Plan_ conforms to::
       }
     ],
 
+    "paramSpecs": [
+      {
+        "type": "ParamSpec",
+        "id": "duration",
+        "valueType": "number",
+        "minimum": 0,
+        "description": "Estimated time required to execute command (minutes)",
+        "required": false
+      }
+    ],
+
     "commandSpecs": [
       {
         "type": "CommandSpec",
@@ -199,16 +211,15 @@ The PlanSchema_ that the Plan_ conforms to::
           {
             "type": "ParamSpec",
             "id": "duration",
-            "valueType": "number",
-            "minimum": 0,
-            "description": "Estimated time required to execute command (minutes)"
+            "parent": "duration"
           }
         ]
       },
       {
         "type": "CommandSpec",
         "id": "Image",
-        "parent": "CommandWithDuration",
+        "parent": "Command",
+        "abstract": true,
         "params": [
           {
             "type": "ParamSpec",
@@ -237,7 +248,15 @@ The PlanSchema_ that the Plan_ conforms to::
         "type": "CommandSpec",
         "id": "MicroImage",
         "parent": "Image",
-        "allowedInSegment": false
+        "allowedInSegment": false,
+        "params": [
+          {
+            "type": "ParamSpec",
+            "id": "duration",
+            "parent": "duration",
+            "default": 0.1
+          }
+        ]
       },
       {
         "type": "CommandSpec",

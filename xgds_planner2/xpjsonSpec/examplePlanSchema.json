@@ -17,6 +17,7 @@
       "name": "speed (m/s)",
       "valueType": "number",
       "minimum": 0,
+      "default": 0.4,
       "description": "Estimated mean speed of drive (m/s)"
     },
     {
@@ -30,6 +31,17 @@
     }
   ],
 
+  "paramSpecs": [
+    {
+      "type": "ParamSpec",
+      "id": "duration",
+      "valueType": "number",
+      "minimum": 0,
+      "description": "Estimated time required to execute command (minutes)",
+      "required": false
+    }
+  ],
+
   "commandSpecs": [
     {
       "type": "CommandSpec",
@@ -40,16 +52,15 @@
         {
           "type": "ParamSpec",
           "id": "duration",
-          "valueType": "number",
-          "minimum": 0,
-          "description": "Estimated time required to execute command (minutes)"
+          "parent": "duration"
         }
       ]
     },
     {
       "type": "CommandSpec",
       "id": "Image",
-      "parent": "CommandWithDuration",
+      "parent": "Command",
+      "abstract": true,
       "params": [
         {
           "type": "ParamSpec",
@@ -78,7 +89,15 @@
       "type": "CommandSpec",
       "id": "MicroImage",
       "parent": "Image",
-      "allowedInSegment": false
+      "allowedInSegment": false,
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "duration",
+          "parent": "duration",
+          "default": 0.1
+        }
+      ]
     },
     {
       "type": "CommandSpec",
