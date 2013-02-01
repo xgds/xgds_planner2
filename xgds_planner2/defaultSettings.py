@@ -39,7 +39,7 @@ settings.PIPELINE_JS.update({
             'external/js/lodash.js',
             'external/js/backbone.js',
             'external/js/backbone.marionette.js',
-            'external/js/bootstrap.js',
+            'external/js/bootstrap.min.js',
 
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',

@@ -20,13 +20,17 @@
 {% endblock content %}
 
 {% block scripts %}
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {% compressed_js 'planner_app' %}
     {% for template_name, template in templates.items %}
-<script type="text/handlebars" id="{{template_name}}">
+<script type="text/handlebars" id="template-{{template_name}}">
 {{template|safe}}
 </script>
     {% endfor %}
 {% endblock scripts %}
 
 {% block jsInit %}
+$(function(){
+    app.start();
+})
 {% endblock jsInit %}
