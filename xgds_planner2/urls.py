@@ -5,7 +5,12 @@
 # __END_LICENSE__
 
 from django.conf.urls.defaults import url, patterns
+from django.views.generic.simple import direct_to_template
+
+from xgds_planner2 import views
 
 urlpatterns = patterns('',
-    url(r'^$', 'views.index', name='index'),
+    #url(r'^$', direct_to_template, {'template': 'planner_app.html'}, name='planner2'),
+    url(r'^$', views.plan_editor_app, {}, name='planner2'),
+    #url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 )
