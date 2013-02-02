@@ -64,9 +64,8 @@ def main():
         outPath = args[2]
 
         try:
-            parseOpts = xpjson.ParseOpts(fillInDefaults=True)
-            doc = xpjson.loadDocument(docPath, schema, parseOpts)
-            xpjson.dumpPath(outPath, doc.objDict)
+            doc = xpjson.loadDocument(docPath, schema, fillInDefaults=True)
+            xpjson.dumpDocumentToPath(outPath, doc)
             print 'wrote simplified %s to %s' % (doc.get('type'), outPath)
         except xpjson.NoSchemaError, t:
             parser.error('you must specify the --schema argument to validate a document of type %s'

@@ -181,18 +181,26 @@ def loadDocumentFromDict(docDict, schema=None, parseOpts=None):
     return docParser(docDict, schema=schema, parseOpts=parseOpts)
 
 
-def loadDocument(docPath, schema=None, parseOpts=None):
+def loadDocument(docPath, schema=None, fillInDefaults=False):
     docDict = loadPath(docPath)
-    return loadDocumentFromDict(docDict, schema, parseOpts)
+    parseOpts = ParseOpts(fillInDefaults=fillInDefaults)
+    return loadDocumentFromDict(docDict, schema, parseOpts=parseOpts)
 
 
-def dumpPath(path, obj):
+def dumpDictToPath(path, obj):
     """
     Dump a DotDict in to the specified path in (pretty indented) JSON format.
     """
     f = open(path, 'w')
     f.write(json.dumps(obj, sort_keys=True, indent=4))
     f.close()
+
+
+def dumpDocumentToPath(path, doc):
+    """
+    Dump a Document in to the specified path in (pretty indented) JSON format.
+    """
+    dumpDictToPath(path, doc.objDict)
 
 
 def joinById(localList, parentList):
@@ -382,12 +390,23 @@ class TypedObject(object):
         result = self.objDict.get(fieldName)
         if result is not None:
             return result
+
+        # may be a default in get() args
         if defaultVal != '__unspecified__':
             return defaultVal
+
+        # may be a default in self.fields
         if fieldName in self.fields:
-            schemaDefault = self.fields[fieldName][1]
-            if schemaDefault != 'required':
-                return schemaDefault
+            specDefault = self.fields[fieldName][1]
+            if specDefault != 'required':
+                return specDefault
+
+        # may be a default in self.schemaParams
+        schemaParam = self.schemaParams.get(fieldName)
+        if (schemaParam is not None
+            and schemaParam.default is not None):
+            return schemaParam.default
+
         return None
 
     def checkFields(self):
@@ -457,7 +476,7 @@ class ParamSpec(TypedObject):
         if not isValueOfType(val, self.valueType):
             return 'value %s should have type %s' % (val, repr(self.valueType))
         elif self.minimum is not None and val < self.minimum:
-            return 'value %s should be exceed minimum %s' % (val, repr(self.minimum))
+            return 'value %s should exceed minimum %s' % (val, repr(self.minimum))
         elif self.maximum is not None and val > self.maximum:
             return 'value %s should not exceed maximum %s' % (val, repr(self.maximum))
         elif self.enum is not None and val not in self.enum:

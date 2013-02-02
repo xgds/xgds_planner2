@@ -39,7 +39,8 @@ from geocamUtil.dotDict import DotDict
 CRS84 = DotDict({
     "type": "name",
     "properties": {
-        "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        "name": "urn:ogc:def:crs:OGC:1.3:CRS84",
+        "label": "Lon/Lat (WGS 84)"
     }
 })
 
@@ -114,6 +115,7 @@ class Command(TypedObject):
 
 class Site(TypedObject):
     crs = ('custom', CRS84, None)
+    alternateCrs = ('custom', None, None)
     bbox = ('custom', None, None)
 
 
