@@ -1415,7 +1415,7 @@ Site Class
 ~~~~~~~~~~
 
 A Site instance is an operating area where a plan can be executed. Each
-site may have its own local coordinate frame.
+site may have its own associated coordinate frames.
 
 Abstract class:
   No
@@ -1426,13 +1426,42 @@ Inherits from:
 +------------------+-----------+----------------+------------------------------------+
 |Member            |Type       |Values          |Meaning                             |
 +==================+===========+================+====================================+
-|``crs``           |CRS object |optional        |Coordinate reference system (CRS)   |
-|                  |           |                |object, as defined in the `GeoJSON  |
-|                  |           |                |CRS specification`_. The default CRS|
-|                  |           |                |is a geographic coordinate reference|
-|                  |           |                |system, using the WGS84 datum, with |
-|                  |           |                |longitude and latitude units of     |
-|                  |           |                |decimal degrees.                    |
+|``crs``           |CRS object |optional        |Geometry coordinates in the plan are|
+|                  |           |                |expressed in this coordinate        |
+|                  |           |                |reference system.  See the `GeoJSON |
+|                  |           |                |CRS specification`_.                |
+|                  |           |                |                                    |
+|                  |           |                |The default CRS is OGC CRS84, a     |
+|                  |           |                |geographic coordinate reference     |
+|                  |           |                |system, using the WGS84 datum, in   |
+|                  |           |                |[longitude, latitude] order with    |
+|                  |           |                |units of decimal degrees.           |
+|                  |           |                |                                    |
+|                  |           |                |We normally use CRS84 for plans to  |
+|                  |           |                |be executed in outdoor environments |
+|                  |           |                |on Earth where GPS is available. In |
+|                  |           |                |other environments (e.g. lunar      |
+|                  |           |                |surface, inside ISS), a different   |
+|                  |           |                |CRS may be required.                |
++------------------+-----------+----------------+------------------------------------+
+|``alternateCrs``  |CRS object |optional        |An alternate coordinate reference   |
+|                  |           |                |system, usually a local frame for   |
+|                  |           |                |the site, which users of a planning |
+|                  |           |                |interface may need to work with.    |
+|                  |           |                |                                    |
+|                  |           |                |Ideally, planning interfaces should |
+|                  |           |                |be able to transform plan geometry  |
+|                  |           |                |coordinates into the alternate CRS, |
+|                  |           |                |display the resulting coordinate    |
+|                  |           |                |values, and allow users to edit them|
+|                  |           |                |in that format to be transformed    |
+|                  |           |                |back into the primary CRS for       |
+|                  |           |                |storage.                            |
+|                  |           |                |                                    |
+|                  |           |                |Other useful features would include |
+|                  |           |                |a map reference grid and cursor     |
+|                  |           |                |coordinate display in the alternate |
+|                  |           |                |CRS.                                |
 +------------------+-----------+----------------+------------------------------------+
 |``bbox``          |array of   |optional        |A bounding box around the site that |
 |                  |numbers    |                |can also serve as the initial map   |
