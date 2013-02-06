@@ -1,33 +1,42 @@
 app.views = app.views || {};
 
-app.views.EarthView = Backbone.View.extend({
-    el: 'div',
-
-    initialize: function(){
-        var view = this;
-        view.on('earth:loaded', view.render);
-        google.load('earth', '1', {
-            callback: function(){view.trigger('earth:loaded');}
-        });
-    },
-
-   render: function(){
-        google.earth.createInstance(this.el, this.earthInit, this.earthFailure);
-    },
-
-    earthInit: function(ge){
-        this.ge = ge;
-        ge.getWindow().setVisibility(true);
-        app.vent.trigger("earth:loaded");
-    },
-
-    earthFailure: function(){
-        alert("Earth plugin failed to load.");
-    },
-
-});
-
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
 
+});
+
+app.views.TabNavView = Backbone.Marionette.Layout.extend({
+    template: '#template-tabnav',
+    regions:{
+        tabTarget: '#tab-target',
+        tabContent: '#tab-content',
+    },
+    events: {
+        'click ul.nav-tabs li': 'clickSelectTab',
+    },
+
+    initialize: function(){
+        this.on('tabSelected', this.setTab);
+    },
+
+    clickSelectTab: function(event){
+        var newmode = $(event.target).parents('li').data('target');
+        this.trigger('tabSelected', newmode); 
+    },
+    
+    setTab: function(tabId) {
+        var $tabList = this.$el.find('ul.nav-tabs li');
+        $tabList.each(function(){
+            li = $(this);
+            if ( li.data('target') === tabId ) {
+                li.addClass('active');
+            } else {
+                li.removeClass('active');
+            }
+        });
+//        var viewClass = this.viewMap[tabId]
+//        var view = new viewClass();
+//        this.tabContent.show(view);
+    },
+    
 });

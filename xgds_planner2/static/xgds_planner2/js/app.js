@@ -10,12 +10,13 @@ var app = (function($, _, Backbone){
     app.addRegions({
         toolbar: '#toolbar',
         //map: '#map',
-        tabs: 'tabs'
+        'tabs': '#tabs',
     });
 
     app.addInitializer(function(options){
         app.map = new app.views.EarthView({ el: '#map'});
-        app.toolbar.show(new app.views.ToolbarView);
+        app.toolbar.show( new app.views.ToolbarView );
+        app.tabs.show( new app.views.TabNavView )
     });
     
     return app;
