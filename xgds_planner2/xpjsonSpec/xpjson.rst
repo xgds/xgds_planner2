@@ -1072,18 +1072,47 @@ Inherits from:
 +------------------+------------+----------------+------------------------------------+
 |``sites``         |array of    |optional        |Site_ instances available in the    |
 |                  |Site_       |                |planning interface.                 |
+|                  |            |                |                                    |
+|                  |            |                |The first Site_ in the list should  |
+|                  |            |                |be considered the default for new   |
+|                  |            |                |plans.                              |
 +------------------+------------+----------------+------------------------------------+
 |``platforms``     |array of    |optional        |Platform_ instances available in the|
 |                  |Platform_   |                |planning interface.                 |
+|                  |            |                |                                    |
+|                  |            |                |The first Platform_ in the list     |
+|                  |            |                |should be considered the default for|
+|                  |            |                |new plans.                          |
 +------------------+------------+----------------+------------------------------------+
-|``stations``      |array of    |optional        |Station_ instances available in the |
+|``stations``      |array of    |optional        |Station_ presets available in the   |
 |                  |Station_    |                |planning interface.                 |
+|                  |            |                |                                    |
+|                  |            |                |A Station_ preset is a Station_     |
+|                  |            |                |instance with no ``geometry``.      |
+|                  |            |                |After a user adds a Station_ to a   |
+|                  |            |                |Plan_, they should be able to apply |
+|                  |            |                |one of the Station_ presets to set  |
+|                  |            |                |its non-``geometry`` parameters.    |
 +------------------+------------+----------------+------------------------------------+
-|``targets``       |array of    |optional        |Target_ instances available in the  |
-|                  |Target_     |                |planning interface.                 |
-+------------------+------------+----------------+------------------------------------+
-|``segments``      |array of    |optional        |Segment_ instances available in the |
+|``segments``      |array of    |optional        |Segment_ presets available in the   |
 |                  |Segment_    |                |planning interface.                 |
+|                  |            |                |                                    |
+|                  |            |                |A Segment_ preset is a Segment_     |
+|                  |            |                |instance with no ``geometry``.      |
+|                  |            |                |After a user adds a Segment_ to a   |
+|                  |            |                |Plan_, they should be able to apply |
+|                  |            |                |one of the Segment_ presets to set  |
+|                  |            |                |its non-``geometry`` parameters.    |
++------------------+------------+----------------+------------------------------------+
+|``targets``       |array of    |optional        |Target_ presets available in the    |
+|                  |Target_     |                |planning interface.                 |
+|                  |            |                |                                    |
+|                  |            |                |A Target_ preset is a Target_       |
+|                  |            |                |instance with no ``geometry``.      |
+|                  |            |                |After a user adds a Target_ to a    |
+|                  |            |                |Plan_, they should be able to apply |
+|                  |            |                |one of the Target_ presets to set   |
+|                  |            |                |its non-``geometry`` parameters.    |
 +------------------+------------+----------------+------------------------------------+
 |``commands``      |array of    |optional        |Commands available in the planning  |
 |                  |Command_    |                |interface.                          |
@@ -1095,15 +1124,6 @@ Inherits from:
 |                  |            |                |preset, the ability to further edit |
 |                  |            |                |each command parameter is controlled|
 |                  |            |                |by the ``editable`` member of its   |
-|                  |            |                |ParamSpec_.                         |
-|                  |            |                |                                    |
-|                  |            |                |If the PlanLibrary_ doesn't specify |
-|                  |            |                |any presets for a given command     |
-|                  |            |                |type, the user should still be able |
-|                  |            |                |to instantiate a generic instance of|
-|                  |            |                |that command type with each         |
-|                  |            |                |parameter's initial value set by the|
-|                  |            |                |``default`` member of its           |
 |                  |            |                |ParamSpec_.                         |
 +------------------+------------+----------------+------------------------------------+
 
