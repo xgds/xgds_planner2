@@ -11,6 +11,7 @@ from django.shortcuts import render_to_response
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponse
 from django.template import RequestContext
 from xgds_planner2 import settings
+from xgds_planner2 import models
 # from django.utils.translation import ugettext, ugettext_lazy as _
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join( os.path.dirname( __file__ ), 'templates/handlebars' )
@@ -37,12 +38,19 @@ def aggregate_handlebars_templates(request):
 
 def plan_editor_app(request):
     templates = get_handlebars_templates()
+
+    with open( os.path.join(os.path.dirname(__file__), 'xpjsonSpec/examplePlanSchema.json') ) as plan_schema_file:
+        plan_schema_json = plan_schema_file.read()
+
+    plan_json = models.Plan.objects.latest('pk').jsonPlan
     
     return render_to_response(
         'planner_app.html', 
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
+            'plan_schema_json': plan_schema_json,
+            'plan_json': plan_json,
         }), 
         #context_instance=RequestContext
     )

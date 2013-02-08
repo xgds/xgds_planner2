@@ -27,6 +27,8 @@
 {{template|safe}}
 </script>
     {% endfor %}
+    <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
+    <script id="plan_json" type="application/json">{{ plan_json|safe }}</script>
 {% endblock scripts %}
 
 {% block jsInit %}
