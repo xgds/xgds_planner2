@@ -11,7 +11,7 @@
             "type": "string"
         },
 
-        "description": {
+        "notes": {
             "type": "string"
         },
 
@@ -79,7 +79,7 @@
                 "name": {
                     "type": "string"
                 },
-                "description": {
+                "notes": {
                     "type": "string"
                 },
                 "id": {
@@ -107,7 +107,7 @@
                 "name": {
                     "type": "string"
                 },
-                "description": {
+                "notes": {
                     "type": "string"
                 },
                 "id": {
@@ -128,7 +128,7 @@
                     "name": {
                         "type": "string"
                     },
-                    "description": {
+                    "notes": {
                         "type": "string"
                     },
                     "id": {

@@ -3,7 +3,7 @@
   "type": "Plan",
 
   "name": "Marscape Traverse",
-  "description": "A simple drive",
+  "notes": "A simple drive",
   "planNumber": 1,
   "planVersion": "A",
   "id": "ARC_R001A",

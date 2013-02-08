@@ -3,7 +3,7 @@
   "type": "PlanSchema",
 
   "name": "Robot Science Schema",
-  "description": "Define available robot science commands",
+  "notes": "Define available robot science commands",
   "id": "http://example.com/robotScienceSchema.json",
 
   "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
@@ -18,7 +18,7 @@
       "valueType": "number",
       "minimum": 0,
       "default": 0.4,
-      "description": "Estimated mean speed of drive (m/s)"
+      "notes": "Estimated mean speed of drive (m/s)"
     },
     {
       "type": "ParamSpec",
@@ -27,7 +27,7 @@
       "valueType": "number",
       "minimum": 0,
       "default": 1.0,
-      "description": "How close we need to get to the target coordinates (meters)"
+      "notes": "How close we need to get to the target coordinates (meters)"
     }
   ],
 
@@ -37,7 +37,7 @@
       "id": "duration",
       "valueType": "number",
       "minimum": 0,
-      "description": "Estimated time required to execute command (minutes)",
+      "notes": "Estimated time required to execute command (minutes)",
       "required": false
     }
   ],
@@ -72,7 +72,7 @@
             ["D", "Daylight"],
             ["C", "Cloudy"]
           ],
-          "description": "White balance setting for camera; auto is usually ok"
+          "notes": "White balance setting for camera; auto is usually ok"
         },
         {
           "type": "ParamSpec",
@@ -81,7 +81,7 @@
           "valueType": "number",
           "minimum": 7.4,
           "maximum": 44,
-          "description": "Actual (not 35 mm-equivalent) focal length of camera."
+          "notes": "Actual (not 35 mm-equivalent) focal length of camera."
         }
       ]
     },

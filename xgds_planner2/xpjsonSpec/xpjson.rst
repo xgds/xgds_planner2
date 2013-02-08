@@ -60,7 +60,7 @@ An XPJSON Plan_::
     "type": "Plan",
 
     "name": "Marscape Traverse",
-    "description": "A simple drive",
+    "notes": "A simple drive",
     "planNumber": 1,
     "planVersion": "A",
     "id": "ARC_R001A",
@@ -162,7 +162,7 @@ The PlanSchema_ that the Plan_ conforms to::
     "type": "PlanSchema",
 
     "name": "Robot Science Schema",
-    "description": "Define available robot science commands",
+    "notes": "Define available robot science commands",
     "id": "http://example.com/robotScienceSchema.json",
 
     "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
@@ -177,7 +177,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "valueType": "number",
         "minimum": 0,
         "default": 0.4,
-        "description": "Estimated mean speed of drive (m/s)"
+        "notes": "Estimated mean speed of drive (m/s)"
       },
       {
         "type": "ParamSpec",
@@ -186,7 +186,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "valueType": "number",
         "minimum": 0,
         "default": 1.0,
-        "description": "How close we need to get to the target coordinates (meters)"
+        "notes": "How close we need to get to the target coordinates (meters)"
       }
     ],
 
@@ -196,7 +196,7 @@ The PlanSchema_ that the Plan_ conforms to::
         "id": "duration",
         "valueType": "number",
         "minimum": 0,
-        "description": "Estimated time required to execute command (minutes)",
+        "notes": "Estimated time required to execute command (minutes)",
         "required": false
       }
     ],
@@ -231,7 +231,7 @@ The PlanSchema_ that the Plan_ conforms to::
               ["D", "Daylight"],
               ["C", "Cloudy"]
             ],
-            "description": "White balance setting for camera; auto is usually ok"
+            "notes": "White balance setting for camera; auto is usually ok"
           },
           {
             "type": "ParamSpec",
@@ -240,7 +240,7 @@ The PlanSchema_ that the Plan_ conforms to::
             "valueType": "number",
             "minimum": 7.4,
             "maximum": 44,
-            "description": "Actual (not 35 mm-equivalent) focal length of camera."
+            "notes": "Actual (not 35 mm-equivalent) focal length of camera."
           }
         ]
       },
@@ -293,7 +293,7 @@ the plan::
     "type": "PlanLibrary",
 
     "name": "Robot Science Library",
-    "description": "Reusable elements for robot driving plans",
+    "notes": "Reusable elements for robot driving plans",
     "id": "http://example.com/robotScienceLibrary.json",
     "schemaUrl": "http://example.com/robotScienceSchema.json",
 
@@ -441,7 +441,19 @@ Inherits from:
 |                  |                |                 |this is generally the text label the|
 |                  |                |                 |user sees.                          |
 +------------------+----------------+-----------------+------------------------------------+
-|``description``   |string          |optional         |Description                         |
+|``notes``         |string          |optional         |Free-form notes about the object.   |
+|                  |                |                 |                                    |
+|                  |                |                 |Notes about objects in the          |
+|                  |                |                 |PlanSchema_ and PlanLibrary_ may be |
+|                  |                |                 |displayed as explanatory text in the|
+|                  |                |                 |planning interface.                 |
+|                  |                |                 |                                    |
+|                  |                |                 |Users of the planning interface     |
+|                  |                |                 |should be able to attach notes to   |
+|                  |                |                 |the objects they edit in the Plan_  |
+|                  |                |                 |(including Stations, Segments,      |
+|                  |                |                 |Targets, Commands, and the Plan     |
+|                  |                |                 |itself).                            |
 +------------------+----------------+-----------------+------------------------------------+
 |``id``            |string          |optional         |Unique identifier.                  |
 |                  |                |                 |                                    |
@@ -624,7 +636,7 @@ Example instance of a "DriveForward" subclass::
     // inherited from TypedObject
     "type": "DriveForward",
     "name": "Drive 1",
-    "description": "-",
+    "notes": "-",
     "id": "ARC_R001A00_0_FWD",
 
     // inherited from Command
@@ -642,7 +654,7 @@ The instance conforms to this CommandSpec_ in the PlanSchema_::
     "type": "CommandSpec",
     "name": "DriveForward",
     "id": "FWD",
-    "description": "Drive forward",
+    "notes": "Drive forward",
     "parent": "Command",
     "params": [
       {
@@ -731,7 +743,7 @@ Example
     // inherited from TypedObject
     "type": "CommandSpec",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from ClassSpec
@@ -898,7 +910,7 @@ Example
     // inherited from TypedObject
     "type": "ParamSpec",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // defined in ParamSpec
@@ -1014,7 +1026,7 @@ Example
     // inherited from TypedObject
     "type": "Plan",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from Document
@@ -1136,7 +1148,7 @@ Example
     // inherited from TypedObject
     "type": "PlanLibrary",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from Document
@@ -1267,7 +1279,7 @@ Example
     // inherited from TypedObject
     "type": "PlanSchema",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from Document
@@ -1339,7 +1351,7 @@ Example
     // inherited from TypedObject
     "type": "Platform",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)"
   }
 
@@ -1410,7 +1422,7 @@ Example
     // inherited from TypedObject
     "type": "Segment",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from PathElement
@@ -1499,7 +1511,7 @@ Example
     // inherited from TypedObject
     "type": "Site",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // defined in Site
@@ -1546,7 +1558,7 @@ Example
     // inherited from TypedObject
     "type": "Station",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // inherited from PathElement
@@ -1591,7 +1603,7 @@ Example
     // inherited from TypedObject
     "type": "StopCommand",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // defined in StopCommand
@@ -1633,7 +1645,7 @@ Example
     // inherited from TypedObject
     "type": "Target",
     "name": "(name)",
-    "description": "(description)",
+    "notes": "(notes)",
     "id": "(id)",
 
     // defined in Target

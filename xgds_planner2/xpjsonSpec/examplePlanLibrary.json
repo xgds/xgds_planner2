@@ -3,7 +3,7 @@
   "type": "PlanLibrary",
 
   "name": "Robot Science Library",
-  "description": "Reusable elements for robot driving plans",
+  "notes": "Reusable elements for robot driving plans",
   "id": "http://example.com/robotScienceLibrary.json",
   "schemaUrl": "http://example.com/robotScienceSchema.json",
 

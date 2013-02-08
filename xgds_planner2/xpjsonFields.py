@@ -48,7 +48,7 @@ CRS84 = DotDict({
 class TypedObject:
     type = ('string', 'required', None)
     name = ('string', None, None)
-    description = ('string', None, None)
+    notes = ('string', None, None)
     id = ('string', None, None)
 
 
