@@ -14,43 +14,45 @@ from xgds_planner2 import settings
 from xgds_planner2 import models
 # from django.utils.translation import ugettext, ugettext_lazy as _
 
-HANDLEBARS_TEMPLATES_DIR = os.path.join( os.path.dirname( __file__ ), 'templates/handlebars' )
+HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
+
 
 def get_handlebars_templates():
     global _template_cache
     if settings.TEMPLATE_DEBUG or not _template_cache:
         templates = {}
-        for template_file in glob.glob( os.path.join( HANDLEBARS_TEMPLATES_DIR, '*.handlebars' ) ):
+        for template_file in glob.glob(os.path.join(HANDLEBARS_TEMPLATES_DIR, '*.handlebars')):
             with open(template_file, 'r') as infile:
-                template_name = os.path.splitext( os.path.basename(template_file) )[0]
+                template_name = os.path.splitext(os.path.basename(template_file))[0]
                 templates[template_name] = infile.read()
         _template_cache = templates
     return _template_cache
-    
+
 
 def aggregate_handlebars_templates(request):
     """
-    Return a JSON object containing all the Hanlepars templates in the 
+    Return a JSON object containing all the Hanlepars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse( json.dumps( get_handlebars_templates() ), content_type='application/json' )
+    return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
+
 
 def plan_editor_app(request):
     templates = get_handlebars_templates()
 
-    with open( os.path.join(os.path.dirname(__file__), 'xpjsonSpec/examplePlanSchema.json') ) as plan_schema_file:
+    with open(os.path.join(os.path.dirname(__file__), 'xpjsonSpec/examplePlanSchema.json')) as plan_schema_file:
         plan_schema_json = plan_schema_file.read()
 
     plan_json = models.Plan.objects.latest('pk').jsonPlan
-    
+
     return render_to_response(
-        'planner_app.html', 
+        'planner_app.html',
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
             'plan_schema_json': plan_schema_json,
             'plan_json': plan_json,
-        }), 
-        #context_instance=RequestContext
+        }),
+        # context_instance=RequestContext
     )

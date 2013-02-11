@@ -27,8 +27,8 @@ settings object will not know about the default value!
 
 from django.conf import settings
 
-OFFLINE = False # Don't load google earth if this is true
-TEMPLATE_DEBUG = True # If this is true, handlebars templates will not be cached.
+OFFLINE = False  # Don't load google earth if this is true
+TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
 for setting in ('PIPELINE_CSS', 'PIPELINE_JS'):
     if not hasattr(settings, setting):
@@ -36,8 +36,8 @@ for setting in ('PIPELINE_CSS', 'PIPELINE_JS'):
 
 settings.PIPELINE_JS.update({
     'planner_app': {
-        'source_filenames':(
-            
+        'source_filenames': (
+
             'external/js/jquery-1.9.0.min.js',
             'external/js/lodash.js',
             'external/js/handlebars.js',
@@ -57,7 +57,7 @@ settings.PIPELINE_JS.update({
 
 settings.PIPELINE_CSS.update({
     'planner_app': {
-        'source_filenames':(
+        'source_filenames': (
             'external/css/bootstrap.css',
             'xgds_planner2/css/planner.css',
         ),
