@@ -20,7 +20,7 @@ _template_cache = None
 
 def get_handlebars_templates():
     global _template_cache
-    if settings.TEMPLATE_DEBUG or not _template_cache:
+    if settings.XGDS_PLANNER_TEMPLATE_DEBUG or not _template_cache:
         templates = {}
         for template_file in glob.glob(os.path.join(HANDLEBARS_TEMPLATES_DIR, '*.handlebars')):
             with open(template_file, 'r') as infile:

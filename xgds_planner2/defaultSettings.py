@@ -25,16 +25,10 @@ Don't try to get the value of FOO from django.conf.settings.  That
 settings object will not know about the default value!
 """
 
-from django.conf import settings
+XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
+XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
-OFFLINE = False  # Don't load google earth if this is true
-TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
-
-for setting in ('PIPELINE_CSS', 'PIPELINE_JS'):
-    if not hasattr(settings, setting):
-        setattr(settings, setting, {})
-
-settings.PIPELINE_JS.update({
+XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': (
 
@@ -53,9 +47,9 @@ settings.PIPELINE_JS.update({
         ),
         'output_filenames': 'js/planner_app.js'
     },
-})
+}
 
-settings.PIPELINE_CSS.update({
+XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
             'external/css/bootstrap.css',
@@ -63,4 +57,4 @@ settings.PIPELINE_CSS.update({
         ),
         'output_filenames': 'css/planner_app.css',
     },
-})
+}

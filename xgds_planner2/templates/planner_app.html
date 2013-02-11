@@ -20,7 +20,7 @@
 {% endblock content %}
 
 {% block scripts %}
-    {% if not settings.OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
+    {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
     {% for template_name, template in templates.items %}
 <script type="text/handlebars" id="template-{{template_name}}">
@@ -33,7 +33,7 @@
 
 {% block jsInit %}
 $(function(){
-    {% if settings.OFFLINE %}window.offline = true;{% endif %}
+    {% if settings.XGDS_PLANNER_OFFLINE %}window.offline = true;{% endif %}
     app.start();
 })
 {% endblock jsInit %}
