@@ -8,6 +8,7 @@
 Utilities for parsing and modeling XPJSON format plans, plan schemas, and plan libraries.
 """
 
+import sys
 import os
 import json
 from collections import deque, Mapping, OrderedDict
@@ -57,25 +58,6 @@ class UnknownParentError(Exception):
     pass
 
 
-def objToDict(obj):
-    if isinstance(obj, (dict, dotDict.DotDict)):
-        if hasattr(obj, 'id'):
-            print obj.id
-        return dict([(k, objToDict(v)) for k, v in obj.iteritems()])
-    elif isinstance(obj, list):
-        return [objToDict(elt) for elt in obj]
-    elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
-        return obj
-    elif hasattr(obj, 'toDict'):
-        return obj.toDict()
-    else:
-        return objToDict(vars(obj))
-
-
-def prettyDumps(obj):
-    return json.dumps(objToDict(obj), indent=4, sort_keys=True)
-
-
 def isValueOfType(val, valueType):
     """
     Check whether the type of *val* conforms to *valueType*. Supports
@@ -104,16 +86,8 @@ def isValueOfType(val, valueType):
             return True
         except iso8601.ParseError:
             return False
-    elif valueType in GEOMETRY_TYPE_CHOICES:
-        # check that the value is a struct with the proper 'type'
-        # field. we could also check that the other fields look valid
-        # but that's more complicated.
-        return (hasattr(val, 'type')
-                and val.type == valueType)
     elif valueType == 'targetId':
         return isinstance(val, (str, unicode))
-
-    # our extra types not defined in XPJSON spec
     elif valueType.startswith('array.'):
         # for example, 'array.integer' -> array of integer
         if not isinstance(val, (list, tuple)):
@@ -131,76 +105,17 @@ def isValueOfType(val, valueType):
     elif valueType in ('url',):
         return isinstance(val, (str, unicode))
     else:
-        if isinstance(val, (dict, dotDict.DotDict)) and val.type == valueType:
-            # for example, 'ParamSpec' -> object with 'type' member equal
+        if isinstance(val, (dict, dotDict.DotDict)):
+            # for example, 'ParamSpec' -> DotDict with 'type' member equal
             # to 'ParamSpec'
-            return True
+            return val['type'] == valueType
         else:
-            raise KeyError('unknown valueType %s' % valueType)
+            # for example, 'ParamSpec' -> instance of ParamSpec class
+            return val.__class__.__name__ == valueType
 
 
 def getIdDict(lst):
     return dict([(elt.get('id'), elt) for elt in lst])
-
-
-def loads(s):
-    """
-    Load a DotDict from the JSON-format string *s*.
-    """
-    return dotDict.convertToDotDictRecurse(json.loads(s))
-
-
-def load(f):
-    """
-    Load a DotDict from the JSON-format file *f*.
-    """
-    return dotDict.convertToDotDictRecurse(json.load(f))
-
-
-def loadPath(path):
-    """
-    Load a DotDict from the JSON-format file at path *path*.
-    """
-    return load(file(path, 'r'))
-
-
-class NoSchemaError(Exception):
-    pass
-
-
-def loadDocumentFromDict(docDict, schema=None, parseOpts=None):
-    assert docDict.xpjson == '0.1'
-    docTypes = {
-        'PlanSchema': PlanSchema,
-        'Plan': Plan,
-        'PlanLibrary': PlanLibrary
-    }
-    docParser = docTypes[docDict.type]
-    if docDict.type != 'PlanSchema' and schema is None:
-        raise NoSchemaError(docDict.type)
-    return docParser(docDict, schema=schema, parseOpts=parseOpts)
-
-
-def loadDocument(docPath, schema=None, fillInDefaults=False):
-    docDict = loadPath(docPath)
-    parseOpts = ParseOpts(fillInDefaults=fillInDefaults)
-    return loadDocumentFromDict(docDict, schema, parseOpts=parseOpts)
-
-
-def dumpDictToPath(path, obj):
-    """
-    Dump a DotDict in to the specified path in (pretty indented) JSON format.
-    """
-    f = open(path, 'w')
-    f.write(json.dumps(obj, sort_keys=True, indent=4))
-    f.close()
-
-
-def dumpDocumentToPath(path, doc):
-    """
-    Dump a Document in to the specified path in (pretty indented) JSON format.
-    """
-    dumpDictToPath(path, doc.objDict)
 
 
 def joinById(localList, parentList):
@@ -364,6 +279,21 @@ class ParseOpts(object):
         self.fillInDefaults = fillInDefaults
 
 
+def makeProperty(fname):
+    def getf(self):
+        return self.get(fname)
+    def setf(self, val):
+        return self.set(fname, val)
+    return property(getf, setf)
+
+
+class MakeFieldsProperties(type):
+    def __new__(cls, name, bases, dct):
+        for fname in dct['fields']:
+            dct[fname] = makeProperty(fname)
+        return type.__new__(cls, name, bases, dct)
+
+
 ######################################################################
 # XPJSON CLASSES
 ######################################################################
@@ -372,22 +302,24 @@ class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
     """
+    __metaclass__ = MakeFieldsProperties
+
     fields = getFields('TypedObject')
 
     def __init__(self, objDict,
                  schema=None,
                  schemaParams={},
                  parseOpts=None):
-        self.objDict = objDict
-        self.schema = schema
-        self.schemaParams = schemaParams
+        self._objDict = objDict
+        self._schema = schema
+        self._schemaParams = schemaParams
         if parseOpts is None:
             parseOpts = ParseOpts()
-        self.parseOpts = parseOpts
+        self._parseOpts = parseOpts
         self.checkFields()
 
     def get(self, fieldName, defaultVal='__unspecified__'):
-        result = self.objDict.get(fieldName)
+        result = self._objDict.get(fieldName)
         if result is not None:
             return result
 
@@ -401,42 +333,45 @@ class TypedObject(object):
             if specDefault != 'required':
                 return specDefault
 
-        # may be a default in self.schemaParams
-        schemaParam = self.schemaParams.get(fieldName)
+        # may be a default in self._schemaParams
+        schemaParam = self._schemaParams.get(fieldName)
         if (schemaParam is not None
             and schemaParam.default is not None):
             return schemaParam.default
 
         return None
 
+    def set(self, fieldName, val):
+        self._objDict[fieldName] = val
+
     def checkFields(self):
         for fieldName, (valueType, defaultVal, validFuncName) in self.fields.iteritems():
             val = self.get(fieldName)
             if val is None:
                 assert defaultVal is not 'required', \
-                       'required field %s missing from %s' % (fieldName, self.objDict)
+                       'required field %s missing from %s' % (fieldName, self._objDict)
                 val = defaultVal
             if val is not None:
                 assert isValueOfType(val, valueType), \
-                       '%s should have valueType %s in %s' % (fieldName, valueType, self.objDict)
+                       '%s should have valueType %s in %s' % (fieldName, valueType, self._objDict)
             if val is not None and validFuncName is not None:
                 validFunc = getattr(self, validFuncName)
                 assert validFunc(val), \
-                       '%s should satisfy %s in %s' % (fieldName, validFunc, self.objDict)
+                       '%s should satisfy %s in %s' % (fieldName, validFunc, self._objDict)
 
-            if self.parseOpts.fillInDefaults:
-                self.objDict[fieldName] = val
+            if self._parseOpts.fillInDefaults:
+                self._objDict[fieldName] = val
 
-        for fieldName, paramSpec in self.schemaParams.iteritems():
+        for fieldName, paramSpec in self._schemaParams.iteritems():
             reason = paramSpec.invalidParamValueReason(self.get(fieldName))
             assert reason is None, \
                    ('%s; %s should match ParamSpec %s in %s'
-                    % (reason, fieldName, paramSpec.id, self.objDict))
+                    % (reason, fieldName, paramSpec.id, self._objDict))
 
-        for k, v in self.objDict.iteritems():
-            if k not in self.fields and k not in self.schemaParams:
+        for k, v in self._objDict.iteritems():
+            if k not in self.fields and k not in self._schemaParams:
                 logging.warning('unknown field %s in object %s'
-                                % (k, self.objDict))
+                                % (k, self._objDict))
 
 
 class ParamSpec(TypedObject):
@@ -499,8 +434,7 @@ class ClassSpec(TypedObject):
 
     def __init__(self, objDict, **kwargs):
         super(ClassSpec, self).__init__(objDict, **kwargs)
-        self.paramLookup = getIdDict([ParamSpec(p, **kwargs)
-                                      for p in self.get('params')])
+        self.paramLookup = getIdDict(self.get('params'))
 
 
 class CommandSpec(ClassSpec):
@@ -539,13 +473,9 @@ class PlanSchema(Document):
     fields = getFields('PlanSchema')
 
     def __init__(self, objDict, **kwargs):
-        resolveSchemaInheritance(objDict)
+        # resolveSchemaInheritance(objDict)
 
         super(Document, self).__init__(objDict, **kwargs)
-
-        #schemaSpec = file(JSON_SCHEMA_PATH_PLAN_SCHEMA, 'r')
-        #jsonschema.validate(objDict,
-        #                    json.load(schemaSpec))
 
         paramsFields = (
             'planParams',
@@ -558,11 +488,9 @@ class PlanSchema(Document):
         # ParamSpec, based on planParams field in input json.
         for fieldName in paramsFields:
             setattr(self, fieldName + 'Lookup',
-                    getIdDict([ParamSpec(p, **kwargs)
-                               for p in self.get(fieldName)]))
+                    getIdDict(self.get(fieldName)))
 
-        self.commandSpecLookup = getIdDict([CommandSpec(s, **kwargs)
-                                            for s in self.get('commandSpecs')])
+        self.commandSpecLookup = getIdDict(self.get('commandSpecs'))
 
     def isValidCommand(self, cmd):
         return self.commandSpecLookup[cmd.type].isValidCommand(cmd)
@@ -586,9 +514,6 @@ class Station(PathElement):
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].stationParamsLookup
         super(Station, self).__init__(objDict, **kwargs)
-
-        self.sequence = [Command(elt, **kwargs)
-                         for elt in self.get('sequence')]
 
 
 class Segment(PathElement):
@@ -616,7 +541,7 @@ class Command(TypedObject):
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = (kwargs['schema']
-                                  .commandSpecLookup[objDict.type]
+                                  .commandSpecLookup[objDict['type']]
                                   .paramLookup)
         super(Command, self).__init__(objDict, **kwargs)
 
@@ -660,30 +585,6 @@ class Plan(Document):
         kwargs['schemaParams'] = kwargs['schema'].planParamsLookup
         super(Plan, self).__init__(objDict, **kwargs)
 
-        self.site = self.get('site')
-        if self.site is not None:
-            self.site = Site(self.site, **kwargs)
-
-        self.platform = self.get('platform')
-        if self.platform is not None:
-            self.platform = Platform(self.platform, **kwargs)
-
-        self.targets = getIdDict([Target(t, **kwargs)
-                                  for t in self.get('targets')])
-
-        self.sequence = [self.getSequenceElement(elt, **kwargs)
-                         for elt in self.get('sequence')]
-
-    def getSequenceElement(self, elt, **kwargs):
-        if elt.type == 'Segment':
-            return Segment(elt, **kwargs)
-        elif elt.type == 'Station':
-            return Station(elt, **kwargs)
-        elif elt.type in self.schema.commandSpecLookup:
-            return Command(elt, **kwargs)
-        else:
-            raise ValueError('unknown sequence element type %s in Plan' % elt.type)
-
 
 class PlanLibrary(Document):
     """
@@ -695,9 +596,117 @@ class PlanLibrary(Document):
     def __init__(self, objDict, **kwargs):
         super(PlanLibrary, self).__init__(objDict, **kwargs)
 
-        self.sites = [Site(s, **kwargs) for s in self.get('sites', [])]
-        self.platforms = [Platform(s, **kwargs) for s in self.get('platforms', [])]
-        self.stations = [Station(s, **kwargs) for s in self.get('stations', [])]
-        self.segments = [Segment(s, **kwargs) for s in self.get('segments', [])]
-        self.targets = [Target(s, **kwargs) for s in self.get('targets', [])]
-        self.commands = [Command(s, **kwargs) for s in self.get('commands', [])]
+######################################################################
+
+THIS_MODULE = sys.modules[__name__]
+
+JSON_CLASSES = (
+    Command,
+    CommandSpec,
+    ParamSpec,
+    Plan,
+    PlanLibrary,
+    PlanSchema,
+    Platform,
+    Segment,
+    Site,
+    Station,
+    Target,
+)
+JSON_CLASS_LOOKUP = set((c.__name__ for c in JSON_CLASSES))
+
+def encodeWithClassName(obj):
+    if isinstance(obj, JSON_CLASSES):
+        return obj._objDict
+    else:
+        return obj
+
+
+def decodeWithClassName(dct, **kwargs):
+    if 'type' in dct:
+        className = dct['type']
+        if className in JSON_CLASS_LOOKUP:
+            klass = getattr(THIS_MODULE, className)
+            return klass(dct, **kwargs)
+    return dct
+
+
+def transformBottomUp(obj, func, **kwargs):
+    if isinstance(obj, (list, tuple)):
+        return [transformBottomUp(v, func, **kwargs) for v in obj]
+    elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
+        return obj
+    else:
+        return func(dict(((k, transformBottomUp(v, func, **kwargs))
+                          for k, v in obj.iteritems())),
+                    **kwargs)
+
+def transformTopDown(obj, func):
+    if isinstance(obj, (list, tuple)):
+        return [transformTopDown(v, func) for v in obj]
+    elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
+        return obj
+    else:
+        return dict(((k, transformTopDown(v, func))
+                     for k, v in func(obj).iteritems()))
+
+
+def loadDictFromString(s):
+    """
+    Load a DotDict from the JSON-format string *s*.
+    """
+    return dotDict.convertToDotDictRecurse(json.loads(s))
+
+
+def loadDictFromFile(f):
+    """
+    Load a DotDict from the JSON-format file *f*.
+    """
+    return dotDict.convertToDotDictRecurse(json.load(f))
+
+
+def loadDictFromPath(path):
+    """
+    Load a DotDict from the JSON-format file at path *path*.
+    """
+    return loadDictFromFile(file(path, 'r'))
+
+
+class NoSchemaError(Exception):
+    pass
+
+
+def loadDocumentFromDict(docDict, schema=None, parseOpts=None):
+    assert docDict.xpjson == '0.1'
+    if docDict.type == 'PlanSchema':
+        resolveSchemaInheritance(docDict)
+    else:
+        if not schema:
+            raise NoSchemaError()
+    return transformBottomUp(docDict, decodeWithClassName,
+                             schema=schema,
+                             parseOpts=parseOpts)
+
+
+def loadDocument(docPath, schema=None, fillInDefaults=False):
+    docDict = loadDictFromPath(docPath)
+    parseOpts = ParseOpts(fillInDefaults=fillInDefaults)
+    return loadDocumentFromDict(docDict, schema, parseOpts=parseOpts)
+
+
+def dumpDictToPath(path, obj):
+    """
+    Dump a DotDict in to the specified path in (pretty indented) JSON format.
+    """
+    f = open(path, 'w')
+    f.write(json.dumps(obj, sort_keys=True, indent=4))
+    f.close()
+
+
+def dumpDocumentToPath(path, doc):
+    """
+    Dump a Document in to the specified path in (pretty indented) JSON format.
+    """
+    # dumpDictToPath(path, doc._objDict)
+    docDict = transformTopDown(doc, encodeWithClassName)
+    dumpDictToPath(path, docDict)

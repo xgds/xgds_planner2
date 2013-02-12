@@ -27,7 +27,7 @@ def main():
    Simplify XPJSON document (compile out inheritance, fill defaults)
     ''')
     parser.add_option('-s', '--schema',
-                      help='Schema to use when validating Plan or PlanLibrary')
+                      help='Schema to use when processing Plan or PlanLibrary [required]')
     opts, args = parser.parse_args()
 
     if not args:
@@ -35,7 +35,9 @@ def main():
     cmd = args[0]
 
     if opts.schema is not None:
-        schema = xpjson.PlanSchema(xpjson.loadPath(opts.schema))
+        schema = xpjson.loadDocument(opts.schema)
+        if schema.type != 'PlanSchema':
+            parser.error('--schema must be the path to a XPJSON PlanSchema document')
     else:
         schema = None
 
@@ -46,7 +48,9 @@ def main():
         docPath = args[1]
 
         try:
-            doc = xpjson.loadDocument(docPath, schema)
+            import ipdb
+            with ipdb.launch_ipdb_on_exception():
+                doc = xpjson.loadDocument(docPath, schema)
             print 'VALID %s %s' % (doc.get('type'), docPath)
         except xpjson.NoSchemaError, t:
             parser.error('you must specify the --schema argument to validate a document of type %s'
