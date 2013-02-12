@@ -19,10 +19,11 @@ import logging
 import jsonschema
 import iso8601
 
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
+
 from geocamUtil import dotDict
 from geocamUtil.dotDict import DotDict
-
-from xgds_planner2 import xpjsonFields
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_SCHEMA_PATH_PLAN_SCHEMA = os.path.join(THIS_DIR, 'xpjsonSpec', 'xpjsonPlanSchemaDocumentSchema.json')
@@ -33,6 +34,8 @@ CRS84 = dotDict.DotDict({
         "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
     }
 })
+
+URL_VALIDATOR = URLValidator(verify_exists=False)
 
 GEOMETRY_TYPE_CHOICES = (
     'Point',
@@ -94,16 +97,22 @@ def isValueOfType(val, valueType):
             return False
         eltType = re.sub(r'^array\.', '', valueType)
         return all((isValueOfType(elt, eltType) for elt in val))
-    elif valueType.startswith('dict.'):
-        # for example, 'dict.integer' -> object with string member names
-        # and integer member values
-        if not isinstance(val, (dict, dotDict.DotDict)):
-            return False
-        vType = re.sub(r'^dict\.', '', valueType)
-        return all(((isValueOfType(k, 'string') and isValueOfType(v, vType))
-                     for k, v in val.itervalues()))
     elif valueType in ('url',):
-        return isinstance(val, (str, unicode))
+        if not isinstance(val, (str, unicode)):
+            return False
+        try:
+            URL_VALIDATOR(val)
+            return True
+        except ValidationError:
+            return False
+    elif valueType == 'bbox':
+        # must be an array of 4 floats (2d) or 6 floats (3d)
+        if not isValueOfType(val, 'array.number'):
+            return False
+        return len(val) in (4, 6)
+    elif valueType == 'crs':
+        # could do a better job with this...
+        return val['type'] in ('name', 'proj4')
     else:
         if isinstance(val, (dict, dotDict.DotDict)):
             # for example, 'ParamSpec' -> DotDict with 'type' member equal
@@ -240,12 +249,12 @@ def resolveSchemaInheritance(schemaDict):
         'id': 'Command',
         'abstract': True,
     }))
-    commandSpecLookup = resolveSpecInheritance(rawCommandSpecs,
+    commandSpecsLookup = resolveSpecInheritance(rawCommandSpecs,
                                                inheritFields=('params'),
                                                localOnlyFields=('id', 'name', 'abstract'))
 
     # filter out abstract commandSpecs
-    commandSpecs = [commandSpecLookup[spec.id]
+    commandSpecs = [commandSpecsLookup[spec.id]
                     for spec in rawCommandSpecs
                     if not spec.get('abstract', False)]
 
@@ -262,16 +271,12 @@ def resolveSchemaInheritance(schemaDict):
     schemaDict.commandSpecs = commandSpecs
 
 
-def getFields(className):
-    """
-    Lookup up field definitions for the given class from
-    xpjsonFields.py.
-    """
-    cls = getattr(xpjsonFields, className)
-    fieldNames = dir(cls)
-    return dict([(k, getattr(cls, k))
-                 for k in dir(cls)
-                 if not k.startswith('_')])
+class Field(object):
+    def __init__(self, valueType, default=None, required=False, validMethod=None):
+        self.valueType = valueType
+        self.default = default
+        self.required = required
+        self.validMethod = validMethod
 
 
 class ParseOpts(object):
@@ -282,15 +287,30 @@ class ParseOpts(object):
 def makeProperty(fname):
     def getf(self):
         return self.get(fname)
+
     def setf(self, val):
         return self.set(fname, val)
+
     return property(getf, setf)
 
 
-class MakeFieldsProperties(type):
+class TypedObjectMetaClass(type):
     def __new__(cls, name, bases, dct):
-        for fname in dct['fields']:
-            dct[fname] = makeProperty(fname)
+        dct['fields'] = fields = {}
+
+        # inherit fields from base classes
+        for base in bases:
+            if hasattr(base, 'fields'):
+                fields.update(base.fields)
+
+        # extract Field objects declared in this class. keep track
+        # of them in the 'fields' member and create a property for
+        # each field that uses the get() and set() methods.
+        for fname, val in dct.items():
+            if isinstance(val, Field):
+                fields[fname] = val
+                dct[fname] = makeProperty(fname)
+
         return type.__new__(cls, name, bases, dct)
 
 
@@ -302,9 +322,12 @@ class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
     """
-    __metaclass__ = MakeFieldsProperties
+    __metaclass__ = TypedObjectMetaClass
 
-    fields = getFields('TypedObject')
+    type = Field('string', required=True)
+    name = Field('string')
+    notes = Field('string')
+    id = Field('string')
 
     def __init__(self, objDict,
                  schema=None,
@@ -329,9 +352,9 @@ class TypedObject(object):
 
         # may be a default in self.fields
         if fieldName in self.fields:
-            specDefault = self.fields[fieldName][1]
-            if specDefault != 'required':
-                return specDefault
+            spec = self.fields.get(fieldName, None)
+            if spec and not spec.required:
+                return spec.default
 
         # may be a default in self._schemaParams
         schemaParam = self._schemaParams.get(fieldName)
@@ -345,19 +368,19 @@ class TypedObject(object):
         self._objDict[fieldName] = val
 
     def checkFields(self):
-        for fieldName, (valueType, defaultVal, validFuncName) in self.fields.iteritems():
+        for fieldName, spec in self.fields.iteritems():
             val = self.get(fieldName)
             if val is None:
-                assert defaultVal is not 'required', \
+                assert not spec.required, \
                        'required field %s missing from %s' % (fieldName, self._objDict)
-                val = defaultVal
+                val = spec.default
             if val is not None:
-                assert isValueOfType(val, valueType), \
-                       '%s should have valueType %s in %s' % (fieldName, valueType, self._objDict)
-            if val is not None and validFuncName is not None:
-                validFunc = getattr(self, validFuncName)
-                assert validFunc(val), \
-                       '%s should satisfy %s in %s' % (fieldName, validFunc, self._objDict)
+                assert isValueOfType(val, spec.valueType), \
+                       '%s should have valueType %s in %s' % (fieldName, spec.valueType, self._objDict)
+            if val is not None and spec.validMethod is not None:
+                validMethod = getattr(self, spec.validMethod)
+                assert validMethod(val), \
+                       '%s should satisfy %s in %s' % (fieldName, validMethod, self._objDict)
 
             if self._parseOpts.fillInDefaults:
                 self._objDict[fieldName] = val
@@ -378,13 +401,19 @@ class ParamSpec(TypedObject):
     """
     Implements the ParamSpec type from the XPJSON spec.
     """
-    fields = getFields('ParamSpec')
+
+    valueType = Field('string', required=True, validMethod='isValidValueType')
+    minimum = Field('custom', validMethod='matchesValueType')
+    maximum = Field('custom', validMethod='matchesValueType')
+    choices = Field('custom', validMethod='isChoicesValid')
+    default = Field('custom', validMethod='matchesValueType')
+    required = Field('boolean', default=True)
+    visible = Field('boolean', default=True)
+    editable = Field('boolean', default=True)
 
     def __init__(self, objDict, **kwargs):
         super(ParamSpec, self).__init__(objDict, **kwargs)
 
-        for fieldName in self.fields.keys():
-            setattr(self, fieldName, self.get(fieldName))
         if self.choices is None:
             self.enum = None
         else:
@@ -430,11 +459,11 @@ class ClassSpec(TypedObject):
     Implements the ClassSpec type from the XPJSON spec.
     """
 
-    fields = getFields('ClassSpec')
+    params = Field('array.ParamSpec', default=[])
 
     def __init__(self, objDict, **kwargs):
         super(ClassSpec, self).__init__(objDict, **kwargs)
-        self.paramLookup = getIdDict(self.get('params'))
+        self.paramsLookup = getIdDict(self.get('params'))
 
 
 class CommandSpec(ClassSpec):
@@ -442,14 +471,16 @@ class CommandSpec(ClassSpec):
     Implements the CommandSpec type from the XPJSON spec.
     """
 
-    fields = getFields('CommandSpec')
+    blocking = Field('boolean', default=True)
+    scopeTerminate = Field('boolean', default=True)
+    color = Field('string', validMethod='isColorString')
 
     def isColorString(self, s):
         # should be in HTML hex format '#rrggbb'
         return re.match('\#[0-9a-fA-F]{6}', s) is not None
 
     def isValidCommand(self, cmd):
-        for fieldName, paramSpec in self.paramLookup.iteritems():
+        for fieldName, paramSpec in self.paramsLookup.iteritems():
             if not paramSpec.isValidParamValue(cmd.get(fieldName)):
                 return False
 
@@ -459,7 +490,12 @@ class Document(TypedObject):
     Implements the Document type from the XPJSON spec.
     """
 
-    fields = getFields('Document')
+    xpjson = Field('string', required=True, validMethod='isValidXpjsonVersion')
+    subject = Field('array.string', default=[])
+    creator = Field('string')
+    contributors = Field('array.string', default=[])
+    dateCreated = Field('date-time')
+    dateModified = Field('date-time')
 
     def isValidXpjsonVersion(self, val):
         return val == '0.1'
@@ -470,7 +506,17 @@ class PlanSchema(Document):
     Implements the PlanSchema type from the XPJSON spec.
     """
 
-    fields = getFields('PlanSchema')
+    commandSpecs = Field('array.CommandSpec', default=[])
+    planParams = Field('array.ParamSpec', default=[])
+    stationParams = Field('array.ParamSpec', default=[])
+    segmentParams = Field('array.ParamSpec', default=[])
+    targetParams = Field('array.ParamSpec', default=[])
+    planSequenceCommands = Field('array.string')
+    stationSequenceCommands = Field('array.string')
+    segmentSequenceCommands = Field('array.string')
+    planIdFormat = Field('string')
+    pathElementIdFormat = Field('string')
+    commandIdFormat = Field('string')
 
     def __init__(self, objDict, **kwargs):
         # resolveSchemaInheritance(objDict)
@@ -490,10 +536,10 @@ class PlanSchema(Document):
             setattr(self, fieldName + 'Lookup',
                     getIdDict(self.get(fieldName)))
 
-        self.commandSpecLookup = getIdDict(self.get('commandSpecs'))
+        self.commandSpecsLookup = getIdDict(self.get('commandSpecs'))
 
     def isValidCommand(self, cmd):
-        return self.commandSpecLookup[cmd.type].isValidCommand(cmd)
+        return self.commandSpecsLookup[cmd.type].isValidCommand(cmd)
 
 
 class PathElement(TypedObject):
@@ -501,7 +547,8 @@ class PathElement(TypedObject):
     Implements the PathElement type from the XPJSON spec.
     """
 
-    fields = getFields('PathElement')
+    sequence = Field('array.custom', default=[])
+    libraryId = Field('string')
 
 
 class Station(PathElement):
@@ -509,7 +556,7 @@ class Station(PathElement):
     Implements the Station type from the XPJSON spec.
     """
 
-    fields = getFields('Station')
+    geometry = Field('Point', required=True)
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].stationParamsLookup
@@ -521,7 +568,7 @@ class Segment(PathElement):
     Implements the Segment type from the XPJSON spec.
     """
 
-    fields = getFields('Segment')
+    geometry = Field('LineString')
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].segmentParamsLookup
@@ -537,12 +584,12 @@ class Command(TypedObject):
     inherited types defined by CommandSpecs in the PlanSchema)
     """
 
-    fields = getFields('Command')
+    libraryId = Field('string')
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = (kwargs['schema']
-                                  .commandSpecLookup[objDict['type']]
-                                  .paramLookup)
+                                  .commandSpecsLookup[objDict['type']]
+                                  .paramsLookup)
         super(Command, self).__init__(objDict, **kwargs)
 
 
@@ -551,15 +598,16 @@ class Site(TypedObject):
     Implements the Site type from the XPJSON spec.
     """
 
-    fields = getFields('Site')
+    crs = Field('crs', default=CRS84)
+    alternateCrs = Field('crs')
+    bbox = Field('bbox')
 
 
 class Platform(TypedObject):
     """
     Implements the Site type from the XPJSON spec.
     """
-
-    fields = getFields('Platform')
+    pass
 
 
 class Target(TypedObject):
@@ -567,7 +615,7 @@ class Target(TypedObject):
     Implements the Target type from the XPJSON spec.
     """
 
-    fields = getFields('Target')
+    geometry = Field('Point', required=True)
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].targetParamsLookup
@@ -579,11 +627,23 @@ class Plan(Document):
     Implements the Plan type from the XPJSON spec.
     """
 
-    fields = getFields('Plan')
+    schemaUrl = Field('url')
+    libraryUrls = Field('array.url')
+    planNumber = Field('integer')
+    planVersion = Field('string')
+    site = Field('Site')
+    platform = Field('Platform')
+    targets = Field('array.Target', default=[])
+    sequence = Field('array.custom', default=[], validMethod='isValidPlanSequence')
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].planParamsLookup
         super(Plan, self).__init__(objDict, **kwargs)
+
+    def isValidPlanSequence(self, val):
+        validTypes = self._schema.commandSpecsLookup.keys() + ['Station', 'Segment']
+        for elt in val:
+            return elt.type in validTypes
 
 
 class PlanLibrary(Document):
@@ -591,10 +651,20 @@ class PlanLibrary(Document):
     Implements the PlanLibrary type from the XPJSON spec.
     """
 
-    fields = getFields('PlanLibrary')
+    schemaUrl = Field('url')
+    sites = Field('array.Site', default=[])
+    platforms = Field('array.Platform', default=[])
+    stations = Field('array.Station', default=[])
+    segments = Field('array.Segment', default=[])
+    targets = Field('array.Target', default=[])
+    commands = Field('array.custom', default=[], validMethod='isValidCommandArray')
 
     def __init__(self, objDict, **kwargs):
         super(PlanLibrary, self).__init__(objDict, **kwargs)
+
+    def isValidCommandArray(self, val):
+        for elt in val:
+            return elt['type'] in self._schema.commandSpecsLookup
 
 ######################################################################
 
