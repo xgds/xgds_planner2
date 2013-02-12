@@ -23,6 +23,26 @@ Other modules can access the value of FOO like this:
 
 Don't try to get the value of FOO from django.conf.settings.  That
 settings object will not know about the default value!
+
+
+###
+# DJANGO-PIPELINE ADDENDUM:
+
+For this module to work, the site-level config file (siteSettings.py), must
+merge the XGDS_PLANNER_PIPELINE_JS and XGDS_PLANNER_PIPELINE_CSS settings
+into global PIPELINE_{JS|CSS} settings dicts.
+
+If no other django-pipeline includes are defined,
+the relevant siteSettings.py secion might look like this:
+
+PIPELINE_JS = {}
+PIPELINE_JS.update(plannerSettings.XGDS_PLANNER_PIPELINE_JS)
+
+PIPELINE_CSS = {}
+PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
+
+#
+###
 """
 
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
