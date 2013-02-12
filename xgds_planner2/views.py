@@ -7,7 +7,7 @@
 import os
 import glob
 import json
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponse
 from django.template import RequestContext
 from xgds_planner2 import settings
@@ -32,7 +32,7 @@ def get_handlebars_templates():
 
 def aggregate_handlebars_templates(request):
     """
-    Return a JSON object containing all the Hanlepars templates in the
+    Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
     return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
@@ -47,7 +47,7 @@ def plan_editor_app(request):
     plan_json = models.Plan.objects.latest('pk').jsonPlan
 
     return render_to_response(
-        'planner_app.html',
+        'xgds_planner2/planner_app.html',
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
@@ -56,3 +56,47 @@ def plan_editor_app(request):
         }),
         # context_instance=RequestContext
     )
+
+
+def planIndex(request):
+    """
+    For the moment this is a handy classic-Django place to hang links to
+    new server-side planner features.  It could certainly be replaced or
+    complemented with a nice index API method for rich JavaScript
+    clients.
+    """
+    return render_to_response(
+        'xgds_planner2/planIndex.html',
+        {
+            'plans': models.Plan.objects.all()
+        },
+        context_instance=RequestContext(request))
+
+
+def getPlan(uuid):
+    return get_object_or_404(models.Plan, uuid=uuid)
+
+
+def jsonText(obj, compact=False):
+    if compact:
+        return json.dumps(obj, separators=',:')
+    else:
+        return json.dumps(obj, sort_keys=True, indent=4)
+
+
+def jsonResponse(obj, compact=False):
+    text = jsonText(obj, compact)
+    return HttpResponse(text, content_type='application/json')
+
+
+def planPlannerXpjson(request, uuid, name):
+    plan = getPlan(uuid)
+    return jsonResponse(plan.jsonPlan.toDotDict())
+
+
+def planExpandedXpjson(request, uuid, name):
+    return HttpResponse('not implemented')
+
+
+def planKml(request, uuid, name):
+    return HttpResponse('not implemented')

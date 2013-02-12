@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block cssExtras %}
+{{ block.super }}
+
+<style type="text/css">
+td.exportFormat {
+  padding-right: 10px;
+}
+</style>
+
+{% endblock cssExtras %}
+
+{% block content %}
+{{ block.super }}
+
+<table>
+{% for plan in plans %}
+  <tr>
+    <td style="padding-right: 20px;">{{ plan.name }}</td>
+    <td class="exportFormat"><a href="{{ plan.plannerXpjsonUrl }}">Planner XPJSON</a></td>
+    <td class="exportFormat"><a href="{{ plan.expandedXpjsonUrl }}">Expanded XPJSON</a></td>
+    <td class="exportFormat"><a href="{{ plan.kmlUrl }}">KML</a></td>
+  </tr>
+{% endfor %}
+</table>
+
+{% endblock content %}

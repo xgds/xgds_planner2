@@ -4,6 +4,7 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
+import re
 import datetime
 
 import iso8601
@@ -11,6 +12,7 @@ from django.db import models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasField import ExtrasField
@@ -39,6 +41,22 @@ class Plan(models.Model):
             self.creator = None
 
         return self
+
+    def escapedName(self):
+        name = re.sub(r'[^\w]', '', self.name)
+        if name == '':
+            return 'plan'
+        else:
+            return name
+
+    def plannerXpjsonUrl(self):
+        return reverse('planner2_planPlannerXpjson', args=[self.uuid, self.escapedName()])
+
+    def expandedXpjsonUrl(self):
+        return reverse('planner2_planExpandedXpjson', args=[self.uuid, self.escapedName()])
+
+    def kmlUrl(self):
+        return reverse('planner2_planKml', args=[self.uuid, self.escapedName()])
 
     def __unicode__(self):
         if self.name:
