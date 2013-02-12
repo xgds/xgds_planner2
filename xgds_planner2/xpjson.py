@@ -25,6 +25,7 @@ from django.core.exceptions import ValidationError
 from geocamUtil import dotDict
 from geocamUtil.dotDict import DotDict
 
+THIS_MODULE = sys.modules[__name__]
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_SCHEMA_PATH_PLAN_SCHEMA = os.path.join(THIS_DIR, 'xpjsonSpec', 'xpjsonPlanSchemaDocumentSchema.json')
 
@@ -55,6 +56,9 @@ VALUE_TYPE_CHOICES = (
     'date-time',
     'targetId',
 ) + GEOMETRY_TYPE_CHOICES
+
+# TypedObject subclasses register themselves in this set
+TYPED_OBJECT_CLASSES = set()
 
 
 class UnknownParentError(Exception):
@@ -296,6 +300,9 @@ def makeProperty(fname):
 
 class TypedObjectMetaClass(type):
     def __new__(cls, name, bases, dct):
+        global TYPED_OBJECT_CLASSES
+        TYPED_OBJECT_CLASSES.add(name)
+
         dct['fields'] = fields = {}
 
         # inherit fields from base classes
@@ -668,25 +675,9 @@ class PlanLibrary(Document):
 
 ######################################################################
 
-THIS_MODULE = sys.modules[__name__]
-
-JSON_CLASSES = (
-    Command,
-    CommandSpec,
-    ParamSpec,
-    Plan,
-    PlanLibrary,
-    PlanSchema,
-    Platform,
-    Segment,
-    Site,
-    Station,
-    Target,
-)
-JSON_CLASS_LOOKUP = set((c.__name__ for c in JSON_CLASSES))
 
 def encodeWithClassName(obj):
-    if isinstance(obj, JSON_CLASSES):
+    if hasattr(obj, '_objDict'):
         return obj._objDict
     else:
         return obj
@@ -695,7 +686,7 @@ def encodeWithClassName(obj):
 def decodeWithClassName(dct, **kwargs):
     if 'type' in dct:
         className = dct['type']
-        if className in JSON_CLASS_LOOKUP:
+        if className in TYPED_OBJECT_CLASSES:
             klass = getattr(THIS_MODULE, className)
             return klass(dct, **kwargs)
     return dct
