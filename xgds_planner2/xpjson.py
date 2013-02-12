@@ -299,6 +299,28 @@ def makeProperty(fname):
 
 
 class TypedObjectMetaClass(type):
+    """
+    This metaclass makes TypedObject and its subclasses work a bit like
+    Django models. You can declare fields in the class declaration like
+    this:
+
+      geometry = Field('Point', required=True)
+
+    Fields declared this way in class Foo are added to the Foo.fields
+    dict. There are two kinds of automatic setup that happen based on
+    that:
+
+     * When an instance of the class is constructed from an objDict,
+       the objDict is validated against the declared fields. See
+       TypedObject.checkFields().
+
+     * A property is automatically generated for the field, so if Foo
+       has a field 'bar' and foo is an instance of Foo, accessing
+       foo.bar calls foo.get('bar') or foo.set('bar', ...). The get()
+       and set() methods are defined in TypedObject.
+
+    """
+
     def __new__(cls, name, bases, dct):
         global TYPED_OBJECT_CLASSES
         TYPED_OBJECT_CLASSES.add(name)
@@ -349,6 +371,7 @@ class TypedObject(object):
         self.checkFields()
 
     def get(self, fieldName, defaultVal='__unspecified__'):
+        # first check in _objDict
         result = self._objDict.get(fieldName)
         if result is not None:
             return result
@@ -357,13 +380,13 @@ class TypedObject(object):
         if defaultVal != '__unspecified__':
             return defaultVal
 
-        # may be a default in self.fields
+        # may be a default declared in XPJSON spec
         if fieldName in self.fields:
             spec = self.fields.get(fieldName, None)
             if spec and not spec.required:
                 return spec.default
 
-        # may be a default in self._schemaParams
+        # may be a default declared in PlanSchema
         schemaParam = self._schemaParams.get(fieldName)
         if (schemaParam is not None
             and schemaParam.default is not None):
@@ -375,6 +398,7 @@ class TypedObject(object):
         self._objDict[fieldName] = val
 
     def checkFields(self):
+        # validate fields declared in XPJSON spec
         for fieldName, spec in self.fields.iteritems():
             val = self.get(fieldName)
             if val is None:
@@ -392,12 +416,14 @@ class TypedObject(object):
             if self._parseOpts.fillInDefaults:
                 self._objDict[fieldName] = val
 
+        # validate fields declared in PlanSchema
         for fieldName, paramSpec in self._schemaParams.iteritems():
             reason = paramSpec.invalidParamValueReason(self.get(fieldName))
             assert reason is None, \
                    ('%s; %s should match ParamSpec %s in %s'
                     % (reason, fieldName, paramSpec.id, self._objDict))
 
+        # warn about unknown fields
         for k, v in self._objDict.iteritems():
             if k not in self.fields and k not in self._schemaParams:
                 logging.warning('unknown field %s in object %s'
