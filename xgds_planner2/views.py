@@ -7,12 +7,12 @@
 import os
 import glob
 import json
+
 from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponse
 from django.template import RequestContext
-from xgds_planner2 import settings
-from xgds_planner2 import models
-# from django.utils.translation import ugettext, ugettext_lazy as _
+
+from xgds_planner2 import settings, models
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -89,14 +89,20 @@ def jsonResponse(obj, compact=False):
     return HttpResponse(text, content_type='application/json')
 
 
-def planPlannerXpjson(request, uuid, name):
-    plan = getPlan(uuid)
-    return jsonResponse(plan.jsonPlan.toDotDict())
+def planExport(request, uuid, name):
+    dbPlan = getPlan(uuid)
 
+    formatCode = request.GET.get('format')
+    if formatCode is not None:
+        # user explicitly specified e.g. '?format=kml'
+        exporterClass = models.PLAN_EXPORTERS_BY_FORMAT.get(formatCode)
+        if exporterClass is None:
+            return HttpResponseInvalidRequest('invalid export format %s' % formatCode)
+    else:
+        # filename ends with e.g. '.kml'
+        for entry in models.PLAN_EXPORTERS:
+            if name.endswith(entry['extension']):
+                exporterClass = entry['exporterClass']
 
-def planExpandedXpjson(request, uuid, name):
-    return HttpResponse('not implemented')
-
-
-def planKml(request, uuid, name):
-    return HttpResponse('not implemented')
+    exporter = exporterClass()
+    return exporter.getHttpResponse(dbPlan)

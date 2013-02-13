@@ -18,9 +18,9 @@ td.exportFormat {
 {% for plan in plans %}
   <tr>
     <td style="padding-right: 20px;">{{ plan.name }}</td>
-    <td class="exportFormat"><a href="{{ plan.plannerXpjsonUrl }}">Planner XPJSON</a></td>
-    <td class="exportFormat"><a href="{{ plan.expandedXpjsonUrl }}">Expanded XPJSON</a></td>
-    <td class="exportFormat"><a href="{{ plan.kmlUrl }}">KML</a></td>
+    {% for fmt in settings. %}
+      <td class="exportFormat"><a href="{{ ... }}">...</a></td>
+    {% endfor %}
   </tr>
 {% endfor %}
 </table>

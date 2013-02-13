@@ -29,6 +29,10 @@ THIS_MODULE = sys.modules[__name__]
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 JSON_SCHEMA_PATH_PLAN_SCHEMA = os.path.join(THIS_DIR, 'xpjsonSpec', 'xpjsonPlanSchemaDocumentSchema.json')
 
+EXAMPLE_PLAN_SCHEMA_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanSchema.json')
+EXAMPLE_PLAN_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlan.json')
+EXAMPLE_PLAN_LIBRARY_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanLibrary.json')
+
 CRS84 = dotDict.DotDict({
     "type": "name",
     "properties": {
@@ -583,6 +587,11 @@ class PathElement(TypedObject):
     sequence = Field('array.custom', default=[])
     libraryId = Field('string')
 
+    def __init__(self, objDict, **kwargs):
+        super(PathElement, self).__init__(objDict, **kwargs)
+        self.sequence = [Command(elt, **kwargs)
+                         for elt in self.sequence]
+
 
 class Station(PathElement):
     """
@@ -606,9 +615,6 @@ class Segment(PathElement):
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].segmentParamsLookup
         super(Segment, self).__init__(objDict, **kwargs)
-
-        self.sequence = [Command(elt, **kwargs)
-                         for elt in self.get('sequence')]
 
 
 class Command(TypedObject):

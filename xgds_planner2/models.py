@@ -17,6 +17,37 @@ from django.core.urlresolvers import reverse
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasField import ExtrasField
 
+from xgds_planner2 import xpjson, settings
+
+def getModClass(name):
+    """converts 'xgds_planner.forms.PlanMetaForm' to ['xgds_planner.forms', 'PlanMetaForm']"""
+    try:
+        dot = name.rindex('.')
+    except ValueError:
+        return name, ''
+    return name[:dot], name[dot + 1:]
+
+
+def getClassByName(qualifiedName):
+    """converts 'xgds_planner.forms.PlanMetaForm' to the PlanMetaForm class object in
+    module xgds_planner.forms"""
+    modName, klassName = getModClass(qualifiedName)
+    __import__(modName)
+    mod = sys.modules[modName]
+    return getattr(mod, klassName)
+
+
+SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
+
+PLAN_EXPORTERS = []
+PLAN_EXPORTERS_BY_FORMAT = {}
+for formatCode, extension, exporterClassName in XGDS_PLANNER_PLAN_EXPORTERS:
+    exporterClass = getModClass(exporterClassName)
+    PLAN_EXPORTERS.append({'formatCode': formatCode,
+                           'extension': extension,
+                           'exporterClass': exporterClass})
+    PLAN_EXPORTERS_BY_FORMAT[formatCode] = exporterClass
+
 
 class Plan(models.Model):
     uuid = UuidField(primary_key=True)
@@ -41,6 +72,10 @@ class Plan(models.Model):
             self.creator = None
 
         return self
+
+    def toXpjson(self):
+        return xpjson.loadDocumentFromDict(self.jsonPlan.toDotDict(),
+                                           schema=SCHEMA)
 
     def escapedName(self):
         name = re.sub(r'[^\w]', '', self.name)

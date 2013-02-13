@@ -45,6 +45,8 @@ PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
 ###
 """
 
+import os
+
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
@@ -78,3 +80,14 @@ XGDS_PLANNER_PIPELINE_CSS = {
         'output_filenames': 'css/planner_app.css',
     },
 }
+
+_thisDir = os.path.dirname(__file__)
+
+# you will generally want to override this with your domain-specific schema
+XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSchema.json')
+
+# list of (formatCode, extension, exporterClass)
+XGDS_PLANNER_PLAN_EXPORTERS = (
+    ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
+    ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
+)
