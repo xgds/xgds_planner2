@@ -4,8 +4,31 @@
 {{ block.super }}
 
 <style type="text/css">
-td.exportFormat {
-  padding-right: 10px;
+table.planIndex td, th {
+    text-align: left;
+}
+
+table.planIndex td.exportFormat a {
+    padding-right: 10px;
+}
+
+table.planIndex .right {
+    text-align: right;
+}
+
+table.planIndex td {
+    vertical-align: top;
+    padding-right: 10px;
+}
+
+table.planIndex td.name {
+    font-weight: bold;
+    padding-right: 20px;
+}
+
+table.planIndex td.stats {
+    color: #444;
+    font-style: italic;
 }
 </style>
 
@@ -14,13 +37,27 @@ td.exportFormat {
 {% block content %}
 {{ block.super }}
 
-<table>
+<table class="planIndex">
+  <tr>
+    <th>Name</th>
+    <th>Export</th>
+    <th>#Stn</th>
+    <th>#Cmd</th>
+    <th>#Cmd by type</th>
+  </tr>
 {% for plan in plans %}
   <tr>
-    <td style="padding-right: 20px;">{{ plan.name }}</td>
-    {% for fmt in settings. %}
-      <td class="exportFormat"><a href="{{ ... }}">...</a></td>
-    {% endfor %}
+    <td class="name">{{ plan.name }}</td>
+    <td class="exportFormat">
+      {% for exporter in plan.getExporters %}
+        <a href="{{ exporter.url }}">
+          {{ exporter.label }}
+        </a>
+      {% endfor %}
+    </td>
+    <td class="stats right">{{ plan.numStations }}</td>
+    <td class="stats right">{{ plan.numCommands }}</td>
+    <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
   </tr>
 {% endfor %}
 </table>

@@ -68,29 +68,18 @@ def planIndex(request):
     return render_to_response(
         'xgds_planner2/planIndex.html',
         {
-            'plans': models.Plan.objects.all()
+            'plans': models.Plan.objects.all(),
+            'exporters': models.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
 
 
-def getPlan(uuid):
+def getDbPlan(uuid):
     return get_object_or_404(models.Plan, uuid=uuid)
 
 
-def jsonText(obj, compact=False):
-    if compact:
-        return json.dumps(obj, separators=',:')
-    else:
-        return json.dumps(obj, sort_keys=True, indent=4)
-
-
-def jsonResponse(obj, compact=False):
-    text = jsonText(obj, compact)
-    return HttpResponse(text, content_type='application/json')
-
-
 def planExport(request, uuid, name):
-    dbPlan = getPlan(uuid)
+    dbPlan = getDbPlan(uuid)
 
     formatCode = request.GET.get('format')
     if formatCode is not None:
@@ -101,8 +90,8 @@ def planExport(request, uuid, name):
     else:
         # filename ends with e.g. '.kml'
         for entry in models.PLAN_EXPORTERS:
-            if name.endswith(entry['extension']):
-                exporterClass = entry['exporterClass']
+            if name.endswith(entry.extension):
+                exporterClass = entry.exporterClass
 
     exporter = exporterClass()
     return exporter.getHttpResponse(dbPlan)

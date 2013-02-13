@@ -5,6 +5,9 @@
 # __END_LICENSE__
 
 import copy
+import json
+
+from django.http import HttpResponse
 
 from geocamUtil.dotDict import DotDict
 
@@ -23,7 +26,7 @@ class PlanExporter(object):
     the serializeExportedObject() method.
     """
 
-    description = 'Describe the type of file the class exports. Set in subclasses.'
+    label = 'Describe the type of file the class exports. Set in subclasses.'
     content_type = 'The MIME type of the file the class exports. Set in subclasses.'
 
     def exportDbPlan(self, dbPlan):
@@ -110,7 +113,7 @@ class TreeWalkPlanExporter(PlanExporter):
         return self.transformSegment(segment, tsequence, context)
 
     def exportPlan(self, plan):
-        plan = copy.copy(plan)
+        plan = copy.deepcopy(plan)
         index = 0
         tsequence = []
         context = DotDict({
@@ -144,7 +147,7 @@ class ExamplePlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     a JSON summary of the ids in the plan.
     """
 
-    description = 'Summary'
+    label = 'Summary'
 
     def transformPlan(self, plan, tsequence, context):
         return {'id': plan.id, 'sequence': tsequence}
@@ -162,13 +165,12 @@ class ExamplePlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         return command.id
 
 
-class XpjsonPlanExporter(PlanExporter):
+class XpjsonPlanExporter(JsonPlanExporter):
     """
     Just export the plan as-is.
     """
 
-    description = 'XPJSON'
-    content_type = 'application/json'
+    label = 'XPJSON'
 
     def exportDbPlan(self, dbPlan):
-        return dbPlan.jsonPlan
+        return dbPlan.jsonPlan.toDotDict()

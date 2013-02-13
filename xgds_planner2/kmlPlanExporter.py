@@ -15,7 +15,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     Exports plan as KML string.
     """
 
-    description = 'KML'
+    label = 'KML'
     content_type = 'application/vnd.google-earth.kml+xml'
 
     def transformStation(self, station, tsequence, context):

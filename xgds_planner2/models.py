@@ -6,6 +6,9 @@
 
 import re
 import datetime
+import copy
+import sys
+import logging
 
 import iso8601
 from django.db import models
@@ -17,7 +20,7 @@ from django.core.urlresolvers import reverse
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasField import ExtrasField
 
-from xgds_planner2 import xpjson, settings
+from xgds_planner2 import xpjson, settings, statsPlanExporter
 
 def getModClass(name):
     """converts 'xgds_planner.forms.PlanMetaForm' to ['xgds_planner.forms', 'PlanMetaForm']"""
@@ -39,14 +42,23 @@ def getClassByName(qualifiedName):
 
 SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
 
+class ExporterInfo(object):
+    def __init__(self, formatCode, extension, exporterClass):
+        self.formatCode = formatCode
+        self.extension = extension
+        self.exporterClass = exporterClass
+        self.label = exporterClass.label
+        self.url = None
+
+
 PLAN_EXPORTERS = []
 PLAN_EXPORTERS_BY_FORMAT = {}
-for formatCode, extension, exporterClassName in XGDS_PLANNER_PLAN_EXPORTERS:
-    exporterClass = getModClass(exporterClassName)
-    PLAN_EXPORTERS.append({'formatCode': formatCode,
-                           'extension': extension,
-                           'exporterClass': exporterClass})
-    PLAN_EXPORTERS_BY_FORMAT[formatCode] = exporterClass
+for formatCode, extension, exporterClassName in settings.XGDS_PLANNER_PLAN_EXPORTERS:
+    exporterInfo = ExporterInfo(formatCode,
+                                extension,
+                                getClassByName(exporterClassName))
+    PLAN_EXPORTERS.append(exporterInfo)
+    PLAN_EXPORTERS_BY_FORMAT[formatCode] = exporterInfo
 
 
 class Plan(models.Model):
@@ -57,6 +69,20 @@ class Plan(models.Model):
 
     # the canonical serialization of the plan exchanged with javascript clients
     jsonPlan = ExtrasField()
+
+    # a place to put an auto-generated summary of the plan
+    summary = models.CharField(max_length=256)
+
+    # cache commonly used stats derived from the plan (relatively expensive to calculate)
+    numStations = models.PositiveIntegerField(null=True, blank=True)
+    numSegments = models.PositiveIntegerField(null=True, blank=True)
+    numCommands = models.PositiveIntegerField(null=True, blank=True)
+    lengthMeters = models.FloatField(null=True, blank=True)
+    estimatedDurationSeconds = models.FloatField(null=True, blank=True)
+    stats = ExtrasField()  # a place for richer stats such as numCommandsByType
+
+    class Meta:
+        ordering = ['-dateModified']
 
     def extractFromJson(self, overWriteDateModified=True):
         if overWriteDateModified:
@@ -71,7 +97,23 @@ class Plan(models.Model):
         else:
             self.creator = None
 
+        # fill in stats
+        try:
+            exporter = statsPlanExporter.StatsPlanExporter()
+            stats = exporter.exportDbPlan(self)
+            for f in ('numStations', 'numSegments', 'numCommands'):
+                setattr(self, f, stats[f])
+            for f in ('numCommandsByType',):
+                setattr(self.stats, f, stats[f])
+
+            self.summary = statsPlanExporter.getSummary(stats)
+        except:
+            logging.warning('extractFromJson: could not extract stats from plan %s' % plan.uuid)
+
         return self
+
+    def getSummaryOfCommandsByType(self):
+        return statsPlanExporter.getSummaryOfCommandsByType(self.stats)
 
     def toXpjson(self):
         return xpjson.loadDocumentFromDict(self.jsonPlan.toDotDict(),
@@ -84,14 +126,19 @@ class Plan(models.Model):
         else:
             return name
 
-    def plannerXpjsonUrl(self):
-        return reverse('planner2_planPlannerXpjson', args=[self.uuid, self.escapedName()])
+    def getExportUrl(self, extension):
+        return reverse('planner2_planExport',
+                       args=[self.uuid, self.escapedName() + extension])
 
-    def expandedXpjsonUrl(self):
-        return reverse('planner2_planExpandedXpjson', args=[self.uuid, self.escapedName()])
-
-    def kmlUrl(self):
-        return reverse('planner2_planKml', args=[self.uuid, self.escapedName()])
+    def getExporters(self):
+        result = []
+        for exporterInfo in PLAN_EXPORTERS:
+            info = copy.deepcopy(exporterInfo)
+            info.url = self.getExportUrl(info.extension)
+            result.append(info)
+        import sys
+        print >> sys.stderr, result
+        return result
 
     def __unicode__(self):
         if self.name:
