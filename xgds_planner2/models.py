@@ -18,7 +18,7 @@ from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
-from geocamUtil.models.ExtrasField import ExtrasField
+from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
 
@@ -68,7 +68,7 @@ class Plan(models.Model):
     creator = models.ForeignKey(User, null=True, blank=True)
 
     # the canonical serialization of the plan exchanged with javascript clients
-    jsonPlan = ExtrasField()
+    jsonPlan = ExtrasDotField()
 
     # a place to put an auto-generated summary of the plan
     summary = models.CharField(max_length=256)
@@ -79,7 +79,7 @@ class Plan(models.Model):
     numCommands = models.PositiveIntegerField(null=True, blank=True)
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
-    stats = ExtrasField()  # a place for richer stats such as numCommandsByType
+    stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
 
     class Meta:
         ordering = ['-dateModified']
@@ -101,14 +101,15 @@ class Plan(models.Model):
         try:
             exporter = statsPlanExporter.StatsPlanExporter()
             stats = exporter.exportDbPlan(self)
-            for f in ('numStations', 'numSegments', 'numCommands'):
+            for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters'):
                 setattr(self, f, stats[f])
             for f in ('numCommandsByType',):
                 setattr(self.stats, f, stats[f])
 
             self.summary = statsPlanExporter.getSummary(stats)
         except:
-            logging.warning('extractFromJson: could not extract stats from plan %s' % plan.uuid)
+            logging.warning('extractFromJson: could not extract stats from plan %s' % self.uuid)
+            raise # FIX
 
         return self
 
@@ -116,7 +117,7 @@ class Plan(models.Model):
         return statsPlanExporter.getSummaryOfCommandsByType(self.stats)
 
     def toXpjson(self):
-        return xpjson.loadDocumentFromDict(self.jsonPlan.toDotDict(),
+        return xpjson.loadDocumentFromDict(self.jsonPlan,
                                            schema=SCHEMA)
 
     def escapedName(self):

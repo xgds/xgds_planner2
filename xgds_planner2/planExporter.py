@@ -173,4 +173,4 @@ class XpjsonPlanExporter(JsonPlanExporter):
     label = 'XPJSON'
 
     def exportDbPlan(self, dbPlan):
-        return dbPlan.jsonPlan.toDotDict()
+        return dbPlan.jsonPlan

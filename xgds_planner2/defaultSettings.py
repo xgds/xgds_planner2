@@ -90,4 +90,5 @@ XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSche
 XGDS_PLANNER_PLAN_EXPORTERS = (
     ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
     ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
+    ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
 )
