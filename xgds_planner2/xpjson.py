@@ -16,7 +16,6 @@ import pprint
 import re
 import logging
 
-import jsonschema
 import iso8601
 
 from django.core.validators import URLValidator
