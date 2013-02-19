@@ -71,7 +71,7 @@ for formatCode, extension, exporterClassName in settings.XGDS_PLANNER_PLAN_EXPOR
 
 class Plan(models.Model):
     uuid = UuidField(primary_key=True)
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, db_index=True, unique=True)
     dateModified = models.DateTimeField()
     creator = models.ForeignKey(User, null=True, blank=True)
 
