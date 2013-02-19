@@ -708,7 +708,7 @@ class PlanLibrary(Document):
 
 
 def encodeWithClassName(obj):
-    if hasattr(obj, '_objDict'):
+    if hasattr(obj, '_objDict') and obj._objDict != None:
         return obj._objDict
     else:
         return obj
