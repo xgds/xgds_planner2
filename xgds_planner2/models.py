@@ -42,6 +42,14 @@ def getClassByName(qualifiedName):
 
 SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
 
+_schema = 'xgds_planner2/schema.json'
+_library = 'xgds_planner2/library.json'
+SIMPLIFIED_SCHEMA_PATH = settings.STATIC_ROOT + _schema
+SIMPLIFIED_LIBRARY_PATH = settings.STATIC_ROOT + _library
+SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
+SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
+
+
 class ExporterInfo(object):
     def __init__(self, formatCode, extension, exporterClass):
         self.formatCode = formatCode

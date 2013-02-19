@@ -83,8 +83,12 @@ XGDS_PLANNER_PIPELINE_CSS = {
 
 _thisDir = os.path.dirname(__file__)
 
-# you will generally want to override this with your domain-specific schema
+# You will generally want to override these with your domain-specific
+# schema and library.  Note that manage.py prep builds simplified
+# versions of the schema and library. their locations are found in
+# models.py, e.g. SIMPLIFIED_SCHEMA_PATH.
 XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSchema.json')
+XGDS_PLANNER_LIBRARY_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanLibrary.json')
 
 # list of (formatCode, extension, exporterClass)
 XGDS_PLANNER_PLAN_EXPORTERS = (
