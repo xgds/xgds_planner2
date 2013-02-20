@@ -1,0 +1,21 @@
+<form id="meta">
+    <label>Name</label>
+    <input id="name" type="text" value="{{name}}"/>
+
+    <label>Notes</label>
+    <textarea id="notes" rows=3 >{{notes}}</textarea>
+    
+    {{#if platform }}
+        <label>Platform</label>
+        <select id="platform">
+            <option>{{platform.name}}</option>
+        </select>
+    {{/if}}
+    {{#if site}}
+        <label>Site</label>
+        <select id="site">
+            <option>{{platform.id}}</option>
+        </select>
+    {{/if}}
+
+</form>
