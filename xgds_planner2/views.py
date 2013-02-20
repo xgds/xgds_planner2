@@ -46,8 +46,10 @@ def plan_REST(request, name):
     plan = models.Plan.objects.get(name=name)
     return HttpResponse( json.dumps(plan.jsonPlan), content_type='applicaiton/json' )
 
-with open(settings.XGDS_PLANNER_SCHEMA_PATH) as schemafile:
+with open(os.path.join(settings.MEDIA_ROOT, 'xgds_planner2/schema.json')) as schemafile:
     SCHEMA = schemafile.read()
+with open(os.path.join(settings.MEDIA_ROOT, 'xgds_planner2/library.json')) as libraryfile:
+    LIBRARY = libraryfile.read()
 
 def plan_editor_app(request, plan_name=None, editable=True):
     templates = get_handlebars_templates()
@@ -63,6 +65,7 @@ def plan_editor_app(request, plan_name=None, editable=True):
             'templates': templates,
             'settings': settings,
             'plan_schema_json': SCHEMA,
+            'plan_library_json': LIBRARY,
             'plan_json': plan_json,
             'editable': editable,
         }),

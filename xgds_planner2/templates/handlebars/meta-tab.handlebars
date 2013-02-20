@@ -5,16 +5,25 @@
     <label>Notes</label>
     <textarea id="notes" rows=3 >{{notes}}</textarea>
     
-    {{#if platform }}
+    {{#if platforms }}
         <label>Platform</label>
         <select id="platform">
-            <option>{{platform.name}}</option>
+            {{#each platforms}}
+            <option value="{{id}}" {{#ifequal id ../platform.id}}selected=true{{/ifequal}}>
+                {{name}}
+            </option>
+            {{/each}}
+
         </select>
     {{/if}}
-    {{#if site}}
+    {{#if sites}}
         <label>Site</label>
         <select id="site">
-            <option>{{platform.id}}</option>
+            {{#each sites}}
+                <option value="{{id}}" {{#ifequal id ../site.id}}selected=true{{/ifequal}}>
+                    {{name}}
+                </option>
+            {{/each}}
         </select>
     {{/if}}
 
