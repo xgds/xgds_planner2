@@ -18,12 +18,15 @@ one of the steps is "prepapps", which calls
 management/appCommands/prep.py command for each app (if it exists).
 """
 
+import os
+
 from django.core.management.base import NoArgsCommand
+
+from xgds_planner2 import compileXpjson
 
 
 class Command(NoArgsCommand):
     help = 'Prep xgds_planner2'
 
     def handle_noargs(self, **options):
-        # put your code here
-        pass
+        compileXpjson.compileXpjson()

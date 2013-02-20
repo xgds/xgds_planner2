@@ -8,3 +8,5 @@
 # http://pip.openplans.org/requirement-format.html
 
 django-pipeline==1.3.0
+django-pipeline
+jsonschema

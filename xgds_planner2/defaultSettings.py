@@ -45,6 +45,8 @@ PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
 ###
 """
 
+import os
+
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
@@ -57,8 +59,10 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/handlebars.js',
             'external/js/backbone.js',
             'external/js/backbone.marionette.js',
+            'external/js/backbone-relational.js',
             'external/js/bootstrap.min.js',
 
+            'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',
             'xgds_planner2/js/views.js',
@@ -78,3 +82,19 @@ XGDS_PLANNER_PIPELINE_CSS = {
         'output_filenames': 'css/planner_app.css',
     },
 }
+
+_thisDir = os.path.dirname(__file__)
+
+# You will generally want to override these with your domain-specific
+# schema and library.  Note that manage.py prep builds simplified
+# versions of the schema and library. their locations are found in
+# models.py, e.g. SIMPLIFIED_SCHEMA_PATH.
+XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSchema.json')
+XGDS_PLANNER_LIBRARY_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanLibrary.json')
+
+# list of (formatCode, extension, exporterClass)
+XGDS_PLANNER_PLAN_EXPORTERS = (
+    ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
+    ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
+    ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
+)

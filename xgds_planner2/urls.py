@@ -13,14 +13,10 @@ urlpatterns = patterns(
     '',
 
     #url(r'^$', direct_to_template, {'template': 'planner_app.html'}, name='planner2'),
-    url(r'^$', views.plan_editor_app, {}, name='planner2'),
     url(r'^index/$', views.planIndex, {}, name='planner2_index'),
-    url(r'^plan/(?P<uuid>[\w-]+)/(?P<name>[^\./-]+)\.json$', views.planPlannerXpjson, {},
-        name='planner2_planPlannerXpjson'),
-    url(r'^plan/(?P<uuid>[\w-]+)/(?P<name>[^\./-]+)-expanded\.json$', views.planExpandedXpjson, {},
-        name='planner2_planExpandedXpjson'),
-    url(r'^plan/(?P<uuid>[\w-]+)/(?P<name>[^\./]+)\.kml$', views.planKml, {},
-        name='planner2_planKml'),
+    url(r'^edit/(?P<plan_name>[^/]+)$', views.plan_editor_app, {}, name='planner2j_edit'),
+    url(r'^plan/(?P<name>[^/]+)\.json$', views.plan_REST, {}, name="planner2_planREST"),
+    url(r'^plan/export/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {}, name='planner2_planExport'),
     #url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

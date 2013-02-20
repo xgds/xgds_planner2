@@ -5,6 +5,43 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
 });
 
+app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
+    // Responsible for rendering the "Meta" tab
+    template: '#template-meta-tab',
+    serializeData: function(){
+        data = this.model.toJSON();
+        data.sites = app.planLibrary.sites;
+        data.platforms = app.planLibrary.platforms;
+        return data;
+    },
+});
+
+app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
+    template: '#template-sequence-view',
+
+    regions: {
+        //Column Headings
+        colhead1: '#colhead1',
+        colhead2: '#colhead2',
+        colhead3: '#colhead3',
+
+        //Column content
+        col1: '#col1',
+        col2: '#col2',
+        col3: '#col3',
+    },
+});
+
+app.views.StationListItemView = Backbone.Marionette.ItemView.extend({
+    template: '#template-station-list-item',
+});
+
+app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
+    tagName: 'ul',
+    className: 'sequence-list station-list',
+    itemView: app.views.StationListItemView,
+});
+
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
     template: '#template-tabnav',
     regions:{
@@ -15,8 +52,20 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         'click ul.nav-tabs li': 'clickSelectTab',
     },
 
+    viewMap: {
+        'meta': app.views.PlanMetaView,
+        'sequence': app.views.PlanSequenceView,
+    },
+
     initialize: function(){
         this.on('tabSelected', this.setTab);
+    },
+
+    onRender: function(){
+        if ( ! this.options.initialTab ) {
+            this.options.initialTab = "meta";
+        }
+        this.trigger('tabSelected', this.options.initialTab); 
     },
 
     clickSelectTab: function(event){
@@ -34,9 +83,11 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
                 li.removeClass('active');
             }
         });
-//        var viewClass = this.viewMap[tabId]
-//        var view = new viewClass();
-//        this.tabContent.show(view);
+        var viewClass = this.viewMap[tabId]
+        var view = new viewClass({
+            model: app.currentPlan,
+        });
+        this.tabContent.show(view);
     },
     
 });
