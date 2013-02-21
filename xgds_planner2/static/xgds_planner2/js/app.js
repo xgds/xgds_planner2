@@ -31,8 +31,25 @@ var app = (function($, _, Backbone){
         app.toolbar.show( new app.views.ToolbarView );
         app.tabs.show( new app.views.TabNavView )
     });
-    
+
+    app.router = new Backbone.Router({
+        routes:{
+            "meta": "meta",
+            "sequence": "sequence",
+            "layers": "layers",
+            "tools": "tools",
+        },
+    });
+
+    app.router.on('all', function(eventname){
+        console.log("Router event: "+eventname);
+    });
+
+    app.addInitializer( _.bind(Backbone.history.start, Backbone.history) );
+
     return app;
+
+    
 }(jQuery, _, Backbone));
 
 

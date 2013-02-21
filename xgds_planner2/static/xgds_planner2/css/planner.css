@@ -1,3 +1,31 @@
 .nav-tabs li:hover{
     cursor: pointer;
 }
+
+div[id^="col"] > li:hover {
+    cursor: pointer;
+}
+
+.nav-tabs > li.active a {
+    background-color: #d4d4d4;
+}
+
+li.station-sequence-item {
+    border-style: none;
+    border-width: 1px;
+    margin-top: 4px;
+    margin-right: 0px;
+    margin-bottom: 4px;
+    margin-left: 0;
+    background-color: #a3a8ff;
+}
+
+
+.scrolling_column {
+    border-style: solid;
+    border-color: green;
+    border-width: 1px;
+    padding: 0px;
+    margin: 0px;
+    overflow-y: scroll;
+}

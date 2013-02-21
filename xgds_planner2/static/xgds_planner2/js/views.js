@@ -30,16 +30,31 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         col2: '#col2',
         col3: '#col3',
     },
+
+    onRender: function(){
+        app.psv = this;
+        var sscView = new app.views.StationSequenceCollectionView({
+            collection: app.currentPlan.get('sequence'),   
+        });
+        //debugger;
+        this.col1.show(sscView);
+    },
+
 });
 
 app.views.StationListItemView = Backbone.Marionette.ItemView.extend({
     template: '#template-station-list-item',
+    //initialize: function(){debugger;},
 });
 
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     tagName: 'ul',
     className: 'sequence-list station-list',
     itemView: app.views.StationListItemView,
+    onRender: function(){
+        //debugger;
+        app.sscv = this;
+    },
 });
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
@@ -52,7 +67,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         'click ul.nav-tabs li': 'clickSelectTab',
     },
 
-    viewMap: {
+    viewHash: {
         'meta': app.views.PlanMetaView,
         'sequence': app.views.PlanSequenceView,
     },
@@ -83,11 +98,12 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
                 li.removeClass('active');
             }
         });
-        var viewClass = this.viewMap[tabId]
+        var viewClass = this.viewHash[tabId]
         var view = new viewClass({
             model: app.currentPlan,
         });
         this.tabContent.show(view);
+        app.router.navigate(tabId);
     },
     
 });
