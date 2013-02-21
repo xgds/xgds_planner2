@@ -64,7 +64,12 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return KmlUtil.wrapKmlDocument('\n'.join(tsequence), plan.id)
 
 
-schema = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_SCHEMA_PATH)
-plan = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_PATH, schema=schema)
-exporter = KmlPlanExporter()
-open('/tmp/foo.kml', 'wb').write(exporter.exportPlan(plan))
+def test():
+    schema = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_SCHEMA_PATH)
+    plan = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_PATH, schema=schema)
+    exporter = KmlPlanExporter()
+    open('/tmp/foo.kml', 'wb').write(exporter.exportPlan(plan))
+
+
+if __name__ == '__main__':
+    test()
