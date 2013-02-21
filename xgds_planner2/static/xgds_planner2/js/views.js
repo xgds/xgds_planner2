@@ -43,8 +43,17 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 });
 
 app.views.StationListItemView = Backbone.Marionette.ItemView.extend({
-    template: '#template-station-list-item',
-    //initialize: function(){debugger;},
+    tagName: 'li',
+    className: 'station-sequence-item',
+    //template: '#template-station-list-item',
+    template: function(data){
+        return '' + data.id + ' <i/>';
+    },
+    attributes: function(){
+        return {
+            'data-item-id': this.model.get('id'),
+        };
+    },
 });
 
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
