@@ -31,6 +31,10 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         col3: '#col3',
     },
 
+    initialize: function(){
+        app.vent.on('showItem', this.showItem, this);
+    },
+
     onRender: function(){
         app.psv = this;
         var sscView = new app.views.StationSequenceCollectionView({
@@ -40,19 +44,36 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col1.show(sscView);
     },
 
+    showItem: function(itemModel){
+        if (itemModel.get('type') === 'Station') {
+            var view = new app.views.CommandSequenceCollectionView( { collection: itemModel.get('sequence') } );
+            this.col2.show( view );
+        } else if (itemModel.get('type') === 'Segment') {
+            // Display a segment view in col2
+        } else { // Assume we're dealing with a Command
+            var view = new app.views.CommandPropertiesView( {model: itemModel} );
+            this.col3.show(view);
+        }
+    },
+
 });
 
-app.views.StationListItemView = Backbone.Marionette.ItemView.extend({
+app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
+    // The list item is a simple enough DOM subtree that we'll let the view build it's own root element.
     tagName: 'li',
-    className: 'station-sequence-item',
-    //template: '#template-station-list-item',
     template: function(data){
         return '' + data.id + ' <i/>';
     },
     attributes: function(){
         return {
             'data-item-id': this.model.get('id'),
+            'class': this.model.get('type').toLowerCase() + '-sequence-item',
         };
+    },
+    events: {
+        click: function(){
+            app.vent.trigger('showItem', this.model);
+        },
     },
 });
 
@@ -111,7 +132,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         'click ul.nav-tabs li': 'clickSelectTab',
     },
 
-    viewHash: {
+    viewMap: {
         'meta': app.views.PlanMetaView,
         'sequence': app.views.PlanSequenceView,
     },
@@ -142,12 +163,12 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
                 li.removeClass('active');
             }
         });
-        var viewClass = this.viewHash[tabId]
+        var viewClass = this.viewMap[tabId]
         var view = new viewClass({
             model: app.currentPlan,
         });
         this.tabContent.show(view);
-        app.router.navigate(tabId);
     },
     
 });
+
