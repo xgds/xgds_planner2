@@ -59,10 +59,45 @@ app.views.StationListItemView = Backbone.Marionette.ItemView.extend({
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     tagName: 'ul',
     className: 'sequence-list station-list',
-    itemView: app.views.StationListItemView,
-    onRender: function(){
-        //debugger;
-        app.sscv = this;
+    itemView: app.views.SequenceListItemView,
+});
+
+app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
+    template: function(data){
+        return '' + data.typeCode + '<i/>'
+    },
+});
+
+app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
+    tagName: 'ul',
+    className: 'sequence-list command-list',
+    itemView: app.views.CommandSequenceListItemView,
+});
+
+
+/*
+var commandsByTypeCode = (function(commands){
+    var indexed = {};
+    _.each(commands, function(command){
+        index[command.typeCode] = command;
+    });
+    return indexed;
+})(app.planLibrary.commands);
+*/
+
+app.views.CommandPropertiesView = Backbone.Marionette.ItemView.extend({
+    template: '#template-command-properties',
+    serializeData: function(){
+        var data = this.model.toJSON();
+        var properties = [];
+        _.each( _.pairs(data), function(pair){
+            properties.push({
+                key: pair[0],
+                value: pair[1]
+            });
+        });
+        data.properties = properties;
+        return data;
     },
 });
 
