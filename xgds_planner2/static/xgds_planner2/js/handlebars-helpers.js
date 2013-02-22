@@ -27,3 +27,7 @@ Handlebars.registerHelper('ifequal', function (val1, val2, options) {
         return options.inverse();
     }
 });
+
+Handlebars.registerHelper('getattr', function(obj, key) {
+    return obj[key];
+});
