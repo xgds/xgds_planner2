@@ -584,7 +584,6 @@ class PathElement(TypedObject):
     """
 
     sequence = Field('array.custom', default=[])
-    libraryId = Field('string')
 
     def __init__(self, objDict, **kwargs):
         super(PathElement, self).__init__(objDict, **kwargs)
@@ -621,8 +620,6 @@ class Command(TypedObject):
     Implements the Command type from the XPJSON spec (as well as
     inherited types defined by CommandSpecs in the PlanSchema)
     """
-
-    libraryId = Field('string')
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = (kwargs['schema']

@@ -96,7 +96,6 @@ An XPJSON Plan_::
       {
         "type": "Station",
         "name": "Rover Staging Area",
-        "libraryId": "RoverStagingArea",
         "id": "00",
         "geometry": {
           "type": "Point",
@@ -112,7 +111,7 @@ An XPJSON Plan_::
           {
             "type": "PeriodicPancam",
             "id": "01_0_SPP",
-            "libraryId": "SPP",
+            "presetCode": "SPP",
             "whiteBalance": "A",
             "focalLengthMm": 7.4,
             "intervalSeconds": 5
@@ -131,7 +130,7 @@ An XPJSON Plan_::
           {
             "type": "MicroImage",
             "id": "02_0_MI",
-            "libraryId": "MI",
+            "presetCode": "MI",
             "whiteBalance": "A",
             "focalLengthMm": 10.1
           }
@@ -167,7 +166,7 @@ The PlanSchema_ that the Plan_ conforms to::
 
     "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
     "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s",
+    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.presetCode)s",
 
     "segmentParams": [
       {
@@ -212,6 +211,13 @@ The PlanSchema_ that the Plan_ conforms to::
             "type": "ParamSpec",
             "id": "duration",
             "parent": "duration"
+          },
+          {
+            "type": "ParamSpec",
+            "id": "presetCode",
+            "name": "Preset code",
+            "valueType": "string",
+            "notes": "Identifies the PlanLibrary preset that was used to initialize the command"
           }
         ]
       },
@@ -334,7 +340,7 @@ the plan::
       {
         "type": "PeriodicPancam",
         "name": "FastPeriodicPancam",
-        "id": "FPP",
+        "presetCode": "FPP",
         "whiteBalance": "A",
         "focalLengthMm": 7.4,
         "intervalSeconds": 2
@@ -342,7 +348,7 @@ the plan::
       {
         "type": "PeriodicPancam",
         "name": "SlowPeriodicPancam",
-        "id": "SPP",
+        "presetCode": "SPP",
         "whiteBalance": "A",
         "focalLengthMm": 7.4,
         "intervalSeconds": 5
@@ -578,13 +584,6 @@ Inherits from:
 |                   |                |                 |planning interface according to a   |
 |                   |                |                 |naming convention.                  |
 +-------------------+----------------+-----------------+------------------------------------+
-|``libraryId``      |string          |optional         |When a user copies a command from   |
-|                   |                |                 |the PlanLibrary_ into a Plan_, the  |
-|                   |                |                 |planning interface should copy the  |
-|                   |                |                 |``id`` member of the original       |
-|                   |                |                 |command into the ``libraryId``      |
-|                   |                |                 |member of the copy.                 |
-+-------------------+----------------+-----------------+------------------------------------+
 
 Command Subclasses
 ~~~~~~~~~~~~~~~~~~
@@ -641,7 +640,6 @@ Example instance of a "DriveForward" subclass::
 
     // inherited from Command
     "stationId": "ARC_R001A00",
-    "libraryId": "FWD",
 
     // defined in DriveForward CommandSpec
     "distance": 0.5,
@@ -947,13 +945,6 @@ Inherits from:
 |                  |Command_ and    |                 |be executed at this PathElement.    |
 |                  |StopCommand_    |                 |                                    |
 |                  |entries         |                 |                                    |
-+------------------+----------------+-----------------+------------------------------------+
-|``libraryId``     |string          |optional         |When a user copies an element from  |
-|                  |                |                 |the PlanLibrary_ into a Plan_, the  |
-|                  |                |                 |planning interface should record the|
-|                  |                |                 |``id`` member of the original       |
-|                  |                |                 |element in the ``libraryId`` member |
-|                  |                |                 |of the copy.                        |
 +------------------+----------------+-----------------+------------------------------------+
 
 .. _Plan:
@@ -1437,8 +1428,7 @@ Example
     "sequence": [
       { (Command 1) },
       ...
-    ],
-    "libraryId": "(id)"
+    ]
   }
 
 .. _Site:
@@ -1569,8 +1559,7 @@ Example
     "sequence": [
       { (Command 1) },
       ...
-    ],
-    "libraryId": "(id)"
+    ]
   }
 
 .. _StopCommand:
@@ -1702,9 +1691,6 @@ The following variables are available for use in formats:
 |                         |          |                        |``sequence`` array. 0-based        |
 |                         |          |                        |indexing.                          |
 +-------------------------+----------+------------------------+-----------------------------------+
-|command.libraryId        |string    |``commandIdFormat``     |``libraryId`` of the Command_      |
-|                         |          |                        |                                   |
-+-------------------------+----------+------------------------+-----------------------------------+
 |command.type             |string    |``commandIdFormat``     |``type`` of the Command_           |
 +-------------------------+----------+------------------------+-----------------------------------+
 
@@ -1720,7 +1706,7 @@ If the PlanSchema_ contains the following formats::
 
     "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
     "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s"
+    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.presetCode)s"
   }
 
 The resulting Plan_ might have these auto-generated ``id`` values::
@@ -1745,7 +1731,7 @@ The resulting Plan_ might have these auto-generated ``id`` values::
         "sequence": [
           {
             "type": "Drive",
-            "libraryId": "FDR",
+            "presetCode": "FDR",
             "id": "00_0_FDR",
             ...
           }
