@@ -60,6 +60,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/backbone.js',
             'external/js/backbone.marionette.js',
             'external/js/backbone-relational.js',
+            'external/js/backbone-forms.min.js',
             'external/js/bootstrap.min.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
@@ -78,6 +79,7 @@ XGDS_PLANNER_PIPELINE_CSS = {
         'source_filenames': (
             'external/css/bootstrap.css',
             'xgds_planner2/css/planner.css',
+            'css/backbone.forms.default.css',
         ),
         'output_filenames': 'css/planner_app.css',
     },

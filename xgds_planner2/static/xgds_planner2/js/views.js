@@ -50,7 +50,11 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         } else if (itemModel.get('type') === 'Segment') {
             // Display a segment view in col2
         } else { // Assume we're dealing with a Command
-            var view = new app.views.CommandPropertiesView( {model: itemModel, commandSpec: this.commandSpecs[itemModel.get('type')]} );
+            if ( app.readOnly ) {
+                var view = new app.views.CommandPropertiesTableView( {model: itemModel, commandSpec: app.commandSpecs[itemModel.get('type')]} );
+            } else {
+                var view = new Backbone.Form( {model: itemModel} );
+            }
             this.col3.show(view);
         }
     },
@@ -105,7 +109,7 @@ var commandsByTypeCode = (function(commands){
 })(app.planLibrary.commands);
 */
 
-app.views.CommandPropertiesView = Backbone.Marionette.ItemView.extend({
+app.views.CommandPropertiesTableView = Backbone.Marionette.ItemView.extend({
     template: '#template-command-properties',
 
     initialize: function(){
@@ -125,6 +129,7 @@ app.views.CommandPropertiesView = Backbone.Marionette.ItemView.extend({
         return data;
     },
 });
+
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
     template: '#template-tabnav',
