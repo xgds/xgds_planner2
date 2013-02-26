@@ -8,6 +8,9 @@ Backbone.Marionette.TemplateCache.prototype.compileTemplate = function(rawTempla
 };
 
 
+/*
+** Main Application object
+*/
 var app = (function($, _, Backbone){
     app = new Backbone.Marionette.Application();
 
@@ -23,9 +26,18 @@ var app = (function($, _, Backbone){
             readonly: false,
         });
 
-        // The plan schema is global to the planner deployment
-        app.planSchema = JSON.parse( $('#plan_schema_json').html() );
-        app.planLibrary = JSON.parse( $('#plan_library_json').html() );
+        /*
+        * Initialize the plan schema, and build easy-access indecies.
+        * The plan schema is global to the planner deployment
+        */
+        this.planSchema = JSON.parse( $('#plan_schema_json').html() );
+        this.planLibrary = JSON.parse( $('#plan_library_json').html() );
+
+        // Indexes to make command types easier to retrieve.
+        this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
+        this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'typeCode' );
+
+
         var planJson = JSON.parse( $('#plan_json').html() );
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);
@@ -59,6 +71,21 @@ var app = (function($, _, Backbone){
     });
 
     app.addInitializer( _.bind(Backbone.history.start, Backbone.history) );
+
+    /*
+    ** Global utility functions
+    */
+
+    app.util = {
+        indexBy: function( list, keyProp ) {
+            // Return an object that indexes the objects in a list by their key property.
+            // keyProp should be a string.
+            obj = {};
+            _.each(list, function(item) { obj[item[keyProp]] = item; });
+            return obj;
+        },
+    };
+
 
     return app;
 

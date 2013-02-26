@@ -40,7 +40,6 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         var sscView = new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence'),   
         });
-        //debugger;
         this.col1.show(sscView);
     },
 
@@ -51,7 +50,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         } else if (itemModel.get('type') === 'Segment') {
             // Display a segment view in col2
         } else { // Assume we're dealing with a Command
-            var view = new app.views.CommandPropertiesView( {model: itemModel} );
+            var view = new app.views.CommandPropertiesView( {model: itemModel, commandSpec: this.commandSpecs[itemModel.get('type')]} );
             this.col3.show(view);
         }
     },
@@ -108,6 +107,11 @@ var commandsByTypeCode = (function(commands){
 
 app.views.CommandPropertiesView = Backbone.Marionette.ItemView.extend({
     template: '#template-command-properties',
+
+    initialize: function(){
+        this.commandSpec = this.options.commandSpec; // reference to the appropriate planLibrary record
+    },
+
     serializeData: function(){
         var data = this.model.toJSON();
         var properties = [];

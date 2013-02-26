@@ -36,7 +36,30 @@ app.models = app.models || {};
         model: models.Station,
     });
 
+    
+    // Map xpJSON parameter ValueTypes to backbone-forms schema field types
+    var paramTypeHash = {
+        'string': 'Text',
+        'integer': 'Number',
+        'number': 'Number',
+        'boolean': 'Checkbox',
+        'date-time': 'DateTime',
+        'targetId': 'Select',
+    }
+
     models.Command = Backbone.RelationalModel.extend({
+        initialize: function(){
+
+            // Construct a schema compatible with backbone-forms
+            // https://github.com/powmedia/backbone-forms#schema-definition
+            var schema = {};
+            var commandSpec = app.commandSpecs[this.get('type')];
+            _.each(commandSpec.params, function(param){
+                schema[param.id] = paramTypeHash[param.valueType];
+            });
+            this.schema = schema;
+
+        },
     });
 
     models.CommandCollection = Backbone.Collection.extend({
