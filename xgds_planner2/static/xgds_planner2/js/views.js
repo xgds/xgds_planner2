@@ -75,8 +75,22 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     },
     events: {
         click: function(){
+            this.trigger('select');
             app.vent.trigger('showItem', this.model);
         },
+        all: function(evt){
+            console.log("VIEW EVENT TRIGGERED", evt);
+        },
+    },
+    initialize: function(){
+        this.on('select', this.select);
+        this.on('unselect', this.unselect);
+    },
+    select: function(){
+        this.$el.find('i').addClass('icon-chevron-right');
+    },
+    unselect: function(){
+        this.$el.find('i').removeClass('icon-chevron-right');
     },
 });
 
@@ -84,6 +98,15 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     tagName: 'ul',
     className: 'sequence-list station-list',
     itemView: app.views.SequenceListItemView,
+    initialize: function(){
+        this.on('itemview:select', function(selectedChildView) {
+            this.children.each(function(view){
+                if ( view !== selectedChildView) {
+                    view.trigger('unselect');
+                }
+            });
+        });
+    },
 });
 
 app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({

@@ -78,8 +78,8 @@ XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
             'external/css/bootstrap.css',
+            'external/css/backbone.forms.default.css',
             'xgds_planner2/css/planner.css',
-            'css/backbone.forms.default.css',
         ),
         'output_filenames': 'css/planner_app.css',
     },

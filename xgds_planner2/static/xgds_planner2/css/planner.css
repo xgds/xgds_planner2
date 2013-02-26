@@ -42,3 +42,12 @@ li.segment-sequence-item {
     margin: 0px;
     overflow-y: scroll;
 }
+
+#col1 ul, #col2 ul, #col3  ul {
+    margin: 0px;
+    margin-left: 2px;
+}
+
+.bbf-field .bbf-editor {
+    width: 65%;
+}
