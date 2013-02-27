@@ -60,7 +60,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/backbone.js',
             'external/js/backbone.marionette.js',
             'external/js/backbone-relational.js',
-            'external/js/backbone-forms.min.js',
+            'external/js/backbone-forms.js',
             'external/js/bootstrap.min.js',
 
             'xgds_planner2/js/handlebars-helpers.js',

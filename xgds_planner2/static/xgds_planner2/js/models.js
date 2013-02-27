@@ -50,6 +50,7 @@ app.models = app.models || {};
     models.Command = Backbone.RelationalModel.extend({
         initialize: function(){
 
+            /*
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
             var schema = {};
@@ -58,6 +59,7 @@ app.models = app.models || {};
                 schema[param.id] = paramTypeHash[param.valueType];
             });
             this.schema = schema;
+            */
 
         },
     });

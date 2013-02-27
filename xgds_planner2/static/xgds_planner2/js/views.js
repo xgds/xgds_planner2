@@ -50,22 +50,22 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showStation: function(itemModel){
+        this.col2.close();
+        this.col3.close(); // clear the third column
+
         var view = new app.views.CommandSequenceCollectionView( { collection: itemModel.get('sequence') } );
         this.col2.show( view );
-        this.col3.close(); // clear the third column
     },
 
     showSegment: function(itemModel){
         // Display a segment view in col2
+        this.col2.close();
         this.col3.close();
     },
 
     showCommand: function(itemModel){
-        if ( app.readOnly ) {
-            var view = new app.views.CommandPropertiesTableView( {model: itemModel, commandSpec: app.commandSpecs[itemModel.get('type')]} );
-        } else {
-            var view = new app.views.CommandPropertiesFormView( {model: itemModel} );
-        }
+        this.col3.close();
+        var view = new app.views.CommandPropertiesFormView( {model: itemModel, readonly: app.readonly} );
         this.col3.show(view);
     },
 
@@ -100,14 +100,22 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
             console.log("Weird. This never happens.");
         },
     },
+    modelEvents: {
+        "change": "render", // Re-render when the model changes.
+    },
     initialize: function(){
         this.on('select', this.select);
         this.on('unselect', this.unselect);
     },
+    onRender: function(){
+        if (this.selected){ this.select() };
+    },
     select: function(){
+        this.selected = true;
         this.$el.find('i').addClass('icon-chevron-right');
     },
     unselect: function(){
+        this.selected = false;
         this.$el.find('i').removeClass('icon-chevron-right');
     },
 });
@@ -140,39 +148,43 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 });
 
 
-/*
-var commandsByTypeCode = (function(commands){
-    var indexed = {};
-    _.each(commands, function(command){
-        index[command.typeCode] = command;
-    });
-    return indexed;
-})(app.planLibrary.commands);
-*/
+// Map xpJSON parameter ValueTypes to backbone-forms schema field types
+var paramTypeHash = {
+    'string': 'Text',
+    'integer': 'Number',
+    'number': 'Number',
+    'boolean': 'Checkbox',
+    'date-time': 'DateTime',
+    'targetId': 'Select',
+}
 
-app.views.CommandPropertiesTableView = Backbone.Marionette.ItemView.extend({
-    template: '#template-command-properties',
-
-    initialize: function(){
-        this.commandSpec = this.options.commandSpec; // reference to the appropriate planLibrary record
-    },
-
-    serializeData: function(){
-        var data = this.model.toJSON();
-        var properties = [];
-        _.each( _.pairs(data), function(pair){
-            properties.push({
-                key: pair[0],
-                value: pair[1]
-            });
-        });
-        data.properties = properties;
-        return data;
-    },
-});
 
 // A hybrid between ItemView and Form.  Seems to work.
-app.views.CommandPropertiesFormView = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype);
+app.views.CommandPropertiesFormView = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
+    events: {
+        'change': 'commit', // Update the associated Model object everytime the form input values change.
+    },
+
+    initialize: function(){
+        var readonly = this.options.readonly;
+
+        // Construct a schema compatible with backbone-forms
+        // https://github.com/powmedia/backbone-forms#schema-definition
+        var schema = this.options.schema = {};
+        var commandSpec = app.commandSpecs[this.model.get('type')];
+        _.each(commandSpec.params, function(param){
+            var field = {type: paramTypeHash[param.valueType]};
+            if (readonly) {
+                field.editorAttrs = {
+                    readonly: true,
+                    disabled: true,
+                }
+            }
+            schema[param.id] = field;
+        });
+        Backbone.Form.prototype.initialize.call(this, this.options);
+    },
+});
 
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
