@@ -33,6 +33,12 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     initialize: function(){
         app.vent.on('showItem', this.showItem, this);
+        app.vent.on('showItem:station', this.showStation, this);
+        app.vent.on('showItem:segment', this.showSegment, this);
+        app.vent.on('showItem:command', this.showCommand, this);
+        app.vent.on('all', function(evt){
+            console.log("PlanSequenceView event: "+evt);
+        });
     },
 
     onRender: function(){
@@ -43,20 +49,24 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col1.show(sscView);
     },
 
-    showItem: function(itemModel){
-        if (itemModel.get('type') === 'Station') {
-            var view = new app.views.CommandSequenceCollectionView( { collection: itemModel.get('sequence') } );
-            this.col2.show( view );
-        } else if (itemModel.get('type') === 'Segment') {
-            // Display a segment view in col2
-        } else { // Assume we're dealing with a Command
-            if ( app.readOnly ) {
-                var view = new app.views.CommandPropertiesTableView( {model: itemModel, commandSpec: app.commandSpecs[itemModel.get('type')]} );
-            } else {
-                var view = new Backbone.Form( {model: itemModel} );
-            }
-            this.col3.show(view);
+    showStation: function(itemModel){
+        var view = new app.views.CommandSequenceCollectionView( { collection: itemModel.get('sequence') } );
+        this.col2.show( view );
+        this.col3.close(); // clear the third column
+    },
+
+    showSegment: function(itemModel){
+        // Display a segment view in col2
+        this.col3.close();
+    },
+
+    showCommand: function(itemModel){
+        if ( app.readOnly ) {
+            var view = new app.views.CommandPropertiesTableView( {model: itemModel, commandSpec: app.commandSpecs[itemModel.get('type')]} );
+        } else {
+            var view = new app.views.CommandPropertiesFormView( {model: itemModel} );
         }
+        this.col3.show(view);
     },
 
 });
@@ -76,10 +86,18 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     events: {
         click: function(){
             this.trigger('select');
-            app.vent.trigger('showItem', this.model);
+            // TODO: Remove this conditional once commands have a useful "type" attribute.
+            if ( [ 'Station', 'Segment' ].indexOf(this.model.get('type')) >= 0 ) {
+                app.vent.trigger('showItem:'+this.model.get('type').toLowerCase(), this.model);
+            } else {
+                // Presumably it is a Command
+                app.vent.trigger('showItem:command', this.model);
+            }
         },
         all: function(evt){
-            console.log("VIEW EVENT TRIGGERED", evt);
+            // Seems like this never triggers.
+            console.log("SequenceListItemView EVENT TRIGGERED", evt);
+            console.log("Weird. This never happens.");
         },
     },
     initialize: function(){
@@ -152,6 +170,9 @@ app.views.CommandPropertiesTableView = Backbone.Marionette.ItemView.extend({
         return data;
     },
 });
+
+// A hybrid between ItemView and Form.  Seems to work.
+app.views.CommandPropertiesFormView = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype);
 
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({

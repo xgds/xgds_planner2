@@ -11,7 +11,7 @@ app.models = app.models || {};
                 createModels: true,
                 reverseRelation:{
                     key: 'plan',
-                    includeInJSON: true,
+                    includeInJSON: false,
                 },
             }
         ]
