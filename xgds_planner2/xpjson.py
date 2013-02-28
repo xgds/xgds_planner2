@@ -590,7 +590,7 @@ class PathElement(TypedObject):
 
     def __init__(self, objDict, **kwargs):
         super(PathElement, self).__init__(objDict, **kwargs)
-        self.sequence = [Command(elt, **kwargs)
+        self.sequence = [commandSequenceElement(elt, **kwargs)
                          for elt in self.sequence]
 
 
@@ -629,6 +629,22 @@ class Command(TypedObject):
                                   .commandSpecsLookup[objDict['type']]
                                   .paramsLookup)
         super(Command, self).__init__(objDict, **kwargs)
+
+
+class StopCommand(TypedObject):
+    """
+    Implemets the StopCommand type from the XPJSON spec.
+    """
+    commandId = Field('string')
+    commandType = Field('string')
+
+
+def commandSequenceElement(objDict, **kwargs):
+    if objDict['type'] == 'StopCommand':
+        klass = StopCommand
+    else:
+        klass = Command
+    return klass(objDict, **kwargs)
 
 
 class Site(TypedObject):
@@ -679,7 +695,8 @@ class Plan(Document):
         super(Plan, self).__init__(objDict, **kwargs)
 
     def isValidPlanSequence(self, val):
-        validTypes = self._schema.commandSpecsLookup.keys() + ['Station', 'Segment']
+        validTypes = (self._schema.commandSpecsLookup.keys()
+                      + ['Station', 'Segment', 'StopCommand'])
         for elt in val:
             return elt.type in validTypes
 
@@ -702,7 +719,8 @@ class PlanLibrary(Document):
 
     def isValidCommandArray(self, val):
         for elt in val:
-            return elt['type'] in self._schema.commandSpecsLookup
+            return (elt['type'] in self._schema.commandSpecsLookup
+                    or elt['type'] == 'StopCommand')
 
 ######################################################################
 
