@@ -36,6 +36,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         app.vent.on('showItem:station', this.showStation, this);
         app.vent.on('showItem:segment', this.showSegment, this);
         app.vent.on('showItem:command', this.showCommand, this);
+        app.vent.on('showMeta', this.showMeta, this);
         app.vent.on('all', function(evt){
             console.log("PlanSequenceView event: "+evt);
         });
@@ -53,7 +54,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col2.close();
         this.col3.close(); // clear the third column
 
-        var view = new app.views.CommandSequenceCollectionView( { collection: itemModel.get('sequence') } );
+        var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
         this.col2.show( view );
     },
 
@@ -67,6 +68,12 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col3.close();
         var view = new app.views.CommandPropertiesFormView( {model: itemModel, readonly: app.readonly} );
         this.col3.show(view);
+    },
+
+    showMeta: function(model){
+        this.col3.show( new Backbone.Form({
+            model: model,
+        }) );
     },
 
 });
@@ -141,10 +148,20 @@ app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
     },
 });
 
+/*
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     tagName: 'ul',
     className: 'sequence-list command-list',
     itemView: app.views.CommandSequenceListItemView,
+});
+*/
+app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
+    template: '#template-sequence-list',
+    itemView: app.views.CommandSequenceListItemView,
+    itemViewContainer: '.sequence-list',
+    events: {
+        "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model) },
+    },
 });
 
 

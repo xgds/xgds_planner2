@@ -30,6 +30,12 @@ app.models = app.models || {};
                 },
             },
         ],
+        schema: {
+            id: 'Text',
+            tolerance: 'Number',
+            headingDegrees: 'Number',
+            headingTolerenceDegrees: 'Number',
+        },
     });
 
     models.StationCollection = Backbone.Collection.extend({
