@@ -1262,7 +1262,15 @@ Inherits from:
 +---------------------------+------------+----------------+------------------------------------+
 |``commandIdFormat``        |`format     |optional        |A format string used to             |
 |                           |string`_    |                |auto-generate the ``id`` of Command_|
-|                           |            |                |objects.                            |
+|                           |            |                |objects that are found in the       |
+|                           |            |                |``sequence`` member of a Station_ or|
+|                           |            |                |Segment_.                           |
++---------------------------+------------+----------------+------------------------------------+
+|``bareCommandIdFormat``    |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Command_|
+|                           |            |                |objects found in the ``sequence``   |
+|                           |            |                |member of a Plan_, outside a        |
+|                           |            |                |Station_ or Segment_.               |
 +---------------------------+------------+----------------+------------------------------------+
 |``targetIdFormat``         |`format     |optional        |A format string used to             |
 |                           |string`_    |                |auto-generate the ``id`` of Target_ |
@@ -1658,8 +1666,12 @@ Format Strings
 ==============
 
 PlanSchema_ documents can use format strings to specify formal naming
-conventions for elements of the Plan_. The format strings use `Python
-String Formatting`_ syntax.
+conventions for elements of the Plan_. The format strings use a subset
+of the `Python String Formatting`_ syntax.
+
+If no format string is specified, the planning interface should default
+to filling the relevant ``id`` field with a persistent randomly
+generated UUID.
 
 To substitute the value of a variable into the formatted output, you
 include a pattern ``{<expression>:<printfFormat>}`` in the
@@ -1796,4 +1808,4 @@ The resulting Plan_ might have these auto-generated ``id`` values::
 
 .. _ISO 8601: http://www.w3.org/TR/NOTE-datetime
 
-.. _Python String Formatting: http://docs.python.org/library/stdtypes.html#string-formatting
+.. _Python String Formatting: http://docs.python.org/3/library/string.html#formatstrings
