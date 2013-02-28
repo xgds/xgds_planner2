@@ -1592,12 +1592,15 @@ Abstract class:
 Inherits from:
   TypedObject
 
-+-------------------+----------------+-----------------+------------------------------------+
-|Member             |Type            |Values           |Meaning                             |
-+===================+================+=================+====================================+
-|``commandId``      |string          |optional         |The ``id`` of the non-blocking      |
-|                   |                |                 |Command_ to stop.                   |
-+-------------------+----------------+-----------------+------------------------------------+
++-------------------+----------------+-----------------+---------------------------------+
+|Member             |Type            |Values           |Meaning                          |
++===================+================+=================+=================================+
+|``commandId``      |string          |required         |The ``id`` of the non-blocking   |
+|                   |                |                 |Command_ to stop.                |
++-------------------+----------------+-----------------+---------------------------------+
+|``commandType``    |string          |required         |The ``type`` of the non-blocking |
+|                   |                |                 |Command_ to stop.                |
++-------------------+----------------+-----------------+---------------------------------+
 
 Example
 -------
@@ -1613,6 +1616,7 @@ Example
 
     // defined in StopCommand
     "commandId": "(id of command to stop)"
+    "commandType": "(type of command to stop)"
   }
 
 .. _Target:
