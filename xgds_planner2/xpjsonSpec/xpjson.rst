@@ -164,9 +164,10 @@ The PlanSchema_ that the Plan_ conforms to::
     "notes": "Define available robot science commands",
     "id": "http://example.com/robotScienceSchema.json",
 
-    "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
-    "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.presetCode)s",
+    "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+    "stationIdFormat": "STN{stationIndex:02d}",
+    "segmentIdFormat": "SEG{stationIndex:02d}",
+    "commandIdFormat": "{parent.id}_{commandIndex:1d}_{command.presetCode}",
 
     "segmentParams": [
       {
@@ -215,16 +216,15 @@ The PlanSchema_ that the Plan_ conforms to::
           {
             "type": "ParamSpec",
             "id": "presetCode",
-            "name": "Preset code",
             "valueType": "string",
-            "notes": "Identifies the PlanLibrary preset that was used to initialize the command"
+            "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
           }
         ]
       },
       {
         "type": "CommandSpec",
         "id": "Image",
-        "parent": "Command",
+        "parent": "CommandWithDuration",
         "abstract": true,
         "params": [
           {
@@ -1252,12 +1252,20 @@ Inherits from:
 |                           |string`_    |                |auto-generate the ``id`` of Plan_   |
 |                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
-|``pathElementIdFormat``    |`format     |optional        |A format string used to             |
-|                           |string`_    |                |auto-generate the ``id`` of         |
-|                           |            |                |PathElement_ objects.               |
+|``stationIdFormat``        |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Station_|
+|                           |            |                |objects.                            |
++---------------------------+------------+----------------+------------------------------------+
+|``segmentIdFormat``        |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Segment_|
+|                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
 |``commandIdFormat``        |`format     |optional        |A format string used to             |
 |                           |string`_    |                |auto-generate the ``id`` of Command_|
+|                           |            |                |objects.                            |
++---------------------------+------------+----------------+------------------------------------+
+|``targetIdFormat``         |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Target_ |
 |                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
 
@@ -1654,45 +1662,82 @@ conventions for elements of the Plan_. The format strings use `Python
 String Formatting`_ syntax.
 
 To substitute the value of a variable into the formatted output, you
-include a pattern ``%(variableName)<printfFormat>`` in the template. For
-example, the pattern ``%(planNumber)03d`` substitutes in the value of
-the ``planNumber`` variable (which must be an integer) and formats it as
-a 3-digit decimal string (padded with leading zeros).
+include a pattern ``{<expression>:<printfFormat>}`` in the
+template. Expressions are in the form ``variable.member.submember``
+where member and submember are optional. Specifying a member extracts
+the member with that name from the variable. The printf format component
+is optional and defaults to ``:s``.
 
-The following variables are available for use in formats:
+For example, the pattern ``{plan.planNumber:03d}`` substitutes in the
+value of the ``planNumber`` member of the ``plan`` variable (which must
+be an integer) and formats it as a 3-digit decimal string padded with
+leading zeros. The pattern ``{plan.site.id}`` substitutes the ``id``
+submember of the ``site`` member of the ``plan`` variable, with the
+default ``:s`` formatting.
 
-+-------------------------+----------+------------------------+-----------------------------------+
-|Variable                 |Type      |Availability            |Meaning                            |
-+=========================+==========+========================+===================================+
-|site.id                  |string    |all                     |``id`` of the ``site`` of the Plan_|
-+-------------------------+----------+------------------------+-----------------------------------+
-|platform.id              |string    |all                     |``id`` of the ``platform`` of the  |
-|                         |          |                        |Plan_                              |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.planNumber          |integer   |all                     |``planNumber`` of the Plan_        |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.planVersion         |string    |all                     |``planVersion`` of the             |
-|                         |          |                        |Plan_. Versions are typically      |
-|                         |          |                        |``"A"``, ``"B"``, ``"C"``, etc.    |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.id                  |string    |``pathElementIdFormat``,|``id`` of the Plan_.  (This ``id`` |
-|                         |          |``commandIdFormat``     |may have been auto-generated using |
-|                         |          |                        |``planIdFormat``.)                 |
-+-------------------------+----------+------------------------+-----------------------------------+
-|pathElement.index        |integer   |``pathElementIdFormat``,|Index of the PathElement_ in the   |
-|                         |          |``commandIdFormat``     |``sequence`` array of the          |
-|                         |          |                        |Plan_. 0-based indexing.           |
-+-------------------------+----------+------------------------+-----------------------------------+
-|pathElement.id           |string    |``commandIdFormat``     |``id`` of the PathElement_. (This  |
-|                         |          |                        |``id`` may have been auto-generated|
-|                         |          |                        |using ``pathElementIdFormat``.)    |
-+-------------------------+----------+------------------------+-----------------------------------+
-|command.index            |integer   |``commandIdFormat``     |Index of the Command_ within its   |
-|                         |          |                        |``sequence`` array. 0-based        |
-|                         |          |                        |indexing.                          |
-+-------------------------+----------+------------------------+-----------------------------------+
-|command.type             |string    |``commandIdFormat``     |``type`` of the Command_           |
-+-------------------------+----------+------------------------+-----------------------------------+
+The variables available when filling the format are defined as follows:
+
++-----------------------+------------------------------+------------------------------------------+
+|Format                 |Available variables           |Notes                                     |
++=======================+==============================+==========================================+
+|``planIdFormat``       |``plan``                      |                                          |
++-----------------------+------------------------------+------------------------------------------+
+|``stationIdFormat``    |``plan``, ``station``,        |``stationIndex`` is the index of the      |
+|                       |``stationIndex``              |Station_ in the Plan_ ``sequence``        |
+|                       |                              |array. It starts at 0 and is incremented  |
+|                       |                              |after each Station_, so the first Station_|
+|                       |                              |gets a ``stationIndex`` of 0. Segments and|
+|                       |                              |bare Commands in the Plan_ ``sequence``   |
+|                       |                              |are not numbered.                         |
++-----------------------+------------------------------+------------------------------------------+
+|``segmentIdFormat``    |``plan``, ``segment``,        |``stationIndex`` has the same             |
+|                       |``stationIndex``              |interpretation for Segments as it does for|
+|                       |                              |Stations. The effect is that the          |
+|                       |                              |``stationIndex`` of a Segment_ is the same|
+|                       |                              |as the ``stationIndex`` of the next       |
+|                       |                              |Station_. "Segment N is always on the way |
+|                       |                              |to Station N."                            |
++-----------------------+------------------------------+------------------------------------------+
+|``targetIdFormat``     |``plan``, ``target``,         |``targetIndex`` is the index of the       |
+|                       |``targetIndex``               |Target_ in the Plan_ ``targets`` array. It|
+|                       |                              |starts at 0 and is incremented after each |
+|                       |                              |Target_, so the first Target_ gets a      |
+|                       |                              |``targetIndex`` of 0.                     |
++-----------------------+------------------------------+------------------------------------------+
+|``commandIdFormat``    |``plan``, ``parent``,         |This format applies to Commands that are  |
+|                       |``stationIndex``, ``command``,|contained in the ``sequence`` array of a  |
+|                       |``commandIndex``              |Station_ or Segment_. ``parent`` is the   |
+|                       |                              |containing Station_ or                    |
+|                       |                              |Segment_. ``stationIndex`` has the same   |
+|                       |                              |meaning as above.                         |
+|                       |                              |                                          |
+|                       |                              |``commandIndex`` is the index of the      |
+|                       |                              |Command_ in the parent ``sequence`` array.|
+|                       |                              |It starts at 0 and is incremented after   |
+|                       |                              |each Command_, so the first Command_ gets |
+|                       |                              |a ``commandIndex`` of 0.                  |
++-----------------------+------------------------------+------------------------------------------+
+|``bareCommandIdFormat``|``plan``, ``stationIndex``,   |This format applies to "bare" Commands    |
+|                       |``command``                   |that are not contained in a Station_ or   |
+|                       |                              |Segment_. (Thus the ``parent`` and        |
+|                       |                              |``commandIndex`` fields of                |
+|                       |                              |``commandIdFormat`` are not defined.)     |
+|                       |                              |``stationIndex`` has the same meaning as  |
+|                       |                              |above.                                    |
+|                       |                              |                                          |
+|                       |                              |Note that if an application domain does   |
+|                       |                              |not permit bare Commands in the Plan_     |
+|                       |                              |``sequence``, the relevant PlanSchema_    |
+|                       |                              |would likely not define                   |
+|                       |                              |``bareCommandIdFormat``.                  |
++-----------------------+------------------------------+------------------------------------------+
+
+The fields available within each variable are the members defined for
+that class in the XPJSON spec.
+
+Note that id formats are resolved in a top-down manner, such that, for
+example, the ``commandIdFormat`` can usefully refer to ``plan.id`` or
+``parent.id``.
 
 Example
 ~~~~~~~
@@ -1704,9 +1749,10 @@ If the PlanSchema_ contains the following formats::
     "type": "PlanSchema",
     ...
 
-    "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
-    "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.presetCode)s"
+    "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+    "stationIdFormat": "STN{stationIndex:02d}",
+    "segmentIdFormat": "SEG{stationIndex:02d}",
+    "commandIdFormat": "{station.id}_{commandIndex:1d}_{command.presetCode}"
   }
 
 The resulting Plan_ might have these auto-generated ``id`` values::
@@ -1721,18 +1767,18 @@ The resulting Plan_ might have these auto-generated ``id`` values::
     },
     "planNumber": 3,
     "planVersion": "B",
-    "id": "ARC_R003B",
+    "id": "ARC_003B",
     ...
 
     "sequence": [
       {
         "type": "Station",
-        "id": "00",
+        "id": "STN00",
         "sequence": [
           {
             "type": "Drive",
             "presetCode": "FDR",
-            "id": "00_0_FDR",
+            "id": "STN00_0_FDR",
             ...
           }
           ...

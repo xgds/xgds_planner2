@@ -551,8 +551,11 @@ class PlanSchema(Document):
     stationSequenceCommands = Field('array.string')
     segmentSequenceCommands = Field('array.string')
     planIdFormat = Field('string')
-    pathElementIdFormat = Field('string')
+    stationIdFormat = Field('string')
+    segmentIdFormat = Field('string')
+    targetIdFormat = Field('string')
     commandIdFormat = Field('string')
+    bareCommandIdFormat = Field('string')
 
     def __init__(self, objDict, **kwargs):
         # resolveSchemaInheritance(objDict)

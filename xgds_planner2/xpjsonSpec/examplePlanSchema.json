@@ -6,9 +6,10 @@
   "notes": "Define available robot science commands",
   "id": "http://example.com/robotScienceSchema.json",
 
-  "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
-  "pathElementIdFormat": "%(pathElement.index)02d",
-  "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s",
+  "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+  "stationIdFormat": "STN{stationIndex:02d}",
+  "segmentIdFormat": "SEG{stationIndex:02d}",
+  "commandIdFormat": "{parent.id}_{commandIndex:1d}_{command.presetCode}",
 
   "segmentParams": [
     {
@@ -53,13 +54,19 @@
           "type": "ParamSpec",
           "id": "duration",
           "parent": "duration"
+        },
+        {
+          "type": "ParamSpec",
+          "id": "presetCode",
+          "valueType": "string",
+          "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
         }
       ]
     },
     {
       "type": "CommandSpec",
       "id": "Image",
-      "parent": "Command",
+      "parent": "CommandWithDuration",
       "abstract": true,
       "params": [
         {
