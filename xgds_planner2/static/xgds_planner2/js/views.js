@@ -66,12 +66,12 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     showCommand: function(itemModel){
         this.col3.close();
-        var view = new app.views.CommandPropertiesFormView( {model: itemModel, readonly: app.readonly} );
+        var view = new app.views.CommandPropertiesFormView( {model: itemModel, readonly: app.options.readonly} );
         this.col3.show(view);
     },
 
     showMeta: function(model){
-        this.col3.show( new Backbone.Form({
+        this.col3.show( new app.views.PropertiesForm({
             model: model,
         }) );
     },
@@ -165,6 +165,45 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 });
 
 
+/*
+** PropertiesForm is a hybrid between Marionette.ItemView and Backbone.Form (from the backbone-forms extension).
+** Becuase it extends Marionette.ItemView, it can be used cleanly with a region manager.
+**
+** It has two other import properties:
+** 1) It updates its model immediately in response to field value changes.
+** 2) It can be made read-only
+*/
+app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
+
+    events:{
+        'change': 'commit', // Update the associated Model object everytime the form input values change.
+    },
+    initialize: function(){
+        var readonly = this.options.readonly || app.options.readonly;
+
+        // Construct a schema compatible with backbone-forms
+        // https://github.com/powmedia/backbone-forms#schema-definition
+        this.options.schema = this.options.schema || _.extend({}, this.options.model.schema);
+        var schema = this.options.schema;
+
+        _.each(schema, function(field, key){
+            // Objectify any fields that are defined only by a type string
+            if (_.isString( field) ) { field = {type: field} }
+
+            if (readonly) {
+                field.editorAttrs = {
+                    readonly: true,
+                    disabled: true,
+                }
+            }
+            schema[key] = field;
+        });
+
+        Backbone.Form.prototype.initialize.call(this, this.options);
+    },
+
+});
+
 // Map xpJSON parameter ValueTypes to backbone-forms schema field types
 var paramTypeHash = {
     'string': 'Text',
@@ -175,13 +214,7 @@ var paramTypeHash = {
     'targetId': 'Select',
 }
 
-
-// A hybrid between ItemView and Form.  Seems to work.
-app.views.CommandPropertiesFormView = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
-    events: {
-        'change': 'commit', // Update the associated Model object everytime the form input values change.
-    },
-
+app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
     initialize: function(){
         var readonly = this.options.readonly;
 
@@ -191,15 +224,10 @@ app.views.CommandPropertiesFormView = Backbone.Marionette.ItemView.extend(Backbo
         var commandSpec = app.commandSpecs[this.model.get('type')];
         _.each(commandSpec.params, function(param){
             var field = {type: paramTypeHash[param.valueType]};
-            if (readonly) {
-                field.editorAttrs = {
-                    readonly: true,
-                    disabled: true,
-                }
-            }
             schema[param.id] = field;
         });
-        Backbone.Form.prototype.initialize.call(this, this.options);
+
+        app.views.PropertiesForm.prototype.initialize.call(this, this.options);
     },
 });
 
