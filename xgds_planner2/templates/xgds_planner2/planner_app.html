@@ -34,7 +34,10 @@
 
 {% block jsInit %}
 $(function(){
-    {% if settings.XGDS_PLANNER_OFFLINE %}window.offline = true;{% endif %}
-    app.start();
+    var options = {
+        offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
+        planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
+    };
+    app.start(options);
 })
 {% endblock jsInit %}

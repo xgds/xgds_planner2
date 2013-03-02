@@ -24,6 +24,7 @@ var app = (function($, _, Backbone){
 
         this.options = options = _.defaults(options || {}, {
             readonly: false,
+            planLineWidth: 2,
         });
 
         /*

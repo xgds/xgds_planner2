@@ -47,7 +47,7 @@ PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
 
 import os
 
-XGDS_PLANNER_OFFLINE = True  # Don't load google earth if this is true
+XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
 XGDS_PLANNER_PIPELINE_JS = {
@@ -62,6 +62,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/backbone-relational.js',
             'external/js/backbone-forms.js',
             'external/js/bootstrap.min.js',
+            'external/js/extensions-0.2.1.pack.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/app.js',
