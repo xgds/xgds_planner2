@@ -36,6 +36,11 @@ app.models = app.models || {};
             headingDegrees: 'Number',
             headingTolerenceDegrees: 'Number',
         },
+
+        toString: function(){
+            return this.get('id');
+        },
+
     });
 
     models.StationCollection = Backbone.Collection.extend({

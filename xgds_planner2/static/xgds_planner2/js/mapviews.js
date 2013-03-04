@@ -22,16 +22,16 @@ $(function(){
         el: 'div',
 
         events:{
-            'earth:loaded': 'render',
-            'earth:init': 'drawPlan',
+            //'earth:loaded': 'render',
+            //'earth:init': 'drawPlan',
         },
 
         initialize: function(){
-            var view = this;
+            _.bindAll(this);
             if ( ! app.options.offline ) {
-                view.on('earth:loaded', view.render);
+                this.on('earth:loaded', this.render);
                 google.load('earth', '1', {
-                    callback: function(){view.trigger('earth:loaded');}
+                    callback: this.render, 
                 });
             } else {
                 this.$el.css({'background-color': 'blue', 'height': '800px'});
@@ -44,6 +44,7 @@ $(function(){
 
         earthInit: function(ge){
             this.ge = ge;
+            window.ge = ge;
             ge.getWindow().setVisibility(true);
             app.vent.trigger("earth:init");
 
@@ -62,39 +63,43 @@ $(function(){
             
             app.vent.trigger('earth:init');
             this.trigger('earth:init');
+            this.drawPlan();
         },
 
         earthFailure: function(){
             alert("Earth plugin failed to load.");
         },
 
-        renderPlan: function(){
-            // KML boilerplate and styles live in templates/handlebars/plan-kml.handlebars
-            var doc = ge.parseKml( Handlebars.compile($('#template-plan-kml').html())({options: app.options}) );
-
-            if ( this.planKmlObject ) { this.ge.getFeatures().removeChild(this.planKmlObject); }
-            this.planKmlObject = this.ge.getFeatures.appendChild( doc );
-
+        drawPlan: function(){
+            if (this.planView){ alert("PlanView was previosly rendered."); }
+            this.planView = new PlanKmlView({ 
+                collection: app.currentPlan.get('sequence'), 
+                ge: this.ge,
+            });
+            this.planView.render();
+            this.ge.getFeatures().appendChild(this.planView.doc);
+            this.ge.gex.util.flyToObject( this.planView.doc );
         },
 
     });
 
 
 
-    // This view class manages a KML Document object that reprents an entire plan.
+    // This view class manages a KML Document object that represents an entire plan.
     var PlanKmlView = Backbone.View.extend({
         // KML boilerplate and styles live in templates/handlebars/plan-kml.handlebars
         template: Handlebars.compile($('#template-plan-kml').html()),
         initialize: function(){
             this.ge = this.options.ge;
-            this.doc = this.ge.parseKml( this.temlpate( {options: app.options} ) );
+            this.doc = this.ge.parseKml( this.template( {options: app.options} ) );
         },
         render: function(){
             _.each( 
-                _.filter( this.collection, function(model){ return model.get('type') == 'Station'; } ),
+                this.collection.filter( function(model){ return model.get('type') == 'Station'; } ),
                 function(station){
                     var stationPointView = new StationPointView({ge: this.ge, model: station});          
-                    this.doc.getFeatures().appendChild(stationPointView.placemark);
+                    var features = this.doc.getFeatures();
+                    features.appendChild(stationPointView.placemark);
                 },
                 this // view context
             );
@@ -106,15 +111,16 @@ $(function(){
     var StationPointView = Backbone.View.extend({
         initialize: function(){
             var gex = this.options.ge.gex;
-            this.placemark = gex.dom.buildPointPlacemark(
-                this.model.get('geometry').coordinates, // [lat, lon]
-
-                {
-                    name: this.model.toString(),
-                    altitudeMode: app.options.plannerClampMode || 'clampToGround',
-                    style: '#waypoint',
-                }
+            var pmOptions = {};
+            pmOptions.name = this.model.toString();
+            pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
+            pmOptions.style = '#waypoint';
+            var point =  this.model.get('geometry').coordinates;
+            pmOptions.point = [ point[1], point[0] ];
+            this.placemark = gex.dom.buildPlacemark(
+                pmOptions
             );
+            this.model.on('change', this.render, this);
         },
 
         render: function(){
