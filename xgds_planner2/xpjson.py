@@ -533,6 +533,7 @@ class CommandSpec(ClassSpec):
 
     blocking = Field('boolean', default=True)
     scopeTerminate = Field('boolean', default=True)
+    isStopCommand = Field('boolean', default=False)
     color = Field('string', validMethod='isColorString')
 
     def isColorString(self, s):
@@ -614,7 +615,7 @@ class PathElement(TypedObject):
 
     def __init__(self, objDict, **kwargs):
         super(PathElement, self).__init__(objDict, **kwargs)
-        self.sequence = [commandSequenceElement(elt, **kwargs)
+        self.sequence = [Command(elt, **kwargs)
                          for elt in self.sequence]
 
 
@@ -648,27 +649,14 @@ class Command(TypedObject):
     inherited types defined by CommandSpecs in the PlanSchema)
     """
 
+    stopCommandId = Field('string')
+    stopCommandType = Field('string')
+
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = (kwargs['schema']
                                   .commandSpecsLookup[objDict['type']]
                                   .paramsLookup)
         super(Command, self).__init__(objDict, **kwargs)
-
-
-class StopCommand(TypedObject):
-    """
-    Implemets the StopCommand type from the XPJSON spec.
-    """
-    commandId = Field('string')
-    commandType = Field('string')
-
-
-def commandSequenceElement(objDict, **kwargs):
-    if objDict['type'] == 'StopCommand':
-        klass = StopCommand
-    else:
-        klass = Command
-    return klass(objDict, **kwargs)
 
 
 class Site(TypedObject):
@@ -720,7 +708,7 @@ class Plan(Document):
 
     def isValidPlanSequence(self, val):
         validTypes = (self._schema.commandSpecsLookup.keys()
-                      + ['Station', 'Segment', 'StopCommand'])
+                      + ['Station', 'Segment'])
         for elt in val:
             return elt.type in validTypes
 
@@ -743,8 +731,7 @@ class PlanLibrary(Document):
 
     def isValidCommandArray(self, val):
         for elt in val:
-            return (elt['type'] in self._schema.commandSpecsLookup
-                    or elt['type'] == 'StopCommand')
+            return elt['type'] in self._schema.commandSpecsLookup
 
 ######################################################################
 
