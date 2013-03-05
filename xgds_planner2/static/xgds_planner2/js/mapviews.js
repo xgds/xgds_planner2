@@ -55,6 +55,9 @@ $(function(){
             ge.getOptions().setScaleLegendVisibility(true);
             ge.getOptions().setUnitsFeetMiles(false);
             ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
+
+            // Disable the terrain
+            ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
             
             ge.gex = new GEarthExtensions(ge);
 
@@ -167,7 +170,7 @@ $(function(){
                 return [geom[1], geom[0]]; // Lon, Lat
             });
 
-            var linestring = this.gex.dom.buildLineString(coords);
+            var linestring = this.gex.dom.buildLineString(coords, {tessellate: true});
             this.placemark = this.gex.dom.buildPlacemark({
                 lineString: linestring,
                 style: '#segment',
