@@ -121,11 +121,10 @@ class TreeWalkPlanExporter(PlanExporter):
         })
         for elt in plan.sequence:
             ctx = context.copy()
+            ctx.stationIndex = index
             if elt.type == 'Station':
-                ctx.stationIndex = index
                 tsequence.append(self.exportStation(elt, ctx))
             elif elt.type == 'Segment':
-                ctx.segmentIndex = index
                 ctx.prevStation, ctx.nextStation = self.getBracketingStations(plan, index)
                 tsequence.append(self.exportSegment(elt, ctx))
             else:

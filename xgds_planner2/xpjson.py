@@ -373,6 +373,18 @@ class TypedObject(object):
         self._parseOpts = parseOpts
         self.checkFields()
 
+    def __getattr__(self, key):
+        # bit of a hack so obj.<param> notation also works for
+        # params declared in schemaParams.
+        try:
+            return super(TypedObject, self).__getattr__(key)
+        except AttributeError:
+            pass
+        result = self.get(key)
+        if result is None:
+            raise AttributeError(key)
+        return result
+
     def get(self, fieldName, defaultVal='__unspecified__'):
         # first check in _objDict
         result = self._objDict.get(fieldName)
@@ -804,19 +816,30 @@ def loadDocument(docPath, schema=None, fillInDefaults=False):
     return loadDocumentFromDict(docDict, schema, parseOpts=parseOpts)
 
 
+def dumpDictToString(obj):
+    """
+    Dump a DotDict in to the specified path in (pretty indented) JSON format.
+    """
+    return json.dumps(obj, sort_keys=True, indent=4)
+
+
 def dumpDictToPath(path, obj):
     """
     Dump a DotDict in to the specified path in (pretty indented) JSON format.
     """
     f = open(path, 'w')
-    f.write(json.dumps(obj, sort_keys=True, indent=4))
+    f.write(dumpDictToString(obj))
     f.close()
+
+
+def dumpDocumentToString(doc):
+    docDict = transformTopDown(doc, encodeWithClassName)
+    return dumpDictToString(docDict)
 
 
 def dumpDocumentToPath(path, doc):
     """
     Dump a Document in to the specified path in (pretty indented) JSON format.
     """
-    # dumpDictToPath(path, doc._objDict)
     docDict = transformTopDown(doc, encodeWithClassName)
     dumpDictToPath(path, docDict)
