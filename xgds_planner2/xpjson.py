@@ -457,7 +457,9 @@ class ParamSpec(TypedObject):
     valueType = Field('string', required=True, validMethod='isValidValueType')
     minimum = Field('custom', validMethod='matchesValueType')
     maximum = Field('custom', validMethod='matchesValueType')
+    maxLength = Field('integer', validMethod='isPositive')
     choices = Field('custom', validMethod='isChoicesValid')
+    widget = Field('string', validMethod='isLowerCase')
     default = Field('custom', validMethod='matchesValueType')
     required = Field('boolean', default=True)
     visible = Field('boolean', default=True)
@@ -483,6 +485,12 @@ class ParamSpec(TypedObject):
                 or not isinstance(desc, (str, unicode))):
                 return False
         return True
+
+    def isPositive(self, val):
+        return val >= 0
+
+    def isLowerCase(self, val):
+        return val == val.lower()
 
     def invalidParamValueReason(self, val):
         # None is valid unless value is required, short-circuits other tests

@@ -870,6 +870,10 @@ Inherits from:
 +------------------+----------------+------------------------+------------------------------------+
 |``maximum``       |``valueType``   |optional                |Maximum legal value for parameter.  |
 +------------------+----------------+------------------------+------------------------------------+
+|``maxLength``     |integer         |optional                |If ``valueType`` is ``"string"``,   |
+|                  |                |                        |you can specify the maximum allowed |
+|                  |                |                        |string length.                      |
++------------------+----------------+------------------------+------------------------------------+
 |``choices``       |array of        |optional                |If specified, the parameter value   |
 |                  |[``valueType``, |                        |must be set to one of these choices.|
 |                  |string] pairs   |                        |Each choice is a pair whose first   |
@@ -878,6 +882,34 @@ Inherits from:
 |                  |                |                        |a text label used to describe the   |
 |                  |                |                        |choice to a user of the planning    |
 |                  |                |                        |interface.                          |
++------------------+----------------+------------------------+------------------------------------+
+|``widget``        |string          |optional                |The form input widget to display for|
+|                  |                |                        |user data entry of the parameter,   |
+|                  |                |                        |specified as a name from the HTML   |
+|                  |                |                        |forms specification, in all         |
+|                  |                |                        |lowercase. Examples: ``"textarea"``,|
+|                  |                |                        |``"select"``, ``"radio"``.          |
+|                  |                |                        |                                    |
+|                  |                |                        |Each planning interface will have   |
+|                  |                |                        |its own algorithm for choosing a    |
+|                  |                |                        |default widget to use for parameter |
+|                  |                |                        |data entry based on its             |
+|                  |                |                        |``valueType`` and other             |
+|                  |                |                        |properties. The ``widget`` parameter|
+|                  |                |                        |overrides that default.             |
+|                  |                |                        |                                    |
+|                  |                |                        |Planning interfaces may choose which|
+|                  |                |                        |widgets to support for each         |
+|                  |                |                        |``valueType`` and should ignore the |
+|                  |                |                        |``widget`` member if they do not    |
+|                  |                |                        |know how to render the specified    |
+|                  |                |                        |widget.                             |
+|                  |                |                        |                                    |
+|                  |                |                        |Note that planning interfaces not   |
+|                  |                |                        |based on HTML can support this      |
+|                  |                |                        |feature by selecting the widget in  |
+|                  |                |                        |their UI toolkit that best matches  |
+|                  |                |                        |the specified HTML widget.          |
 +------------------+----------------+------------------------+------------------------------------+
 |``default``       |``valueType`` or|optional                |The default value of the            |
 |                  |``null``        |                        |parameter. If not specified, the    |
@@ -913,12 +945,15 @@ Example
 
     // defined in ParamSpec
     "parent": "(parent ParamSpec id)",
+    "valueType": "(type name)"
     "minimum": (minimum value),
     "maximum": (maximum value),
+    "maxLength": (max length of string),
     "choices": [
-      (value choice 1),
+      [(value choice 1), "(label for value choice 1)"],
       ...
     ],
+    "widget": "(widget name)",
     "default": (default value),
     "required": true,
     "visible": true,
