@@ -274,6 +274,10 @@ def resolveSchemaInheritance(schemaDict):
         c.params = [resolveInheritanceLookup(p, paramSpecLookup)
                     for p in c.get('params', [])]
 
+    for f in ('planParams', 'stationParams', 'segmentParams', 'targetParams'):
+        schemaDict[f] = [resolveInheritanceLookup(p, paramSpecLookup)
+                         for p in schemaDict.get(f, [])]
+
     schemaDict.pop('paramSpecs', None)
     schemaDict.commandSpecs = commandSpecs
 
