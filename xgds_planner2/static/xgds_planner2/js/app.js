@@ -25,6 +25,7 @@ var app = (function($, _, Backbone){
         this.options = options = _.defaults(options || {}, {
             readonly: false,
             planLineWidth: 2,
+            plannerClampMode: undefined, // This enum value has to be sniffed out of the Plugin once it's loaded.
         });
 
         /*

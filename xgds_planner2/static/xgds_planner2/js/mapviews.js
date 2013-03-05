@@ -104,6 +104,23 @@ $(function(){
                 this // view context
             );
 
+            this.drawSegments();
+
+        },
+        drawSegments: function(){
+            this.collection.each(function(item, index, list){
+                if (item.get('type') == 'Segment') {
+                    var fromStation = list[index-1];
+                    var toStation = list[index+1];
+                    var segmentLineView = new SegmentLineView({
+                        model: item,
+                        fromStation: fromStation,
+                        toStation: toStation,
+                        ge: this.ge
+                    });
+                    this.doc.getFeatures().appendChild(segmentLineView.placemark);
+                }
+            }, this);
         },
     });
 
@@ -116,17 +133,50 @@ $(function(){
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = '#waypoint';
             var point =  this.model.get('geometry').coordinates;
-            pmOptions.point = [ point[1], point[0] ];
+            pmOptions.point = [ point[1], point[0] ]; // Lon, Lat
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
-            this.model.on('change', this.render, this);
+            this.model.on('change', this.redraw, this);
+        },
+
+        redraw: function(){
+            // redraw code. To be invoked when relevant model attributes change.
+            var kmlPoint = this.placemark.getGeometry();
+            var coords = this.model.get('geometry').coordinates;
+            coords = [coords[1], coords[0]]
+            kmlPoint.setLatLng.apply(kmlPoint, coords);
+            this.placemark.setName( this.model.toString() );
+        },
+    });
+
+    var SegmentLineView = Backbone.View.extend({
+        initialize: function(){
+            var options = this.options;
+            if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!" }
+            this.ge = this.options.ge;
+            this.gex = this.options.ge.gex;
+            this.fromStation = this.options.fromStation;
+            this.toStation = this.options.toStation;
+            this.render();
         },
 
         render: function(){
-            // redraw code. To be invoked when relevant model attributes change.
-            var kmlPoint = this.placemark.getGeometry();
-            kmlPoint.setLatLng.apply(kmlPoint, this.model.get('geometry').coordinates);
+            var coords = _.map( [this.fromStation, this.toStation], function(station){
+                var geom = station.get('geometry').coordinates;
+                return [geom[1], geom[0]]; // Lon, Lat
+            });
+
+            var linestring = this.gex.dom.buildLineString(coords);
+            this.placemark = this.gex.dom.buildPlacemark({
+                lineString: linestring,
+                style: '#segment',
+                altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND,
+            });
+        },
+
+        redraw: function(){
+            // STUB: Update the endpoints of the segment when either adjacent station changes.
         },
     });
 
