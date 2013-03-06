@@ -89,41 +89,59 @@ $(function(){
 
 
     // This view class manages a KML Document object that represents an entire plan.
+    // On instantiation, pass in the plan sequence Backbone collection as the "collection" arguement.
     var PlanKmlView = Backbone.View.extend({
         // KML boilerplate and styles live in templates/handlebars/plan-kml.handlebars
         template: Handlebars.compile($('#template-plan-kml').html()),
         initialize: function(){
-            this.ge = this.options.ge;
-            this.doc = this.ge.parseKml( this.template( {options: app.options} ) );
+            var ge = this.ge = this.options.ge;
+            var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
+            this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
+            this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
+            this.kmlFolders = [this.stationsFolder, this.segmentsFolder];
+            _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
+
+        },
+        clearKmlFolder: function(folder){
+            var featureContainer = folder.getFeatures();
+            while( featureContainer.hasChildNodes() ) { featureContainer.removeChild( featureContainer.getLastChild() ); }
         },
         render: function(){
+            _.each( this.kmlFolders, this.clearKmlFolder);
+            this.drawStations();
+            this.drawSegments();
+        },
+        drawStation: function(station){
+            var stationPointView = new StationPointView({ge: this.ge, model: station});          
+            this.stationsFolder.getFeatures().appendChild(stationPointView.placemark);
+        },
+        drawStations: function(){
             _.each( 
                 this.collection.filter( function(model){ return model.get('type') == 'Station'; } ),
-                function(station){
-                    var stationPointView = new StationPointView({ge: this.ge, model: station});          
-                    var features = this.doc.getFeatures();
-                    features.appendChild(stationPointView.placemark);
-                },
+                this.drawStation,
                 this // view context
             );
-
-            this.drawSegments();
-
+        },
+        drawSegment: function(segment, fromStation, toStation){
+            var segmentLineView = new SegmentLineView({
+                model: segment,
+                fromStation: fromStation,
+                toStation: toStation,
+                ge: this.ge
+            });
+            this.segmentsFolder.getFeatures().appendChild(segmentLineView.placemark);
         },
         drawSegments: function(){
             this.collection.each(function(item, index, list){
                 if (item.get('type') == 'Segment') {
                     var fromStation = list[index-1];
                     var toStation = list[index+1];
-                    var segmentLineView = new SegmentLineView({
-                        model: item,
-                        fromStation: fromStation,
-                        toStation: toStation,
-                        ge: this.ge
-                    });
-                    this.doc.getFeatures().appendChild(segmentLineView.placemark);
+                    this.drawSegment(item, fromStation, toStation);
                 }
             }, this);
+        },
+        clickAppendStation: function(event) {
+            debugger;
         },
     });
 

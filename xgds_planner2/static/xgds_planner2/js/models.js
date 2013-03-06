@@ -16,9 +16,9 @@ app.models = app.models || {};
         relations: [
             {
                 type: Backbone.HasMany,
-                relatedModel: 'app.models.Station',
+                relatedModel: 'app.models.PathElement',
                 key: 'sequence',
-                collectionType: 'app.models.StationCollection',
+                collectionType: 'app.models.PathSequenceCollection',
                 createModels: true,
                 reverseRelation:{
                     key: 'plan',
@@ -28,7 +28,7 @@ app.models = app.models || {};
         ]
     });
 
-    models.Station = Backbone.RelationalModel.extend({
+    models.PathElement = Backbone.RelationalModel.extend({
         relations:[
             {
                 type: Backbone.HasMany,
@@ -37,7 +37,7 @@ app.models = app.models || {};
                 collectionType: 'app.models.CommandCollection',
                 createModels: true,
                 reverseRelation:{
-                    key: 'station',
+                    key: 'pathElement',
                 },
             },
         ],
@@ -52,11 +52,26 @@ app.models = app.models || {};
             return this.get('id');
         },
 
+        initialize: function(){
+            var params = {
+                'Station': app.planSchema.stationParams,
+                'Segment': app.planSchema.segmentParams,
+            }[this.get('type')];
+            if (params) {
+                var schema = {};
+                _.each(params, function(param){
+                    schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+                });
+                this.schema = schema;
+            }
+            
+        }
     });
 
     // If station parameters are specified in the planSchema,
     // override the default form schema, and automatically 
     // generate a form for it with django-forms,
+    /*
     app.addInitializer(function() {
         if (app.planSchema.stationParams) {
             var stnSchema = {};
@@ -66,10 +81,11 @@ app.models = app.models || {};
             app.models.Station.schema = stnSchema;
         }
     });
+    */
     
 
-    models.StationCollection = Backbone.Collection.extend({
-        model: models.Station,
+    models.PathSequenceCollection = Backbone.Collection.extend({
+        model: models.PathElement,
     });
 
     

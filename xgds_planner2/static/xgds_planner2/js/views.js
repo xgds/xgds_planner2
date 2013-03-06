@@ -2,7 +2,11 @@ app.views = app.views || {};
 
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
-
+    events: {
+        'click #btn-navigate': function(){ app.vent.trigger('mapmode:navigate'); },
+        'click #btn-reposition': function(){ app.vent.trigger('mapmode:reposition'); },
+        'click #btn-add-stations': function(){ app.vent.trigger('mapmode:add-stations'); },
+    },
 });
 
 app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
@@ -101,7 +105,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
                 app.vent.trigger('showItem:command', this.model);
             }
         },
-        all: function(evt){
+        'all': function(evt){
             // Seems like this never triggers.
             console.log("SequenceListItemView EVENT TRIGGERED", evt);
             console.log("Weird. This never happens.");
