@@ -204,15 +204,6 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
 });
 
-// Map xpJSON parameter ValueTypes to backbone-forms schema field types
-var paramTypeHash = {
-    'string': 'Text',
-    'integer': 'Number',
-    'number': 'Number',
-    'boolean': 'Checkbox',
-    'date-time': 'DateTime',
-    'targetId': 'Select',
-}
 
 app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
     initialize: function(){
@@ -223,7 +214,7 @@ app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
         var schema = this.options.schema = {};
         var commandSpec = app.commandSpecs[this.model.get('type')];
         _.each(commandSpec.params, function(param){
-            var field = {type: paramTypeHash[param.valueType]};
+            var field = {type: app.models.paramTypeHash[param.valueType]};
             schema[param.id] = field;
         });
 

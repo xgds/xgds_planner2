@@ -39,7 +39,6 @@ var app = (function($, _, Backbone){
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
         this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'typeCode' );
 
-
         var planJson = JSON.parse( $('#plan_json').html() );
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);

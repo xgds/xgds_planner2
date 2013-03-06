@@ -1,6 +1,17 @@
 app.models = app.models || {};
 
 (function(models){
+
+    // Map xpJSON parameter ValueTypes to backbone-forms schema field types
+    models.paramTypeHash = {
+        'string': 'Text',
+        'integer': 'Number',
+        'number': 'Number',
+        'boolean': 'Checkbox',
+        'date-time': 'DateTime',
+        'targetId': 'Select',
+    }
+
     models.Plan = Backbone.RelationalModel.extend({
         relations: [
             {
@@ -34,7 +45,7 @@ app.models = app.models || {};
             id: 'Text',
             tolerance: 'Number',
             headingDegrees: 'Number',
-            headingTolerenceDegrees: 'Number',
+            headingToleranceDegrees: 'Number',
         },
 
         toString: function(){
@@ -43,21 +54,22 @@ app.models = app.models || {};
 
     });
 
+    app.addInitializer(function() {
+        if (app.planSchema.stationParams) {
+            var stnSchema = {};
+            _.each(app.planSchema.stationParams, function(param){
+                stnSchema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+            });
+            app.models.Station.schema = stnSchema;
+        }
+    });
+    
+
     models.StationCollection = Backbone.Collection.extend({
         model: models.Station,
     });
 
     
-    // Map xpJSON parameter ValueTypes to backbone-forms schema field types
-    var paramTypeHash = {
-        'string': 'Text',
-        'integer': 'Number',
-        'number': 'Number',
-        'boolean': 'Checkbox',
-        'date-time': 'DateTime',
-        'targetId': 'Select',
-    }
-
     models.Command = Backbone.RelationalModel.extend({
         initialize: function(){
 
