@@ -54,6 +54,9 @@ app.models = app.models || {};
 
     });
 
+    // If station parameters are specified in the planSchema,
+    // override the default form schema, and automatically 
+    // generate a form for it with django-forms,
     app.addInitializer(function() {
         if (app.planSchema.stationParams) {
             var stnSchema = {};
