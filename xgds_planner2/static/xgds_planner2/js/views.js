@@ -144,7 +144,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
     template: function(data){
-        return '' + data.typeCode + '<i/>'
+        return '' + data.presetCode + '<i/>'
     },
 });
 
