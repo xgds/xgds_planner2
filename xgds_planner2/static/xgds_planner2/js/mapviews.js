@@ -94,6 +94,7 @@ $(function(){
         // KML boilerplate and styles live in templates/handlebars/plan-kml.handlebars
         template: Handlebars.compile($('#template-plan-kml').html()),
         geEvents: [], // container holds GE events for later removal
+
         initialize: function(){
             var ge = this.ge = this.options.ge;
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
@@ -102,22 +103,29 @@ $(function(){
             this.kmlFolders = [this.stationsFolder, this.segmentsFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
-            this.collection.on('add', this.render, this);
+            // re-rendering the whole KML View on add proves to be pretty slow.
+            //this.collection.on('add', this.render, this);
             this.setMode('addStations');
+
+            this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
         },
+
         clearKmlFolder: function(folder){
             var featureContainer = folder.getFeatures();
             while( featureContainer.hasChildNodes() ) { featureContainer.removeChild( featureContainer.getLastChild() ); }
         },
+
         render: function(){
             _.each( this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
         },
+
         drawStation: function(station){
             var stationPointView = new StationPointView({ge: this.ge, model: station});          
             this.stationsFolder.getFeatures().appendChild(stationPointView.placemark);
         },
+
         drawStations: function(){
             _.each( 
                 this.collection.filter( function(model){ return model.get('type') == 'Station'; } ),
@@ -125,6 +133,7 @@ $(function(){
                 this // view context
             );
         },
+
         drawSegment: function(segment, fromStation, toStation){
             var segmentLineView = new SegmentLineView({
                 model: segment,
@@ -134,6 +143,7 @@ $(function(){
             });
             this.segmentsFolder.getFeatures().appendChild(segmentLineView.placemark);
         },
+
         drawSegments: function(){
             this.collection.each(function(item, index, list){
                 if (item.get('type') == 'Segment') {
@@ -143,15 +153,18 @@ $(function(){
                 }
             }, this);
         },
+
         addGeEvent: function(target, eventID, listenerCallback, useCapture) {
             this.geEvents.push(arguments);
             google.earth.addEventListener(target, eventID, listenerCallback, useCapture);
         },
+
         clearGeEvents: function() {
             while( this.geEvents.length > 0 ) {
                 google.earth.removeEventListener.apply(google.earth, this.geEvents.pop() );
             }
         },
+
         setMode: function(modeName){
             console.log("Set mouse mode: " + modeName);
             var events = [];
@@ -163,12 +176,19 @@ $(function(){
             this.clearGeEvents();
             _.each(events, function(args){ this.addGeEvent.apply(this, args); }, this);
         },
+
         clickAddStation: function(evt){
             console.log("Add Station");
             var coords = [evt.getLatitude(), evt.getLongitude()].reverse();
             var station = app.models.stationFactory({ coordinates: coords });
             var segment = app.models.segmentFactory();
             app.currentPlan.get('sequence').appendStation(station);
+
+            // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
+            app.currentPlan.kmlView.drawStation(station);
+            var seq = app.currentPlan.get('sequence');
+            var l = seq.length;
+            app.currentPlan.kmlView.drawSegment( seq.at(l-2), seq.at(l-3), seq.at(l-1) );
         },
     });
 
