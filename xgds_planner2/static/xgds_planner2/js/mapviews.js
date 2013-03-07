@@ -93,6 +93,7 @@ $(function(){
     var PlanKmlView = Backbone.View.extend({
         // KML boilerplate and styles live in templates/handlebars/plan-kml.handlebars
         template: Handlebars.compile($('#template-plan-kml').html()),
+        geEvents: [], // container holds GE events for later removal
         initialize: function(){
             var ge = this.ge = this.options.ge;
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
@@ -101,6 +102,8 @@ $(function(){
             this.kmlFolders = [this.stationsFolder, this.segmentsFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
+            this.collection.on('add', this.render, this);
+            this.setMode('addStations');
         },
         clearKmlFolder: function(folder){
             var featureContainer = folder.getFeatures();
@@ -140,8 +143,32 @@ $(function(){
                 }
             }, this);
         },
-        clickAppendStation: function(event) {
-            debugger;
+        addGeEvent: function(target, eventID, listenerCallback, useCapture) {
+            this.geEvents.push(arguments);
+            google.earth.addEventListener(target, eventID, listenerCallback, useCapture);
+        },
+        clearGeEvents: function() {
+            while( this.geEvents.length > 0 ) {
+                google.earth.removeEventListener.apply(google.earth, this.geEvents.pop() );
+            }
+        },
+        setMode: function(modeName){
+            console.log("Set mouse mode: " + modeName);
+            var events = [];
+            if ( modeName == "addStations") {
+                events.push([this.ge.getGlobe(), 'click', this.clickAddStation]);
+            } else {
+                alert("Invalid map mode: " + modeName);
+            }
+            this.clearGeEvents();
+            _.each(events, function(args){ this.addGeEvent.apply(this, args); }, this);
+        },
+        clickAddStation: function(evt){
+            console.log("Add Station");
+            var coords = [evt.getLatitude(), evt.getLongitude()].reverse();
+            var station = app.models.stationFactory({ coordinates: coords });
+            var segment = app.models.segmentFactory();
+            app.currentPlan.get('sequence').appendStation(station);
         },
     });
 

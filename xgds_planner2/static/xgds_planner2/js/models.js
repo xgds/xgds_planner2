@@ -68,25 +68,76 @@ app.models = app.models || {};
         }
     });
 
-    // If station parameters are specified in the planSchema,
-    // override the default form schema, and automatically 
-    // generate a form for it with django-forms,
-    /*
-    app.addInitializer(function() {
-        if (app.planSchema.stationParams) {
-            var stnSchema = {};
-            _.each(app.planSchema.stationParams, function(param){
-                stnSchema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
-            });
-            app.models.Station.schema = stnSchema;
-        }
-    });
-    */
-    
-
     models.PathSequenceCollection = Backbone.Collection.extend({
         model: models.PathElement,
+        /*
+        This collection needs special logic to maintain
+        the station-segment-station adjecency.
+        */ 
+        appendStation: function(stationModel){
+            var segment = models.segmentFactory();
+            this.add([segment, stationModel]);
+        },
+        removeStation: function(stationModel){
+            var idx = this.indexOf(stationModel);
+            if (idx < 0) { alert("Station not present in collection"); }
+            else if ( idx == 0 ) {
+                var segment = this.at(1);
+            } else {
+                var segment = this.at(i-1);
+            }
+            this.remove([stationModel, segment]);
+        },
     });
+
+    models.stationFactory = function(options, stationToClone) {
+        var proto = {
+            "geometry": {
+                "coordinates": [],
+                "type": "Point"
+            },
+            "headingDegrees": 0,
+            "headingToleranceDegrees": 9.740282517223996,
+            "id": "",
+            "isDirectional": false,
+            "sequence": [],
+            "tolerance": 1,
+            "type": "Station"
+        }
+        if (stationToClone) { proto = stationToClone.toJSON(); } 
+        _.defaults(options, proto);
+
+        if (options.coordinates) {
+            options.geometry.coordinates = options.coordinates;
+            delete options.coordinates;
+        }
+
+        if ( !options.id ){
+            //TODO: interperet id template
+            options.id = _.uniqueId('station_');
+        }
+
+        return new models.PathElement(options);
+
+    }
+
+    models.segmentFactory = function(options, segmentToClone){
+        if ( _.isUndefined(options) ) { options = {}; }
+        var proto = {
+            "hintedSpeed": 1,
+            "id": "",
+            "sequence": [],
+            "type": "Segment"
+        }
+        if (segmentToClone) { proto = segmentToClone.toJSON(); }
+        _.defaults(options, proto);
+        
+        if ( !options.id ){
+            //TODO: interperet id template
+            options.id = _.uniqueId('segment_');
+        }
+        return new models.PathElement(options);
+    }
 
     
     models.Command = Backbone.RelationalModel.extend({
