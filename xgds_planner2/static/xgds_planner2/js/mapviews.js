@@ -212,7 +212,7 @@ $(function(){
             // redraw code. To be invoked when relevant model attributes change.
             var kmlPoint = this.placemark.getGeometry();
             var coords = this.model.get('geometry').coordinates;
-            coords = [coords[1], coords[0]]
+            coords = [coords[1], coords[0]];
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             this.placemark.setName( this.model.toString() );
         },
