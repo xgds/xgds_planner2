@@ -3,9 +3,9 @@ app.views = app.views || {};
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
     events: {
-        'click #btn-navigate': function(){ app.vent.trigger('mapmode:navigate'); },
-        'click #btn-reposition': function(){ app.vent.trigger('mapmode:reposition'); },
-        'click #btn-add-stations': function(){ app.vent.trigger('mapmode:add-stations'); },
+        'click #btn-navigate': function(){ app.vent.trigger('mapmode', 'navigate'); },
+        'click #btn-reposition': function(){ app.vent.trigger('mapmode', 'reposition'); },
+        'click #btn-add-stations': function(){ app.vent.trigger('mapmode', 'addStations'); },
     },
 });
 

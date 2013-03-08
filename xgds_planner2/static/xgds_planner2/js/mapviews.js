@@ -105,6 +105,7 @@ $(function(){
 
             // re-rendering the whole KML View on add proves to be pretty slow.
             //this.collection.on('add', this.render, this);
+            app.vent.on('mapmode', this.setMode, this);
             this.setMode('addStations');
 
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
@@ -167,15 +168,25 @@ $(function(){
 
         setMode: function(modeName){
             console.log("Set mouse mode: " + modeName);
-            var events = [];
-            if ( modeName == "addStations") {
-                events.push([this.ge.getGlobe(), 'click', this.clickAddStation]);
-            } else {
-                alert("Invalid map mode: " + modeName);
-            }
+            var modeMap = {
+                'addStations': 'addStationsMode',
+                'navigate': 'navigateMode',
+                'reposition': 'repositionMode',
+            };
+
             this.clearGeEvents();
+            this[modeMap[modeName]]();
+        },
+
+        addStationsMode: function(){
+            var events = [];
+            events.push([this.ge.getGlobe(), 'click', this.clickAddStation]);
             _.each(events, function(args){ this.addGeEvent.apply(this, args); }, this);
         },
+
+        navigateMode: function(){},
+
+        repositionMode: function(){},
 
         clickAddStation: function(evt){
             console.log("Add Station");
