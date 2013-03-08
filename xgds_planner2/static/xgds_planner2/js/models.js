@@ -65,7 +65,14 @@ app.models = app.models || {};
                 this.schema = schema;
             }
             
-        }
+        },
+
+        setPoint: function(lon, lat) {
+            var geom = this.get('geometry');
+            if (! geom) { throw "PathElement has no geometry"; }
+            geom.coordinates = [lon, lat];
+            this.set('geometry', geom);
+        },
     });
 
     models.PathSequenceCollection = Backbone.Collection.extend({

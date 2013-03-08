@@ -146,6 +146,9 @@ $(function(){
         },
 
         drawSegments: function(){
+            if ( this.segmentsFolder.getFeatures().hasChildNodes() ) {
+                this.clearKmlFolder( this.segmentsFolder);
+            }
             this.collection.each(function(item, index, list){
                 if (item.get('type') == 'Segment') {
                     var fromStation = list[index-1];
@@ -186,11 +189,26 @@ $(function(){
 
         navigateMode: function(){},
 
-        repositionMode: function(){},
+        repositionMode: function(){
+            var stations = this.stationsFolder.getFeatures().getChildNodes();
+            var l = stations.getLength();
+            for ( var station,i=0; i<l; i++ ) {
+                station = stations.item(i);
+                this.ge.gex.edit.makeDraggable(station, {
+                    dropCallback: function(){
+                        // "this" is the placemark GE object.
+                        var model = this.view.model;
+                        var point = this.getGeometry();
+                        model.setPoint(point.getLongitude(), point.getLatitude());
+                        setTimeout(_.bind(app.currentPlan.kmlView.drawSegments, app.currentPlan.kmlView), 200);
+                    },
+                });
+            }
+        },
 
         clickAddStation: function(evt){
             console.log("Add Station");
-            var coords = [evt.getLatitude(), evt.getLongitude()].reverse();
+            var coords = [evt.getLongitude(), evt.getLatitude()];
             var station = app.models.stationFactory({ coordinates: coords });
             var segment = app.models.segmentFactory();
             app.currentPlan.get('sequence').appendStation(station);
@@ -216,6 +234,7 @@ $(function(){
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
+            this.placemark.view = this; // 2-way link for GE event handlers to use
             this.model.on('change', this.redraw, this);
         },
 
