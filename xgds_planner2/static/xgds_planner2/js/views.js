@@ -119,7 +119,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
         this.on('unselect', this.unselect);
     },
     onRender: function(){
-        if (this.selected){ this.select() };
+        if (this.selected){ this.select(); }
     },
     select: function(){
         this.selected = true;
@@ -148,7 +148,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
     template: function(data){
-        return '' + data.presetCode + '<i/>'
+        return '' + data.presetCode + '<i/>';
     },
 });
 
@@ -164,7 +164,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     itemView: app.views.CommandSequenceListItemView,
     itemViewContainer: '.sequence-list',
     events: {
-        "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model) },
+        "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
     },
 });
 
@@ -192,13 +192,13 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
         _.each(schema, function(field, key){
             // Objectify any fields that are defined only by a type string
-            if (_.isString( field) ) { field = {type: field} }
+            if (_.isString( field) ) { field = {type: field}; }
 
             if (readonly) {
                 field.editorAttrs = {
                     readonly: true,
                     disabled: true,
-                }
+                };
             }
             schema[key] = field;
         });
@@ -268,7 +268,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
                 li.removeClass('active');
             }
         });
-        var viewClass = this.viewMap[tabId]
+        var viewClass = this.viewMap[tabId];
         var view = new viewClass({
             model: app.currentPlan,
         });
