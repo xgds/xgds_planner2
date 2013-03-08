@@ -5,7 +5,16 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     events: {
         'click #btn-navigate': function(){ app.vent.trigger('mapmode', 'navigate'); },
         'click #btn-reposition': function(){ app.vent.trigger('mapmode', 'reposition'); },
-        'click #btn-add-stations': function(){ app.vent.trigger('mapmode', 'addStations'); },
+        'click #btn-addStations': function(){ app.vent.trigger('mapmode', 'addStations'); },
+    },
+    
+    initialize: function(){
+        app.vent.on('mapmode', this.ensureToggle);
+    },
+
+    ensureToggle: function(modeName) {
+        var btn = $('#btn-'+modeName);
+        if ( ! btn.hasClass('active') ) { btn.button('toggle'); }
     },
 });
 

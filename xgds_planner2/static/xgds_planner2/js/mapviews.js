@@ -106,7 +106,7 @@ $(function(){
             // re-rendering the whole KML View on add proves to be pretty slow.
             //this.collection.on('add', this.render, this);
             app.vent.on('mapmode', this.setMode, this);
-            this.setMode('addStations');
+            app.vent.trigger('mapmode', 'navigate');
 
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
         },
