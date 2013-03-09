@@ -185,7 +185,7 @@ $(function(){
 
         addStationsMode: {
             enter: function(){
-                this.addGeEvents(this.ge.getGlobe(), 'click', this.clickAddStation);
+                this.addGeEvent(this.ge.getGlobe(), 'click', this.clickAddStation);
             },
             exit: function(){
                 this.clearGeEvents();
@@ -222,6 +222,8 @@ $(function(){
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
                 for ( var station,i=0; i<l; i++ ) {
+                    station = stations.item(i);
+                    this.ge.gex.edit.endDraggable(station);
                 }
             },
         }, // end repositionMode
@@ -302,19 +304,21 @@ $(function(){
                 style: '#segment',
                 altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND,
             });
+            this.update.apply(this, coords );
         },
 
+        /*
+        ** Update the endpoints of the segment when either adjacent station changes.
+        ** points can be either station PathElements, or an array of coordinates (lon, lat)
+        ** You can also supply just one station PathElement
+        */
         update: function(point1, point2){
-            // STUB: Update the endpoints of the segment when either adjacent station changes.
-            // TODO: refactor this to a render() function, paalell to the StationPointView one.
-            // points can be either station PathElements, or an array of coordinates (lon, lat)
 
-            /*
-            var coords = _.map( [this.fromStation, this.toStation], function(station){
-                var geom = station.get('geometry').coordinates;
-                return [geom[1], geom[0]]; // Lon, Lat
-            });
-            */
+            if ( _.isUndefined(point2) && point1.cid ) {
+                // only one model was supplied for update.  Go get the other one.
+                point2 = this.otherStation[point1.cid];
+            }
+
             var coords = [];
             _.each([point1, point2], function(point) {
                 if ( _.isArray(point) ) { 

@@ -28,6 +28,11 @@ app.models = app.models || {};
         ]
     });
 
+    /*
+    ** The PathElement model represents both Station and Sequence objects.
+    ** This is inconvenient, but it has to be this way until we invent
+    ** a Collection that can hold more than one model type.
+    */
     models.PathElement = Backbone.RelationalModel.extend({
         relations:[
             {
@@ -67,6 +72,7 @@ app.models = app.models || {};
             
         },
 
+        // Relevant to stations only...
         setPoint: function(lon, lat) {
             var geom = this.get('geometry');
             if (! geom) { throw "PathElement has no geometry"; }
