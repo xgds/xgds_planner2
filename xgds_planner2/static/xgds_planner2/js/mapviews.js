@@ -213,7 +213,6 @@ $(function(){
                             var model = this.view.model;
                             var point = this.getGeometry();
                             model.setPoint(point.getLongitude(), point.getLatitude());
-                            setTimeout(_.bind(app.currentPlan.kmlView.drawSegments, app.currentPlan.kmlView), 200);
                         },
                     });
                 }
@@ -282,7 +281,7 @@ $(function(){
             this.otherStation[options.toStation.cid]= options.fromStation;
             this.otherStation[options.fromStation.cid]= options.toStation;
             _.each([this.fromStation, this.toStation], function(stationModel){
-                stationModel.on('change:geometry', this.redraw, this);
+                stationModel.on('change:geometry', function(){ this.update(stationModel); }, this);
                 stationModel.on('dragUpdate', function( placemark ) {
                     var geom = placemark.getGeometry();
                     var coords = [geom.getLatitude(), geom.getLongitude()];

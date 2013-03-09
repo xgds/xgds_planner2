@@ -31,7 +31,7 @@ app.models = app.models || {};
     /*
     ** The PathElement model represents both Station and Sequence objects.
     ** This is inconvenient, but it has to be this way until we invent
-    ** a Collection that can hold more than one model type.
+    ** a Collection that can instantiate more than one model type.
     */
     models.PathElement = Backbone.RelationalModel.extend({
         relations:[
@@ -72,7 +72,11 @@ app.models = app.models || {};
             
         },
 
-        // Relevant to stations only...
+        /*
+        ** Relevant to stations only...
+        ** A convenience mainly to keep details about the model's structure
+        ** out of the map drag handler.
+        */
         setPoint: function(lon, lat) {
             var geom = this.get('geometry');
             if (! geom) { throw "PathElement has no geometry"; }
@@ -102,6 +106,12 @@ app.models = app.models || {};
             this.remove([stationModel, segment]);
         },
     });
+
+    /*
+    ** The factories below contain proto objects that act as
+    ** templates for creating new Station and Segment PathElement
+    ** models when the user adds them from the map display.
+    */
 
     models.stationFactory = function(options, stationToClone) {
         var proto = {
