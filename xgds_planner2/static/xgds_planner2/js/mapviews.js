@@ -177,34 +177,51 @@ $(function(){
                 'reposition': 'repositionMode',
             };
 
-            this.clearGeEvents();
-            this[modeMap[modeName]]();
+            if ( this.currentMode ) { this.currentMode.exit(); }
+            var mode = this[modeMap[modeName]];
+            mode.enter();
+            this.currentMode = mode;
         },
 
-        addStationsMode: function(){
-            var events = [];
-            events.push([this.ge.getGlobe(), 'click', this.clickAddStation]);
-            _.each(events, function(args){ this.addGeEvent.apply(this, args); }, this);
+        addStationsMode: {
+            enter: function(){
+                this.addGeEvents(this.ge.getGlobe(), 'click', this.clickAddStation);
+            },
+            exit: function(){
+                this.clearGeEvents();
+            },
+        }, // end addStationMode
+
+        navigateMode: {
+            enter: function(){},
+            exit: function(){}
         },
 
-        navigateMode: function(){},
-
-        repositionMode: function(){
-            var stations = this.stationsFolder.getFeatures().getChildNodes();
-            var l = stations.getLength();
-            for ( var station,i=0; i<l; i++ ) {
-                station = stations.item(i);
-                this.ge.gex.edit.makeDraggable(station, {
-                    dropCallback: function(){
-                        // "this" is the placemark GE object.
-                        var model = this.view.model;
-                        var point = this.getGeometry();
-                        model.setPoint(point.getLongitude(), point.getLatitude());
-                        setTimeout(_.bind(app.currentPlan.kmlView.drawSegments, app.currentPlan.kmlView), 200);
-                    },
-                });
-            }
-        },
+        repositionMode: {
+            enter: function(){
+                var stations = this.stationsFolder.getFeatures().getChildNodes();
+                var l = stations.getLength();
+                for ( var station,i=0; i<l; i++ ) {
+                    station = stations.item(i);
+                    this.ge.gex.edit.makeDraggable(station, {
+                        dragCallback: function(){},
+                        dropCallback: function(){
+                            // "this" is the placemark GE object.
+                            var model = this.view.model;
+                            var point = this.getGeometry();
+                            model.setPoint(point.getLongitude(), point.getLatitude());
+                            setTimeout(_.bind(app.currentPlan.kmlView.drawSegments, app.currentPlan.kmlView), 200);
+                        },
+                    });
+                }
+            }, // end enter
+            exit: function(){
+                var stations = this.stationsFolder.getFeatures().getChildNodes();
+                var l = stations.getLength();
+                for ( var station,i=0; i<l; i++ ) {
+                }
+            },
+        }, // end repositionMode
 
         clickAddStation: function(evt){
             console.log("Add Station");
