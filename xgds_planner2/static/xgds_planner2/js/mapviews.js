@@ -177,9 +177,9 @@ $(function(){
                 'reposition': 'repositionMode',
             };
 
-            if ( this.currentMode ) { this.currentMode.exit(); }
+            if ( this.currentMode ) { this.currentMode.exit.call(this); }
             var mode = this[modeMap[modeName]];
-            mode.enter();
+            mode.enter.call(this);
             this.currentMode = mode;
         },
 
@@ -204,7 +204,10 @@ $(function(){
                 for ( var station,i=0; i<l; i++ ) {
                     station = stations.item(i);
                     this.ge.gex.edit.makeDraggable(station, {
-                        dragCallback: function(){},
+                        bounce: false,
+                        dragCallback: function(){
+                            this.view.model.trigger('dragUpdate', this);
+                        },
                         dropCallback: function(){
                             // "this" is the placemark GE object.
                             var model = this.view.model;
@@ -273,6 +276,17 @@ $(function(){
             this.gex = this.options.ge.gex;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
+            this.otherStation = {};
+            this.otherStation[options.toStation.cid]= options.fromStation;
+            this.otherStation[options.fromStation.cid]= options.toStation;
+            _.each([this.fromStation, this.toStation], function(stationModel){
+                stationModel.on('change:geometry', this.redraw, this);
+                stationModel.on('dragUpdate', function( placemark ) {
+                    var geom = placemark.getGeometry();
+                    var coords = [geom.getLatitude(), geom.getLongitude()];
+                    this.update( this.otherStation[placemark.view.model.cid], coords );
+                }, this);
+            }, this);
             this.render();
         },
 
@@ -290,8 +304,29 @@ $(function(){
             });
         },
 
-        redraw: function(){
+        update: function(point1, point2){
             // STUB: Update the endpoints of the segment when either adjacent station changes.
+            // TODO: refactor this to a render() function, paalell to the StationPointView one.
+            // points can be either station PathElements, or an array of coordinates (lon, lat)
+
+            /*
+            var coords = _.map( [this.fromStation, this.toStation], function(station){
+                var geom = station.get('geometry').coordinates;
+                return [geom[1], geom[0]]; // Lon, Lat
+            });
+            */
+            var coords = [];
+            _.each([point1, point2], function(point) {
+                if ( _.isArray(point) ) { 
+                    coords.push(point);
+                } else if ( _.isObject(point) && _.isFunction(point.get) ) {
+                    var geom = point.get('geometry').coordinates;
+                    coords.push( [geom[1], geom[0]] ); // Lon, Lat
+                }
+            });
+
+            var linestring = this.gex.dom.buildLineString(coords, {tessellate: true});
+            this.placemark.setGeometry(linestring); // ???
         },
     });
 
