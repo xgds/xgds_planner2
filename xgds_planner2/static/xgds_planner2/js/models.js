@@ -57,6 +57,15 @@ app.models = app.models || {};
             return this.get('id');
         },
 
+        toJSON: function(){
+            var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
+            if ( _.has(obj, 'sequenceLabel') ){
+                // exclude this from the serialized version
+                delete obj.sequenceLabel;
+            }
+            return obj;
+        },
+
         initialize: function(){
             var params = {
                 'Station': app.planSchema.stationParams,
@@ -87,6 +96,32 @@ app.models = app.models || {};
 
     models.PathSequenceCollection = Backbone.Collection.extend({
         model: models.PathElement,
+
+        initialize: function(){
+            this.on('add remove', this.resequence, this);
+        },
+
+        /*
+        ** resequence supplies the stations with easier to read sequential numbers
+        ** for use in the map view. (Start, 1, 2...End)
+        */
+        resequence: function(){
+            _.each(
+                this.filter(function(item){ return item.get('type') == 'Station' }),
+                function( station, idx, list ) {
+                    var sequenceLabel, length = list.length;
+                    if (idx == 0) {
+                        sequenceLabel = 'Start';
+                    } else if ( idx == length - 1 ) {
+                        sequenceLabel = 'End';
+                    } else {
+                        sequenceLabel = ''+idx;
+                    }
+                    station.set('sequenceLabel', sequenceLabel);
+                }
+            );
+        },
+
         /*
         This collection needs special logic to maintain
         the station-segment-station adjecency.

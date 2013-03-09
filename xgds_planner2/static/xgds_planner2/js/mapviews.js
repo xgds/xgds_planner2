@@ -108,6 +108,7 @@ $(function(){
             app.vent.on('mapmode', this.setMode, this);
             app.vent.trigger('mapmode', 'navigate');
 
+            this.collection.resequence();  // Sometimes it doesn't resequence itself on load
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
         },
 
@@ -247,7 +248,7 @@ $(function(){
         initialize: function(){
             var gex = this.options.ge.gex;
             var pmOptions = {};
-            pmOptions.name = this.model.toString();
+            pmOptions.name = this.model.get('sequenceLabel') || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = '#waypoint';
             var point =  this.model.get('geometry').coordinates;
@@ -265,7 +266,7 @@ $(function(){
             var coords = this.model.get('geometry').coordinates;
             coords = [coords[1], coords[0]];
             kmlPoint.setLatLng.apply(kmlPoint, coords);
-            this.placemark.setName( this.model.toString() );
+            this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
         },
     });
 
