@@ -3,13 +3,13 @@ $(function(){
 
     function parseAltitudeMode(ge, modeString) {
         // Return an AltitudeMode object corresponding to the given string.
-        var kml = ('<Document>'
-                   +'<Placemark>'
-                   +'<Point>'
-                   +'<coordinates>0,0</coordinates>'
-                   +'<altitudeMode>'+modeString+'</altitudeMode>'
-                   +'</Point>'
-                   +'</Placemark>'
+        var kml = ('<Document>'/
+                   +'<Placemark>'/
+                   +'<Point>'/
+                   +'<coordinates>0,0</coordinates>'/
+                   +'<altitudeMode>'+modeString+'</altitudeMode>'/
+                   +'</Point>'/
+                   +'</Placemark>'/
                    +'</Document>');
         return (ge.parseKml(kml)
                 .getFeatures()
@@ -273,7 +273,7 @@ $(function(){
     var SegmentLineView = Backbone.View.extend({
         initialize: function(){
             var options = this.options;
-            if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!" }
+            if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!"; }
             this.ge = this.options.ge;
             this.gex = this.options.ge.gex;
             this.fromStation = this.options.fromStation;

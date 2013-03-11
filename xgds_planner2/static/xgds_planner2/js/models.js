@@ -10,7 +10,7 @@ app.models = app.models || {};
         'boolean': 'Checkbox',
         'date-time': 'DateTime',
         'targetId': 'Select',
-    }
+    };
 
     models.Plan = Backbone.RelationalModel.extend({
         relations: [
@@ -107,10 +107,10 @@ app.models = app.models || {};
         */
         resequence: function(){
             _.each(
-                this.filter(function(item){ return item.get('type') == 'Station' }),
+                this.filter(function(item){ return item.get('type') == 'Station'; }),
                 function( station, idx, list ) {
                     var sequenceLabel, length = list.length;
-                    if (idx == 0) {
+                    if (idx === 0) {
                         sequenceLabel = 'Start';
                     } else if ( idx == length - 1 ) {
                         sequenceLabel = 'End';
@@ -132,11 +132,12 @@ app.models = app.models || {};
         },
         removeStation: function(stationModel){
             var idx = this.indexOf(stationModel);
+            var segment;
             if (idx < 0) { alert("Station not present in collection"); }
-            else if ( idx == 0 ) {
-                var segment = this.at(1);
+            else if ( idx === 0 ) {
+                segment = this.at(1);
             } else {
-                var segment = this.at(i-1);
+                segment = this.at(i-1);
             }
             this.remove([stationModel, segment]);
         },
@@ -161,7 +162,7 @@ app.models = app.models || {};
             "sequence": [],
             "tolerance": 1,
             "type": "Station"
-        }
+        };
         if (stationToClone) { proto = stationToClone.toJSON(); } 
         _.defaults(options, proto);
 
@@ -177,7 +178,7 @@ app.models = app.models || {};
 
         return new models.PathElement(options);
 
-    }
+    };
 
     models.segmentFactory = function(options, segmentToClone){
         if ( _.isUndefined(options) ) { options = {}; }
@@ -186,7 +187,7 @@ app.models = app.models || {};
             "id": "",
             "sequence": [],
             "type": "Segment"
-        }
+        };
         if (segmentToClone) { proto = segmentToClone.toJSON(); }
         _.defaults(options, proto);
         
@@ -195,7 +196,7 @@ app.models = app.models || {};
             options.id = _.uniqueId('segment_');
         }
         return new models.PathElement(options);
-    }
+    };
 
     
     models.Command = Backbone.RelationalModel.extend({
