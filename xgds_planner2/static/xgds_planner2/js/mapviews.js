@@ -121,6 +121,9 @@ $(function(){
             _.each( this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
+            if (this.currentMode) {
+                this.resetMode();
+            }
         },
 
         drawStation: function(station){
@@ -179,9 +182,17 @@ $(function(){
             };
 
             if ( this.currentMode ) { this.currentMode.exit.call(this); }
-            var mode = this[modeMap[modeName]];
+            var mode = _.isObject(modeName) ? modeName : this[modeMap[modeName]];
             mode.enter.call(this);
             this.currentMode = mode;
+        },
+
+        resetMode: function() {
+            if ( this.currentMode) {
+                var mode = this.currentMode;
+                mode.exit();
+                mode.enter();
+            }
         },
 
         addStationsMode: {
@@ -200,6 +211,7 @@ $(function(){
 
         repositionMode: {
             enter: function(){
+                var planview = this;
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
                 for ( var station,i=0; i<l; i++ ) {
@@ -214,11 +226,14 @@ $(function(){
                             var model = this.view.model;
                             var point = this.getGeometry();
                             model.setPoint(point.getLongitude(), point.getLatitude());
+                            planview.render();
                         },
                     });
                 }
+                this.drawMidpoints();
             }, // end enter
             exit: function(){
+                this.destroyMidpoints();
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
                 for ( var station,i=0; i<l; i++ ) {
@@ -240,6 +255,36 @@ $(function(){
             var seq = app.currentPlan.get('sequence');
             var l = seq.length;
             app.currentPlan.kmlView.drawSegment( seq.at(l-2), seq.at(l-3), seq.at(l-1) );
+        },
+
+        drawMidpoints: function(){
+            if (! this.midpoitnsFolder) { this.midpointsFolder = this.ge.gex.dom.buildFolder({ name: "midpoints" }); }
+            this.doc.getFeatures().appendChild(this.midpointsFolder);
+            var fldrFeatures = this.midpointsFolder.getFeatures();
+
+            this.collection.each(function(item, idx, list){
+                var station1, station2;
+                if ( item.get('type') == "Segment" ) {
+                    station1 = list[idx - 1];
+                    station2 = list[idx + 1];
+                    midpoint = midpointPlacemark({
+                        ge: this.ge,
+                        segment: item,
+                        index: idx,
+                        station1: station1,
+                        station2: station2,
+                        view: this
+                    });
+                    fldrFeatures.appendChild(midpoint);
+                }
+            }, this);
+            this.kmlFolders.push(this.midpointsFolder);
+        },
+
+        destroyMidpoints: function(){
+            this.doc.getFeatures().removeChild( this.midpointsFolder );
+            this.kmlFolders.pop();
+            delete this.midpointsFolder;
         },
     });
 
@@ -334,5 +379,49 @@ $(function(){
         },
     });
 
+    /*
+    ** Calculate the midpoint from an array of arrays of coordinates.
+    */
+    var calcMidpoint = function(coordsArr){
+        var sums = _.reduce( coordsArr, function(memo, arr) {
+                var result = [];
+                _.each(arr, function(n, idx){
+                    result.push(n + memo[idx]);
+                });
+                return result
+            }, 
+            _.map(coordsArr[0], function(){return 0;})
+        );
+        return _.map(sums, function(n){ return n / coordsArr.length });
+    };
+
+    var midpointPlacemark = function(options){        
+        var points = [];
+        _.each([options.station1,options.station2], function(station){
+            var coords = station.get('geometry').coordinates;
+            points.push([coords[1], coords[0]]);
+        });
+        var midpoint = calcMidpoint(points);
+        var placemark = this.ge.gex.dom.buildPlacemark({
+            point: midpoint,
+            style: "#midpoint"
+        });
+
+        options.ge.gex.edit.makeDraggable(placemark, {
+            bounce: false,
+            dropCallback: function(){
+                var view = options.view, index = options.index;
+                var geom = this.getGeometry();
+                var station = app.models.stationFactory({
+                    coordinates: [geom.getLongitude(), geom.getLatitude()],
+                });
+                view.collection.insertStation( index, station );
+                view.render(); //redraw
+                view.drawMidpoints();
+            },
+        });
+
+        return placemark;
+    };
 
 });

@@ -130,6 +130,18 @@ app.models = app.models || {};
             var segment = models.segmentFactory();
             this.add([segment, stationModel]);
         },
+        
+        /*
+        Insert a station just before the segment at the given index.
+        Also add a new segment.
+        */
+        insertStation: function(idx, stationModel){
+            var segmentAfter = this.at(idx);
+            if ( ! segmentAfter.get('type') == "Segment" ) { throw "You can only insert stations before a Segment." }
+            var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone the stationAfter's properties.
+            this.add([segmentBefore, stationModel], {at: idx} );
+        },
+
         removeStation: function(stationModel){
             var idx = this.indexOf(stationModel);
             var segment;
@@ -188,7 +200,10 @@ app.models = app.models || {};
             "sequence": [],
             "type": "Segment"
         };
-        if (segmentToClone) { proto = segmentToClone.toJSON(); }
+        if (segmentToClone) { 
+            proto = segmentToClone.toJSON(); 
+            delete proto.id;
+        }
         _.defaults(options, proto);
         
         if ( !options.id ){
