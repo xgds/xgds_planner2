@@ -149,7 +149,7 @@ app.models = app.models || {};
             else if ( idx === 0 ) {
                 segment = this.at(1);
             } else {
-                segment = this.at(i-1);
+                segment = this.at(idx-1);
             }
             this.remove([stationModel, segment]);
         },
@@ -211,6 +211,7 @@ app.models = app.models || {};
             options.id = _.uniqueId('segment_');
         }
         return new models.PathElement(options);
+
     };
 
     

@@ -230,6 +230,17 @@ $(function(){
                             planview.render();
                         },
                     });
+
+                    // Double-click to delete
+                    var planKmlView = this;
+                    this.addGeEvent( station, 'dblclick', function(evt){
+                        evt.preventDefault();
+                        var pm = evt.getTarget();
+                        var view = pm.view;
+                        var sequence = app.currentPlan.get('sequence');
+                        sequence.removeStation(view.model);
+                        planKmlView.render();
+                    });
                 }
                 this.drawMidpoints();
             }, // end enter
@@ -302,6 +313,10 @@ $(function(){
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
+            
+            // Stop the balloon from popping on click.
+            google.earth.addEventListener(this.placemark, 'click', function(evt){ evt.preventDefault() });
+
             this.placemark.view = this; // 2-way link for GE event handlers to use
             this.model.on('change', this.redraw, this);
         },
