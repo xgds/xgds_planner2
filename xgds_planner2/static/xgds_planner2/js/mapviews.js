@@ -187,11 +187,12 @@ $(function(){
             this.currentMode = mode;
         },
 
+        // Clean up, then re-enter the mode.  Useful for re-draws/
         resetMode: function() {
             if ( this.currentMode) {
                 var mode = this.currentMode;
-                mode.exit();
-                mode.enter();
+                mode.exit.call(this);
+                mode.enter.call(this);
             }
         },
 
@@ -417,7 +418,6 @@ $(function(){
                 });
                 view.collection.insertStation( index, station );
                 view.render(); //redraw
-                view.drawMidpoints();
             },
         });
 
