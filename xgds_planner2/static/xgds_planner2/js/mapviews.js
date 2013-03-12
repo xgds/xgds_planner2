@@ -236,6 +236,7 @@ $(function(){
                     this.addGeEvent( station, 'dblclick', function(evt){
                         evt.preventDefault();
                         var pm = evt.getTarget();
+                        planKmlView.stationsFolder.getFeatures().removeChild(pm);
                         var view = pm.view;
                         var sequence = app.currentPlan.get('sequence');
                         sequence.removeStation(view.model);
