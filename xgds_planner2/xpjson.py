@@ -442,10 +442,14 @@ class TypedObject(object):
 
         # validate fields declared in PlanSchema
         for fieldName, paramSpec in self._schemaParams.iteritems():
-            reason = paramSpec.invalidParamValueReason(self.get(fieldName))
+            val = self.get(fieldName)
+            reason = paramSpec.invalidParamValueReason(val)
             assert reason is None, \
                    ('%s; %s should match ParamSpec %s in %s'
                     % (reason, fieldName, paramSpec.id, self._objDict))
+
+            if self._parseOpts.fillInDefaults:
+                self._objDict[fieldName] = val
 
         # warn about unknown fields
         for k, v in self._objDict.iteritems():
