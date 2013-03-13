@@ -77,6 +77,13 @@ class TreeWalkPlanExporter(PlanExporter):
     stationIndex.
     """
 
+    def initPlan(self, plan, context):
+        """
+        This hook is a place for derived classes to construct some
+        initial context before transformXXX() methods are called.
+        """
+        pass
+
     def transformStationCommand(self, command, context):
         return command
 
@@ -119,6 +126,7 @@ class TreeWalkPlanExporter(PlanExporter):
         context = DotDict({
             'plan': plan
         })
+        self.initPlan(plan, context)
         for elt in plan.sequence:
             ctx = context.copy()
             ctx.stationIndex = index
@@ -133,7 +141,7 @@ class TreeWalkPlanExporter(PlanExporter):
             if elt.type == 'Station':
                 index += 1
 
-        return self.transformPlan(plan, tsequence, DotDict({}))
+        return self.transformPlan(plan, tsequence, context)
 
     def exportDbPlan(self, dbPlan):
         plan = dbPlan.toXpjson()
