@@ -48,14 +48,14 @@ def planDictFromCoords(coords, meta):
         plan['sequence'].append({
             'type': 'Station',
             'geometry': {
-            'type': 'Point',
-            'coordinates': lonLat
-        }
-    })
-    if i != n-1:
-        plan['sequence'].append({
-            'type': 'Segment'
+                'type': 'Point',
+                'coordinates': lonLat
+            }
         })
+        if i != n-1:
+            plan['sequence'].append({
+                'type': 'Segment'
+            })
 
     # downstream processing tools assume plan is a DotDict
     plan = convertToDotDictRecurse(plan)
@@ -85,7 +85,6 @@ class KmlLineStringPlanImporter(PlanImporter):
         coords = coordsFromBuf(buf)
         planDict = planDictFromCoords(coords, meta)
         planDoc = planDocFromPlanDict(planDict, schema)
-        print xpjson.dumpDocumentToString(planDoc)
         return planDoc
 
 
@@ -119,7 +118,15 @@ def main():
     meta.setdefault('platform', library.platforms[0]._objDict)
 
     importer = KmlLineStringPlanImporter()
-    importer.importPlanFromPath(path, meta, schema)
+    planDoc = importer.importPlanFromPath(path, meta, schema)
+    planText = xpjson.dumpDocumentToString(planDoc)
+
+    dbPlan = models.Plan()
+    dbPlan.jsonPlan = planText
+    dbPlan.extractFromJson(overWriteDateModified=False)
+    existingPlans = models.Plan.objects.filter(name=dbPlan.name)
+    existingPlans.delete()
+    dbPlan.save()
 
 
 if __name__ == '__main__':
