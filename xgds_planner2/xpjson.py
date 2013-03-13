@@ -17,6 +17,7 @@ import re
 import logging
 
 import iso8601
+import pyproj
 
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
@@ -38,6 +39,8 @@ CRS84 = dotDict.DotDict({
         "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
     }
 })
+X_REGEX = re.compile(r'\+x_0=([^\s]+)')
+Y_REGEX = re.compile(r'\+y_0=([^\s]+)')
 
 URL_VALIDATOR = URLValidator(verify_exists=False)
 
@@ -842,3 +845,44 @@ def dumpDocumentToPath(path, doc):
     """
     docDict = transformTopDown(doc, encodeWithClassName)
     dumpDictToPath(path, docDict)
+
+
+def getCrsTransform(crs):
+    """
+    xform = getCrsTransform(crs)
+    # x, y in crs coordinates. x, y, lon, lat may be scalars or iterables.
+    x, y = xform(lon, lat)
+    lon, lat = xform(x, y, inverse=True)
+    """
+    assert crs['type'] == 'proj4'
+    projString = crs['properties']['projection']
+
+    # x_0 and y_0 (false easting, false northing) args to pyproj don't
+    # seem to have the desired effect, so we'll remove them and apply
+    # the offsets ourselves.
+
+    match = X_REGEX.search(projString)
+    if match:
+        x0 = float(match.group(1))
+        projString = re.sub(X_REGEX, '', projString)
+    else:
+        x0 = 0
+
+    match = Y_REGEX.search(projString)
+    if match:
+        y0 = float(match.group(1))
+        projString = re.sub(Y_REGEX, '', projString)
+    else:
+        x0 = 0
+
+    proj = pyproj.Proj(str(projString))
+
+    def xform(coords, inverse=False):
+        if inverse:
+            x, y = coords
+            return proj(x + x0, y + y0, inverse=True)
+        else:
+            x, y = proj(*coords, inverse=False)
+            return x - x0, y - y0
+
+    return xform
