@@ -107,6 +107,7 @@ class TreeWalkPlanExporter(PlanExporter):
         tsequence = []
         for i, cmd in enumerate(station.sequence):
             ctx = context.copy()
+            ctx.command = cmd
             ctx.commandIndex = i
             tsequence.append(self.transformStationCommand(cmd, ctx))
         return self.transformStation(station, tsequence, context)
@@ -115,6 +116,7 @@ class TreeWalkPlanExporter(PlanExporter):
         tsequence = []
         for i, cmd in enumerate(segment.sequence):
             ctx = context.copy()
+            ctx.command = cmd
             ctx.commandIndex = i
             tsequence.append(self.transformSegmentCommand(cmd, ctx))
         return self.transformSegment(segment, tsequence, context)
@@ -131,8 +133,10 @@ class TreeWalkPlanExporter(PlanExporter):
             ctx = context.copy()
             ctx.stationIndex = index
             if elt.type == 'Station':
+                ctx.parent = ctx.station = elt
                 tsequence.append(self.exportStation(elt, ctx))
             elif elt.type == 'Segment':
+                ctx.parent = ctx.segment = elt
                 ctx.prevStation, ctx.nextStation = self.getBracketingStations(plan, index)
                 tsequence.append(self.exportSegment(elt, ctx))
             else:
