@@ -3,6 +3,7 @@ $(function(){
 
     function parseAltitudeMode(ge, modeString) {
         // Return an AltitudeMode object corresponding to the given string.
+        // Stolen directly from the old planner
         var kml = ('<Document>'
                    +'<Placemark>'
                    +'<Point>'
@@ -20,11 +21,6 @@ $(function(){
 
     app.views.EarthView = Backbone.View.extend({
         el: 'div',
-
-        events:{
-            //'earth:loaded': 'render',
-            //'earth:init': 'drawPlan',
-        },
 
         initialize: function(){
             _.bindAll(this);
@@ -74,7 +70,7 @@ $(function(){
         },
 
         drawPlan: function(){
-            if (this.planView){ alert("PlanView was previosly rendered."); }
+            if (this.planView){ alert("PlanView was previosly instantiated.  It's intended to be a singleton."); }
             this.planView = new PlanKmlView({ 
                 collection: app.currentPlan.get('sequence'), 
                 ge: this.ge,
@@ -162,11 +158,13 @@ $(function(){
             }, this);
         },
 
+        // Add an event handler and store a reference to it so we can clean up later.
         addGeEvent: function(target, eventID, listenerCallback, useCapture) {
             this.geEvents.push(arguments);
             google.earth.addEventListener(target, eventID, listenerCallback, useCapture);
         },
 
+        // Remove event handlers that were added with this.addGeEvent()
         clearGeEvents: function() {
             while( this.geEvents.length > 0 ) {
                 google.earth.removeEventListener.apply(google.earth, this.geEvents.pop() );
