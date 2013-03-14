@@ -64,6 +64,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/bootstrap.min.js',
             'external/js/extensions-0.2.1.pack.js',
 
+            'xgds_planner2/js/string-format.js',
             'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',
