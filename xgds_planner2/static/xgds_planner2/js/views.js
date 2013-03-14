@@ -75,6 +75,9 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         // Display a segment view in col2
         this.col2.close();
         this.col3.close();
+        this.col2.show(
+            new app.views.PropertiesForm({ model: itemModel })
+        );
     },
 
     showCommand: function(itemModel){
@@ -169,7 +172,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 });
 */
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
-    template: '#template-sequence-list',
+    template: '#template-sequence-list-station',
     itemView: app.views.CommandSequenceListItemView,
     itemViewContainer: '.sequence-list',
     events: {
