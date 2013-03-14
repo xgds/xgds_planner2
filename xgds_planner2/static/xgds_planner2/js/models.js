@@ -117,7 +117,7 @@ app.models = app.models || {};
                         var sequenceLabel, length = list.length;
                         if (stationCounter === 0) {
                             sequenceLabel = 'Start';
-                        } else if ( stationCounter == length - 1 ) {
+                        } else if ( idx == length - 1 ) {
                             sequenceLabel = 'End';
                         } else {
                             sequenceLabel = ''+stationCounter;
