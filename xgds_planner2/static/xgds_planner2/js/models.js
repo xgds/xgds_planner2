@@ -118,6 +118,14 @@ app.models = app.models || {};
                         sequenceLabel = ''+idx;
                     }
                     station.set('sequenceLabel', sequenceLabel);
+
+                    var context = {
+                        plan: app.currentPlan.toJSON(),
+                        station: station,
+                        stationIndex: idx
+                    };
+                    var stationId = app.planSchema.stationIdFormat.format(context);
+                    station.set('id', stationId);
                 }
             );
         },
