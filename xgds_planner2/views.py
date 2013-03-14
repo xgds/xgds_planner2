@@ -104,9 +104,12 @@ def planExport(request, uuid, name):
             return HttpResponseInvalidRequest('invalid export format %s' % formatCode)
     else:
         # filename ends with e.g. '.kml'
+        exporterClass = None
         for entry in models.PLAN_EXPORTERS:
             if name.endswith(entry.extension):
                 exporterClass = entry.exporterClass
+        if exporterClass is None:
+            return HttpResponseBadRequest('could not infer export format to use: "format" query parameter not set and extension not recognized for filename "%s"' % name)
 
     exporter = exporterClass()
     return exporter.getHttpResponse(dbPlan)
