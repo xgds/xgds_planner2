@@ -104,28 +104,43 @@ app.models = app.models || {};
         /*
         ** resequence supplies the stations with easier to read sequential numbers
         ** for use in the map view. (Start, 1, 2...End)
+        ** It is also responsible for computing station and sequence ids from the templates in planSchema.
         */
         resequence: function(){
-            _.each(
-                this.filter(function(item){ return item.get('type') == 'Station'; }),
-                function( station, idx, list ) {
-                    var sequenceLabel, length = list.length;
-                    if (idx === 0) {
-                        sequenceLabel = 'Start';
-                    } else if ( idx == length - 1 ) {
-                        sequenceLabel = 'End';
-                    } else {
-                        sequenceLabel = ''+idx;
+            var stationCounter = 0;
+
+            // Natural station numbering.
+            this.each(
+                function( item, idx, list ) {
+                    var itemType = item.get('type');
+                    if (itemType == 'Station') {
+                        var sequenceLabel, length = list.length;
+                        if (stationCounter === 0) {
+                            sequenceLabel = 'Start';
+                        } else if ( stationCounter == length - 1 ) {
+                            sequenceLabel = 'End';
+                        } else {
+                            sequenceLabel = ''+stationCounter;
+                        }
+                        item.set('sequenceLabel', sequenceLabel);
+                        stationCounter++;
                     }
-                    station.set('sequenceLabel', sequenceLabel);
+
+
+                    // Item ID template formatting
+                    var template = {
+                        'Station': app.planSchema.stationIdFormat,
+                        'Segment': app.planSchema.segmentIdFormat
+                    }[itemType];
 
                     var context = {
                         plan: app.currentPlan.toJSON(),
-                        station: station,
                         stationIndex: idx
                     };
-                    var stationId = app.planSchema.stationIdFormat.format(context);
-                    station.set('id', stationId);
+                    context[itemType.toLowerCase()] = item;
+
+                    var stationId = template.format(context);
+                    item.set('id', stationId);
                 }
             );
         },
