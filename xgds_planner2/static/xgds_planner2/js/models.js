@@ -34,6 +34,7 @@ app.models = app.models || {};
     ** a Collection that can instantiate more than one model type.
     */
     models.PathElement = Backbone.RelationalModel.extend({
+        idAttribute: "_id",
         relations:[
             {
                 type: Backbone.HasMany,
