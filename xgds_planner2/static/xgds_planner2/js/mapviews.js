@@ -204,8 +204,17 @@ $(function(){
         }, // end addStationMode
 
         navigateMode: {
-            enter: function(){},
-            exit: function(){}
+            enter: function(){
+                var stations = this.stationsFolder.getFeatures().getChildNodes();
+                var l = stations.getLength();
+                for ( var placemark,i=0; i<l; i++ ) {
+                    placemark = stations.item(i);
+                    this.addGeEvent( placemark, 'dblclick', function(evt){ evt.preventDefault(); });
+                }
+            },
+            exit: function(){
+                this.clearGeEvents();
+            }
         },
 
         repositionMode: {
