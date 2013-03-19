@@ -102,3 +102,8 @@ XGDS_PLANNER_PLAN_EXPORTERS = (
     ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
     ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
 )
+
+# list of (formatCode, extension, importerClass)
+XGDS_PLANNER_PLAN_IMPORTERS = (
+    ('kml', '.kml', 'xgds_planner2.kmlPlanImporter.KmlLineStringPlanImporter'),
+)

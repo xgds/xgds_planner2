@@ -41,6 +41,7 @@ def getClassByName(qualifiedName):
 
 
 SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
+LIBRARY = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH, schema=SCHEMA)
 
 _schema = 'xgds_planner2/schema.json'
 _library = 'xgds_planner2/library.json'
