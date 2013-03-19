@@ -50,6 +50,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         app.vent.on('showItem:segment', this.showSegment, this);
         app.vent.on('showItem:command', this.showCommand, this);
         app.vent.on('showMeta', this.showMeta, this);
+        app.vent.on('showPresets', this.showPresets, this);
         app.vent.on('all', function(evt){
             console.log("PlanSequenceView event: "+evt);
         });
@@ -89,6 +90,12 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     showMeta: function(model){
         this.col3.show( new app.views.PropertiesForm({
             model: model,
+        }) );
+    },
+
+    showPresets: function(stationModel) {
+        this.col3.show( new app.views.CommandPresetsView({
+            model: stationModel,
         }) );
     },
 
@@ -177,6 +184,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     itemViewContainer: '.sequence-list',
     events: {
         "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
+        "click .add-item": function(){ app.vent.trigger('showPresets', this.model); },
     },
 });
 
@@ -237,6 +245,10 @@ app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
         app.views.PropertiesForm.prototype.initialize.call(this, this.options);
     },
 });
+
+app.views.CommandPresetsView = Backbone.ItemView.exted({
+    
+})
 
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
