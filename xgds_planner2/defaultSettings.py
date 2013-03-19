@@ -23,28 +23,49 @@ Other modules can access the value of FOO like this:
 
 Don't try to get the value of FOO from django.conf.settings.  That
 settings object will not know about the default value!
+
+
+###
+# DJANGO-PIPELINE ADDENDUM:
+
+For this module to work, the site-level config file (siteSettings.py), must
+merge the XGDS_PLANNER_PIPELINE_JS and XGDS_PLANNER_PIPELINE_CSS settings
+into global PIPELINE_{JS|CSS} settings dicts.
+
+If no other django-pipeline includes are defined,
+the relevant siteSettings.py secion might look like this:
+
+PIPELINE_JS = {}
+PIPELINE_JS.update(plannerSettings.XGDS_PLANNER_PIPELINE_JS)
+
+PIPELINE_CSS = {}
+PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
+
+#
+###
 """
 
-from django.conf import settings
+import os
 
-OFFLINE = False # Don't load google earth if this is true
-TEMPLATE_DEBUG = True # If this is true, handlebars templates will not be cached.
+XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
+XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
-for setting in ('PIPELINE_CSS', 'PIPELINE_JS'):
-    if not hasattr(settings, setting):
-        setattr(settings, setting, {})
-
-settings.PIPELINE_JS.update({
+XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
-        'source_filenames':(
-            
+        'source_filenames': (
+
             'external/js/jquery-1.9.0.min.js',
             'external/js/lodash.js',
             'external/js/handlebars.js',
             'external/js/backbone.js',
             'external/js/backbone.marionette.js',
+            'external/js/backbone-relational.js',
+            'external/js/backbone-forms.js',
             'external/js/bootstrap.min.js',
+            'external/js/extensions-0.2.1.pack.js',
+            'external/js/string-format.js',
 
+            'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',
             'xgds_planner2/js/views.js',
@@ -53,14 +74,31 @@ settings.PIPELINE_JS.update({
         ),
         'output_filenames': 'js/planner_app.js'
     },
-})
+}
 
-settings.PIPELINE_CSS.update({
+XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
-        'source_filenames':(
+        'source_filenames': (
             'external/css/bootstrap.css',
+            'external/css/backbone.forms.default.css',
             'xgds_planner2/css/planner.css',
         ),
         'output_filenames': 'css/planner_app.css',
     },
-})
+}
+
+_thisDir = os.path.dirname(__file__)
+
+# You will generally want to override these with your domain-specific
+# schema and library.  Note that manage.py prep builds simplified
+# versions of the schema and library. their locations are found in
+# models.py, e.g. SIMPLIFIED_SCHEMA_PATH.
+XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSchema.json')
+XGDS_PLANNER_LIBRARY_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanLibrary.json')
+
+# list of (formatCode, extension, exporterClass)
+XGDS_PLANNER_PLAN_EXPORTERS = (
+    ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
+    ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
+    ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
+)

@@ -1,3 +1,60 @@
 .nav-tabs li:hover{
     cursor: pointer;
 }
+
+div[id^="col"] > li:hover {
+    cursor: pointer;
+}
+
+.nav-tabs > li.active a {
+    background-color: #d4d4d4;
+}
+
+[class*="-sequence-item"] {
+    list-style-type: none;
+    border-style: none;
+    border-width: 1px;
+    margin-top: 4px;
+    margin-right: 0px;
+    margin-bottom: 4px;
+    margin-left: 0;
+    background-color: #aaaaaa;
+}
+
+[class*="-sequence-item"]:hover{
+    cursor: pointer;
+}
+
+.station-sequence-item {
+    background-color: #a3a8ff;
+}
+
+.segment-sequence-item {
+    background-color: #ff525b;
+}
+
+.head-sequence-item {
+    background-color: #ffbdff;
+}
+
+.foot-sequence-item {
+    background-color: #bdffc1;
+}
+
+.scrolling_column {
+    border-style: solid;
+    border-color: green;
+    border-width: 1px;
+    padding: 0px;
+    margin: 0px;
+    overflow-y: scroll;
+}
+
+#col1 ul, #col2 ul, #col3  ul {
+    margin: 0px;
+    margin-left: 2px;
+}
+
+.bbf-field .bbf-editor {
+    width: 65%;
+}

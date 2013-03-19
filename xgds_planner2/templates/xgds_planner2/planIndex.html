@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block cssExtras %}
+{{ block.super }}
+
+<style type="text/css">
+table.planIndex td, th {
+    text-align: left;
+}
+
+table.planIndex td.exportFormat a {
+    padding-right: 10px;
+}
+
+table.planIndex .right {
+    text-align: right;
+}
+
+table.planIndex td {
+    vertical-align: top;
+    padding-right: 10px;
+}
+
+table.planIndex td.name {
+    font-weight: bold;
+    padding-right: 20px;
+}
+
+table.planIndex td.stats {
+    color: #444;
+    font-style: italic;
+}
+</style>
+
+{% endblock cssExtras %}
+
+{% block siteSection %}Planner Index{% endblock siteSection %}
+
+{% block content %}
+{{ block.super }}
+
+<table class="planIndex">
+  <tr>
+    <th>Name</th>
+    <th>Edit</th>
+    <th>Export</th>
+    <th class="right">Dist</th>
+    <th class="right">#Stn</th>
+    <th class="right">#Cmd</th>
+    <th>#Cmd by type</th>
+  </tr>
+{% for plan in plans %}
+  <tr>
+    <td class="name">{{ plan.name }}</td>
+    <td><a href="{% url planner2_edit plan.name %}">EDIT</a></td>
+    <td class="exportFormat">
+      {% for exporter in plan.getExporters %}
+        <a href="{{ exporter.url }}">
+          {{ exporter.label }}
+        </a>
+      {% endfor %}
+    </td>
+    <td class="stats right">{{ plan.lengthMeters|floatformat }}</td>
+    <td class="stats right">{{ plan.numStations }}</td>
+    <td class="stats right">{{ plan.numCommands }}</td>
+    <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
+  </tr>
+{% endfor %}
+</table>
+
+{% endblock content %}

@@ -1,0 +1,30 @@
+<form id="meta">
+    <label>Name</label>
+    <input id="name" type="text" value="{{name}}"/>
+
+    <label>Notes</label>
+    <textarea id="notes" rows=3 >{{notes}}</textarea>
+    
+    {{#if platforms }}
+        <label>Platform</label>
+        <select id="platform">
+            {{#each platforms}}
+            <option value="{{id}}" {{#ifequal id ../platform.id}}selected=true{{/ifequal}}>
+                {{name}}
+            </option>
+            {{/each}}
+
+        </select>
+    {{/if}}
+    {{#if sites}}
+        <label>Site</label>
+        <select id="site">
+            {{#each sites}}
+                <option value="{{id}}" {{#ifequal id ../site.id}}selected=true{{/ifequal}}>
+                    {{name}}
+                </option>
+            {{/each}}
+        </select>
+    {{/if}}
+
+</form>

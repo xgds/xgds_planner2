@@ -96,7 +96,6 @@ An XPJSON Plan_::
       {
         "type": "Station",
         "name": "Rover Staging Area",
-        "libraryId": "RoverStagingArea",
         "id": "00",
         "geometry": {
           "type": "Point",
@@ -112,7 +111,7 @@ An XPJSON Plan_::
           {
             "type": "PeriodicPancam",
             "id": "01_0_SPP",
-            "libraryId": "SPP",
+            "presetCode": "SPP",
             "whiteBalance": "A",
             "focalLengthMm": 7.4,
             "intervalSeconds": 5
@@ -131,7 +130,7 @@ An XPJSON Plan_::
           {
             "type": "MicroImage",
             "id": "02_0_MI",
-            "libraryId": "MI",
+            "presetCode": "MI",
             "whiteBalance": "A",
             "focalLengthMm": 10.1
           }
@@ -165,9 +164,10 @@ The PlanSchema_ that the Plan_ conforms to::
     "notes": "Define available robot science commands",
     "id": "http://example.com/robotScienceSchema.json",
 
-    "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
-    "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s",
+    "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+    "stationIdFormat": "STN{stationIndex:02d}",
+    "segmentIdFormat": "SEG{stationIndex:02d}",
+    "commandIdFormat": "{parent.id}_{commandIndex:1d}_{command.presetCode}",
 
     "segmentParams": [
       {
@@ -212,13 +212,19 @@ The PlanSchema_ that the Plan_ conforms to::
             "type": "ParamSpec",
             "id": "duration",
             "parent": "duration"
+          },
+          {
+            "type": "ParamSpec",
+            "id": "presetCode",
+            "valueType": "string",
+            "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
           }
         ]
       },
       {
         "type": "CommandSpec",
         "id": "Image",
-        "parent": "Command",
+        "parent": "CommandWithDuration",
         "abstract": true,
         "params": [
           {
@@ -334,7 +340,7 @@ the plan::
       {
         "type": "PeriodicPancam",
         "name": "FastPeriodicPancam",
-        "id": "FPP",
+        "presetCode": "FPP",
         "whiteBalance": "A",
         "focalLengthMm": 7.4,
         "intervalSeconds": 2
@@ -342,7 +348,7 @@ the plan::
       {
         "type": "PeriodicPancam",
         "name": "SlowPeriodicPancam",
-        "id": "SPP",
+        "presetCode": "SPP",
         "whiteBalance": "A",
         "focalLengthMm": 7.4,
         "intervalSeconds": 5
@@ -401,8 +407,6 @@ hierarchy as follows:
    * Platform_
 
    * Site_
-
-   * StopCommand_
 
    * Target_
 
@@ -578,12 +582,23 @@ Inherits from:
 |                   |                |                 |planning interface according to a   |
 |                   |                |                 |naming convention.                  |
 +-------------------+----------------+-----------------+------------------------------------+
-|``libraryId``      |string          |optional         |When a user copies a command from   |
-|                   |                |                 |the PlanLibrary_ into a Plan_, the  |
-|                   |                |                 |planning interface should copy the  |
-|                   |                |                 |``id`` member of the original       |
-|                   |                |                 |command into the ``libraryId``      |
-|                   |                |                 |member of the copy.                 |
+|``stopCommandId``  |string          |optional         |Identifies an earlier non-blocking  |
+|                   |                |                 |command to stop by its ``id``.      |
+|                   |                |                 |                                    |
+|                   |                |                 |Used only if ``isStopCommand`` is   |
+|                   |                |                 |``true`` for this command subclass. |
++-------------------+----------------+-----------------+------------------------------------+
+|``stopCommandType``|string          |optional         |Identifies an earlier non-blocking  |
+|                   |                |                 |command to stop by its ``type``.    |
+|                   |                |                 |                                    |
+|                   |                |                 |Used only if ``isStopCommand`` is   |
+|                   |                |                 |``true`` for this command subclass. |
++-------------------+----------------+-----------------+------------------------------------+
+|``id``             |string          |required         |Unique identifier for the command.  |
+|                   |                |                 |                                    |
+|                   |                |                 |Probably auto-generated by the      |
+|                   |                |                 |planning interface according to a   |
+|                   |                |                 |naming convention.                  |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Command Subclasses
@@ -641,7 +656,6 @@ Example instance of a "DriveForward" subclass::
 
     // inherited from Command
     "stationId": "ARC_R001A00",
-    "libraryId": "FWD",
 
     // defined in DriveForward CommandSpec
     "distance": 0.5,
@@ -702,7 +716,7 @@ Inherits from:
 |                    |                |                 |this command in either of two cases: |
 |                    |                |                 |                                     |
 |                    |                |                 | * When it reaches an explicit       |
-|                    |                |                 |   StopCommand_ that references this |
+|                    |                |                 |   stop command that references this |
 |                    |                |                 |   command.                          |
 |                    |                |                 |                                     |
 |                    |                |                 | * When it reaches the end of the    |
@@ -714,9 +728,12 @@ Inherits from:
 |                    |                |                 |immediately after this command is    |
 |                    |                |                 |executed, without waiting for this   |
 |                    |                |                 |command to complete.                 |
-|                    |                |                 |                                     |
-|                    |                |                 |                                     |
-|                    |                |                 |                                     |
++--------------------+----------------+-----------------+-------------------------------------+
+|``isStopCommand``   |boolean         |optional (default|If true, each instance of this       |
+|                    |                |``false``)       |command has the effect of stopping an|
+|                    |                |                 |earlier non-blocking command         |
+|                    |                |                 |specified in the ``stopCommandId``   |
+|                    |                |                 |and ``stopCommandType`` fields.      |
 +--------------------+----------------+-----------------+-------------------------------------+
 |``scopeTerminate``  |boolean         |optional (default|(Non-blocking commands only.)  The   |
 |                    |                |``true``)        |executive should automatically       |
@@ -756,6 +773,7 @@ Example
 
     // defined in CommandSpec
     "blocking": true,
+    "isStopCommand": false,
     "scopeTerminate": true,
     "color": "#ff0000"
   }
@@ -872,6 +890,10 @@ Inherits from:
 +------------------+----------------+------------------------+------------------------------------+
 |``maximum``       |``valueType``   |optional                |Maximum legal value for parameter.  |
 +------------------+----------------+------------------------+------------------------------------+
+|``maxLength``     |integer         |optional                |If ``valueType`` is ``"string"``,   |
+|                  |                |                        |you can specify the maximum allowed |
+|                  |                |                        |string length.                      |
++------------------+----------------+------------------------+------------------------------------+
 |``choices``       |array of        |optional                |If specified, the parameter value   |
 |                  |[``valueType``, |                        |must be set to one of these choices.|
 |                  |string] pairs   |                        |Each choice is a pair whose first   |
@@ -880,6 +902,34 @@ Inherits from:
 |                  |                |                        |a text label used to describe the   |
 |                  |                |                        |choice to a user of the planning    |
 |                  |                |                        |interface.                          |
++------------------+----------------+------------------------+------------------------------------+
+|``widget``        |string          |optional                |The form input widget to display for|
+|                  |                |                        |user data entry of the parameter,   |
+|                  |                |                        |specified as a name from the HTML   |
+|                  |                |                        |forms specification, in all         |
+|                  |                |                        |lowercase. Examples: ``"textarea"``,|
+|                  |                |                        |``"select"``, ``"radio"``.          |
+|                  |                |                        |                                    |
+|                  |                |                        |Each planning interface will have   |
+|                  |                |                        |its own algorithm for choosing a    |
+|                  |                |                        |default widget to use for parameter |
+|                  |                |                        |data entry based on its             |
+|                  |                |                        |``valueType`` and other             |
+|                  |                |                        |properties. The ``widget`` parameter|
+|                  |                |                        |overrides that default.             |
+|                  |                |                        |                                    |
+|                  |                |                        |Planning interfaces may choose which|
+|                  |                |                        |widgets to support for each         |
+|                  |                |                        |``valueType`` and should ignore the |
+|                  |                |                        |``widget`` member if they do not    |
+|                  |                |                        |know how to render the specified    |
+|                  |                |                        |widget.                             |
+|                  |                |                        |                                    |
+|                  |                |                        |Note that planning interfaces not   |
+|                  |                |                        |based on HTML can support this      |
+|                  |                |                        |feature by selecting the widget in  |
+|                  |                |                        |their UI toolkit that best matches  |
+|                  |                |                        |the specified HTML widget.          |
 +------------------+----------------+------------------------+------------------------------------+
 |``default``       |``valueType`` or|optional                |The default value of the            |
 |                  |``null``        |                        |parameter. If not specified, the    |
@@ -915,12 +965,15 @@ Example
 
     // defined in ParamSpec
     "parent": "(parent ParamSpec id)",
+    "valueType": "(type name)"
     "minimum": (minimum value),
     "maximum": (maximum value),
+    "maxLength": (max length of string),
     "choices": [
-      (value choice 1),
+      [(value choice 1), "(label for value choice 1)"],
       ...
     ],
+    "widget": "(widget name)",
     "default": (default value),
     "required": true,
     "visible": true,
@@ -944,16 +997,7 @@ Inherits from:
 |Member            |Type            |Values           |Meaning                             |
 +==================+================+=================+====================================+
 |``sequence``      |array containing|optional         |A sequence of commands that should  |
-|                  |Command_ and    |                 |be executed at this PathElement.    |
-|                  |StopCommand_    |                 |                                    |
-|                  |entries         |                 |                                    |
-+------------------+----------------+-----------------+------------------------------------+
-|``libraryId``     |string          |optional         |When a user copies an element from  |
-|                  |                |                 |the PlanLibrary_ into a Plan_, the  |
-|                  |                |                 |planning interface should record the|
-|                  |                |                 |``id`` member of the original       |
-|                  |                |                 |element in the ``libraryId`` member |
-|                  |                |                 |of the copy.                        |
+|                  |Command_ entries|                 |be executed at this PathElement.    |
 +------------------+----------------+-----------------+------------------------------------+
 
 .. _Plan:
@@ -1011,10 +1055,10 @@ Inherits from:
 |``sequence``        |array        |required        |The command sequence.               |
 |                    |containing   |                |                                    |
 |                    |Command_,    |                |                                    |
-|                    |StopCommand_,|                |                                    |
 |                    |Station_, and|                |                                    |
 |                    |Segment_     |                |                                    |
 |                    |elements     |                |                                    |
+|                    |             |                |                                    |
 +--------------------+-------------+----------------+------------------------------------+
 
 Example
@@ -1261,12 +1305,28 @@ Inherits from:
 |                           |string`_    |                |auto-generate the ``id`` of Plan_   |
 |                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
-|``pathElementIdFormat``    |`format     |optional        |A format string used to             |
-|                           |string`_    |                |auto-generate the ``id`` of         |
-|                           |            |                |PathElement_ objects.               |
+|``stationIdFormat``        |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Station_|
+|                           |            |                |objects.                            |
++---------------------------+------------+----------------+------------------------------------+
+|``segmentIdFormat``        |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Segment_|
+|                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
 |``commandIdFormat``        |`format     |optional        |A format string used to             |
 |                           |string`_    |                |auto-generate the ``id`` of Command_|
+|                           |            |                |objects that are found in the       |
+|                           |            |                |``sequence`` member of a Station_ or|
+|                           |            |                |Segment_.                           |
++---------------------------+------------+----------------+------------------------------------+
+|``bareCommandIdFormat``    |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Command_|
+|                           |            |                |objects found in the ``sequence``   |
+|                           |            |                |member of a Plan_, outside a        |
+|                           |            |                |Station_ or Segment_.               |
++---------------------------+------------+----------------+------------------------------------+
+|``targetIdFormat``         |`format     |optional        |A format string used to             |
+|                           |string`_    |                |auto-generate the ``id`` of Target_ |
 |                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
 
@@ -1408,9 +1468,9 @@ Inherits from:
 +------------------+------------+----------------+------------------------------------+
 |``sequence``      |array       |optional        |Commands to be executed while moving|
 |                  |containing  |                |along the Segment.                  |
-|                  |Command_ and|                |                                    |
-|                  |StopCommand_|                |                                    |
+|                  |Command_    |                |                                    |
 |                  |entries     |                |                                    |
+|                  |            |                |                                    |
 +------------------+------------+----------------+------------------------------------+
 
 Example
@@ -1437,8 +1497,7 @@ Example
     "sequence": [
       { (Command 1) },
       ...
-    ],
-    "libraryId": "(id)"
+    ]
   }
 
 .. _Site:
@@ -1569,45 +1628,7 @@ Example
     "sequence": [
       { (Command 1) },
       ...
-    ],
-    "libraryId": "(id)"
-  }
-
-.. _StopCommand:
-
-StopCommand Class
-~~~~~~~~~~~~~~~~~
-
-A StopCommand instance is an element of a command sequence that stops execution
-of a specified non-blocking command.
-
-Abstract class:
-  No
-
-Inherits from:
-  TypedObject
-
-+-------------------+----------------+-----------------+------------------------------------+
-|Member             |Type            |Values           |Meaning                             |
-+===================+================+=================+====================================+
-|``commandId``      |string          |optional         |The ``id`` of the non-blocking      |
-|                   |                |                 |Command_ to stop.                   |
-+-------------------+----------------+-----------------+------------------------------------+
-
-Example
--------
-
-::
-
-  {
-    // inherited from TypedObject
-    "type": "StopCommand",
-    "name": "(name)",
-    "notes": "(notes)",
-    "id": "(id)",
-
-    // defined in StopCommand
-    "commandId": "(id of command to stop)"
+    ]
   }
 
 .. _Target:
@@ -1661,52 +1682,90 @@ Format Strings
 ==============
 
 PlanSchema_ documents can use format strings to specify formal naming
-conventions for elements of the Plan_. The format strings use `Python
-String Formatting`_ syntax.
+conventions for elements of the Plan_. The format strings use a subset
+of the `Python String Formatting`_ syntax.
+
+If no format string is specified, the planning interface should default
+to filling the relevant ``id`` field with a persistent randomly
+generated UUID.
 
 To substitute the value of a variable into the formatted output, you
-include a pattern ``%(variableName)<printfFormat>`` in the template. For
-example, the pattern ``%(planNumber)03d`` substitutes in the value of
-the ``planNumber`` variable (which must be an integer) and formats it as
-a 3-digit decimal string (padded with leading zeros).
+include a pattern ``{<expression>:<printfFormat>}`` in the
+template. Expressions are in the form ``variable.member.submember``
+where member and submember are optional. Specifying a member extracts
+the member with that name from the variable. The printf format component
+is optional and defaults to ``:s``.
 
-The following variables are available for use in formats:
+For example, the pattern ``{plan.planNumber:03d}`` substitutes in the
+value of the ``planNumber`` member of the ``plan`` variable (which must
+be an integer) and formats it as a 3-digit decimal string padded with
+leading zeros. The pattern ``{plan.site.id}`` substitutes the ``id``
+submember of the ``site`` member of the ``plan`` variable, with the
+default ``:s`` formatting.
 
-+-------------------------+----------+------------------------+-----------------------------------+
-|Variable                 |Type      |Availability            |Meaning                            |
-+=========================+==========+========================+===================================+
-|site.id                  |string    |all                     |``id`` of the ``site`` of the Plan_|
-+-------------------------+----------+------------------------+-----------------------------------+
-|platform.id              |string    |all                     |``id`` of the ``platform`` of the  |
-|                         |          |                        |Plan_                              |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.planNumber          |integer   |all                     |``planNumber`` of the Plan_        |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.planVersion         |string    |all                     |``planVersion`` of the             |
-|                         |          |                        |Plan_. Versions are typically      |
-|                         |          |                        |``"A"``, ``"B"``, ``"C"``, etc.    |
-+-------------------------+----------+------------------------+-----------------------------------+
-|plan.id                  |string    |``pathElementIdFormat``,|``id`` of the Plan_.  (This ``id`` |
-|                         |          |``commandIdFormat``     |may have been auto-generated using |
-|                         |          |                        |``planIdFormat``.)                 |
-+-------------------------+----------+------------------------+-----------------------------------+
-|pathElement.index        |integer   |``pathElementIdFormat``,|Index of the PathElement_ in the   |
-|                         |          |``commandIdFormat``     |``sequence`` array of the          |
-|                         |          |                        |Plan_. 0-based indexing.           |
-+-------------------------+----------+------------------------+-----------------------------------+
-|pathElement.id           |string    |``commandIdFormat``     |``id`` of the PathElement_. (This  |
-|                         |          |                        |``id`` may have been auto-generated|
-|                         |          |                        |using ``pathElementIdFormat``.)    |
-+-------------------------+----------+------------------------+-----------------------------------+
-|command.index            |integer   |``commandIdFormat``     |Index of the Command_ within its   |
-|                         |          |                        |``sequence`` array. 0-based        |
-|                         |          |                        |indexing.                          |
-+-------------------------+----------+------------------------+-----------------------------------+
-|command.libraryId        |string    |``commandIdFormat``     |``libraryId`` of the Command_      |
-|                         |          |                        |                                   |
-+-------------------------+----------+------------------------+-----------------------------------+
-|command.type             |string    |``commandIdFormat``     |``type`` of the Command_           |
-+-------------------------+----------+------------------------+-----------------------------------+
+The variables available when filling the format are defined as follows:
+
++-----------------------+------------------------------+------------------------------------------+
+|Format                 |Available variables           |Notes                                     |
++=======================+==============================+==========================================+
+|``planIdFormat``       |``plan``                      |                                          |
++-----------------------+------------------------------+------------------------------------------+
+|``stationIdFormat``    |``plan``, ``station``,        |``stationIndex`` is the index of the      |
+|                       |``stationIndex``              |Station_ in the Plan_ ``sequence``        |
+|                       |                              |array. It starts at 0 and is incremented  |
+|                       |                              |after each Station_, so the first Station_|
+|                       |                              |gets a ``stationIndex`` of 0. Segments and|
+|                       |                              |bare Commands in the Plan_ ``sequence``   |
+|                       |                              |are not numbered.                         |
++-----------------------+------------------------------+------------------------------------------+
+|``segmentIdFormat``    |``plan``, ``segment``,        |``stationIndex`` has the same             |
+|                       |``stationIndex``              |interpretation for Segments as it does for|
+|                       |                              |Stations. The effect is that the          |
+|                       |                              |``stationIndex`` of a Segment_ is the same|
+|                       |                              |as the ``stationIndex`` of the next       |
+|                       |                              |Station_. "Segment N is always on the way |
+|                       |                              |to Station N."                            |
++-----------------------+------------------------------+------------------------------------------+
+|``targetIdFormat``     |``plan``, ``target``,         |``targetIndex`` is the index of the       |
+|                       |``targetIndex``               |Target_ in the Plan_ ``targets`` array. It|
+|                       |                              |starts at 0 and is incremented after each |
+|                       |                              |Target_, so the first Target_ gets a      |
+|                       |                              |``targetIndex`` of 0.                     |
++-----------------------+------------------------------+------------------------------------------+
+|``commandIdFormat``    |``plan``, ``parent``,         |This format applies to Commands that are  |
+|                       |``stationIndex``, ``command``,|contained in the ``sequence`` array of a  |
+|                       |``commandIndex``              |Station_ or Segment_. ``parent`` is the   |
+|                       |                              |containing Station_ or                    |
+|                       |                              |Segment_. ``stationIndex`` has the same   |
+|                       |                              |meaning as above.                         |
+|                       |                              |                                          |
+|                       |                              |``commandIndex`` is the index of the      |
+|                       |                              |Command_ in the parent ``sequence`` array.|
+|                       |                              |It starts at 0 and is incremented after   |
+|                       |                              |each Command_, so the first Command_ gets |
+|                       |                              |a ``commandIndex`` of 0.                  |
++-----------------------+------------------------------+------------------------------------------+
+|``bareCommandIdFormat``|``plan``, ``stationIndex``,   |This format applies to "bare" Commands    |
+|                       |``command``                   |that are not contained in a Station_ or   |
+|                       |                              |Segment_. (Thus the ``parent`` and        |
+|                       |                              |``commandIndex`` fields of                |
+|                       |                              |``commandIdFormat`` are not defined.)     |
+|                       |                              |``stationIndex`` has the same meaning as  |
+|                       |                              |above.                                    |
+|                       |                              |                                          |
+|                       |                              |Note that if an application domain does   |
+|                       |                              |not permit bare Commands in the Plan_     |
+|                       |                              |``sequence``, the relevant PlanSchema_    |
+|                       |                              |would likely not define                   |
+|                       |                              |``bareCommandIdFormat``.                  |
++-----------------------+------------------------------+------------------------------------------+
+
+The fields available within each variable are the members defined for
+that class in the XPJSON spec.
+
+Note that id formats are resolved in a top-down manner, such that, for
+example, the ``commandIdFormat`` can usefully refer to ``plan.id`` or
+``parent.id``.
 
 Example
 ~~~~~~~
@@ -1718,9 +1777,10 @@ If the PlanSchema_ contains the following formats::
     "type": "PlanSchema",
     ...
 
-    "planIdFormat": "%(site.id)s_%(plan.planNumber)03d%(plan.planVersion)s",
-    "pathElementIdFormat": "%(pathElement.index)02d",
-    "commandIdFormat": "%(pathElement.id)s_%(command.index)d_%(command.libraryId)s"
+    "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+    "stationIdFormat": "STN{stationIndex:02d}",
+    "segmentIdFormat": "SEG{stationIndex:02d}",
+    "commandIdFormat": "{station.id}_{commandIndex:1d}_{command.presetCode}"
   }
 
 The resulting Plan_ might have these auto-generated ``id`` values::
@@ -1735,18 +1795,18 @@ The resulting Plan_ might have these auto-generated ``id`` values::
     },
     "planNumber": 3,
     "planVersion": "B",
-    "id": "ARC_R003B",
+    "id": "ARC_003B",
     ...
 
     "sequence": [
       {
         "type": "Station",
-        "id": "00",
+        "id": "STN00",
         "sequence": [
           {
             "type": "Drive",
-            "libraryId": "FDR",
-            "id": "00_0_FDR",
+            "presetCode": "FDR",
+            "id": "STN00_0_FDR",
             ...
           }
           ...
@@ -1764,4 +1824,4 @@ The resulting Plan_ might have these auto-generated ``id`` values::
 
 .. _ISO 8601: http://www.w3.org/TR/NOTE-datetime
 
-.. _Python String Formatting: http://docs.python.org/library/stdtypes.html#string-formatting
+.. _Python String Formatting: http://docs.python.org/3/library/string.html#formatstrings

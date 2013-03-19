@@ -39,8 +39,7 @@
     {
       "type": "Station",
       "name": "Rover Staging Area",
-      "libraryId": "RoverStagingArea",
-      "id": "00",
+      "id": "STN00",
       "geometry": {
         "type": "Point",
         "coordinates": [-122.065483, 37.416433]
@@ -48,14 +47,14 @@
     },
     {
       "type": "Segment",
-      "id": "01",
+      "id": "SEG01",
       "tolerance": 0.5,
       "speed": 0.3,
       "sequence": [
         {
           "type": "PeriodicPancam",
-          "id": "01_0_SPP",
-          "libraryId": "SPP",
+          "id": "SEG01_0_SPP",
+          "presetCode": "SPP",
           "whiteBalance": "A",
           "focalLengthMm": 7.4,
           "intervalSeconds": 5
@@ -65,7 +64,7 @@
     {
       "type": "Station",
       "name": "Waypoint 1",
-      "id": "02",
+      "id": "STN01",
       "geometry": {
         "type": "Point",
         "coordinates": [-122.065585, 37.416379]
@@ -73,8 +72,8 @@
       "sequence": [
         {
           "type": "MicroImage",
-          "id": "02_0_MI",
-          "libraryId": "MI",
+          "id": "STN01_0_MI",
+          "presetCode": "MI",
           "whiteBalance": "A",
           "focalLengthMm": 10.1
         }
@@ -82,14 +81,14 @@
     },
     {
       "type": "Segment",
-      "id": "03",
+      "id": "SEG02",
       "tolerance": 1.0,
       "speed": 0.7
     },
     {
       "type": "Station",
       "name": "Waypoint 2",
-      "id": "04",
+      "id": "STN03",
       "geometry": {
         "type": "Point",
         "coordinates": [-122.065639,  37.416503]

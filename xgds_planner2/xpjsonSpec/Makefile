@@ -1,6 +1,6 @@
 
 RST2HTML=rst2html.py --stylesheet=spec.css
-OUTDIR=../build/media/xpjson
+OUTDIR=../../../../build/static/xgds_planner2
 
 all: \
   $(OUTDIR)/xpjson.html
