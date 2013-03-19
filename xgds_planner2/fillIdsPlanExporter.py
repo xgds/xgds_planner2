@@ -10,9 +10,6 @@ from xgds_planner2 import xpjson, settings, models
 
 
 def getCommandId(context):
-    import json
-    print 'commandIdFormat:', context.schema.commandIdFormat
-    print 'context:', context.keys()
     return context.schema.commandIdFormat.format(
         plan=context.plan,
         parent=context.parent,
