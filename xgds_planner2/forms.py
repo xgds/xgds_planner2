@@ -13,7 +13,7 @@ PLATFORM_CHOICES = [(x.id, x.name) for x in models.LIBRARY.platforms]
 
 
 class CreatePlanForm(forms.Form):
-    planNumber = forms.IntegerField(initial=9999)
-    planVersion = forms.CharField(max_length=1, initial='A')
-    site = forms.ChoiceField(choices=SITE_CHOICES, required=False)
-    platform = forms.ChoiceField(choices=PLATFORM_CHOICES, required=False)
+    planNumber = forms.IntegerField(label='Plan number')
+    planVersion = forms.CharField(label='Plan version', max_length=1, initial='A')
+    #site = forms.ChoiceField(choices=SITE_CHOICES, required=False)
+    #platform = forms.ChoiceField(choices=PLATFORM_CHOICES, required=False)

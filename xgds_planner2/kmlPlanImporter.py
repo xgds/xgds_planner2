@@ -38,11 +38,6 @@ def coordsFromBuf(buf):
 
 def planDictFromCoords(coords, meta):
     plan = meta.copy()
-    plan.update({
-        'xpjson': '0.1',
-        'type': 'Plan',
-        'sequence': []
-    })
     n = len(coords)
     for i, lonLat in enumerate(coords):
         plan['sequence'].append({
@@ -57,21 +52,7 @@ def planDictFromCoords(coords, meta):
                 'type': 'Segment'
             })
 
-    # downstream processing tools assume plan is a DotDict
-    plan = convertToDotDictRecurse(plan)
-
     return plan
-
-
-def planDocFromPlanDict(planDict, schema):
-    planDoc = (xpjson.loadDocumentFromDict
-               (planDict,
-                schema=schema,
-                parseOpts=xpjson.ParseOpts(fillInDefaults=True)))
-
-    # fill in ids
-    fillIds = FillIdsPlanExporter()
-    return fillIds.exportPlan(planDoc)
 
 
 class KmlLineStringPlanImporter(PlanImporter):

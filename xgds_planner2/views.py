@@ -8,11 +8,21 @@ import os
 import glob
 import json
 
-from django.shortcuts import render_to_response, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponse
+from django.shortcuts import render, render_to_response, get_object_or_404
+from django.http import (HttpResponseRedirect,
+                         HttpResponseForbidden,
+                         Http404,
+                         HttpResponse,
+                         HttpResponseNotAllowed)
 from django.template import RequestContext
+from django.core.urlresolvers import reverse
+from django.contrib.auth.decorators import login_required
 
-from xgds_planner2 import settings, models, choosePlanExporter
+from xgds_planner2 import (settings,
+                           models,
+                           choosePlanExporter,
+                           forms,
+                           planImporter)
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -113,3 +123,29 @@ def planExport(request, uuid, name):
 
     exporter = exporterClass()
     return exporter.getHttpResponse(dbPlan)
+
+
+@login_required
+def planCreate(request):
+    if request.method == 'GET':
+        form = forms.CreatePlanForm()
+    elif request.method == 'POST':
+        form = forms.CreatePlanForm(request.POST)
+        if form.is_valid():
+            # add plan entry to database
+            meta = dict([(f, form.cleaned_data[f])
+                         for f in ('planNumber', 'planVersion')])
+            meta['creator'] = request.user.username
+            importer = planImporter.BlankPlanImporter()
+            dbPlan = importer.importPlan('%s%s' % (meta['planNumber'], meta['planVersion']),
+                                         buf=None,
+                                         meta=meta)
+            dbPlan.save()
+
+            # redirect to plan editor on newly created plan
+            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.name]))
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])
+    return render(request,
+                  'xgds_planner2/planCreate.html',
+                  {'form': form})

@@ -114,10 +114,11 @@ def main():
         }
 
         importerClass = choosePlanImporter.chooseImporter(name, formatCode=opts.formatCode)
-        importerClass.importPlan(name,
-                                 buf=open(importPath, 'r').read(),
-                                 meta=meta,
-                                 path=importPath)
+        dbPlan = importerClass.importPlan(name,
+                                          buf=open(importPath, 'r').read(),
+                                          meta=meta,
+                                          path=importPath)
+        dbPlan.save()
 
     ######################################################################
     else:

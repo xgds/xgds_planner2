@@ -5,13 +5,34 @@
 # __END_LICENSE__
 
 import os
+import time
 import datetime
 
-from xgds_planner2 import models, xpjson
+from geocamUtil.dotDict import convertToDotDictRecurse
 
+from xgds_planner2 import models, xpjson
+from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
 
 def posixTimestampToString(timestamp):
-    return datetime.datetime.utcfromtimestamp(timestamp).isoformat() + 'Z'
+    return (datetime.datetime
+            .utcfromtimestamp(timestamp)
+            .replace(microsecond=0)
+            .isoformat()
+            + 'Z')
+
+
+def planDocFromPlanDict(planDict, schema):
+    # downstream processing tools assume plan is a DotDict
+    planDict = convertToDotDictRecurse(planDict)
+
+    planDoc = (xpjson.loadDocumentFromDict
+               (planDict,
+                schema=schema,
+                parseOpts=xpjson.ParseOpts(fillInDefaults=True)))
+
+    # fill in ids
+    fillIds = FillIdsPlanExporter()
+    return fillIds.exportPlan(planDoc)
 
 
 class PlanImporter(object):
@@ -23,15 +44,22 @@ class PlanImporter(object):
 
     @classmethod
     def setDefaultMeta(cls, meta, path=None):
+        meta.setdefault('xpjson', '0.1')
+        meta.setdefault('type', 'Plan')
         meta.setdefault('schemaUrl', models.SIMPLIFIED_SCHEMA_URL)
         meta.setdefault('libraryUrls', [models.SIMPLIFIED_LIBRARY_URL])
         meta.setdefault('site', models.LIBRARY.sites[0]._objDict)
         meta.setdefault('platform', models.LIBRARY.platforms[0]._objDict)
+        meta.setdefault('sequence', [])
 
         if path:
             stats = os.stat(path)
             meta.setdefault('dateCreated', posixTimestampToString(stats.st_ctime))
             meta.setdefault('dateModified', posixTimestampToString(stats.st_mtime))
+        else:
+            now = time.time()
+            meta.setdefault('dateCreated', posixTimestampToString(now))
+            meta.setdefault('dateModified', posixTimestampToString(now))
 
     @classmethod
     def importPlan(cls, name, buf, meta, path=None):
@@ -46,7 +74,13 @@ class PlanImporter(object):
         dbPlan = models.Plan()
         dbPlan.jsonPlan = planText
         dbPlan.extractFromJson(overWriteDateModified=False)
-        dbPlan.save()
+
+        return dbPlan
 
     def importPlanFromBuffer(self, buf, meta, schema):
         raise NotImplementedError()
+
+
+class BlankPlanImporter(PlanImporter):
+    def importPlanFromBuffer(self, buf, meta, schema):
+        return planDocFromPlanDict(meta, schema)

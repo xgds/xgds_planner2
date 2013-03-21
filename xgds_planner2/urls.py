@@ -17,6 +17,7 @@ urlpatterns = patterns(
     url(r'^edit/(?P<plan_name>[^/]+)$', views.plan_editor_app, {}, name='planner2_edit'),
     url(r'^plan/(?P<name>[^/]+)\.json$', views.plan_REST, {}, name="planner2_planREST"),
     url(r'^plan/export/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {}, name='planner2_planExport'),
+    url(r'^plan/create/$', views.planCreate, {}, name='planner2_planCreate'),
     #url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

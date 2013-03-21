@@ -58,7 +58,11 @@ class Plan(models.Model):
 
     def extractFromJson(self, overWriteDateModified=True):
         if overWriteDateModified:
-            self.jsonPlan.dateModified = datetime.datetime.utcnow().isoformat() + 'Z'
+            self.jsonPlan.dateModified = (datetime.datetime
+                                          .utcnow()
+                                          .replace(microsecond=0)
+                                          .isoformat()
+                                          + 'Z')
 
         self.name = self.jsonPlan.name
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
