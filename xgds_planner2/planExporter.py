@@ -122,13 +122,16 @@ class TreeWalkPlanExporter(PlanExporter):
         return self.transformSegment(segment, tsequence, context)
 
     def exportPlan(self, plan):
-        plan = copy.deepcopy(plan)
-        index = 0
-        tsequence = []
+        # plan = copy.deepcopy(plan)
         context = DotDict({
             'plan': plan
         })
         self.initPlan(plan, context)
+        return self.exportPlanInternal(plan, context)
+
+    def exportPlanInternal(self, plan, context):
+        index = 0
+        tsequence = []
         for elt in plan.sequence:
             ctx = context.copy()
             ctx.stationIndex = index
