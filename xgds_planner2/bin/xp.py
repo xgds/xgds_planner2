@@ -106,6 +106,7 @@ def main():
             parser.error('import requires: --creator, --planNumber, --planVersion')
 
         name = os.path.basename(importPath)
+        name = os.path.splitext(name)[0]
         meta = {
             'creator': opts.creator,
             'planNumber': opts.planNumber,
