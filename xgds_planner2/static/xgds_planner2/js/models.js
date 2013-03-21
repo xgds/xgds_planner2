@@ -34,7 +34,7 @@ app.models = app.models || {};
     ** a Collection that can instantiate more than one model type.
     */
     models.PathElement = Backbone.RelationalModel.extend({
-        idAttribute: "_id",
+        idAttribute: "_id", // Doesn't exist, but allows us to change the "id" attribute with impunity.
         relations:[
             {
                 type: Backbone.HasMany,
@@ -161,7 +161,7 @@ app.models = app.models || {};
         */
         insertStation: function(idx, stationModel){
             var segmentAfter = this.at(idx);
-            if ( ! segmentAfter.get('type') == "Segment" ) { throw "You can only insert stations before a Segment." }
+            if ( segmentAfter.get('type') != "Segment" ) { throw "You can only insert stations before a Segment." }
             var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone the stationAfter's properties.
             this.add([segmentBefore, stationModel], {at: idx} );
         },

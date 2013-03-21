@@ -37,7 +37,8 @@ var app = (function($, _, Backbone){
 
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
-        this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'typeCode' );
+        this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
+        this.commandPresetsByType = this.util.groupBy( this.planLibrary.commands, 'type');
 
         var planJson = JSON.parse( $('#plan_json').html() );
         if (planJson) {
@@ -74,6 +75,25 @@ var app = (function($, _, Backbone){
     app.addInitializer( _.bind(Backbone.history.start, Backbone.history) );
 
     /*
+     * Application-level Request & Respond services
+    */
+
+    // Return the color mapped to a given key.
+    // If no color has been assigned to that key, allocate one to be forever associated with it.
+    app.reqres.addHandler('getColor', function(key){
+        var color;
+        function allocateColor(){ return app.util.randomColor() } //TODO: replace this with something that draws from a list of non-horrible colors
+        if ( ! app.colors ) { app.colors = {}; }
+        if ( _.has(app.colors, key) ) {
+            color = app.colors[key];
+        } else {
+            color = allocateColor();
+            app.colors[key] = color;
+        }
+        return color;
+    });
+
+    /*
     ** Global utility functions
     */
 
@@ -85,7 +105,39 @@ var app = (function($, _, Backbone){
             _.each(list, function(item) { obj[item[keyProp]] = item; });
             return obj;
         },
+        groupBy: function(list, keyProp) {
+            obj = {};
+            _.each(list, function(item) {
+                if ( _.isUndefined(obj[item[keyProp]]) ) { obj[item[keyProp]] = []; }
+                obj[item[keyProp]].push(item);
+            });
+            return obj;
+        },
+        randomColor: function(){ return '#'+((1<<24)*Math.random()|0).toString(16) },
+        rainbow: function (numOfSteps, step) {
+            // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distiguishable vibrant markers in Google Maps and other apps.
+            // Adam Cole, 2011-Sept-14
+            // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
+            // source: http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript/7419630
+            var r, g, b;
+            var h = step / numOfSteps;
+            var i = ~~(h * 6);
+            var f = h * 6 - i;
+            var q = 1 - f;
+            switch(i % 6){
+                case 0: r = 1, g = f, b = 0; break;
+                case 1: r = q, g = 1, b = 0; break;
+                case 2: r = 0, g = 1, b = f; break;
+                case 3: r = 0, g = q, b = 1; break;
+                case 4: r = f, g = 0, b = 1; break;
+                case 5: r = 1, g = 0, b = q; break;
+            }
+            var c = "#" + ("00" + (~ ~(r * 255)).toString(16)).slice(-2) + ("00" + (~ ~(g * 255)).toString(16)).slice(-2) + ("00" + (~ ~(b * 255)).toString(16)).slice(-2);
+            return (c);
+        },
     };
+
+
 
 
     return app;

@@ -35,7 +35,7 @@ $(function(){
         },
 
        render: function(){
-            google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
+           google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
         },
 
         earthInit: function(ge){

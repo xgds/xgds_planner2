@@ -1,4 +1,4 @@
-app.views = app.views || {};
+    app.views = app.views || {};
 
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
@@ -68,6 +68,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col2.close();
         this.col3.close(); // clear the third column
 
+        this.showingStation = itemModel;
         var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
         this.col2.show( view );
     },
@@ -169,6 +170,9 @@ app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
     template: function(data){
         return '' + data.presetCode + '<i/>';
     },
+    onRender: function(){
+        this.$el.css( "background-color", app.request( 'getColor', this.model.get('type') ) );
+    },
 });
 
 /*
@@ -246,8 +250,15 @@ app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
     },
 });
 
-app.views.CommandPresetsView = Backbone.ItemView.exted({
-    
+app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
+    template: '#template-command-presets',
+
+    serializeData: function(){
+        return {
+            presets: app.planLibrary.commands,
+            station: this.model.toJSON(),
+        }
+    },
 })
 
 
