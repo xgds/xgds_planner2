@@ -1,3 +1,7 @@
+#tab-content{
+    padding-left: 20px;
+}
+
 .nav-tabs li:hover{
     cursor: pointer;
 }
