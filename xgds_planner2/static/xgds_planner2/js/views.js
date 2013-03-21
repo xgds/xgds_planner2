@@ -106,7 +106,12 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     // The list item is a simple enough DOM subtree that we'll let the view build it's own root element.
     tagName: 'li',
     template: function(data){
-        return '' + data.id + ' <i/>';
+        return '' + data.model.toString()+ ' <i/>';
+    },
+    serializeData: function(){
+        var data = Backbone.Marionette.ItemView.prototype.serializeData.call(this, arguments);
+        data.model = this.model; // give the serialized object a reference back to the model
+        return data;
     },
     attributes: function(){
         return {
