@@ -37,7 +37,8 @@ var app = (function($, _, Backbone){
 
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
-        this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
+        //this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
+        this.commandPresetsByName = this.util.indexBy( this.planLibrary.commands, 'name');
         this.commandPresetsByType = this.util.groupBy( this.planLibrary.commands, 'type');
 
         // Extract color from command specs

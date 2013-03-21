@@ -1,7 +1,7 @@
 <ul>
 {{#group presets "type"}}
   {{#each items}}
-  <li data-tem-id="presetCode" class="preset-sequence-item" style="background-color: {{getColor type}}">{{presetCode}}</li>
+  <li data-tem-id="presetCode" data-preset-name="{{name}}" class="preset-sequence-item add-preset" style="background-color: {{getColor type}}">{{presetCode}}</li>
   {{/each}}
 {{/group}}
 </ul>

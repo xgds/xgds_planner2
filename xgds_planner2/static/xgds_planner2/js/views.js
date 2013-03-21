@@ -259,6 +259,15 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
             station: this.model.toJSON(),
         }
     },
+    events: {
+        "click .add-preset": function(evt){
+            console.log("Add by preset");
+            var station = this.model;
+            var target = $(evt.target);
+            var preset = app.commandPresetsByName[target.data('preset-name')];
+            station.appendCommandByPreset( preset );
+        },
+    },
 })
 
 

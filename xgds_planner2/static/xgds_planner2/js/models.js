@@ -79,9 +79,13 @@ app.models = app.models || {};
                 });
                 this.schema = schema;
             }
-            
+
         },
 
+        appendCommandByPreset: function(preset) {
+            var command = new models.Command( preset );
+            this.get('sequence').add(command);
+        },
         /*
         ** Relevant to stations only...
         ** A convenience mainly to keep details about the model's structure
