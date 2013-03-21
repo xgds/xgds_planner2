@@ -156,12 +156,13 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     className: 'sequence-list station-list',
     itemView: app.views.SequenceListItemView,
     initialize: function(){
-        this.on('itemview:select', function(selectedChildView) {
-            this.children.each(function(view){
-                if ( view !== selectedChildView) {
-                    view.trigger('unselect');
-                }
-            });
+        this.on('itemview:select', _.bind(this.unselectAllElse, this) );
+    },
+    unselectAllElse: function(selectedChildView) {
+        this.children.each(function(view){
+            if ( view !== selectedChildView) {
+                view.trigger('unselect');
+            }
         });
     },
 });
@@ -189,6 +190,10 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     events: {
         "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
         "click .add-item": function(){ app.vent.trigger('showPresets', this.model); },
+    },
+    initialize: function(){
+        // DRY
+        this.on('itemview:select', _.bind( app.views.StationSequenceCollectionView.prototype.unselectAllElse, this) );
     },
 });
 
