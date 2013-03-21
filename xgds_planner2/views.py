@@ -137,9 +137,15 @@ def planCreate(request):
                          for f in ('planNumber', 'planVersion')])
             meta['creator'] = request.user.username
             importer = planImporter.BlankPlanImporter()
-            dbPlan = importer.importPlan('%s%s' % (meta['planNumber'], meta['planVersion']),
+            dbPlan = importer.importPlan('tempName',
                                          buf=None,
                                          meta=meta)
+
+            # bit of a hack, setting the name from the id
+            planId = dbPlan.jsonPlan.id
+            dbPlan.jsonPlan.name = planId
+            dbPlan.name = planId
+
             dbPlan.save()
 
             # redirect to plan editor on newly created plan
