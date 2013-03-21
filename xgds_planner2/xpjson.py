@@ -718,8 +718,7 @@ class Plan(Document):
     def isValidPlanSequence(self, val):
         validTypes = (self._schema.commandSpecsLookup.keys()
                       + ['Station', 'Segment'])
-        for elt in val:
-            return elt.type in validTypes
+        return all([elt.type in validTypes for elt in val])
 
 
 class PlanLibrary(Document):
