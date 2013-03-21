@@ -885,9 +885,10 @@ def getCrsTransform(crs):
     def xform(coords, inverse=False):
         if inverse:
             x, y = coords
-            return proj(x + x0, y + y0, inverse=True)
+            outX, outY = proj(x + x0, y + y0, inverse=True)
         else:
             x, y = proj(*coords, inverse=False)
-            return x - x0, y - y0
+            outX, outY = x - x0, y - y0
+        return outY, outX  # HACK this is kn-specific
 
     return xform
