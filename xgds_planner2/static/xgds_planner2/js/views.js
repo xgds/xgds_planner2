@@ -116,7 +116,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     },
     events: {
         click: function(){
-            this.trigger('select');
+            this.trigger('expand');
             // TODO: Remove this conditional once commands have a useful "type" attribute.
             if ( [ 'Station', 'Segment' ].indexOf(this.model.get('type')) >= 0 ) {
                 app.vent.trigger('showItem:'+this.model.get('type').toLowerCase(), this.model);
@@ -135,18 +135,18 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
         "change": "render", // Re-render when the model changes.
     },
     initialize: function(){
-        this.on('select', this.select);
-        this.on('unselect', this.unselect);
+        this.on('expand', this.expand);
+        this.on('unexpand', this.unexpand);
     },
     onRender: function(){
-        if (this.selected){ this.select(); }
+        if (this.expanded){ this.expand(); }
     },
-    select: function(){
-        this.selected = true;
+    expand: function(){
+        this.expanded = true;
         this.$el.find('i').addClass('icon-chevron-right');
     },
-    unselect: function(){
-        this.selected = false;
+    unexpand: function(){
+        this.expanded = false;
         this.$el.find('i').removeClass('icon-chevron-right');
     },
 });
@@ -156,12 +156,12 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     className: 'sequence-list station-list',
     itemView: app.views.SequenceListItemView,
     initialize: function(){
-        this.on('itemview:select', _.bind(this.unselectAllElse, this) );
+        this.on('itemview:expand', _.bind(this.unexpandAllElse, this) );
     },
-    unselectAllElse: function(selectedChildView) {
+    unexpandAllElse: function(expandedChildView) {
         this.children.each(function(view){
-            if ( view !== selectedChildView) {
-                view.trigger('unselect');
+            if ( view !== expandedChildView) {
+                view.trigger('unexpand');
             }
         });
     },
@@ -193,7 +193,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     },
     initialize: function(){
         // DRY
-        this.on('itemview:select', _.bind( app.views.StationSequenceCollectionView.prototype.unselectAllElse, this) );
+        this.on('itemview:expand', _.bind( app.views.StationSequenceCollectionView.prototype.unexpandAllElse, this) );
     },
 });
 
