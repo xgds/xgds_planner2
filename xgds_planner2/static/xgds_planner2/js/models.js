@@ -13,6 +13,9 @@ app.models = app.models || {};
     };
 
     models.Plan = Backbone.RelationalModel.extend({
+        url: function(){
+            return '/xgds_planner2/plan/{name}.json'.format({name: this.get('name')});
+        },
         relations: [
             {
                 type: Backbone.HasMany,
@@ -25,7 +28,7 @@ app.models = app.models || {};
                     includeInJSON: false,
                 },
             }
-        ]
+        ],
     });
 
     /*
@@ -155,8 +158,12 @@ app.models = app.models || {};
         the station-segment-station adjecency.
         */ 
         appendStation: function(stationModel){
-            var segment = models.segmentFactory();
-            this.add([segment, stationModel]);
+            if (this.length > 0) { // Don't append a segment if this is the first station in the list.
+                var segment = models.segmentFactory();
+                this.add([segment, stationModel]);
+            } else {
+                this.add(stationModel);
+            }
         },
         
         /*

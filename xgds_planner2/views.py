@@ -51,9 +51,13 @@ def plan_REST(request, name):
     """
     Read and write plan JSON.
     """
-    if request.POST:
-        raise NotImplementedError
     plan = models.Plan.objects.get(name=name)
+    if request.method == "PUT":
+        data = json.loads(request.raw_post_data)
+        for k,v in data.items():
+            plan.jsonPlan[k] = v
+        plan.extractFromJson(overWriteDateModified=True)
+        plan.save()
     return HttpResponse( json.dumps(plan.jsonPlan), content_type='applicaiton/json' )
 
 with open(os.path.join(settings.MEDIA_ROOT, 'xgds_planner2/schema.json')) as schemafile:

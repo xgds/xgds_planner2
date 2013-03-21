@@ -123,9 +123,3 @@ class Plan(models.Model):
             return self.name
         else:
             return 'Unnamed plan ' + self.uuid
-
-
-@receiver(pre_save, sender=Plan)
-def beforePlanSave(sender, instance, raw, using, **kwargs):
-    "Trigger field extraction before saving"
-    instance.extractFromJson()

@@ -27,6 +27,9 @@ app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
         data.platforms = app.planLibrary.platforms;
         return data;
     },
+    events: {
+        'onChange input': function(evt){ console.log(evt) },
+    },
 });
 
 app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
