@@ -116,19 +116,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     },
     events: {
         click: function(){
-            this.trigger('expand');
-            // TODO: Remove this conditional once commands have a useful "type" attribute.
-            if ( [ 'Station', 'Segment' ].indexOf(this.model.get('type')) >= 0 ) {
-                app.vent.trigger('showItem:'+this.model.get('type').toLowerCase(), this.model);
-            } else {
-                // Presumably it is a Command
-                app.vent.trigger('showItem:command', this.model);
-            }
-        },
-        'all': function(evt){
-            // Seems like this never triggers.
-            console.log("SequenceListItemView EVENT TRIGGERED", evt);
-            console.log("Weird. This never happens.");
+            this.triggerMethod('expand');  // trigger the "expand" event AND call this.onExpand()
         },
     },
     modelEvents: {
@@ -151,10 +139,17 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     },
 });
 
+app.views.PathElementItemView = app.views.SequenceListItemView.extend({
+    onExpand: function(){
+        var type = this.model.get('type'); // "Station" or "Segment"
+        app.vent.trigger('showItem:'+type.toLowerCase(), this.model);
+    },
+});
+
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     tagName: 'ul',
     className: 'sequence-list station-list',
-    itemView: app.views.SequenceListItemView,
+    itemView: app.views.PathElementItemView,
     initialize: function(){
         this.on('itemview:expand', _.bind(this.unexpandAllElse, this) );
     },
@@ -167,25 +162,21 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     },
 });
 
-app.views.CommandSequenceListItemView = app.views.SequenceListItemView.extend({
+app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data){
         return '' + data.presetCode + '<i/>';
     },
     onRender: function(){
         this.$el.css( "background-color", app.request( 'getColor', this.model.get('type') ) );
     },
+    onExpand: function(){
+        app.vent.trigger('showItem:command', this.model);
+    },
 });
 
-/*
-app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
-    tagName: 'ul',
-    className: 'sequence-list command-list',
-    itemView: app.views.CommandSequenceListItemView,
-});
-*/
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
     template: '#template-sequence-list-station',
-    itemView: app.views.CommandSequenceListItemView,
+    itemView: app.views.CommandItemView,
     itemViewContainer: '.sequence-list',
     events: {
         "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
