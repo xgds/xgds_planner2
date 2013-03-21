@@ -64,19 +64,28 @@ class FillIdsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         return command
 
     def transformStation(self, station, tsequence, context):
-        station.id = getStationId(context)
         station.sequence = tsequence
         return station
 
     def transformSegment(self, segment, tsequence, context):
-        segment.id = getSegmentId(context)
         segment.sequence = tsequence
         return segment
 
     def transformPlan(self, plan, tsequence, context):
-        plan.id = getPlanId(context)
         plan.sequence = tsequence
         return plan
+
+    def exportStation(self, station, context):
+        station.id = getStationId(context)
+        return super(FillIdsPlanExporter, self).exportStation(station, context)
+
+    def exportSegment(self, segment, context):
+        segment.id = getSegmentId(context)
+        return super(FillIdsPlanExporter, self).exportSegment(segment, context)
+
+    def exportPlanInternal(self, plan, context):
+        plan.id = getPlanId(context)
+        return super(FillIdsPlanExporter, self).exportPlanInternal(plan, context)
 
 
 def test():
