@@ -40,6 +40,13 @@ var app = (function($, _, Backbone){
         this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
         this.commandPresetsByType = this.util.groupBy( this.planLibrary.commands, 'type');
 
+        // Extract color from command specs
+        // The app.colors object holds a key --> color map for the whole application
+        this.colors = {};
+        _.each( this.planSchema.commandSpecs, function(commandSpec){
+            this.colors[commandSpec.id] = commandSpec.color;
+        }, this );
+
         var planJson = JSON.parse( $('#plan_json').html() );
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);
