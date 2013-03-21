@@ -22,24 +22,6 @@ from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
 
-def getModClass(name):
-    """converts 'xgds_planner.forms.PlanMetaForm' to ['xgds_planner.forms', 'PlanMetaForm']"""
-    try:
-        dot = name.rindex('.')
-    except ValueError:
-        return name, ''
-    return name[:dot], name[dot + 1:]
-
-
-def getClassByName(qualifiedName):
-    """converts 'xgds_planner.forms.PlanMetaForm' to the PlanMetaForm class object in
-    module xgds_planner.forms"""
-    modName, klassName = getModClass(qualifiedName)
-    __import__(modName)
-    mod = sys.modules[modName]
-    return getattr(mod, klassName)
-
-
 SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
 LIBRARY = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH, schema=SCHEMA)
 
@@ -49,25 +31,6 @@ SIMPLIFIED_SCHEMA_PATH = settings.STATIC_ROOT + _schema
 SIMPLIFIED_LIBRARY_PATH = settings.STATIC_ROOT + _library
 SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
 SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
-
-
-class ExporterInfo(object):
-    def __init__(self, formatCode, extension, exporterClass):
-        self.formatCode = formatCode
-        self.extension = extension
-        self.exporterClass = exporterClass
-        self.label = exporterClass.label
-        self.url = None
-
-
-PLAN_EXPORTERS = []
-PLAN_EXPORTERS_BY_FORMAT = {}
-for formatCode, extension, exporterClassName in settings.XGDS_PLANNER_PLAN_EXPORTERS:
-    exporterInfo = ExporterInfo(formatCode,
-                                extension,
-                                getClassByName(exporterClassName))
-    PLAN_EXPORTERS.append(exporterInfo)
-    PLAN_EXPORTERS_BY_FORMAT[formatCode] = exporterInfo
 
 
 class Plan(models.Model):
@@ -141,8 +104,9 @@ class Plan(models.Model):
                        args=[self.uuid, self.escapedName() + extension])
 
     def getExporters(self):
+        import choosePlanExporter  # delayed import avoids import loop
         result = []
-        for exporterInfo in PLAN_EXPORTERS:
+        for exporterInfo in choosePlanExporter.PLAN_EXPORTERS:
             info = copy.deepcopy(exporterInfo)
             info.url = self.getExportUrl(info.extension)
             result.append(info)

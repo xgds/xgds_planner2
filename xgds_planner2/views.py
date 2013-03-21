@@ -12,7 +12,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponseForbidden, Http404, HttpResponse
 from django.template import RequestContext
 
-from xgds_planner2 import settings, models
+from xgds_planner2 import settings, models, choosePlanExporter
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -84,7 +84,7 @@ def planIndex(request):
         'xgds_planner2/planIndex.html',
         {
             'plans': models.Plan.objects.all(),
-            'exporters': models.PLAN_EXPORTERS
+            'exporters': choosePlanExporter.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
 
@@ -99,13 +99,13 @@ def planExport(request, uuid, name):
     formatCode = request.GET.get('format')
     if formatCode is not None:
         # user explicitly specified e.g. '?format=kml'
-        exporterClass = models.PLAN_EXPORTERS_BY_FORMAT.get(formatCode)
+        exporterClass = choosePlanExporter.PLAN_EXPORTERS_BY_FORMAT.get(formatCode)
         if exporterClass is None:
             return HttpResponseInvalidRequest('invalid export format %s' % formatCode)
     else:
         # filename ends with e.g. '.kml'
         exporterClass = None
-        for entry in models.PLAN_EXPORTERS:
+        for entry in choosePlanExporter.PLAN_EXPORTERS:
             if name.endswith(entry.extension):
                 exporterClass = entry.exporterClass
         if exporterClass is None:
