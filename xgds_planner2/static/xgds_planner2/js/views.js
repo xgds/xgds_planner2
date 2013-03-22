@@ -6,6 +6,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-navigate': function(){ app.vent.trigger('mapmode', 'navigate'); },
         'click #btn-reposition': function(){ app.vent.trigger('mapmode', 'reposition'); },
         'click #btn-addStations': function(){ app.vent.trigger('mapmode', 'addStations'); },
+        'click #btn-save': function(){ app.currentPlan.save() },
     },
     
     initialize: function(){
@@ -34,6 +35,12 @@ app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
         var control = $(evt.target);
         var key = control.attr('name');
         var value = control.val();
+        if ( key == 'site' ) { 
+            value = _.find(app.planLibrary.sites, function(s){ return s.id == value; });
+        }
+        if ( key == 'platform' ) { 
+            value = _.find( app.planLibrary.platforms, function(p) { return p.id == value } );
+        }
         this.model.set(key, value);
     },
 });
