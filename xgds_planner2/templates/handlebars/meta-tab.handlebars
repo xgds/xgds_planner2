@@ -1,13 +1,13 @@
 <form id="meta">
     <label>Name</label>
-    <input id="name" type="text" value="{{name}}"/>
+    <input name="name" type="text" value="{{name}}"/>
 
     <label>Notes</label>
-    <textarea id="notes" rows=3 >{{notes}}</textarea>
+    <textarea name="notes" rows=3 >{{notes}}</textarea>
     
     {{#if platforms }}
         <label>Platform</label>
-        <select id="platform">
+        <select name="platform">
             {{#each platforms}}
             <option value="{{id}}" {{#ifequal id ../platform.id}}selected=true{{/ifequal}}>
                 {{name}}
@@ -18,7 +18,7 @@
     {{/if}}
     {{#if sites}}
         <label>Site</label>
-        <select id="site">
+        <select name="site">
             {{#each sites}}
                 <option value="{{id}}" {{#ifequal id ../site.id}}selected=true{{/ifequal}}>
                     {{name}}

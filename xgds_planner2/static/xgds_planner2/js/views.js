@@ -28,7 +28,13 @@ app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
         return data;
     },
     events: {
-        'onChange input': function(evt){ console.log(evt) },
+        'change form#meta': 'updatePlan',
+    },
+    updatePlan: function(evt){
+        var control = $(evt.target);
+        var key = control.attr('name');
+        var value = control.val();
+        this.model.set(key, value);
     },
 });
 
