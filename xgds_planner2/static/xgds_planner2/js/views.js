@@ -127,6 +127,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     serializeData: function(){
         var data = Backbone.Marionette.ItemView.prototype.serializeData.call(this, arguments);
         data.model = this.model; // give the serialized object a reference back to the model
+        data.view = this; // and view
         return data;
     },
     attributes: function(){
@@ -185,7 +186,11 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data){
-        return '' + data.presetCode + '<i/>';
+        return '<input class="select" type="checkbox"/>' + data.presetCode + '<i/>';
+    },
+    initialize: function(){
+        app.views.SequenceListItemView.prototype.initialize.call(this);
+        this.on('change input.select', this.toggleSelect);
     },
     onRender: function(){
         this.$el.css( "background-color", app.request( 'getColor', this.model.get('type') ) );
@@ -193,19 +198,64 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     onExpand: function(){
         app.vent.trigger('showItem:command', this.model);
     },
+    toggleSelect: function(){
+        debugger;
+    },
+});
+
+app.views.MiscItemView = app.views.SequenceListItemView.extend({
+    initialize: function(){
+        var options = this.options;
+        if ( options.extraClass ) {
+            this.className = this.className ? this.className + ' ' + options.extraClass : options.extraClass;
+        }
+        if ( options.click ) {
+            this.on('click', this.options.click, this);
+        }
+    },
+    onRender: function(){
+        if (this.options.text){
+            this.$el.text(this.options.text);
+        }
+        if (this.options.data) {
+            this.$el.data(this.options.data);
+        }
+    },
 });
 
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
     template: '#template-sequence-list-station',
     itemView: app.views.CommandItemView,
     itemViewContainer: '.sequence-list',
+    itemViewOptions: {
+        selectable: true,
+    },
     events: {
         "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
         "click .add-item": function(){ app.vent.trigger('showPresets', this.model); },
     },
     initialize: function(){
+        this.head = new app.views.MiscItemView({
+            model: this.model,
+            extraClass: "edit-meta head-sequence-item",
+            text: this.model.get('type')+" Properties",
+        });
+        this.foot = new app.views.MiscItemView({
+            model: this.model,
+            extraClass: "add-item foot-sequence-item",
+            text: "Add Commands",
+        });
+
         // DRY
         this.on('itemview:expand', _.bind( app.views.StationSequenceCollectionView.prototype.unexpandAllElse, this) );
+    },
+
+    onRender: function(){
+        this.head.render();
+        this.foot.render();
+        var container = this.getItemViewContainer(this);
+        container.prepend(this.head.el);
+        container.append(this.foot.el);
     },
 });
 

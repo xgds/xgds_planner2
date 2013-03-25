@@ -53,6 +53,8 @@ var app = (function($, _, Backbone){
             app.currentPlan = new app.models.Plan(planJson);
         }
 
+        app.selectedViews = [];  // This array holds the views currently selected by checkboxes
+
         app.map = new app.views.EarthView({ el: '#map'});
         app.toolbar.show( new app.views.ToolbarView() );
         app.tabs.show( new app.views.TabNavView() );
