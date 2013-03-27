@@ -7,6 +7,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-reposition': function(){ app.vent.trigger('mapmode', 'reposition'); },
         'click #btn-addStations': function(){ app.vent.trigger('mapmode', 'addStations'); },
         'click #btn-save': function(){ app.currentPlan.save() },
+        'click #btn-delete': 'deleteSelectedCommands',
     },
     
     initialize: function(){
@@ -16,6 +17,13 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     ensureToggle: function(modeName) {
         var btn = $('#btn-'+modeName);
         if ( ! btn.hasClass('active') ) { btn.button('toggle'); }
+    },
+
+    deleteSelectedCommands: function(){
+        var commands = app.request('selectedCommands');
+        _.each(commands, function(command){
+            command.destroy();
+        });
     },
 });
 
@@ -120,7 +128,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
 app.views.makeExpandable = function(view, expandClass){
     /*
-     * Call this on a view to indicate it is a selectable item in the three-column layout.
+     * Call this on a view to indicate it is a expandable item in the three-column layout.
      * When the view's "expand" event is triggered, it will display it's chevron and trigger
      * the global "viewExpanded" event.  On recieving a global "viewExpoanded" event with an
      * expandClass that matches its own, the view will remove it's chevron.
@@ -205,9 +213,13 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data){
         return '<input class="select" type="checkbox"/>' + data.presetCode + '<i/>';
     },
+    events: function(){
+        return _.extend( app.views.SequenceListItemView.prototype.events, {
+            'click input.select': this.toggleSelect,
+        });
+    },
     initialize: function(){
         app.views.SequenceListItemView.prototype.initialize.call(this);
-        this.on('change input.select', this.toggleSelect);
     },
     onRender: function(){
         this.$el.css( "background-color", app.request( 'getColor', this.model.get('type') ) );
@@ -215,9 +227,11 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     onExpand: function(){
         app.vent.trigger('showItem:command', this.model);
     },
+    isSelected: function(evt){
+        return this.$el.find('input.select').is(':checked');
+    },
     toggleSelect: function(evt){
-        evt.preventDefault();
-        debugger;
+        evt.stopPropagation();
     },
 });
 
@@ -252,9 +266,15 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
     },
     initialize: function(){
+        app.reqres.addHandler('selectedCommands', this.getSelectedCommands, this);
+    },
 
-        // DRY
-        //this.on('itemview:expand', _.bind( app.views.StationSequenceCollectionView.prototype.unexpandAllElse, this) );
+    getSelectedCommands: function(){
+        var commands = [];
+        this.children.each(function(view){
+            if (view.isSelected()) { commands.push(view.model); }
+        });
+        return commands;
     },
 
     onRender: function(){
