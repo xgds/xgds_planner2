@@ -118,6 +118,39 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
 });
 
+app.views.makeExpandable = function(view, expandClass){
+    /*
+     * Call this on a view to indicate it is a selectable item in the three-column layout.
+     * When the view's "expand" event is triggered, it will display it's chevron and trigger
+     * the global "viewExpanded" event.  On recieving a global "viewExpoanded" event with an
+     * expandClass that matches its own, the view will remove it's chevron.
+    */
+    var expandable = {
+        expand: function(){
+            var expandClass = this.options.expandClass; 
+            this.expanded = true;
+            this.$el.find('i').addClass('icon-chevron-right');
+            app.vent.trigger('viewExpanded', this, expandClass);
+        },
+        unexpand: function(){
+            this.expanded = false;
+            this.$el.find('i').removeClass('icon-chevron-right');
+        },
+        onExpandOther: function(target, expandClass){
+            if ( this.options.expandClass === expandClass && this != target ) {
+                this.unexpand();
+            }
+        },
+    };
+    if ( view.$el.find('i').length == 0){
+        view.$el.append('<i/>');
+    }
+    view = _.defaults(view, expandable);
+    view.option = _.defaults( view.options, {expandClass: expandClass});
+    app.vent.on('viewExpanded', view.onExpandOther, view);
+    view.on('expand', view.expand, view);
+};
+
 app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     // The list item is a simple enough DOM subtree that we'll let the view build it's own root element.
     tagName: 'li',
@@ -145,19 +178,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
         "change": "render", // Re-render when the model changes.
     },
     initialize: function(){
-        this.on('expand', this.expand);
-        this.on('unexpand', this.unexpand);
-    },
-    onRender: function(){
-        if (this.expanded){ this.expand(); }
-    },
-    expand: function(){
-        this.expanded = true;
-        this.$el.find('i').addClass('icon-chevron-right');
-    },
-    unexpand: function(){
-        this.expanded = false;
-        this.$el.find('i').removeClass('icon-chevron-right');
+        app.views.makeExpandable(this, this.options.expandClass);
     },
 });
 
@@ -172,15 +193,8 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     tagName: 'ul',
     className: 'sequence-list station-list',
     itemView: app.views.PathElementItemView,
-    initialize: function(){
-        this.on('itemview:expand', _.bind(this.unexpandAllElse, this) );
-    },
-    unexpandAllElse: function(expandedChildView) {
-        this.children.each(function(view){
-            if ( view !== expandedChildView) {
-                view.trigger('unexpand');
-            }
-        });
+    itemViewOptions:{
+        expandClass: 'col1',
     },
 });
 
@@ -198,7 +212,8 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     onExpand: function(){
         app.vent.trigger('showItem:command', this.model);
     },
-    toggleSelect: function(){
+    toggleSelect: function(evt){
+        evt.preventDefault();
         debugger;
     },
 });
@@ -209,9 +224,11 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
         if ( options.extraClass ) {
             this.className = this.className ? this.className + ' ' + options.extraClass : options.extraClass;
         }
+        this.on('click', function(){app.vent.trigger('expandItem', this, this.options.expandClass);}, this);
         if ( options.click ) {
             this.on('click', this.options.click, this);
         }
+        app.views.makeExpandable(this, this.options.expandClass);
     },
     onRender: function(){
         if (this.options.text){
@@ -226,36 +243,41 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
     template: '#template-sequence-list-station',
     itemView: app.views.CommandItemView,
-    itemViewContainer: '.sequence-list',
+    itemViewContainer: '.command-list',
     itemViewOptions: {
         selectable: true,
+        expandClass: 'col2',
     },
     events: {
-        "click .edit-meta": function(){ app.vent.trigger('showMeta', this.model); },
-        "click .add-item": function(){ app.vent.trigger('showPresets', this.model); },
+        "click .edit-meta": function(evt){ app.vent.trigger('showMeta', this.model); },
+        "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
     },
     initialize: function(){
-        this.head = new app.views.MiscItemView({
-            model: this.model,
-            extraClass: "edit-meta head-sequence-item",
-            text: this.model.get('type')+" Properties",
-        });
-        this.foot = new app.views.MiscItemView({
-            model: this.model,
-            extraClass: "add-item foot-sequence-item",
-            text: "Add Commands",
-        });
 
         // DRY
-        this.on('itemview:expand', _.bind( app.views.StationSequenceCollectionView.prototype.unexpandAllElse, this) );
+        //this.on('itemview:expand', _.bind( app.views.StationSequenceCollectionView.prototype.unexpandAllElse, this) );
     },
 
     onRender: function(){
+        this.head = new app.views.MiscItemView({
+            model: this.model,
+            el: '.edit-meta',
+            extraClass: "edit-meta head-sequence-item",
+            text: this.model.get('type')+" Properties",
+            expandClass: 'col2',
+        });
+        this.foot = new app.views.MiscItemView({
+            el: '.add-commands',
+            model: this.model,
+            extraClass: "add-item foot-sequence-item",
+            text: "Add Commands",
+            expandClass: 'col2',
+        });
         this.head.render();
         this.foot.render();
-        var container = this.getItemViewContainer(this);
-        container.prepend(this.head.el);
-        container.append(this.foot.el);
+        //var container = this.$el.find('.sequence-list');
+        //container.prepend(this.head.el);
+        //container.append(this.foot.el);
     },
 });
 
