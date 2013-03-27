@@ -129,6 +129,7 @@ app.views.makeExpandable = function(view, expandClass){
         expand: function(){
             var expandClass = this.options.expandClass; 
             this.expanded = true;
+            this._ensureIcon();
             this.$el.find('i').addClass('icon-chevron-right');
             app.vent.trigger('viewExpanded', this, expandClass);
         },
@@ -141,10 +142,12 @@ app.views.makeExpandable = function(view, expandClass){
                 this.unexpand();
             }
         },
+        _ensureIcon: function(){
+            if ( view.$el.find('i').length == 0){
+                view.$el.append('<i/>');
+            }
+        }
     };
-    if ( view.$el.find('i').length == 0){
-        view.$el.append('<i/>');
-    }
     view = _.defaults(view, expandable);
     view.option = _.defaults( view.options, {expandClass: expandClass});
     app.vent.on('viewExpanded', view.onExpandOther, view);
@@ -219,24 +222,20 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
 });
 
 app.views.MiscItemView = app.views.SequenceListItemView.extend({
+    tagName: 'li',
     initialize: function(){
         var options = this.options;
         if ( options.extraClass ) {
             this.className = this.className ? this.className + ' ' + options.extraClass : options.extraClass;
         }
-        this.on('click', function(){app.vent.trigger('expandItem', this, this.options.expandClass);}, this);
+        this.on('click', function(){this.trigger('expand', this, this.options.expandClass);}, this);
         if ( options.click ) {
             this.on('click', this.options.click, this);
         }
         app.views.makeExpandable(this, this.options.expandClass);
     },
-    onRender: function(){
-        if (this.options.text){
-            this.$el.text(this.options.text);
-        }
-        if (this.options.data) {
-            this.$el.data(this.options.data);
-        }
+    render: function(){
+        // override default render behavior with nothing, since contents can be pre-rendered in templates
     },
 });
 
@@ -261,18 +260,14 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     onRender: function(){
         this.head = new app.views.MiscItemView({
             model: this.model,
-            el: '.edit-meta',
-            extraClass: "edit-meta head-sequence-item",
-            text: this.model.get('type')+" Properties",
             expandClass: 'col2',
         });
         this.foot = new app.views.MiscItemView({
-            el: '.add-commands',
             model: this.model,
-            extraClass: "add-item foot-sequence-item",
-            text: "Add Commands",
             expandClass: 'col2',
         });
+        this.head.setElement( this.$el.find('.edit-meta') );
+        this.foot.setElement( this.$el.find('.add-commands') );
         this.head.render();
         this.foot.render();
         //var container = this.$el.find('.sequence-list');
