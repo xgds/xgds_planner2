@@ -124,7 +124,8 @@ $(function(){
 
         drawStation: function(station){
             var stationPointView = new StationPointView({ge: this.ge, model: station});          
-            this.stationsFolder.getFeatures().appendChild(stationPointView.placemark);
+            var stationFeatures = this.stationsFolder.getFeatures();
+            stationFeatures.appendChild(stationPointView.placemark);
         },
 
         drawStations: function(){
@@ -317,7 +318,25 @@ $(function(){
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = '#waypoint';
             var point =  this.model.get('geometry').coordinates;
-            pmOptions.point = [ point[1], point[0] ]; // Lon, Lat
+
+            this.pointGeom = gex.dom.buildPoint([ point[1], point[0] ]);
+            this.pointGeom.setAltitudeMode(pmOptions.altitudeMode);
+            delete pmOptions.altitudeMode;
+
+            this.directionalModel = gex.dom.buildModel( 
+                'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host}), 
+                {
+                    location: [ point[1], point[0] ], // Lon, Lat
+                    scale: 2.0,
+                    orientation: {heading: this.model.get('headingDegrees')},
+                }
+            );
+
+            //var multigeom = gex.dom.buildMultiGeometry([this.pointGeom, this.directionalModel]);
+            //pmOptions.multiGeometry = multigeom;
+            pmOptions.geometries = [this.pointGeom, this.directionalModel];
+
+            //pmOptions.point = [ point[1], point[0] ]; // Lon, Lat
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
@@ -331,11 +350,34 @@ $(function(){
 
         redraw: function(){
             // redraw code. To be invoked when relevant model attributes change.
-            var kmlPoint = this.placemark.getGeometry();
+            var kmlPoint, kmlModel, subGeoms;
+            var geom = this.placemark.getGeometry();
+            if ( _.has(geom, 'getGeometries' ) ) {
+                // MultiGeometry: [Point, Model]
+                subGeoms = geom.getGeometries().getChildNodes();
+                kmlPoint = subGeoms.item(0);
+                kmlModel = subGeoms.item(1);
+            } else {
+                kmlPoint = geom;
+            }
+
             var coords = this.model.get('geometry').coordinates;
             coords = [coords[1], coords[0]];
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
+
+            if (kmlModel) {
+                var location = kmlModel.getLocation();
+                location.setLatLngAlt(coords[0], coords[1], 0.0);
+                var orientation = kmlModel.getOrientation();
+                orientation.setHeading( this.model.get('headingDegrees') );
+            }
+
+        },
+    });
+
+    var StationDirectionalView = Backbone.View.extend({
+        initialize: function(){
         },
     });
 
