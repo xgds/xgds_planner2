@@ -19,6 +19,53 @@ $(function(){
                 .getAltitudeMode());
     }
 
+    function makeDraggable( placemark, options) {
+        options = _.defaults(options {
+            dragCallback: function(placemark, lat, lon){},
+            dropCallback: function(placemark, lat, lon){},
+            getPosition: function(placemark){ var geom = placemark.getGeometry(); return [ geom.getLatitude(), geom.getLongitude() ]; },
+                /*
+            setPosition: function(placemark, lat, lon) {
+                var geom = placemark.getGeometry();
+                geom.setLatitiude(lat);
+                geom.setLongitude(lon);
+            },
+            */
+        });
+
+        function vectorDiff(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] - vec2[i]; }) };
+        function vectorAdd(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] + vec2[i]; }) };
+
+        var dragEngaged = false;
+        var dragOffset;
+
+        function dragStart(evt) {
+            var startPos = options.getPosition(placemark);
+            var cursorPos = [evt.getLatitude(), evt.getLongitude()];
+            dragOffset = vectorDiff( cursorPos, startPos );
+            dragEngaged = true;
+            google.earth.addEventListener( placemark, 'mouseup', dragEnd)
+            google.earth.addEventListener( placemark, 'mousemove', dragMove)
+        };
+        
+        function dragMove(evt) {
+            var cursorPos = [evt.getLatitude(), evt.getLongitude()];
+            var newPos = vectorAdd(cursorPos, dragOffset);
+            //options.setPosition(placemark, newPos[0], newPos[1]);
+            options.dragCallback( placemark, newPos[0], newPos[1] );
+        };
+
+        function dragEnd(evt){
+            dragEngaged = false;
+            dragOffset = undefined;
+            google.earth.removeEventListener( placemark, 'mouseup', dragEnd)
+            google.earth.removeEventListener( placemark, 'mousemove', dragMove)
+        };
+
+        google.earth.addEventListener( placemark, 'mousedown', dragStart);
+        return [placemark, 'mousedown', dragStart];  // Need these references to tear down the event handler later.
+    }
+
     app.views.EarthView = Backbone.View.extend({
         el: 'div',
 
@@ -223,8 +270,10 @@ $(function(){
                 var planview = this;
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
+                var point;
                 for ( var station,i=0; i<l; i++ ) {
                     station = stations.item(i);
+                    //point = station.getGeometry().getGeometries().getFirstChild();
                     this.ge.gex.edit.makeDraggable(station, {
                         bounce: false,
                         dragCallback: function(){
