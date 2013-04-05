@@ -20,11 +20,11 @@ $(function(){
     }
 
     function makeDraggable( placemark, options) {
-        options = _.defaults(options {
+        options = _.defaults(options, {
             dragCallback: function(placemark, lat, lon){},
             dropCallback: function(placemark, lat, lon){},
             getPosition: function(placemark){ var geom = placemark.getGeometry(); return [ geom.getLatitude(), geom.getLongitude() ]; },
-                /*
+            /*
             setPosition: function(placemark, lat, lon) {
                 var geom = placemark.getGeometry();
                 geom.setLatitiude(lat);
@@ -37,10 +37,10 @@ $(function(){
         function vectorAdd(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] + vec2[i]; }) };
 
         var dragEngaged = false;
-        var dragOffset;
+        var startPos, dragOffset;
 
         function dragStart(evt) {
-            var startPos = options.getPosition(placemark);
+            startPos = options.getPosition(placemark);
             var cursorPos = [evt.getLatitude(), evt.getLongitude()];
             dragOffset = vectorDiff( cursorPos, startPos );
             dragEngaged = true;
@@ -64,7 +64,7 @@ $(function(){
 
         google.earth.addEventListener( placemark, 'mousedown', dragStart);
         return [placemark, 'mousedown', dragStart];  // Need these references to tear down the event handler later.
-    }
+    };
 
     app.views.EarthView = Backbone.View.extend({
         el: 'div',
@@ -142,8 +142,9 @@ $(function(){
             var ge = this.ge = this.options.ge;
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
             this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
+            this.stationDirectionsFolder = ge.gex.dom.buildFolder({ name: "station_directions" });
             this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
-            this.kmlFolders = [this.stationsFolder, this.segmentsFolder];
+            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.stationDirectionsFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
             // re-rendering the whole KML View on add proves to be pretty slow.
@@ -173,6 +174,13 @@ $(function(){
             var stationPointView = new StationPointView({ge: this.ge, model: station});          
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
+            this.drawStationDirection(station);
+        },
+
+        drawStationDirection: function(station) {
+            var stationDirection = new StationDirectionView({ge: this.ge, model: station});          
+            var directionFeatures = this.stationDirectionsFolder.getFeatures();
+            directionFeatures.appendChild(stationDirection.placemark);
         },
 
         drawStations: function(){
@@ -368,24 +376,12 @@ $(function(){
             pmOptions.style = '#waypoint';
             var point =  this.model.get('geometry').coordinates;
 
-            this.pointGeom = gex.dom.buildPoint([ point[1], point[0] ]);
-            this.pointGeom.setAltitudeMode(pmOptions.altitudeMode);
-            delete pmOptions.altitudeMode;
-
-            this.directionalModel = gex.dom.buildModel( 
-                'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host}), 
-                {
-                    location: [ point[1], point[0] ], // Lon, Lat
-                    scale: 2.0,
-                    orientation: {heading: this.model.get('headingDegrees')},
-                }
-            );
-
-            //var multigeom = gex.dom.buildMultiGeometry([this.pointGeom, this.directionalModel]);
-            //pmOptions.multiGeometry = multigeom;
-            pmOptions.geometries = [this.pointGeom, this.directionalModel];
+            var pointGeom = gex.dom.buildPoint([ point[1], point[0] ]);
+            //pointGeom.setAltitudeMode(pmOptions.altitudeMode);
+            //delete pmOptions.altitudeMode;
 
             //pmOptions.point = [ point[1], point[0] ]; // Lon, Lat
+            pmOptions.point = pointGeom;
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
@@ -399,34 +395,44 @@ $(function(){
 
         redraw: function(){
             // redraw code. To be invoked when relevant model attributes change.
-            var kmlPoint, kmlModel, subGeoms;
-            var geom = this.placemark.getGeometry();
-            if ( _.has(geom, 'getGeometries' ) ) {
-                // MultiGeometry: [Point, Model]
-                subGeoms = geom.getGeometries().getChildNodes();
-                kmlPoint = subGeoms.item(0);
-                kmlModel = subGeoms.item(1);
-            } else {
-                kmlPoint = geom;
-            }
+            var kmlPoint = this.placemark.getGeometry();
 
             var coords = this.model.get('geometry').coordinates;
             coords = [coords[1], coords[0]];
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
-
-            if (kmlModel) {
-                var location = kmlModel.getLocation();
-                location.setLatLngAlt(coords[0], coords[1], 0.0);
-                var orientation = kmlModel.getOrientation();
-                orientation.setHeading( this.model.get('headingDegrees') );
-            }
-
         },
     });
 
-    var StationDirectionalView = Backbone.View.extend({
+    var StationDirectionView = Backbone.View.extend({
         initialize: function(){
+            var gex = this.options.ge.gex;
+            var pmOptions = {};
+            pmOptions.style = '#waypoint';
+            var point =  this.model.get('geometry').coordinates;
+
+            this.kmlModel = gex.dom.buildModel( 
+                'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host}), 
+                {
+                    location: [ point[1], point[0] ], // Lon, Lat
+                    scale: 2.0,
+                    orientation: {heading: this.model.get('headingDegrees')},
+                }
+            )
+            pmOptions.model = this.kmlModel;
+
+            this.placemark = gex.dom.buildPlacemark(pmOptions);
+            this.placemark.bbStationModel = this.model; //reference back to backbone model,  for event handlers
+            this.model.on('change', this.redraw, this);
+        },
+
+        redraw: function(){
+            var kmlModel = this.kmlModel;
+            var coords = this.model.get('geometry').coordinates;
+            var location = kmlModel.getLocation();
+            location.setLatLngAlt(coords[1], coords[0], 0.0);
+            var orientation = kmlModel.getOrientation();
+            orientation.setHeading( this.model.get('headingDegrees') );
         },
     });
 
