@@ -58,7 +58,16 @@ app.models = app.models || {};
         },
 
         toString: function(){
-            return this.get('id');
+            var repr;
+            switch (this.get('type')) {
+                case "Station":
+                    repr = this.get('sequenceLabel');
+                    break;
+                case 'Segment':
+                    repr = "Segment";
+                    break
+            }
+            return repr;
         },
 
         toJSON: function(){
