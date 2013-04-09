@@ -301,7 +301,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 ** PropertiesForm is a hybrid between Marionette.ItemView and Backbone.Form (from the backbone-forms extension).
 ** Becuase it extends Marionette.ItemView, it can be used cleanly with a region manager.
 **
-** It has two other import properties:
+** It has two other important properties:
 ** 1) It updates its model immediately in response to field value changes.
 ** 2) It can be made read-only
 */
@@ -332,6 +332,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         });
 
         Backbone.Form.prototype.initialize.call(this, this.options);
+        this.model.on('change', this.render, this);
     },
 
 });

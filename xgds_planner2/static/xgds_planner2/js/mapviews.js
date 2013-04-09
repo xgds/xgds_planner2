@@ -19,11 +19,55 @@ $(function(){
                 .getAltitudeMode());
     }
 
+    function vectorDiff(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] - vec2[i]; }) };
+    function vectorAdd(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] + vec2[i]; }) };
+    function vectorAbs(vec) { return Math.sqrt( _.reduce(vec, function(memo, num){ return memo + Math.pow(num, 2); }, 0) ); };
+
+
+    /*
+     * Spherical Mercator projectionator,
+     * from: https://github.com/geocam/geocamTiePoint/blob/master/geocamTiePoint/static/geocamTiePoint/js/coords.js
+     */ 
+    var ORIGIN_SHIFT = 2 * Math.PI * 6378137 / 2.0;
+    
+    function latLonToMeters(latLon) {
+        var mx = latLon.lng * ORIGIN_SHIFT / 180;
+        var my = Math.log(Math.tan((90 + latLon.lat) * Math.PI / 360)) /
+            (Math.PI / 180);
+        my = my * ORIGIN_SHIFT / 180;
+        return {x: mx,
+                y: my};
+    }
+
+    function metersToLatLon(meters) {
+        var lng = meters.x * 180 / ORIGIN_SHIFT;
+        var lat = meters.y * 180 / ORIGIN_SHIFT;
+        lat = ((Math.atan(Math.exp((lat * (Math.PI / 180)))) * 360) / Math.PI) - 90;
+        return { lat: lat, lng: lng }
+    }
+
+    function getBearing(pointA, pointB) {
+        /*
+         * Calculat the bearing in degrees from point A to point B
+         * Source: http://williams.best.vwh.net/avform.htm#Crs
+        */
+        var lat1 = pointA.lat;
+        var lon1 = pointA.lng;
+        var lat2 = pointB.lat;
+        var lon2 = pointB.lng;
+
+        var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
+        bearing = bearing * 180 / Math.PI; // radions --> degrees
+        if ( bearing < 0.0 ) { bearing = bearing + 360.0 }
+        return bearing;
+    }
+
     function makeDraggable( placemark, options) {
         options = _.defaults(options, {
-            dragCallback: function(placemark, lat, lon){},
-            dropCallback: function(placemark, lat, lon){},
-            getPosition: function(placemark){ var geom = placemark.getGeometry(); return [ geom.getLatitude(), geom.getLongitude() ]; },
+            startCallback: function(placemark, data){},
+            dragCallback: function(placemark, data){},
+            dropCallback: function(placemark, data){},
+            getObjectPosition: function(placemark){ var geom = placemark.getGeometry(); return [ geom.getLatitude(), geom.getLongitude() ]; },
             /*
             setPosition: function(placemark, lat, lon) {
                 var geom = placemark.getGeometry();
@@ -33,33 +77,38 @@ $(function(){
             */
         });
 
-        function vectorDiff(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] - vec2[i]; }) };
-        function vectorAdd(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] + vec2[i]; }) };
-
         var dragEngaged = false;
-        var startPos, dragOffset;
+        var data = {
+            cursorStartPos: undefined, // [lat, lon] position of the drag start point
+            cursorPos: undefined, // [lat, lon] of the current cursor while dragging
+            //objectStartPos: undefined,
+            //objectPos: undefined, // Whatever we determine to be the object's "location" ( i.e. the output of the getObjectPosition() callback )
+            //dragOffset: undefined, // [lat, lon] offset between the curson position and object position         
+        };
 
         function dragStart(evt) {
-            startPos = options.getPosition(placemark);
-            var cursorPos = [evt.getLatitude(), evt.getLongitude()];
-            dragOffset = vectorDiff( cursorPos, startPos );
+            evt.preventDefault();
             dragEngaged = true;
-            google.earth.addEventListener( placemark, 'mouseup', dragEnd)
-            google.earth.addEventListener( placemark, 'mousemove', dragMove)
+            //data.objectPos = data.objectStartPos = options.getObjectPosition(placemark);
+            data.cursorStartPos = data.cursorPos = [evt.getLatitude(), evt.getLongitude()];
+            google.earth.addEventListener( ge.getWindow(), 'mouseup', dragEnd)
+            google.earth.addEventListener( ge.getWindow(), 'mousemove', dragMove)
+            options.startCallback(placemark, data);
         };
         
         function dragMove(evt) {
-            var cursorPos = [evt.getLatitude(), evt.getLongitude()];
-            var newPos = vectorAdd(cursorPos, dragOffset);
-            //options.setPosition(placemark, newPos[0], newPos[1]);
-            options.dragCallback( placemark, newPos[0], newPos[1] );
+            evt.preventDefault();
+            data.cursorPos = [evt.getLatitude(), evt.getLongitude()];
+            options.dragCallback( placemark, data);
         };
 
         function dragEnd(evt){
+            evt.preventDefault();
             dragEngaged = false;
-            dragOffset = undefined;
-            google.earth.removeEventListener( placemark, 'mouseup', dragEnd)
-            google.earth.removeEventListener( placemark, 'mousemove', dragMove)
+            //data.dragOffset = undefined;
+            google.earth.removeEventListener( ge.getWindow(), 'mouseup', dragEnd)
+            google.earth.removeEventListener( ge.getWindow(), 'mousemove', dragMove)
+            options.dropCallback(placemark, data);
         };
 
         google.earth.addEventListener( placemark, 'mousedown', dragStart);
@@ -143,8 +192,9 @@ $(function(){
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
             this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
             this.stationDirectionsFolder = ge.gex.dom.buildFolder({ name: "station_directions" });
+            this.dragHandlesFolder = ge.gex.dom.buildFolder({ name: "drag_handles" });
             this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
-            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.stationDirectionsFolder];
+            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.stationDirectionsFolder, this.dragHandlesFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
             // re-rendering the whole KML View on add proves to be pretty slow.
@@ -309,6 +359,15 @@ $(function(){
                     });
                 }
                 this.drawMidpoints();
+
+                var stationDirections = this.stationDirectionsFolder.getFeatures().getChildNodes();
+                for ( var l=stationDirections.getLength(), i=0; i<l; i++ ) {
+                    var directionModel = stationDirections.item(i);
+                    var handle = directionModel.view.createDragRotateHandle();
+                    this.dragHandlesFolder.getFeatures().appendChild(handle);
+                }
+                
+
             }, // end enter
             exit: function(){
                 this.destroyMidpoints();
@@ -317,7 +376,12 @@ $(function(){
                 for ( var station,i=0; i<l; i++ ) {
                     station = stations.item(i);
                     this.ge.gex.edit.endDraggable(station);
+
+                    station.view.model.off('change:headingDegrees'); // kill drag handle update binding
                 }
+                
+                this.clearKmlFolder(this.dragHandlesFolder);
+
             },
         }, // end repositionMode
 
@@ -422,7 +486,8 @@ $(function(){
             pmOptions.model = this.kmlModel;
 
             this.placemark = gex.dom.buildPlacemark(pmOptions);
-            this.placemark.bbStationModel = this.model; //reference back to backbone model,  for event handlers
+            //this.placemark.bbStationModel = this.model; //reference back to backbone model, for event handlers
+            this.placemark.view = this;
             this.model.on('change', this.redraw, this);
         },
 
@@ -433,6 +498,61 @@ $(function(){
             location.setLatLngAlt(coords[1], coords[0], 0.0);
             var orientation = kmlModel.getOrientation();
             orientation.setHeading( this.model.get('headingDegrees') );
+        },
+
+        dragRotateHandleCoords: function(){
+            var radius = 30.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
+            var theta = this.model.get('headingDegrees') * Math.PI / 180.00; // radians
+            var stationCoords = this.model.get('geometry').coordinates;
+            var stationPosMeters = latLonToMeters( { lat: stationCoords[1], lng: stationCoords[0] } );
+            var handlePosMeters = {
+                x: stationPosMeters.x + radius * Math.sin(theta),
+                y: stationPosMeters.y + radius * Math.cos(theta),
+            };
+            return metersToLatLon( handlePosMeters );
+        },
+
+        updateDragRotateHandlePm: function(){
+            var newLatLng = this.dragRotateHandleCoords();
+            var geom = this.dragHandlePm.getGeometry();
+            geom.setLatLng( newLatLng.lat, newLatLng.lng );
+        },
+
+        createDragRotateHandle: function(){
+            var station = this.model;
+            var gex = this.options.ge.gex;
+
+            var coords = this.dragRotateHandleCoords();
+
+            this.dragHandlePm = gex.dom.buildPointPlacemark(
+                [coords.lat, coords.lng],
+                {
+                    style: '#direction', // circle with a target
+                }
+            );
+
+            this.model.on( 'change:headingDegrees', this.updateDragRotateHandlePm, this );
+
+            makeDraggable( this.dragHandlePm, {
+                //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
+                startCallback: function(placemark, data){
+                    console.log('mousedown');
+                    var loc = placemark.getGeometry()
+                    data.stationLoc =  [loc.getLatitude(), loc.getLongitude()];
+                    data.startHeading = station.get('headingDegrees');
+                } ,
+                dragCallback: function(placemark, data){
+                    var stationLocM = latLonToMeters(_.object(['lat','lng'], data.stationLoc) );
+                    var cursorPosM = latLonToMeters(_.object(['lat','lng'], data.cursorPos) );
+                    var newHeading = getBearing( _.object(['lat','lng'], data.stationLoc), _.object(['lat','lng'], data.cursorPos) );
+                    station.set({
+                        headingDegrees: newHeading,
+                        isDirectional: true 
+                    });
+                },
+            });
+            
+            return this.dragHandlePm;
         },
     });
 
