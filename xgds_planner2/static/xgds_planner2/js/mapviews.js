@@ -469,6 +469,7 @@ $(function(){
     });
 
     var StationDirectionView = Backbone.View.extend({
+
         initialize: function(){
             var gex = this.options.ge.gex;
             var pmOptions = {};
@@ -476,28 +477,35 @@ $(function(){
             var point =  this.model.get('geometry').coordinates;
 
             this.kmlModel = gex.dom.buildModel( 
-                'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host}), 
+                this.modelUrl(), 
                 {
                     location: [ point[1], point[0] ], // Lon, Lat
                     scale: 2.0,
                     orientation: {heading: this.model.get('headingDegrees')},
                 }
             )
+            this.kmlModel.getOrientation().setHeading(this.model.get('headingDegrees'));
             pmOptions.model = this.kmlModel;
 
             this.placemark = gex.dom.buildPlacemark(pmOptions);
             //this.placemark.bbStationModel = this.model; //reference back to backbone model, for event handlers
             this.placemark.view = this;
+            this.placemark.setVisibility(this.model.get('isDirectional'));
             this.model.on('change', this.redraw, this);
         },
 
         redraw: function(){
+            this.placemark.setVisibility(this.model.get('isDirectional'));
             var kmlModel = this.kmlModel;
             var coords = this.model.get('geometry').coordinates;
             var location = kmlModel.getLocation();
             location.setLatLngAlt(coords[1], coords[0], 0.0);
             var orientation = kmlModel.getOrientation();
             orientation.setHeading( this.model.get('headingDegrees') );
+        },
+
+        modelUrl: function(){
+            return 'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host});
         },
 
         dragRotateHandleCoords: function(){

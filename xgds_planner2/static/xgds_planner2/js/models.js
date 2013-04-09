@@ -16,6 +16,15 @@ app.models = app.models || {};
         url: function(){
             return '/xgds_planner2/plan/{name}.json'.format({name: this.get('name')});
         },
+        isNew: function(){
+            /*
+             * The way we have things set up, plan models can never be new, since we create the on the server side before passing them to the app.
+             * Backbone uses this value on sync/save to determine whether to sent a POST request or a PUT request.
+             * Setting it to always be false forces a PUT.
+             * The default implementation is: "return this.id == null"
+            */
+            return false;
+        },
         relations: [
             {
                 type: Backbone.HasMany,
