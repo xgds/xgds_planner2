@@ -95,6 +95,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.showingStation = itemModel;
         var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
         this.col2.show( view );
+        app.vent.trigger('showMeta', itemModel);
     },
 
     showSegment: function(itemModel){
