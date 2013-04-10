@@ -58,6 +58,7 @@ $(function(){
 
         var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
         bearing = bearing * 180 / Math.PI; // radions --> degrees
+        bearing = bearing + 90.0;
         if ( bearing < 0.0 ) { bearing = bearing + 360.0 }
         return bearing;
     }
@@ -437,7 +438,7 @@ $(function(){
             var pmOptions = {};
             pmOptions.name = this.model.get('sequenceLabel') || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
-            pmOptions.style = '#waypoint';
+            pmOptions.style = this.buildStyle();
             var point =  this.model.get('geometry').coordinates;
 
             var pointGeom = gex.dom.buildPoint([ point[1], point[0] ]);
@@ -465,6 +466,24 @@ $(function(){
             coords = [coords[1], coords[0]];
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
+            //this.placemark.setStyle( this.getStyle() );
+            this.placemark.getStyleSelector().getIconStyle().setHeading( this.model.get('headingDegrees') );
+            this.placemark.getStyleSelector().getIconStyle().getIcon().setHref( this.model.get('isDirectional') ?
+                    'http://earth.google.com/images/kml-icons/track-directional/track-0.png' : 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png' );
+        },
+
+        buildStyle: function(){
+            var gex = this.options.ge.gex;
+            var ge = this.options.ge;
+
+            var iconUrl = this.model.get('isDirectional') ? 
+                'http://earth.google.com/images/kml-icons/track-directional/track-0.png' : 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
+            var icon = ge.createIcon('');
+            icon.setHref(iconUrl);
+            var style = ge.createStyle('');
+            style.getIconStyle().setIcon(icon);
+            style.getIconStyle().setHeading( this.model.get('headingDegrees'));
+            return style;
         },
     });
 
@@ -480,7 +499,7 @@ $(function(){
                 this.modelUrl(), 
                 {
                     location: [ point[1], point[0] ], // Lon, Lat
-                    scale: 2.0,
+                    scale: 4.0,
                     orientation: {heading: this.model.get('headingDegrees')},
                 }
             )
@@ -509,7 +528,7 @@ $(function(){
         },
 
         dragRotateHandleCoords: function(){
-            var radius = 30.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
+            var radius = 14.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
             var theta = this.model.get('headingDegrees') * Math.PI / 180.00; // radians
             var stationCoords = this.model.get('geometry').coordinates;
             var stationPosMeters = latLonToMeters( { lat: stationCoords[1], lng: stationCoords[0] } );
@@ -522,8 +541,14 @@ $(function(){
 
         updateDragRotateHandlePm: function(){
             var newLatLng = this.dragRotateHandleCoords();
-            var geom = this.dragHandlePm.getGeometry();
-            geom.setLatLng( newLatLng.lat, newLatLng.lng );
+            var geom = this.dragHandlePm.getGeometry(); // a MultiGeometry
+            var point = geom.getGeometries().getFirstChild();
+            point.setLatLng( newLatLng.lat, newLatLng.lng );
+            var linestring = geom.getGeometries().getLastChild();
+
+            var endpoint = linestring.getCoordinates().get(1);
+            endpoint.setLatitude(newLatLng.lat);
+            endpoint.setLongitude(newLatLng.lon);
         },
 
         createDragRotateHandle: function(){
@@ -531,28 +556,34 @@ $(function(){
             var gex = this.options.ge.gex;
 
             var coords = this.dragRotateHandleCoords();
+            var linestring = gex.dom.buildLineString(
+                    [ this.model.get('geometry').coordinates.reverse(), [coords.lat, coords.lng] ],
+                    {tessellate: true}
+            );
 
-            this.dragHandlePm = gex.dom.buildPointPlacemark(
-                [coords.lat, coords.lng],
+            this.dragHandlePm = gex.dom.buildPlacemark(
                 {
+                    point: [coords.lat, coords.lng],
+                    lineString: linestring,
                     style: '#direction', // circle with a target
                 }
             );
 
             this.model.on( 'change:headingDegrees', this.updateDragRotateHandlePm, this );
+            var station = this.model;
 
             makeDraggable( this.dragHandlePm, {
                 //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
                 startCallback: function(placemark, data){
                     console.log('mousedown');
-                    var loc = placemark.getGeometry()
-                    data.stationLoc =  [loc.getLatitude(), loc.getLongitude()];
+                    //var loc = placemark.getGeometry()
+                    //data.stationLoc =  [loc.getLatitude(), loc.getLongitude()];
+                    data.stationLoc = station.get('geometry').coordinates.reverse();
                     data.startHeading = station.get('headingDegrees');
                 } ,
                 dragCallback: function(placemark, data){
-                    var stationLocM = latLonToMeters(_.object(['lat','lng'], data.stationLoc) );
-                    var cursorPosM = latLonToMeters(_.object(['lat','lng'], data.cursorPos) );
-                    var newHeading = getBearing( _.object(['lat','lng'], data.stationLoc), _.object(['lat','lng'], data.cursorPos) );
+                    var newHeading = getBearing( _.object(['lat','lng'], data.stationLoc), _.object(['lat','lng'], data.cursorPos.reverse()) );
+                    console.log(newHeading);
                     station.set({
                         headingDegrees: newHeading,
                         isDirectional: true 
