@@ -55,6 +55,7 @@ $(function(){
         var lon1 = pointA.lng;
         var lat2 = pointB.lat;
         var lon2 = pointB.lng;
+        debugger;
 
         var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
         bearing = bearing * 180 / Math.PI; // radions --> degrees
@@ -192,10 +193,9 @@ $(function(){
             var ge = this.ge = this.options.ge;
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
             this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
-            this.stationDirectionsFolder = ge.gex.dom.buildFolder({ name: "station_directions" });
             this.dragHandlesFolder = ge.gex.dom.buildFolder({ name: "drag_handles" });
             this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
-            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.stationDirectionsFolder, this.dragHandlesFolder];
+            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.dragHandlesFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
             // re-rendering the whole KML View on add proves to be pretty slow.
@@ -225,13 +225,11 @@ $(function(){
             var stationPointView = new StationPointView({ge: this.ge, model: station});          
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
-            this.drawStationDirection(station);
-        },
 
-        drawStationDirection: function(station) {
-            var stationDirection = new StationDirectionView({ge: this.ge, model: station});          
-            var directionFeatures = this.stationDirectionsFolder.getFeatures();
-            directionFeatures.appendChild(stationDirection.placemark);
+            //debug:
+            station.on('change', function(station){
+                console.log("geometry change: " + JSON.stringify(station.get('geometry').coordinates));
+            });
         },
 
         drawStations: function(){
@@ -342,7 +340,7 @@ $(function(){
                             // "this" is the placemark GE object.
                             var model = this.view.model;
                             var point = this.getGeometry();
-                            model.setPoint(point.getLongitude(), point.getLatitude());
+                            model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
                             planview.render();
                         },
                     });
@@ -358,16 +356,12 @@ $(function(){
                         sequence.removeStation(view.model);
                         planKmlView.render();
                     });
+
+                    var handle = station.view.createDragRotateHandle();
+                    this.dragHandlesFolder.getFeatures().appendChild(handle);
                 }
                 this.drawMidpoints();
 
-                var stationDirections = this.stationDirectionsFolder.getFeatures().getChildNodes();
-                for ( var l=stationDirections.getLength(), i=0; i<l; i++ ) {
-                    var directionModel = stationDirections.item(i);
-                    var handle = directionModel.view.createDragRotateHandle();
-                    this.dragHandlesFolder.getFeatures().appendChild(handle);
-                }
-                
 
             }, // end enter
             exit: function(){
@@ -439,13 +433,10 @@ $(function(){
             pmOptions.name = this.model.get('sequenceLabel') || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = this.buildStyle();
-            var point =  this.model.get('geometry').coordinates;
+            var point =  this.model.get('geometry').coordinates; // lon, lat
 
-            var pointGeom = gex.dom.buildPoint([ point[1], point[0] ]);
-            //pointGeom.setAltitudeMode(pmOptions.altitudeMode);
-            //delete pmOptions.altitudeMode;
+            var pointGeom = gex.dom.buildPoint([ point[1], point[0] ]); // lat, lon
 
-            //pmOptions.point = [ point[1], point[0] ]; // Lon, Lat
             pmOptions.point = pointGeom;
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
@@ -462,8 +453,8 @@ $(function(){
             // redraw code. To be invoked when relevant model attributes change.
             var kmlPoint = this.placemark.getGeometry();
 
-            var coords = this.model.get('geometry').coordinates;
-            coords = [coords[1], coords[0]];
+            var coords = this.model.get('geometry').coordinates; // lon, lat
+            coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
             //this.placemark.setStyle( this.getStyle() );
@@ -484,47 +475,6 @@ $(function(){
             style.getIconStyle().setIcon(icon);
             style.getIconStyle().setHeading( this.model.get('headingDegrees'));
             return style;
-        },
-    });
-
-    var StationDirectionView = Backbone.View.extend({
-
-        initialize: function(){
-            var gex = this.options.ge.gex;
-            var pmOptions = {};
-            pmOptions.style = '#waypoint';
-            var point =  this.model.get('geometry').coordinates;
-
-            this.kmlModel = gex.dom.buildModel( 
-                this.modelUrl(), 
-                {
-                    location: [ point[1], point[0] ], // Lon, Lat
-                    scale: 4.0,
-                    orientation: {heading: this.model.get('headingDegrees')},
-                }
-            )
-            this.kmlModel.getOrientation().setHeading(this.model.get('headingDegrees'));
-            pmOptions.model = this.kmlModel;
-
-            this.placemark = gex.dom.buildPlacemark(pmOptions);
-            //this.placemark.bbStationModel = this.model; //reference back to backbone model, for event handlers
-            this.placemark.view = this;
-            this.placemark.setVisibility(this.model.get('isDirectional'));
-            this.model.on('change', this.redraw, this);
-        },
-
-        redraw: function(){
-            this.placemark.setVisibility(this.model.get('isDirectional'));
-            var kmlModel = this.kmlModel;
-            var coords = this.model.get('geometry').coordinates;
-            var location = kmlModel.getLocation();
-            location.setLatLngAlt(coords[1], coords[0], 0.0);
-            var orientation = kmlModel.getOrientation();
-            orientation.setHeading( this.model.get('headingDegrees') );
-        },
-
-        modelUrl: function(){
-            return 'http://{host}/static/xgds_planner2/models/rover.dae'.format({host: window.location.host});
         },
 
         dragRotateHandleCoords: function(){
@@ -556,14 +506,15 @@ $(function(){
             var gex = this.options.ge.gex;
 
             var coords = this.dragRotateHandleCoords();
+            var stLoc = _.object(['lng', 'lat'], this.model.get('geometry').coordinates);
             var linestring = gex.dom.buildLineString(
-                    [ this.model.get('geometry').coordinates.reverse(), [coords.lat, coords.lng] ],
+                    [ [stLoc.lat, stLoc.lng], [coords.lat, coords.lng] ],
                     {tessellate: true}
             );
 
             this.dragHandlePm = gex.dom.buildPlacemark(
                 {
-                    point: [coords.lat, coords.lng],
+                    point: new geo.Point([coords.lat, coords.lng]),
                     lineString: linestring,
                     style: '#direction', // circle with a target
                 }
@@ -576,13 +527,12 @@ $(function(){
                 //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
                 startCallback: function(placemark, data){
                     console.log('mousedown');
-                    //var loc = placemark.getGeometry()
-                    //data.stationLoc =  [loc.getLatitude(), loc.getLongitude()];
-                    data.stationLoc = station.get('geometry').coordinates.reverse();
+                    var coords = station.get('geometry').coordinates;
+                    data.stationLoc = { lng: coords[0], lat: coords[1] };
                     data.startHeading = station.get('headingDegrees');
                 } ,
                 dragCallback: function(placemark, data){
-                    var newHeading = getBearing( _.object(['lat','lng'], data.stationLoc), _.object(['lat','lng'], data.cursorPos.reverse()) );
+                    var newHeading = getBearing( data.stationLoc, _.object(['lat','lng'], data.cursorPos) );
                     console.log(newHeading);
                     station.set({
                         headingDegrees: newHeading,
@@ -610,7 +560,7 @@ $(function(){
                 stationModel.on('change:geometry', function(){ this.update(stationModel); }, this);
                 stationModel.on('dragUpdate', function( placemark ) {
                     var geom = placemark.getGeometry();
-                    var coords = [geom.getLatitude(), geom.getLongitude()];
+                    var coords = {lat: geom.getLatitude(), lng: geom.getLongitude()};
                     this.update( this.otherStation[placemark.view.model.cid], coords );
                 }, this);
             }, this);
@@ -648,9 +598,11 @@ $(function(){
             _.each([point1, point2], function(point) {
                 if ( _.isArray(point) ) { 
                     coords.push(point);
+                } else if ( _.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng') ) {
+                    coords.push( [ point.lat, point.lng ] );
                 } else if ( _.isObject(point) && _.isFunction(point.get) ) {
                     var geom = point.get('geometry').coordinates;
-                    coords.push( [geom[1], geom[0]] ); // Lon, Lat
+                    coords.push( [geom[1], geom[0]] ); // Lon, Lat --> lat, lon
                 }
             });
 

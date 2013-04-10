@@ -112,10 +112,10 @@ app.models = app.models || {};
         ** A convenience mainly to keep details about the model's structure
         ** out of the map drag handler.
         */
-        setPoint: function(lon, lat) {
+        setPoint: function(coords) {
             var geom = this.get('geometry');
             if (! geom) { throw "PathElement has no geometry"; }
-            geom.coordinates = [lon, lat];
+            geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);
         },
     });
