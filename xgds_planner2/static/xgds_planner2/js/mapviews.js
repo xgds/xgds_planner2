@@ -55,7 +55,6 @@ $(function(){
         var lon1 = pointA.lng;
         var lat2 = pointB.lat;
         var lon2 = pointB.lng;
-        debugger;
 
         var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
         bearing = bearing * 180 / Math.PI; // radions --> degrees
@@ -490,15 +489,19 @@ $(function(){
         },
 
         updateDragRotateHandlePm: function(){
+            var gex = this.options.ge.gex;
             var newLatLng = this.dragRotateHandleCoords();
+
             var geom = this.dragHandlePm.getGeometry(); // a MultiGeometry
             var point = geom.getGeometries().getFirstChild();
             point.setLatLng( newLatLng.lat, newLatLng.lng );
-            var linestring = geom.getGeometries().getLastChild();
+            
+            var stLoc = this.model.get('geometry').coordinates; // lon, lat
+            stLoc = _.object(['lat','lng'], stLoc);
 
-            var endpoint = linestring.getCoordinates().get(1);
-            endpoint.setLatitude(newLatLng.lat);
-            endpoint.setLongitude(newLatLng.lon);
+            var newLineString = gex.dom.buildLineString([[stLoc.lat, stLoc.lng], [newLatLng.lat, newLatLng.lng]]);
+            var oldLineString = geom.getGeometries().getLastChild();
+            geom.getGeometries().replaceChild(newLineString, oldLineString);
         },
 
         createDragRotateHandle: function(){
