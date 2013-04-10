@@ -477,7 +477,11 @@ $(function(){
         },
 
         dragRotateHandleCoords: function(){
-            var radius = 14.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
+            
+            //var radius = 14.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
+            var cameraAltitude = ge.getView().copyAsCamera(ge.ALTITUDE_RELATIVE_TO_GROUND).getAltitude();
+            var radius = 0.25 * cameraAltitude; // distance in meters in front of the waypoint location to place the rotational handle. 
+
             var theta = this.model.get('headingDegrees') * Math.PI / 180.00; // radians
             var stationCoords = this.model.get('geometry').coordinates;
             var stationPosMeters = latLonToMeters( { lat: stationCoords[1], lng: stationCoords[0] } );
