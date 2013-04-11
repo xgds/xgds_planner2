@@ -89,22 +89,24 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showStation: function(itemModel){
+        // Clear columns
         this.col2.close();
-        this.col3.close(); // clear the third column
+        this.col3.close();
 
-        this.showingStation = itemModel;
         var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
         this.col2.show( view );
-        app.vent.trigger('showMeta', itemModel);
+
+       this.showMeta(itemModel); 
     },
 
     showSegment: function(itemModel){
-        // Display a segment view in col2
         this.col2.close();
-        this.col3.close();
-        this.col2.show(
-            new app.views.PropertiesForm({ model: itemModel })
-        );
+        this.col3.close(); 
+
+        var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
+        this.col2.show( view );
+
+        this.showMeta(itemModel); 
     },
 
     showCommand: function(itemModel){
@@ -119,9 +121,9 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         }) );
     },
 
-    showPresets: function(stationModel) {
+    showPresets: function(itemModel) {
         this.col3.show( new app.views.CommandPresetsView({
-            model: stationModel,
+            model: itemModel,
         }) );
     },
 
