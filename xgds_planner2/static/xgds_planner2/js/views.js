@@ -214,7 +214,8 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data){
-        return '<input class="select" type="checkbox"/>' + data.presetCode + '<i/>';
+        var displayName =  data.presetCode || data.name;
+        return '<input class="select" type="checkbox"/>' + displayName + '<i/>';
     },
     events: function(){
         return _.extend( app.views.SequenceListItemView.prototype.events, {
