@@ -58,7 +58,6 @@ $(function(){
 
         var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
         bearing = bearing * 180 / Math.PI; // radions --> degrees
-        bearing = bearing + 90.0;
         if ( bearing < 0.0 ) { bearing = bearing + 360.0 }
         return bearing;
     }
