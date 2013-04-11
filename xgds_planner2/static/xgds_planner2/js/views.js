@@ -364,10 +364,11 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
 
     serializeData: function(){
         return {
-            presets: app.planLibrary.commands,
+            presets: this.getRelevantPresets(),
             station: this.model.toJSON(),
         }
     },
+
     events: {
         "click .add-preset": function(evt){
             console.log("Add by preset");
@@ -376,6 +377,19 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
             var preset = app.commandPresetsByName[target.data('preset-name')];
             station.appendCommandByPreset( preset );
         },
+    },
+
+    getRelevantPresets: function(){
+        var presets;
+        // Lists of command types that pertain to Stations and Segments are available in
+        // planSchema.StationSequenceCommands and planSchema.SegmentSequenceCommands, respectively
+        var relevantCommandTypes = app.planSchema[this.model.get('type').toLowerCase() + 'SequenceCommands'];
+        if ( _.isUndefined(relevantCommandTypes) ) { 
+            presets = app.planLibrary.commands; 
+        } else { 
+            presets = _.filter( app.planLibrary.commands, function(command) { return _.contains( relevantCommandTypes, command.type ) } ); 
+        }
+        return presets
     },
 })
 
