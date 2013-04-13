@@ -393,6 +393,19 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
     },
 })
 
+app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
+    template: '#template-layer-tree',
+    onRender: function(){
+        var tree = kmltree({
+            url: app.options.layerFeedUrl,
+            gex: ge.gex,
+            mapElement: $('#map'),
+            element: this.$el.find('#layertree'),
+            restoreState: true
+        });
+        tree.load();
+    },
+});
 
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
     template: '#template-tabnav',
@@ -407,6 +420,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
     viewMap: {
         'meta': app.views.PlanMetaView,
         'sequence': app.views.PlanSequenceView,
+        'layers': app.views.LayerTreeView,
     },
 
     initialize: function(){

@@ -55,6 +55,7 @@ XGDS_PLANNER_PIPELINE_JS = {
         'source_filenames': (
 
             'external/js/jquery-1.9.0.min.js',
+            'external/js/jquery-migrate-1.1.1.min.js',
             'external/js/lodash.js',
             'external/js/handlebars.js',
             'external/js/backbone.js',
@@ -64,6 +65,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/bootstrap.min.js',
             'external/js/extensions-0.2.1.pack.js',
             'external/js/string-format.js',
+            'external/js/kmltree.min.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/app.js',
@@ -81,6 +83,7 @@ XGDS_PLANNER_PIPELINE_CSS = {
         'source_filenames': (
             'external/css/bootstrap.css',
             'external/css/backbone.forms.default.css',
+            'external/css/kmltree.css',
             'xgds_planner2/css/planner.css',
         ),
         'output_filenames': 'css/planner_app.css',
@@ -107,3 +110,6 @@ XGDS_PLANNER_PLAN_EXPORTERS = (
 XGDS_PLANNER_PLAN_IMPORTERS = (
     ('kml', '.kml', 'xgds_planner2.kmlPlanImporter.KmlLineStringPlanImporter'),
 )
+
+# kml root from xgds_map_server
+XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/"
