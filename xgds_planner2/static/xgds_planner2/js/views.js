@@ -168,8 +168,12 @@ app.views.makeExpandable = function(view, expandClass){
 app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     // The list item is a simple enough DOM subtree that we'll let the view build it's own root element.
     tagName: 'li',
+    initialize: function(){
+        app.views.makeExpandable(this, this.options.expandClass);
+    },
     template: function(data){
-        return '' + data.model.toString()+ ' <i/>';
+        //return '' + data.model.toString()+ ' <i/>';
+        return '{model.toString} <span class="duration">{timing}</span><i/>'.format(data);
     },
     serializeData: function(){
         var data = Backbone.Marionette.ItemView.prototype.serializeData.call(this, arguments);
@@ -191,15 +195,17 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     modelEvents: {
         "change": "render", // Re-render when the model changes.
     },
-    initialize: function(){
-        app.views.makeExpandable(this, this.options.expandClass);
-    },
 });
 
 app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     onExpand: function(){
         var type = this.model.get('type'); // "Station" or "Segment"
         app.vent.trigger('showItem:'+type.toLowerCase(), this.model);
+    },
+    serializeData: function(){
+        var data =  app.views.SequenceListItemView.prototype.serializeData.call(this, arguments);
+        data.timing = app.util.minutesToHMS(this.model.getCumulativeDuration());
+        return data;
     },
 });
 

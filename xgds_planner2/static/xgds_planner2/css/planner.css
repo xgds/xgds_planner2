@@ -66,3 +66,8 @@ div[id^="col"] > li:hover {
 .bbf-field .bbf-editor {
     width: 65%;
 }
+
+span.duration {
+    font-weight: bold;
+    font-style: italic;
+}

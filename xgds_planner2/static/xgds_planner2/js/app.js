@@ -123,6 +123,19 @@ var app = (function($, _, Backbone){
             });
             return obj;
         },
+        minutesToHMS: function(minutes){
+            // given a floating point time duration in minutes, output "hh:mm:ss"
+            var hh = Math.floor(minutes / 60);
+            minutes = minutes - (hh*60.0);
+            var mm = Math.floor(minutes);
+            var ss = Math.floor( 60.0 * (minutes % 1) );
+            var output = '';
+            if ( hh > 0 ){
+                output = output + '{hh:02d}:'.format({hh: hh});
+            }
+            output = output + '{mm:02d}:{ss:02d}'.format({ mm: mm, ss: ss });
+            return output;
+        },
         randomColor: function(){ return '#'+((1<<24)*Math.random()|0).toString(16) },
         rainbow: function (numOfSteps, step) {
             // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distiguishable vibrant markers in Google Maps and other apps.

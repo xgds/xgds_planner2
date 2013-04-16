@@ -66,6 +66,20 @@ app.models = app.models || {};
             headingToleranceDegrees: 'Number',
         },
 
+        initialize: function(){
+            var params = {
+                'Station': app.planSchema.stationParams,
+                'Segment': app.planSchema.segmentParams,
+            }[this.get('type')];
+            if (params && ! _.isEmpty(params)) {
+                var schema = {};
+                _.each(params, function(param){
+                    schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+                });
+                this.schema = schema;
+            }
+        },
+
         toString: function(){
             var repr;
             switch (this.get('type')) {
@@ -88,20 +102,33 @@ app.models = app.models || {};
             return obj;
         },
 
-        initialize: function(){
-            var params = {
-                'Station': app.planSchema.stationParams,
-                'Segment': app.planSchema.segmentParams,
-            }[this.get('type')];
-            if (params) {
-                var schema = {};
-                _.each(params, function(param){
-                    schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
-                });
-                this.schema = schema;
+        getDuration: function(){
+            var duration = 0.0;
+            if  ( this.get('speed') ){
+                // TODO: calculate distance and traverse time
             }
-
+            this.get('sequence').each( function(command){
+                if ( command.get('duration') != undefined ) {
+                    duration = duration + command.get('duration');
+                }
+            });
+            return duration;
         },
+
+        getCumulativeDuration: function(collection){
+            // return the cumulative duration of all models in the collection up to and including this one.
+            if ( collection === undefined ) { collection = app.currentPlan.get('sequence'); }
+            var arr = collection.models;
+            var idx = _.indexOf( arr, this );
+            if ( idx < 0 ) {
+                throw 'Model {model} was not found in the collection {collection}'.format({model: this, collection: collection}) ;
+            }
+            var duration = 0.0;
+            _.each( _.first(arr, idx+1), function(model) {
+                duration = duration + model.getDuration();
+            } );
+            return duration;
+        }, 
 
         appendCommandByPreset: function(preset) {
             var command = new models.Command( preset );
