@@ -59,3 +59,14 @@ Handlebars.registerHelper('group', function(list, groupKey, options){
     return ret;
 });
 
+Handlebars.registerHelper('firstDefined', function(){
+    // given a list of values, regurn the first one defined within this context
+    var args = Array.prototype.slice.call(arguments);
+    var val;
+    while ( args.length > 0 ) {
+        val = args.shift();
+        if ( val != undefined ) { return val; }
+    }
+    return undefined;
+
+});

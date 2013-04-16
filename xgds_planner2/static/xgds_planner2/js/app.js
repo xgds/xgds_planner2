@@ -39,6 +39,7 @@ var app = (function($, _, Backbone){
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
         //this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
         this.commandPresetsByName = this.util.indexBy( this.planLibrary.commands, 'name');
+        _.extend(this.commandPresetsByName, this.util.indexBy( this.planLibrary.commands, 'presetName') );
         this.commandPresetsByType = this.util.groupBy( this.planLibrary.commands, 'type');
 
         // Extract color from command specs
