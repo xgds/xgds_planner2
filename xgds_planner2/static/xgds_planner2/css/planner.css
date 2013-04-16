@@ -70,4 +70,6 @@ div[id^="col"] > li:hover {
 span.duration {
     font-weight: bold;
     font-style: italic;
+    float: right;
+    padding-right: 4px;
 }
