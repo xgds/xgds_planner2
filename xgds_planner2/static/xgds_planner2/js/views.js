@@ -456,6 +456,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
             }
         });
         var viewClass = this.viewMap[tabId];
+        if ( ! viewClass ) { return undefined; }
         var view = new viewClass({
             model: app.currentPlan,
         });
