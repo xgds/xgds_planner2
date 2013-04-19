@@ -571,6 +571,9 @@ $(function(){
                 }, this);
             }, this);
             this.render();
+            this.listenTo( this.model, 'change add:sequence delete:sequence change:sequence', function(evt, options){
+                this.update();
+            }, this );
         },
 
         render: function(){
@@ -580,9 +583,10 @@ $(function(){
             });
 
             var linestring = this.gex.dom.buildLineString(coords, {tessellate: true});
+            var style = this.model.get('sequence').isEmpty() ? '#segment' : '#segment_with_commands';
             this.placemark = this.gex.dom.buildPlacemark({
                 lineString: linestring,
-                style: '#segment',
+                style: style,
                 altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND,
             });
             this.update.apply(this, coords );
@@ -595,25 +599,31 @@ $(function(){
         */
         update: function(point1, point2){
 
-            if ( _.isUndefined(point2) && point1.cid ) {
+            if ( _.isUndefined(point2) && ! _.isUndefined(point1) && point1.cid ) {
                 // only one model was supplied for update.  Go get the other one.
                 point2 = this.otherStation[point1.cid];
             }
 
-            var coords = [];
-            _.each([point1, point2], function(point) {
-                if ( _.isArray(point) ) { 
-                    coords.push(point);
-                } else if ( _.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng') ) {
-                    coords.push( [ point.lat, point.lng ] );
-                } else if ( _.isObject(point) && _.isFunction(point.get) ) {
-                    var geom = point.get('geometry').coordinates;
-                    coords.push( [geom[1], geom[0]] ); // Lon, Lat --> lat, lon
-                }
-            });
+            if ( point1 && point2 ) {
+                var coords = [];
+                _.each([point1, point2], function(point) {
+                    if ( _.isArray(point) ) { 
+                        coords.push(point);
+                    } else if ( _.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng') ) {
+                        coords.push( [ point.lat, point.lng ] );
+                    } else if ( _.isObject(point) && _.isFunction(point.get) ) {
+                        var geom = point.get('geometry').coordinates;
+                        coords.push( [geom[1], geom[0]] ); // Lon, Lat --> lat, lon
+                    }
+                });
 
-            var linestring = this.gex.dom.buildLineString(coords, {tessellate: true});
-            this.placemark.setGeometry(linestring); // ???
+                var linestring = this.gex.dom.buildLineString(coords, {tessellate: true});
+                this.placemark.setGeometry(linestring); // ???
+            }
+
+            debugger;
+            var style = this.model.get('sequence').isEmpty() ? '#segment' : '#segment_with_commands';
+            this.placemark.setStyleUrl(style);
         },
     });
 
