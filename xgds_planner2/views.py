@@ -60,9 +60,9 @@ def plan_REST(request, name):
         plan.save()
     return HttpResponse( json.dumps(plan.jsonPlan), content_type='applicaiton/json' )
 
-with open(os.path.join(settings.MEDIA_ROOT, 'xgds_planner2/schema.json')) as schemafile:
+with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
     SCHEMA = schemafile.read()
-with open(os.path.join(settings.MEDIA_ROOT, 'xgds_planner2/library.json')) as libraryfile:
+with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
     LIBRARY = libraryfile.read()
 
 def plan_editor_app(request, plan_name=None, editable=True):
