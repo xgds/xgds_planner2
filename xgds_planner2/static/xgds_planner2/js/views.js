@@ -69,15 +69,20 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     initialize: function(){
-        app.vent.on('showItem', this.showItem, this);
-        app.vent.on('showItem:station', this.showStation, this);
-        app.vent.on('showItem:segment', this.showSegment, this);
-        app.vent.on('showItem:command', this.showCommand, this);
-        app.vent.on('showMeta', this.showMeta, this);
-        app.vent.on('showPresets', this.showPresets, this);
-        app.vent.on('all', function(evt){
+        this.listenTo( app.vent, 'showItem', this.showItem, this);
+        this.listenTo( app.vent, 'showItem:station', this.showStation, this);
+        this.listenTo( app.vent, 'showItem:segment', this.showSegment, this);
+        this.listenTo( app.vent, 'showItem:command', this.showCommand, this);
+        this.listenTo( app.vent, 'showMeta', this.showMeta, this);
+        this.listenTo( app.vent, 'showPresets', this.showPresets, this);
+        this.listenTo( app.vent, 'all', function(evt){
             console.log("PlanSequenceView event: "+evt);
         });
+        console.log(this.cid);
+    },
+
+    onClose: function(){
+        this.stopListening();
     },
 
     onRender: function(){
@@ -90,7 +95,6 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     showStation: function(itemModel){
         // Clear columns
-        this.col2.close();
         this.col3.close();
 
         var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
@@ -100,7 +104,6 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showSegment: function(itemModel){
-        this.col2.close();
         this.col3.close(); 
 
         var view = new app.views.CommandSequenceCollectionView( { model: itemModel, collection: itemModel.get('sequence') } );
