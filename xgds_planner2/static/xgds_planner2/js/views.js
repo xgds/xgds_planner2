@@ -22,6 +22,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     deleteSelectedCommands: function(){
         var commands = app.request('selectedCommands');
         _.each(commands, function(command){
+            command.collection.remove(command);
             command.destroy();
         });
     },

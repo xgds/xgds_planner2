@@ -553,6 +553,7 @@ $(function(){
 
     var SegmentLineView = Backbone.View.extend({
         initialize: function(){
+            console.log("segment init: "+ this.cid);
             var options = this.options;
             if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!"; }
             this.ge = this.options.ge;
@@ -571,8 +572,8 @@ $(function(){
                 }, this);
             }, this);
             this.render();
-            this.listenTo( this.model, 'change add:sequence delete:sequence change:sequence', function(evt, options){
-                this.update();
+            this.listenTo( this.model, 'add:sequence delete:sequence change:sequence', function(evt, options){
+                this.updateStyle();
             }, this );
         },
 
@@ -589,7 +590,7 @@ $(function(){
                 style: style,
                 altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND,
             });
-            this.update.apply(this, coords );
+            this.updateGeom.apply(this, coords );
         },
 
         /*
@@ -597,7 +598,7 @@ $(function(){
         ** points can be either station PathElements, or an array of coordinates (lon, lat)
         ** You can also supply just one station PathElement
         */
-        update: function(point1, point2){
+        updateGeom: function(point1, point2){
 
             if ( _.isUndefined(point2) && ! _.isUndefined(point1) && point1.cid ) {
                 // only one model was supplied for update.  Go get the other one.
@@ -621,7 +622,9 @@ $(function(){
                 this.placemark.setGeometry(linestring); // ???
             }
 
-            debugger;
+        },
+
+        updateStyle: function() {
             var style = this.model.get('sequence').isEmpty() ? '#segment' : '#segment_with_commands';
             this.placemark.setStyleUrl(style);
         },
