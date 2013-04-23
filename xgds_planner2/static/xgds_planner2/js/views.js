@@ -11,7 +11,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     },
     
     initialize: function(){
-        app.vent.on('mapmode', this.ensureToggle);
+        this.listenTo( app.vent, 'mapmode', this.ensureToggle);
     },
 
     ensureToggle: function(modeName) {
@@ -165,7 +165,7 @@ app.views.makeExpandable = function(view, expandClass){
     };
     view = _.defaults(view, expandable);
     view.option = _.defaults( view.options, {expandClass: expandClass});
-    app.vent.on('viewExpanded', view.onExpandOther, view);
+    view.listenTo( app.vent, 'viewExpanded', view.onExpandOther, view);
     view.on('expand', view.expand, view);
 };
 

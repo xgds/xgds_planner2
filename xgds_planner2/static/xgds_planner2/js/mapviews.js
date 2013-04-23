@@ -224,7 +224,6 @@ $(function(){
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
 
-            //debug:
             station.on('change', function(station){
                 console.log("geometry change: " + JSON.stringify(station.get('geometry').coordinates));
             });
