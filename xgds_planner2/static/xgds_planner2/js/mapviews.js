@@ -24,6 +24,23 @@ $(function(){
     function vectorAbs(vec) { return Math.sqrt( _.reduce(vec, function(memo, num){ return memo + Math.pow(num, 2); }, 0) ); };
 
 
+    var EARTH_RADIUS_METERS = 6371010;
+    var DEG2RAD = Math.PI / 180.0;
+    var RAD2DEG = 180.0 / Math.PI;
+
+    /*
+     Add an offset in meters to a coordinate pair specified as WGS84 Lat/Lon
+    */
+    function addMeters(latlng, xy){
+        var latRad = latlng.lat * DEG2RAD;
+        var latDiff = xy.y / EARTH_RADIUS_METERS;
+        var lngDiff = xy.x / ( Math.cos(latRad) * EARTH_RADIUS_METERS );
+        return {
+            lat: latlng.lat + RAD2DEG * latDiff,
+            lng: latlng.lng + RAD2DEG * lngDiff
+        }
+    }
+
     /*
      * Spherical Mercator projectionator,
      * from: https://github.com/geocam/geocamTiePoint/blob/master/geocamTiePoint/static/geocamTiePoint/js/coords.js
@@ -115,6 +132,16 @@ $(function(){
         return [placemark, 'mousedown', dragStart];  // Need these references to tear down the event handler later.
     };
 
+    function kmlColor( rgbColor, alpha ) {
+        // Convert rgb hex color values to aabbggrr, which is what KML uses.
+        if ( alpha == undefined ) { alpha = 'ff';}
+        if ( rgbColor.charAt(0) == '#' ) { rgbColor = rgbColor.slice(1); }
+        var rr = rgbColor.substr(0, 2);
+        var gg = rgbColor.substr(2, 2);
+        var bb = rgbColor.substr(4, 2);
+        return '' + alpha + bb + gg + rr;
+    }
+
     app.views.EarthView = Backbone.View.extend({
         el: 'div',
 
@@ -191,9 +218,10 @@ $(function(){
             var ge = this.ge = this.options.ge;
             var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
             this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
-            this.dragHandlesFolder = ge.gex.dom.buildFolder({ name: "drag_handles" });
+            this.dragHandlesFolder = ge.gex.dom.buildFolder({ name: "dragHandles" });
             this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
-            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.dragHandlesFolder];
+            this.fovWedgesFolder = ge.gex.dom.buildFolder({ name: "fovWedges" });
+            this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.dragHandlesFolder, this.fovWedgesFolder];
             _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
 
             // re-rendering the whole KML View on add proves to be pretty slow.
@@ -220,20 +248,32 @@ $(function(){
         },
 
         drawStation: function(station){
-            var stationPointView = new StationPointView({ge: this.ge, model: station});          
+            var stationPointView = new StationPointView({ge: this.ge, model: station, planKmlView: this});          
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
 
             station.on('change', function(station){
                 console.log("geometry change: " + JSON.stringify(station.get('geometry').coordinates));
             });
+
+            return stationPointView;
         },
 
         drawStations: function(){
+            this.stationViews = [];
             _.each( 
                 this.collection.filter( function(model){ return model.get('type') == 'Station'; } ),
-                this.drawStation,
+                function(station){
+                    this.stationViews.push( this.drawStation(station) );
+                },
                 this // view context
+            );
+
+            _.each(  
+                this.stationViews,
+                function(stationView){
+                    stationView.addPanoWedges();
+                }
             );
         },
 
@@ -425,6 +465,8 @@ $(function(){
     // This view class manages the map point for a single Station model
     var StationPointView = Backbone.View.extend({
         initialize: function(){
+            this.planKmlView = this.options.planKmlView;
+
             var gex = this.options.ge.gex;
             var pmOptions = {};
             pmOptions.name = this.model.get('sequenceLabel') || this.model.toString();
@@ -548,11 +590,33 @@ $(function(){
             
             return this.dragHandlePm;
         },
+
+        addPanoWedges: function(){
+            var station = this.model;
+            var wedgeViews = this.wedgeViews = [];
+            var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
+            this.model.get('sequence').each(function(command){
+                if ( command.get('showWedge') ) {
+                    var wedgeView = new PanoWedgeView({ station: station, command: command });
+                    wedgeViews.push( wedgeView );
+                    wedgeFeatures.appendChild( wedgeView.placemark );
+                }
+            });
+        },
+
+        destroyPanoWedges: function(){
+            var wedgeFeatures = this.planKmlView.panoWedgeFolder.getFeatures();
+            while ( this.wedgeViews.length > 0 ) {
+                wedgeView = this.wedgeViews.pop();
+                wedgeFeatures.removeChild( wedgeView.placemark );
+                wedgeView.close();
+            }
+        },
+
     });
 
     var SegmentLineView = Backbone.View.extend({
         initialize: function(){
-            console.log("segment init: "+ this.cid);
             var options = this.options;
             if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!"; }
             this.ge = this.options.ge;
@@ -672,5 +736,100 @@ $(function(){
 
         return placemark;
     };
+
+    var PanoWedgeView = Backbone.View.extend({
+        initialize: function(){
+            console.log("PanoWedgeView init: " + this.cid);
+            this.station = this.options.station;
+            this.command = this.options.command;
+
+            this.lineColor = 'ffffffff';
+            var rgbFillColor = app.request( 'getColor', this.command.get('type') );
+            this.fillColor = kmlColor( rgbFillColor, '80' );
+            this.placemark = this.createWedgePlacemark( this.computeWedgeCoords() );
+            
+            this.listenTo( this.command, 'change', this.update);
+        },
+
+        /*
+         * Calculate the wedge polygon's coordinates and output them
+         * as an array of objects with lat & lng properties.
+         */
+        computeWedgeCoords: function() {
+            var station = this.station;
+            var command = this.command;
+
+            var stationLL = _.object( ['lng','lat'], station.get('geometry').coordinates );
+            var headingRadians = station.get('headingDegrees') * DEG2RAD;
+            var hfov = command.get('hfov');
+            var range = command.get('range');
+
+            var fullCircle, leftAngle, RightAngle;
+            if ( hfov >= 360 ) {
+                fullCircle = true;
+                leftAngle = 0.0;
+                rightAngle = 2 * Math.PI;
+            } else {
+                fullCircle = false;
+                halfAngle = (hfov / 2.0) * DEG2RAD;
+                leftAngle = headingRadians - halfAngle;
+                rightAngle = headingRadians + halfAngle;
+                while ( (rightAngle - leftAngle) > 2 * Math.PI ) { rightAngle = rightAngle - 2*Math.PI; }
+                while ( (rightAngle - leftAngle) < 0 ) { rightAngle = rightAngle + 2*Math.PI; }
+            }
+            wedgeCoords = [];
+
+            // start wedge at the station point
+            if ( ! fullCircle ) { wedgeCoords.push(stationLL); }
+
+            var theta = leftAngle;
+            var dtheta = 3*Math.PI / 180;
+            var offsetMeters;
+
+            while ( theta < rightAngle ) {
+                offsetMeters = {
+                    x: range * Math.sin(theta),
+                    y: range * Math.cos(theta)
+                };
+                wedgeCoords.push( addMeters( stationLL, offsetMeters ) );
+                theta = theta + dtheta;
+            }
+
+            // end wedge at the station point
+            if ( ! fullCircle ) { wedgeCoords.push(stationLL); }
+
+            return wedgeCoords;
+        },
+
+        createWedgePlacemark: function(wedgeCoords){
+            var gex = ge.gex;
+            var polygon = gex.dom.buildPolygon( 
+                _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
+            );
+
+            var style = gex.dom.buildStyle({
+                line: { color: this.lineColor },
+                poly: {
+                    fill: true,
+                    outline: true,
+                    color: this.fillColor,
+                }
+            });
+
+            return gex.dom.buildPolygonPlacemark( polygon, {style: style} );
+        },
+
+        update: function(){
+            var wedgeCoords = this.computeWedgeCoords();
+            var polygon = ge.gex.dom.buildPolygon( 
+                _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
+            );
+            this.placemark.setGeometry(polygon);
+        },
+
+        close: function(){
+            this.stopListening();
+        },
+    });
 
 });
