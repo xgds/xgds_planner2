@@ -331,6 +331,13 @@ app.models = app.models || {};
             */
 
         },
+
+        hasParam: function( paramName ){
+            //return true if the given param name exists in this command's spec
+            var params = app.commandSpecs[this.get('type')].params;
+            var paramNames = _.pluck( params, 'id');
+            return _.contains( paramNames, paramName);
+        },
     });
 
     models.CommandCollection = Backbone.Collection.extend({

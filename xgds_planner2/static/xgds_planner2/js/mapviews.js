@@ -485,7 +485,13 @@ $(function(){
             google.earth.addEventListener(this.placemark, 'click', function(evt){ evt.preventDefault() });
 
             this.placemark.view = this; // 2-way link for GE event handlers to use
-            this.model.on('change', this.redraw, this);
+            //this.model.on('change', this.redraw, this);
+            this.listenTo( this.model, 'change', this.redraw);
+            this.listenTo( this.model, 'add:sequence remove:sequence', function(command, collection){
+                if ( command.hasParam('showWedge') ) {
+                    this.redrawPanoWedges();
+                }
+            });
         },
 
         redraw: function(){
@@ -602,7 +608,7 @@ $(function(){
             var wedgeViews = this.wedgeViews = [];
             var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
             this.model.get('sequence').each(function(command){
-                if ( command.has('showWedge') ) {
+                if ( command.hasParam('showWedge') ) {
                     var wedgeView = new PanoWedgeView({ station: station, command: command });
                     wedgeViews.push( wedgeView );
                     wedgeFeatures.appendChild( wedgeView.placemark );
@@ -611,12 +617,17 @@ $(function(){
         },
 
         destroyPanoWedges: function(){
-            var wedgeFeatures = this.planKmlView.panoWedgeFolder.getFeatures();
+            var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
             while ( this.wedgeViews.length > 0 ) {
                 wedgeView = this.wedgeViews.pop();
                 wedgeFeatures.removeChild( wedgeView.placemark );
                 wedgeView.close();
             }
+        },
+
+        redrawPanoWedges: function(){
+            this.destroyPanoWedges();
+            this.addPanoWedges();
         },
 
         close: function(){
@@ -816,6 +827,10 @@ $(function(){
 
         createWedgePlacemark: function(wedgeCoords){
             var gex = ge.gex;
+
+            var visibility = this.command.get('showWedge');
+            if (visibility === undefined) visibility = false;
+
             var polygon = gex.dom.buildPolygon( 
                 _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
             );
@@ -829,7 +844,9 @@ $(function(){
                 }
             });
 
-            return gex.dom.buildPolygonPlacemark( polygon, {style: style} );
+            var placemark = gex.dom.buildPolygonPlacemark( polygon, {style: style} );
+            placemark.setVisibility( visibility );
+            return placemark;
         },
 
         update: function(){
