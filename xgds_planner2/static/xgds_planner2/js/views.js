@@ -343,20 +343,21 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         });
 
         Backbone.Form.prototype.initialize.call(this, this.options);
-        this.model.on('change', this.render, this);
+        this.model.on('change', this.update, this);
+    },
+
+    update: function(){
+        var attrs = this.model.changedAttributes();
+        var formView = this;
+        _.each( _.keys(attrs), function(k) {
+            var v = attrs[k];
+            formView.setValue(k,v);
+        })
     },
 
     render: function(){
-        if ( ! this.committing ) {
-            Backbone.Form.prototype.render.apply(this, arguments);
-            this.$el.on('change', _.bind(this.commit, this));
-        }
-    },
-
-    commit: function(){
-        this.committing = true;
-        Backbone.Form.prototype.commit.apply(this, arguments);
-        this.commmitting = false;
+        Backbone.Form.prototype.render.apply(this, arguments);
+        this.$el.on('change', _.bind(this.commit, this));
     },
 
 });
