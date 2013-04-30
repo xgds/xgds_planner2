@@ -439,7 +439,8 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
     },
 
     viewMap: {
-        'meta': app.views.PlanMetaView,
+        //'meta': app.views.PlanMetaView,
+        'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
         'layers': app.views.LayerTreeView,
     },

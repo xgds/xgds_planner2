@@ -68,6 +68,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/kmltree.min.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
+            'xgds_planner2/js/forms.js',
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',
             'xgds_planner2/js/views.js',

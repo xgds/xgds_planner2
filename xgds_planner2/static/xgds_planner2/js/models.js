@@ -12,6 +12,25 @@ app.models = app.models || {};
         'targetId': 'Select',
     };
 
+    function xpjsonToBackboneFormsSchema( xpjsonSchema, modelType ){
+        // name and notes are hard-coded fields from xpjson spec
+        var schema = {
+            name: 'Text',
+            notes: 'TextArea'
+        };
+
+        if ( modelType == 'Station' ) {
+            // TODO: Create a "Coordinates" editor that's geometry-schema-aware
+            schema.geometry = 'Coordinates';
+        }
+
+        _.each(xpjsonSchema, function(param){
+            schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+        });
+
+        return schema;
+    }
+
     models.Plan = Backbone.RelationalModel.extend({
         url: function(){
             return '/xgds_planner2/plan/{name}.json'.format({name: this.get('name')});
@@ -38,6 +57,11 @@ app.models = app.models || {};
                 },
             }
         ],
+
+        initialize: function(){
+            var params = app.planSchema.planParams;
+            this.schema = xpjsonToBackboneFormsSchema( params, 'Plan' );
+        },
     });
 
     /*
@@ -72,11 +96,7 @@ app.models = app.models || {};
                 'Segment': app.planSchema.segmentParams,
             }[this.get('type')];
             if (params && ! _.isEmpty(params)) {
-                var schema = {};
-                _.each(params, function(param){
-                    schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
-                });
-                this.schema = schema;
+                this.schema = xpjsonToBackboneFormsSchema( params, this.get('type') );
             }
         },
 
@@ -141,6 +161,7 @@ app.models = app.models || {};
         */
         setPoint: function(coords) {
             var geom = this.get('geometry');
+            geom = _.extend({}, geom); // make a copy so it triggers the change event
             if (! geom) { throw "PathElement has no geometry"; }
             geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);

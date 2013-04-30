@@ -638,7 +638,7 @@ $(function(){
             this.otherStation[options.toStation.cid]= options.fromStation;
             this.otherStation[options.fromStation.cid]= options.toStation;
             _.each([this.fromStation, this.toStation], function(stationModel){
-                stationModel.on('change:geometry', function(){ this.update(stationModel); }, this);
+                stationModel.on('change:geometry', function(){ this.updateGeom(stationModel); }, this);
                 stationModel.on('dragUpdate', function( placemark ) {
                     var geom = placemark.getGeometry();
                     var coords = {lat: geom.getLatitude(), lng: geom.getLongitude()};
