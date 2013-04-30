@@ -613,6 +613,11 @@ $(function(){
             }
         },
 
+        close: function(){
+            this.destroyPanoWedges();
+            this.stopListening();
+        },
+
     });
 
     var SegmentLineView = Backbone.View.extend({
@@ -749,6 +754,8 @@ $(function(){
             this.placemark = this.createWedgePlacemark( this.computeWedgeCoords() );
             
             this.listenTo( this.command, 'change', this.update);
+            this.listenTo( this.station, 'change:geometry', this.update );
+            this.listenTo( this.station, 'change:headingDegrees', this.update );
         },
 
         /*
