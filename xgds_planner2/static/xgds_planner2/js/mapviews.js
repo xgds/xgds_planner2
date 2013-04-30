@@ -500,6 +500,12 @@ $(function(){
             this.placemark.getStyleSelector().getIconStyle().setHeading( this.model.get('headingDegrees') );
             this.placemark.getStyleSelector().getIconStyle().getIcon().setHref( this.model.get('isDirectional') ?
                     'http://earth.google.com/images/kml-icons/track-directional/track-0.png' : 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png' );
+
+            if ( this.wedgeViews) {
+                _.each( this.wedgeViews, function(wedgeView) {
+                    wedgeView.update();
+                });
+            }
         },
 
         buildStyle: function(){
@@ -596,7 +602,7 @@ $(function(){
             var wedgeViews = this.wedgeViews = [];
             var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
             this.model.get('sequence').each(function(command){
-                if ( command.get('showWedge') ) {
+                if ( command.has('showWedge') ) {
                     var wedgeView = new PanoWedgeView({ station: station, command: command });
                     wedgeViews.push( wedgeView );
                     wedgeFeatures.appendChild( wedgeView.placemark );
@@ -827,11 +833,15 @@ $(function(){
         },
 
         update: function(){
-            var wedgeCoords = this.computeWedgeCoords();
-            var polygon = ge.gex.dom.buildPolygon( 
-                _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
-            );
-            this.placemark.setGeometry(polygon);
+            var visibility = this.command.get('showWedge');
+            this.placemark.setVisibility(visibility);
+            if ( visibility ) {
+                var wedgeCoords = this.computeWedgeCoords();
+                var polygon = ge.gex.dom.buildPolygon( 
+                    _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
+                );
+                this.placemark.setGeometry(polygon);
+            }
         },
 
         close: function(){
