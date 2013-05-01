@@ -61,6 +61,7 @@ app.models = app.models || {};
         initialize: function(){
             var params = app.planSchema.planParams;
             this.schema = xpjsonToBackboneFormsSchema( params, 'Plan' );
+            this.on('change', function(){ app.vent.trigger('change:plan'); } );
         },
     });
 
@@ -98,6 +99,11 @@ app.models = app.models || {};
             if (params && ! _.isEmpty(params)) {
                 this.schema = xpjsonToBackboneFormsSchema( params, this.get('type') );
             }
+            this.on('change', function(){ 
+                if ( this.changedAttributes() && ! _.isEmpty( _.omit(this.changedAttributes(), 'sequenceLabel') ) ) {
+                    app.vent.trigger('change:plan'); 
+                }
+            });
         },
 
         toString: function(){
@@ -318,7 +324,6 @@ app.models = app.models || {};
     
     models.Command = Backbone.RelationalModel.extend({
         initialize: function(){
-
             /*
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
@@ -329,7 +334,7 @@ app.models = app.models || {};
             });
             this.schema = schema;
             */
-
+            this.on('change', function(){ app.vent.trigger('change:plan'); } );
         },
 
         hasParam: function( paramName ){

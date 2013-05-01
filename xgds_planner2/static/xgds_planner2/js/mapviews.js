@@ -186,6 +186,7 @@ $(function(){
             app.vent.trigger('earth:init');
             this.trigger('earth:init');
             this.drawPlan();
+            app.vent.trigger('clearSaveStatus');
         },
 
         earthFailure: function(){

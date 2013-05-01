@@ -12,6 +12,11 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     
     initialize: function(){
         this.listenTo( app.vent, 'mapmode', this.ensureToggle);
+
+        this.listenTo( app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
+        this.listenTo( app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
+        this.listenTo( app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
+        this.listenTo( app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
     },
 
     ensureToggle: function(modeName) {
@@ -25,6 +30,17 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             command.collection.remove(command);
             command.destroy();
         });
+    },
+
+    updateSaveStatus: function(eventName){
+        var msgMap = {
+            'change': "Unsaved changes.",
+            'sync': "Plan saved.",
+            'error': "Save error.",
+            'clear': '',
+        };
+        var msg = msgMap[eventName];
+        this.$el.find('#save-status').text(msg);
     },
 });
 
@@ -79,7 +95,6 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.listenTo( app.vent, 'all', function(evt){
             console.log("PlanSequenceView event: "+evt);
         });
-        console.log(this.cid);
     },
 
     onClose: function(){
@@ -392,7 +407,6 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
 
     events: {
         "click .add-preset": function(evt){
-            console.log("Add by preset");
             var station = this.model;
             var target = $(evt.target);
             var preset = app.commandPresetsByName[target.data('preset-name')];

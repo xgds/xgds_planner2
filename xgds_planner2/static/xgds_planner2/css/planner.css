@@ -18,6 +18,10 @@ div[id^="col"] > li:hover {
     background-color: #d4d4d4;
 }
 
+.notify {
+    font-size: 12pt;
+}
+
 [class*="-sequence-item"] {
     list-style-type: none;
     border-style: none;
