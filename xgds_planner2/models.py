@@ -56,7 +56,14 @@ class Plan(models.Model):
     class Meta:
         ordering = ['-dateModified']
 
-    def extractFromJson(self, overWriteDateModified=True):
+    def get_absolute_url(self):
+        return reverse( 'planner2_planREST', args=[self.id, self.jsonPlan.id] )
+
+    def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
+        if overWriteUuid:
+            if not self.uuid:
+                self.uuid = makeUuid()
+            self.jsonPlan.uuid = self.uuid
         if overWriteDateModified:
             self.jsonPlan.dateModified = (datetime.datetime
                                           .utcnow()
@@ -64,7 +71,9 @@ class Plan(models.Model):
                                           .isoformat()
                                           + 'Z')
 
+        self.jsonPlan.url = self.get_absolute_url()
         self.name = self.jsonPlan.name
+        self.jsonPlan.serverId = self.id
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
                              .replace(tzinfo=None))
         plannerUsers = User.objects.filter(username=self.jsonPlan.creator)

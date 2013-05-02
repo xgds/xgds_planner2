@@ -33,7 +33,8 @@ app.models = app.models || {};
 
     models.Plan = Backbone.RelationalModel.extend({
         url: function(){
-            return '/xgds_planner2/plan/{name}.json'.format({name: this.get('name')});
+            //return '/xgds_planner2/plan/{uuid}/{name}.json'.format({name: this.get('name')});
+            return this.get('url');
         },
         isNew: function(){
             /*

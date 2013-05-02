@@ -47,31 +47,34 @@ def aggregate_handlebars_templates(request):
     """
     return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
 
-def plan_REST(request, name):
+def plan_REST(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
+    jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
-    plan = models.Plan.objects.get(name=name)
+    plan = models.Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
         for k,v in data.items():
             plan.jsonPlan[k] = v
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
-    return HttpResponse( json.dumps(plan.jsonPlan), content_type='applicaiton/json' )
+    return HttpResponse( json.dumps(plan.jsonPlan), content_type='application/json' )
 
 with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
     SCHEMA = schemafile.read()
 with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
     LIBRARY = libraryfile.read()
 
-def plan_editor_app(request, plan_name=None, editable=True):
+def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates()
 
-    if plan_name:
-        plan_json = models.Plan.objects.get(name=plan_name).jsonPlan
-    else:
-        plan_json = None
+    plan = models.Plan.objects.get(pk=plan_id)
+    plan_json = plan.jsonPlan
+    if not plan_json.serverId:
+        plan_json.serverId = plan.id
+    if "None" in plan_json.url:
+        plan_json.url = plan.get_absolute_url()
 
     return render_to_response(
         'xgds_planner2/planner_app.html',

@@ -763,7 +763,7 @@ def decodeWithClassName(dct, **kwargs):
 def transformBottomUp(obj, func, **kwargs):
     if isinstance(obj, (list, tuple)):
         return [transformBottomUp(v, func, **kwargs) for v in obj]
-    elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
+    elif isinstance(obj, (int, float, str, unicode, bool, long)) or obj is None:
         return obj
     else:
         return func(dict(((k, transformBottomUp(v, func, **kwargs))
@@ -773,7 +773,7 @@ def transformBottomUp(obj, func, **kwargs):
 def transformTopDown(obj, func):
     if isinstance(obj, (list, tuple)):
         return [transformTopDown(v, func) for v in obj]
-    elif isinstance(obj, (int, float, str, unicode, bool)) or obj is None:
+    elif isinstance(obj, (int, float, str, unicode, bool, long)) or obj is None:
         return obj
     else:
         return dict(((k, transformTopDown(v, func))

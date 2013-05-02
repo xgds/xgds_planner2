@@ -56,7 +56,7 @@ table.planIndex td.stats {
 {% for plan in plans %}
   <tr>
     <td class="name">{{ plan.name }}</td>
-    <td><a href="{% url 'planner2_edit' plan.name %}">EDIT</a></td>
+    <td><a href="{% url 'planner2_edit' plan.id %}">EDIT</a></td>
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
         <a href="{{ exporter.url }}">
