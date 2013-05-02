@@ -34,8 +34,8 @@ SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
 
 
 class Plan(models.Model):
-    uuid = UuidField(primary_key=True)
-    name = models.CharField(max_length=64, db_index=True, unique=True)
+    uuid = UuidField(unique=True, db_index=True)
+    name = models.CharField(max_length=256)
     dateModified = models.DateTimeField()
     creator = models.ForeignKey(User, null=True, blank=True)
 
