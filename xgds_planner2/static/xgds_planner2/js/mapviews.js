@@ -29,19 +29,6 @@ $(function(){
     var RAD2DEG = 180.0 / Math.PI;
 
     /*
-     Add an offset in meters to a coordinate pair specified as WGS84 Lat/Lon
-    */
-    function addMeters(latlng, xy){
-        var latRad = latlng.lat * DEG2RAD;
-        var latDiff = xy.y / EARTH_RADIUS_METERS;
-        var lngDiff = xy.x / ( Math.cos(latRad) * EARTH_RADIUS_METERS );
-        return {
-            lat: latlng.lat + RAD2DEG * latDiff,
-            lng: latlng.lng + RAD2DEG * lngDiff
-        }
-    }
-
-    /*
      * Spherical Mercator projectionator,
      * from: https://github.com/geocam/geocamTiePoint/blob/master/geocamTiePoint/static/geocamTiePoint/js/coords.js
      */ 
@@ -470,7 +457,7 @@ $(function(){
 
             var gex = this.options.ge.gex;
             var pmOptions = {};
-            pmOptions.name = this.model.get('sequenceLabel') || this.model.toString();
+            pmOptions.name = this.model.get('_sequenceLabel') || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = this.buildStyle();
             var point =  this.model.get('geometry').coordinates; // lon, lat
@@ -502,7 +489,7 @@ $(function(){
             var coords = this.model.get('geometry').coordinates; // lon, lat
             coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
-            this.placemark.setName( this.model.get('sequenceLabel') || this.model.toString() );
+            this.placemark.setName( this.model.get('_sequenceLabel') || this.model.toString() );
             //this.placemark.setStyle( this.getStyle() );
             this.placemark.getStyleSelector().getIconStyle().setHeading( this.model.get('headingDegrees') );
             this.placemark.getStyleSelector().getIconStyle().getIcon().setHref( this.model.get('isDirectional') ?
@@ -816,7 +803,7 @@ $(function(){
                     x: range * Math.sin(theta),
                     y: range * Math.cos(theta)
                 };
-                wedgeCoords.push( addMeters( stationLL, offsetMeters ) );
+                wedgeCoords.push( geo.addMeters( stationLL, offsetMeters ) );
                 theta = theta + dtheta;
             }
 

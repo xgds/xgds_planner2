@@ -31,6 +31,19 @@ app.models = app.models || {};
         return schema;
     }
 
+    function toJsonWithFilters(){
+        var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
+        var blacklist = ['_sequenceLabel', '_simInfo'];
+        _.each(blacklist, function(property){
+            if ( _.has(obj, property) ){
+                // exclude this from the serialized version
+                delete obj[property];
+            }
+        });
+        return obj;
+    };
+    
+
     models.Plan = Backbone.RelationalModel.extend({
         url: function(){
             //return '/xgds_planner2/plan/{uuid}/{name}.json'.format({name: this.get('name')});
@@ -101,7 +114,7 @@ app.models = app.models || {};
                 this.schema = xpjsonToBackboneFormsSchema( params, this.get('type') );
             }
             this.on('change', function(){ 
-                if ( this.changedAttributes() && ! _.isEmpty( _.omit(this.changedAttributes(), 'sequenceLabel') ) ) {
+                if ( this.changedAttributes() && ! _.isEmpty( _.omit(this.changedAttributes(), '_sequenceLabel') ) ) {
                     app.vent.trigger('change:plan'); 
                 }
             });
@@ -111,7 +124,7 @@ app.models = app.models || {};
             var repr;
             switch (this.get('type')) {
                 case "Station":
-                    repr = this.get('sequenceLabel');
+                    repr = this.get('_sequenceLabel');
                     break;
                 case 'Segment':
                     repr = "Segment";
@@ -120,14 +133,7 @@ app.models = app.models || {};
             return repr;
         },
 
-        toJSON: function(){
-            var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-            if ( _.has(obj, 'sequenceLabel') ){
-                // exclude this from the serialized version
-                delete obj.sequenceLabel;
-            }
-            return obj;
-        },
+        toJSON: toJsonWithFilters,
 
         getDuration: function(){
             var duration = 0.0;
@@ -203,7 +209,7 @@ app.models = app.models || {};
                         } else {
                             sequenceLabel = ''+stationCounter;
                         }
-                        item.set('sequenceLabel', sequenceLabel);
+                        item.set('_sequenceLabel', sequenceLabel);
                         stationCounter++;
                     }
 

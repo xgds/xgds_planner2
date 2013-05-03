@@ -50,6 +50,8 @@ import os
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
+XGDS_PLANNER_SIMULATOR = 'xgds_kn.Simulator'
+
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': (
@@ -68,12 +70,14 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/kmltree.min.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
+            'xgds_planner2/js/geo.js',
             'xgds_planner2/js/forms.js',
             'xgds_planner2/js/app.js',
             'xgds_planner2/js/models.js',
             'xgds_planner2/js/views.js',
             'xgds_planner2/js/mapviews.js',
             'xgds_planner2/js/router.js',
+            'xgds_planner2/js/simulatorDriver.js',
         ),
         'output_filenames': 'js/planner_app.js'
     },

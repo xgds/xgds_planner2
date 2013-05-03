@@ -28,6 +28,8 @@ var app = (function($, _, Backbone){
             plannerClampMode: undefined, // This enum value has to be sniffed out of the Plugin once it's loaded.
         });
 
+        this.Simulator = this.options.simulator;
+
         /*
         * Initialize the plan schema, and build easy-access indecies.
         * The plan schema is global to the planner deployment

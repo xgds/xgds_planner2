@@ -156,7 +156,7 @@ def planCreate(request):
             dbPlan.save()
 
             # redirect to plan editor on newly created plan
-            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.name]))
+            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.id]))
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
     return render(request,
