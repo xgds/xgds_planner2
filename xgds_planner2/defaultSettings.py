@@ -81,6 +81,7 @@ XGDS_PLANNER_PIPELINE_JS = {
         ),
         'output_filenames': 'js/planner_app.js'
     },
+    # must create 'simulator' entry in top-level siteSettings.py
 }
 
 XGDS_PLANNER_PIPELINE_CSS = {

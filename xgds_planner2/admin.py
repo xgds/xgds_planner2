@@ -4,4 +4,7 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-# from django.contrib import admin
+from django.contrib import admin
+import xgds_planner2.models
+
+admin.site.register(xgds_planner2.models.Plan)

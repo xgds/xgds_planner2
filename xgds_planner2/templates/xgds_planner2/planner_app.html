@@ -22,7 +22,7 @@
 {% block scripts %}
     {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
-<script type="text/javascript" src="/static/xgds_kn/js/simulator.js"></script>
+    {% compressed_js 'simulator' %}
     {% for template_name, template in templates.items %}
 <script type="text/handlebars" id="template-{{template_name}}">
 {{template|safe}}
