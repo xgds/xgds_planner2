@@ -185,7 +185,7 @@ app.views.makeExpandable = function(view, expandClass){
 };
 
 app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
-    // The list item is a simple enough DOM subtree that we'll let the view build it's own root element.
+    // The list item is a simple enough DOM subtree that we'll let the view build its own root element.
     tagName: 'li',
     initialize: function(){
         app.views.makeExpandable(this, this.options.expandClass);
@@ -262,7 +262,7 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     },
     toggleSelect: function(evt){
         evt.stopPropagation();
-    },
+    }
 });
 
 app.views.MiscItemView = app.views.SequenceListItemView.extend({
@@ -294,6 +294,16 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     events: {
         "click .edit-meta": function(evt){ app.vent.trigger('showMeta', this.model); },
         "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
+	"sortstop .command-list": function(evt,ui){
+	    var commandOrder = this.$el.find('.command-list').sortable("toArray",{"attribute":"data-item-id"});
+	    var commandModels = commandOrder.map(function(id){
+		return this.model.get('sequence').filter(function(child){
+		    return child.get('id') == id
+		})[0]
+	    }, this);
+	    this.model.get('sequence').models = commandModels;
+	    app.vent.trigger('change:plan');
+	}
     },
     initialize: function(){
         app.reqres.addHandler('selectedCommands', this.getSelectedCommands, this);
@@ -323,6 +333,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //var container = this.$el.find('.sequence-list');
         //container.prepend(this.head.el);
         //container.append(this.foot.el);
+	this.$el.find('.command-list').sortable();
     },
 });
 

@@ -58,6 +58,7 @@ XGDS_PLANNER_PIPELINE_JS = {
 
             'external/js/jquery-1.9.0.min.js',
             'external/js/jquery-migrate-1.1.1.min.js',
+            'external/js/jquery-ui.js',
             'external/js/lodash.js',
             'external/js/handlebars.js',
             'external/js/backbone.js',
