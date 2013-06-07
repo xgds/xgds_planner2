@@ -342,7 +342,6 @@ app.models = app.models || {};
             this.schema = schema;
             */
             this.on('change', function(){ app.vent.trigger('change:plan'); } );
-	    this.set('id',  _.uniqueId('command_'));
         },
 
         hasParam: function( paramName ){

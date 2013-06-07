@@ -202,7 +202,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     },
     attributes: function(){
         return {
-            'data-item-id': this.model.get('id'),
+            'data-item-id': this.model.cid,
             'class': this.model.get('type').toLowerCase() + '-sequence-item',
         };
     },
@@ -296,9 +296,9 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
 	"sortstop .command-list": function(evt,ui){
 	    var commandOrder = this.$el.find('.command-list').sortable("toArray",{"attribute":"data-item-id"});
-	    var commandModels = commandOrder.map(function(id){
+	    var commandModels = commandOrder.map(function(cid){
 		return this.model.get('sequence').filter(function(child){
-		    return child.get('id') == id
+		    return child.cid == cid
 		})[0]
 	    }, this);
 	    this.model.get('sequence').models = commandModels;
