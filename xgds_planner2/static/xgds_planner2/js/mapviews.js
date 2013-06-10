@@ -219,6 +219,22 @@ $(function(){
 
             this.collection.resequence();  // Sometimes it doesn't resequence itself on load
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
+
+	    // move to bounding box defined in plan, probably wrong place to do this
+	    var site = app.currentPlan.get("site");
+	    if (site != undefined)
+		var bbox = site.bbox;
+	    if (bbox != undefined) {
+		var aspect = $("#map").width() / $("#map").height();
+		var folder = ge.gex.dom.addFolder([
+		    ge.gex.dom.buildPointPlacemark([bbox[0],bbox[1]]),
+		    ge.gex.dom.buildPointPlacemark([bbox[2],bbox[3]])
+		]);
+		var bounds = ge.gex.dom.computeBounds(folder);
+		ge.gex.view.setToBoundsView(bounds, {aspectRatio: aspect,
+						     scaleRange: 1.2});
+		ge.gex.dom.removeObject(folder);
+	    }
         },
 
         clearKmlFolder: function(folder){
