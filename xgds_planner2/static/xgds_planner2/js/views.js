@@ -443,6 +443,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
 app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
     template: '#template-layer-tree',
     onRender: function(){
+	app.vent.trigger("layerView:onRender");
         var tree = kmltree({
             url: app.options.layerFeedUrl,
             gex: ge.gex,
@@ -473,6 +474,19 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 
     initialize: function(){
         this.on('tabSelected', this.setTab);
+	// load layer tree ahead of time to load layers into map
+	app.tree = null;
+	app.vent.on('earth:loaded', function() {
+	    app.tree = kmltree({
+		url: app.options.layerFeedUrl,
+		gex: ge.gex,
+		mapElement: [],
+		element: [],
+		restoreState: true
+	    });
+	    app.tree.load();
+	});
+	app.vent.on('layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
     },
 
     onRender: function(){
@@ -500,7 +514,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         var viewClass = this.viewMap[tabId];
         if ( ! viewClass ) { return undefined; }
         var view = new viewClass({
-            model: app.currentPlan,
+	    model: app.currentPlan,
         });
         this.tabContent.show(view);
     },

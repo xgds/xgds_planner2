@@ -174,6 +174,7 @@ $(function(){
             this.trigger('earth:init');
             this.drawPlan();
             app.vent.trigger('clearSaveStatus');
+	    app.vent.trigger('earth:loaded');
         },
 
         earthFailure: function(){
