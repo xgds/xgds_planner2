@@ -235,6 +235,11 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     itemViewOptions:{
         expandClass: 'col1',
     },
+    initialize: function() {
+	// re-render on plan save because for some reason, the collection
+	// is re-rendered, reversed, on save.
+	this.listenTo(app.currentPlan, "sync", this.render);
+    }
 });
 
 app.views.CommandItemView = app.views.SequenceListItemView.extend({

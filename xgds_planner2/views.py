@@ -83,7 +83,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'settings': settings,
             'plan_schema_json': SCHEMA,
             'plan_library_json': LIBRARY,
-            'plan_json': plan_json,
+            'plan_json': json.dumps(plan_json),
             'editable': editable,
         }),
         # context_instance=RequestContext
