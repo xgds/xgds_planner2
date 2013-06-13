@@ -252,6 +252,7 @@ app.models = app.models || {};
             } else {
                 this.add(stationModel);
             }
+	    app.vent.trigger("station:change");
         },
         
         /*
@@ -263,6 +264,7 @@ app.models = app.models || {};
             if ( segmentAfter.get('type') != "Segment" ) { throw "You can only insert stations before a Segment." }
             var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone the stationAfter's properties.
             this.add([segmentBefore, stationModel], {at: idx} );
+	    app.vent.trigger("station:change");
         },
 
         removeStation: function(stationModel){
@@ -275,6 +277,7 @@ app.models = app.models || {};
                 segment = this.at(idx-1);
             }
             this.remove([stationModel, segment]);
+	    app.vent.trigger("station:change");
         },
     });
 

@@ -239,6 +239,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 	// re-render on plan save because for some reason, the collection
 	// is re-rendered, reversed, on save.
 	this.listenTo(app.currentPlan, "sync", this.render);
+	app.vent.on("station:change", this.render);
     }
 });
 
