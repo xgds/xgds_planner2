@@ -37,26 +37,6 @@ var app = (function($, _, Backbone){
         this.planSchema = JSON.parse( $('#plan_schema_json').html() );
         this.planLibrary = JSON.parse( $('#plan_library_json').html() );
 
-	// add notes field to all command specs
-	_.each(this.planSchema.commandSpecs, function(command) {
-	    command.params.push({
-		choices: null,
-		default: null,
-		editable: true,
-		id: "notes",
-		maxLength: null,
-		maximum: null,
-		minimum: null,
-		name: null,
-		notes: null,
-		required: false,
-		type: "ParamSpec",
-		valueType: "string",
-		visible: true,
-		widget: "textarea"
-	    });
-	});
-
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
         //this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );

@@ -397,13 +397,15 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
 
 app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
-    initialize: function(){
+/*    initialize: function(){
         var readonly = this.options.readonly;
 
         // Construct a schema compatible with backbone-forms
         // https://github.com/powmedia/backbone-forms#schema-definition
-        var schema = this.options.schema = {};
-        var commandSpec = app.commandSpecs[this.model.get('type')];
+        this.options.schema = this.model.schema;
+	console.log(this.model.schema);
+	console.log(this.options.schema);
+        /*var commandSpec = app.commandSpecs[this.model.get('type')];
         _.each(commandSpec.params, function(param){
             var field = {type: app.models.paramTypeHash[param.valueType]};
             schema[param.id] = field;
@@ -411,6 +413,7 @@ app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
 
         app.views.PropertiesForm.prototype.initialize.call(this, this.options);
     },
+*/
 });
 
 app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({

@@ -12,11 +12,20 @@ app.models = app.models || {};
         'targetId': 'Select',
     };
 
+    models.widgetTypeHash = {
+	'text': 'Text',
+	'number': 'Number',
+	'checkbox': 'Checkbox',
+	'datetime': 'DateTime',
+	'select': 'Select',
+	'textarea': 'TextArea'
+    };
+
     function xpjsonToBackboneFormsSchema( xpjsonSchema, modelType ){
         // name and notes are hard-coded fields from xpjson spec
         var schema = {
-            name: 'Text',
-            notes: 'TextArea'
+            name: {type: 'Text'},
+            notes: {type: 'TextArea'}
         };
 
         if ( modelType == 'Station' ) {
@@ -25,7 +34,17 @@ app.models = app.models || {};
         }
 
         _.each(xpjsonSchema, function(param){
-            schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+	    if (!param.widget) var type = app.models.paramTypeHash[param.valueType];
+	    else var type = app.models.widgetTypeHash[param.widget];
+	    if (param.hasOwnProperty('choices') &&
+		(type != 'Select' || type != 'Checkbox'))
+		type == 'Select';
+	    if (type == 'Select') {
+		var options = _.map(param.choices, function(choice) {
+		    return choice[0];
+		});
+		schema[param.id] = {type: type, options: options};
+	    } else schema[param.id] = {type: type};
         });
 
         return schema;
@@ -343,12 +362,8 @@ app.models = app.models || {};
         initialize: function(){
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
-            /*var schema = {};
-            var commandSpec = app.commandSpecs[this.get('type')];
-            _.each(commandSpec.params, function(param){
-                schema[param.id] = paramTypeHash[param.valueType];
-            });
-            this.schema = schema;*/
+            var params = app.commandSpecs[this.get('type')].params;
+            this.schema = xpjsonToBackboneFormsSchema(params, 'Command');
             this.on('change', function(){ app.vent.trigger('change:plan'); } );
         },
 
