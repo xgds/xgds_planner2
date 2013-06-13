@@ -130,7 +130,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     showCommand: function(itemModel){
         this.col3.close();
-        var view = new app.views.CommandPropertiesFormView( {model: itemModel, readonly: app.options.readonly} );
+        var view = new app.views.PropertiesForm( {model: itemModel, readonly: app.options.readonly} );
         this.col3.show(view);
     },
 
@@ -393,27 +393,6 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         this.$el.on('change', _.bind(this.commit, this));
     },
 
-});
-
-
-app.views.CommandPropertiesFormView = app.views.PropertiesForm.extend({
-/*    initialize: function(){
-        var readonly = this.options.readonly;
-
-        // Construct a schema compatible with backbone-forms
-        // https://github.com/powmedia/backbone-forms#schema-definition
-        this.options.schema = this.model.schema;
-	console.log(this.model.schema);
-	console.log(this.options.schema);
-        /*var commandSpec = app.commandSpecs[this.model.get('type')];
-        _.each(commandSpec.params, function(param){
-            var field = {type: app.models.paramTypeHash[param.valueType]};
-            schema[param.id] = field;
-        });
-
-        app.views.PropertiesForm.prototype.initialize.call(this, this.options);
-    },
-*/
 });
 
 app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({

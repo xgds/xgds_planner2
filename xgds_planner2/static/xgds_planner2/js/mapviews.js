@@ -145,6 +145,7 @@ $(function(){
         },
 
        render: function(){
+	   console.log("re-rendering map");
            google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
         },
 
@@ -244,6 +245,7 @@ $(function(){
         },
 
         render: function(){
+	    console.log("re-rending kml");
             _.each( this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
@@ -376,7 +378,7 @@ $(function(){
                     this.ge.gex.edit.makeDraggable(station, {
                         bounce: false,
                         dragCallback: function(){
-                            this.view.model.trigger('dragUpdate', this);
+                            //this.view.model.trigger('dragUpdate', this);
                         },
                         dropCallback: function(){
                             // "this" is the placemark GE object.
@@ -500,6 +502,7 @@ $(function(){
         },
 
         redraw: function(){
+	    console.log("redrawing point");
             // redraw code. To be invoked when relevant model attributes change.
             var kmlPoint = this.placemark.getGeometry();
 
@@ -668,6 +671,7 @@ $(function(){
         },
 
         render: function(){
+	    console.log("re-rendering segment");
             var coords = _.map( [this.fromStation, this.toStation], function(station){
                 var geom = station.get('geometry').coordinates;
                 return [geom[1], geom[0]]; // Lon, Lat

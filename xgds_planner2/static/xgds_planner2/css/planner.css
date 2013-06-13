@@ -38,19 +38,19 @@ div[id^="col"] > li:hover {
 }
 
 .station-sequence-item {
-    background-color: #a3a8ff;
+    background-color: #cccccc;
 }
 
 .segment-sequence-item {
-    background-color: #ff525b;
+    background-color: #ffffff;
 }
 
 .head-sequence-item {
-    background-color: #ffbdff;
+    background-color: #cccccc;
 }
 
 .foot-sequence-item {
-    background-color: #bdffc1;
+    background-color: #cccccc;
 }
 
 .scrolling_column {
