@@ -358,7 +358,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
         // Construct a schema compatible with backbone-forms
         // https://github.com/powmedia/backbone-forms#schema-definition
-        this.options.schema = this.options.schema || _.extend({}, this.options.model.schema);
+        this.options.schema = this.options.schema || this.options.model.schema;
         var schema = this.options.schema;
 
         _.each(schema, function(field, key){

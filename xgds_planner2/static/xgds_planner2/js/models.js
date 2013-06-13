@@ -98,20 +98,29 @@ app.models = app.models || {};
                 },
             },
         ],
-        schema: {
-            id: 'Text',
-            tolerance: 'Number',
-            headingDegrees: 'Number',
-            headingToleranceDegrees: 'Number',
+
+	schema: {
+	    id: 'Text',
+	    tolerance: 'Number',
+	    headingDegrees: 'Number',
+	    headingToleranceDegrees: 'Number',
         },
 
         initialize: function(){
+	    // javascript is a weird beast and requires re-definition of this variable,
+	    // or else stuff is added to it
+	    this.schema = {
+		id: 'Text',
+		tolerance: 'Number',
+		headingDegrees: 'Number',
+		headingToleranceDegrees: 'Number',
+            };
             var params = {
                 'Station': app.planSchema.stationParams,
                 'Segment': app.planSchema.segmentParams,
             }[this.get('type')];
             if (params && ! _.isEmpty(params)) {
-                this.schema = xpjsonToBackboneFormsSchema( params, this.get('type') );
+                _.extend(this.schema, xpjsonToBackboneFormsSchema( params, this.get('type') ));
             }
             this.on('change', function(){ 
                 if ( this.changedAttributes() && ! _.isEmpty( _.omit(this.changedAttributes(), '_sequenceLabel') ) ) {
