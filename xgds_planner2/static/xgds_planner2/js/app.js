@@ -57,40 +57,6 @@ var app = (function($, _, Backbone){
 	    });
 	});
 
-	// add notes field to segment and station params
-	this.planSchema.segmentParams.push({
-		choices: null,
-		default: null,
-		editable: true,
-		id: "notes",
-		maxLength: null,
-		maximum: null,
-		minimum: null,
-		name: null,
-		notes: null,
-		required: false,
-		type: "ParamSpec",
-		valueType: "string",
-		visible: true,
-		widget: "textarea"
-	});
-	this.planSchema.stationParams.push({
-		choices: null,
-		default: null,
-		editable: true,
-		id: "notes",
-		maxLength: null,
-		maximum: null,
-		minimum: null,
-		name: null,
-		notes: null,
-		required: false,
-		type: "ParamSpec",
-		valueType: "string",
-		visible: true,
-		widget: "textarea"
-	});
-
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
         //this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );

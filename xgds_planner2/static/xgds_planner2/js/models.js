@@ -118,10 +118,8 @@ app.models = app.models || {};
             var params = {
                 'Station': app.planSchema.stationParams,
                 'Segment': app.planSchema.segmentParams,
-            }[this.get('type')];
-            if (params && ! _.isEmpty(params)) {
-                _.extend(this.schema, xpjsonToBackboneFormsSchema( params, this.get('type') ));
-            }
+            }[this.get('type')] || {};
+            _.extend(this.schema, xpjsonToBackboneFormsSchema( params, this.get('type') ));
             this.on('change', function(){ 
                 if ( this.changedAttributes() && ! _.isEmpty( _.omit(this.changedAttributes(), '_sequenceLabel') ) ) {
                     app.vent.trigger('change:plan'); 
@@ -343,16 +341,14 @@ app.models = app.models || {};
     
     models.Command = Backbone.RelationalModel.extend({
         initialize: function(){
-            /*
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
-            var schema = {};
+            /*var schema = {};
             var commandSpec = app.commandSpecs[this.get('type')];
             _.each(commandSpec.params, function(param){
                 schema[param.id] = paramTypeHash[param.valueType];
             });
-            this.schema = schema;
-            */
+            this.schema = schema;*/
             this.on('change', function(){ app.vent.trigger('change:plan'); } );
         },
 
