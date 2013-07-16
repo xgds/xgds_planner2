@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% load url from future %}
+{% load xgds_planner2_extras %}
+
+{% block cssExtras %}
+{{ block.super }}
+<style type="text/css">
+span.label {
+  width: 20%;
+  min-width: 140px;
+  float: left;
+  text-align: right;
+  padding-right: 10px;
+}
+span.label-heavy {
+  font-weight: bold;
+}
+span.data {
+  text-align: left;
+}
+div.section-title {
+  text-align: center;
+  font-weight: bold;
+  max-width: 900px;
+}
+div.entry {
+  padding-bottom: 10px;
+  padding-top: 10px;
+  max-width: 900px;
+}
+textarea {
+  width: 60%;
+}
+</style>
+{% endblock cssExtras %}
+
+{% block content %}
+{{ block.super }}
+<div class="section-title">Plan Details</div>
+<div class="entry"><span class="label">Name:</span><span class="data">{{ plan_json.name }}</span></div>
+<div class="entry"><span class="label">Creator:</span><span class="data">{{ plan_json.creator }}</span></div>
+<div class="entry"><span class="label">Site:</span><span class="data">{{ plan_json.site.name }}</span></div>
+<div class="entry"><span class="label">Notes:</span><span class="data"><textarea>{{ plan_json.notes|default:"" }}</textarea></span></div>
+{% for param in plan_schema.planParams %}
+<div class="entry"><span class="label">{% if param.name %}{{ param.name }}{% else %}param.id{% endif %}:</span><span>{% if param.widget %}<{{ param.widget }}>{% nest "{{ param.id }}" in "{{ plan_json.item }}" at item %}</{{ param.widget }}>{% else %}{% endif %}</span></div>
+{% endfor %}
+<div class="section-title">Sequence</div>
+{% for item in plan_json.sequence %}
+<div class="entry"><span class="label label-heavy">{{ item.type }}:</span><span class="data">{{ item.id }}</span></div>
+{% if item.type == "Station" %}<div class="entry"><span class="label">Location:</span><span class="data">{{ item.geometry.coordinates.0}}, {{item.geometry.coordinates.1}}</span></div>{% endif %}
+{% if item.sequence|length %}<div class="entry"><span class="label">Commands:</span><span class="data">{% for command in item.sequence %}{{ command.name }} {% endfor %}</span></div>{% endif %}
+{% endfor %}
+{% endblock content %}
+
+{% comment %}
+Right now this template simply lists the commands at every station/segment.
+This is not the intended end state of that section.
+{% endcomment %}

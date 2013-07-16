@@ -66,6 +66,23 @@ with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as sc
 with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
     LIBRARY = libraryfile.read()
 
+def plan_detail_doc(request, plan_id=None):
+    plan = models.Plan.objects.get(pk=plan_id)
+    plan_json = plan.jsonPlan
+    if not plan_json.serverId:
+        plan_json.serverId = plan.id
+    if "None" in plan_json.url:
+        plan_json.url = plan.get_absolute_url()
+
+    return render_to_response(
+        'xgds_planner2/planDetailDoc.html',
+        RequestContext(request, {
+                'plan_json': plan_json,
+                'plan_schema': json.loads(SCHEMA),
+                'plan_library': json.loads(LIBRARY),
+        }),
+    )
+
 def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates()
 

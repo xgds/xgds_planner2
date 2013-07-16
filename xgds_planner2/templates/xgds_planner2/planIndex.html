@@ -52,6 +52,7 @@ table.planIndex td.stats {
     <th class="right">#Stn</th>
     <th class="right">#Cmd</th>
     <th>#Cmd by type</th>
+    <th class="right">Detail Doc</th>
   </tr>
 {% for plan in plans %}
   <tr>
@@ -68,6 +69,7 @@ table.planIndex td.stats {
     <td class="stats right">{{ plan.numStations }}</td>
     <td class="stats right">{{ plan.numCommands }}</td>
     <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
+    <td><a href="{% url 'planner2_doc' plan.id %}">Detail Doc</a></td>
   </tr>
 {% endfor %}
 </table>
