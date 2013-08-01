@@ -20,6 +20,58 @@ var app = (function($, _, Backbone){
         'tabs': '#tabs',
     });
 
+    app.module("Actions", function(options) {
+	this.addInitializer(function(options) {
+	    this.undoStack = new Array();
+	    this.redoStack = new Array();
+	    this.currentState = undefined;
+	});
+
+	this.setInitial = function () {
+	    if (this.currentState == undefined) {
+		this.currentState = app.currentPlan.toJSON();
+	    }
+	}
+
+	this.action = function() {
+	    if (this.currentState == undefined) return;
+	    var plan = app.currentPlan.toJSON();
+	    var planString = JSON.stringify(plan);
+	    if (JSON.stringify(this.currentState) == planString) {
+		console.log("plan unchanged from current state");
+	    } else {
+		this.undoStack.push(this.currentState);
+		this.currentState = plan;
+		this.redoStack = new Array();
+		console.log("pushing to undo stack");
+	    }
+	}
+
+	this.undo = function() {
+	    var plan = this.undoStack.pop();
+	    if (plan == undefined) {
+		console.log("No undo information");
+	    } else {
+		this.redoStack.push(this.currentState);
+		this.currentState = plan;
+		app.updatePlan(plan);
+		console.log("pushing to redo stack");
+	    }
+	}
+
+	this.redo = function() {
+	    var plan = this.redoStack.pop();
+	    if (plan == undefined) {
+		console.log("No redo information");
+	    } else {
+		this.undoStack.push(this.currentState);
+		this.currentState = plan;
+		app.updatePlan(plan);
+		console.log("pushing to undo stack");
+	    }
+	}
+    });
+
     app.addInitializer(function(options){
 
         this.options = options = _.defaults(options || {}, {
@@ -51,9 +103,19 @@ var app = (function($, _, Backbone){
             this.colors[commandSpec.id] = commandSpec.color;
         }, this );
 
+	this.updatePlan = function(planJSON) {
+	    console.log("Updating plan");
+	    app.currentPlan.set(planJSON);
+	    app.simulatePlan();
+	    app.map.planView.render();
+	    app.tabs.currentView.render();
+	}
+
         var planJson = JSON.parse( $('#plan_json').html() );
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);
+	    app.simulatePlan(); // do this before the change:plan event is mapped
+	    app.Actions.setInitial();
         }
 
         app.selectedViews = [];  // This array holds the views currently selected by checkboxes
@@ -84,6 +146,12 @@ var app = (function($, _, Backbone){
 
     app.vent.on('all', function(eventname, args){
         console.log("event on app.vent: " + eventname, args);
+	if (eventname == "change:plan") {
+	    console.log("change plan event, running simulate and action if plan is loaded");
+	    if (app.currentPlan == undefined) return;
+	    app.simulatePlan();
+	    app.Actions.action();
+	}
     });
 
     app.addInitializer( _.bind(Backbone.history.start, Backbone.history) );

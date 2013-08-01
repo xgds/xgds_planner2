@@ -6,8 +6,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-navigate': function(){ app.vent.trigger('mapmode', 'navigate'); },
         'click #btn-reposition': function(){ app.vent.trigger('mapmode', 'reposition'); },
         'click #btn-addStations': function(){ app.vent.trigger('mapmode', 'addStations'); },
-        'click #btn-save': function(){ app.currentPlan.save() },
+        'click #btn-save': function(){ app.simulatePlan(); app.currentPlan.save() },
         'click #btn-delete': 'deleteSelectedCommands',
+	'click #btn-undo': function(){ app.Actions.undo(); },
+	'click #btn-redo': function(){ app.Actions.redo(); }
     },
     
     initialize: function(){
@@ -223,7 +225,11 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     },
     serializeData: function(){
         var data =  app.views.SequenceListItemView.prototype.serializeData.call(this, arguments);
-        data.timing = app.util.minutesToHMS(this.model.getCumulativeDuration());
+	if (this.model.get('type') == "Station") {
+            data.timing = app.util.minutesToHMS(this.model.getCumulativeDuration());
+	} else {
+	    data.timing = "+" + app.util.minutesToHMS(this.model.getDuration());
+	}
         return data;
     },
 });
@@ -411,6 +417,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
             var target = $(evt.target);
             var preset = app.commandPresetsByName[target.data('preset-name')];
             station.appendCommandByPreset( preset );
+	    app.vent.trigger("change:plan");
         },
     },
 

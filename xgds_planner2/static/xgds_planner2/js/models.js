@@ -44,7 +44,12 @@ app.models = app.models || {};
 		    return choice[0];
 		});
 		schema[param.id] = {type: type, options: options};
-	    } else schema[param.id] = {type: type};
+	    } else {
+		schema[param.id] = {type: type};
+	    }
+	    if (param.name != null) {
+		schema[param.id]["title"] = param.name;
+	    }
         });
 
         return schema;
@@ -120,9 +125,9 @@ app.models = app.models || {};
 
 	schema: {
 	    id: 'Text',
-	    tolerance: 'Number',
-	    headingDegrees: 'Number',
-	    headingToleranceDegrees: 'Number',
+	    //tolerance: 'Number',
+	    //headingDegrees: 'Number',
+	    //headingToleranceDegrees: 'Number',
         },
 
         initialize: function(){
@@ -130,9 +135,9 @@ app.models = app.models || {};
 	    // or else stuff is added to it
 	    this.schema = {
 		id: 'Text',
-		tolerance: 'Number',
-		headingDegrees: 'Number',
-		headingToleranceDegrees: 'Number',
+		//tolerance: 'Number',
+		//headingDegrees: 'Number',
+		//headingToleranceDegrees: 'Number',
             };
             var params = {
                 'Station': app.planSchema.stationParams,
@@ -162,7 +167,7 @@ app.models = app.models || {};
         toJSON: toJsonWithFilters,
 
         getDuration: function(){
-            var duration = 0.0;
+            /*var duration = 0.0;
             if  ( this.get('speed') ){
                 // TODO: calculate distance and traverse time
             }
@@ -171,11 +176,15 @@ app.models = app.models || {};
                     duration = duration + command.get('duration');
                 }
             });
-            return duration;
+            return duration;*/
+	    // actually use the simulator
+	    if (this.get('_simInfo') == undefined) app.simulatePlan();
+	    if (this.get('_simInfo') == undefined) return undefined;
+	    return this.get('_simInfo').deltaTimeSeconds/60;
         },
 
         getCumulativeDuration: function(collection){
-            // return the cumulative duration of all models in the collection up to and including this one.
+            /*// return the cumulative duration of all models in the collection up to and including this one.
             if ( collection === undefined ) { collection = app.currentPlan.get('sequence'); }
             var arr = collection.models;
             var idx = _.indexOf( arr, this );
@@ -186,7 +195,10 @@ app.models = app.models || {};
             _.each( _.first(arr, idx+1), function(model) {
                 duration = duration + model.getDuration();
             } );
-            return duration;
+            return duration;*/
+	    if (this.get('_simInfo') == undefined) app.simulatePlan();
+	    if (this.get('_simInfo') == undefined) return undefined;
+	    return (this.get('_simInfo').elapsedTimeSeconds/60) + this.getDuration();
         }, 
 
         appendCommandByPreset: function(preset) {
@@ -310,16 +322,22 @@ app.models = app.models || {};
                 "coordinates": [],
                 "type": "Point"
             },
-            "headingDegrees": 0,
-            "headingToleranceDegrees": 9.740282517223996,
+            //"headingDegrees": 0,
+            //"headingToleranceDegrees": 9.740282517223996,
             "id": "",
-            "isDirectional": false,
+            //"isDirectional": false,
             "sequence": [],
-            "tolerance": 1,
+            //"tolerance": 1,
             "type": "Station"
         };
+	_.each(app.planSchema.stationParams, function(param) {
+	    proto[param["id"]] = param["default"];
+	});
         if (stationToClone) { proto = stationToClone.toJSON(); } 
         _.defaults(options, proto);
+
+	
+	    
 
         if (options.coordinates) {
             options.geometry.coordinates = options.coordinates;
@@ -338,15 +356,18 @@ app.models = app.models || {};
     models.segmentFactory = function(options, segmentToClone){
         if ( _.isUndefined(options) ) { options = {}; }
         var proto = {
-            "hintedSpeed": 1,
+            //"hintedSpeed": 1,
             "id": "",
             "sequence": [],
             "type": "Segment"
         };
-        if (segmentToClone) { 
+	_.each(app.planSchema.segmentParams, function(param) {
+	    proto[param["id"]] = param["default"];
+	});
+	if (segmentToClone) { 
             proto = segmentToClone.toJSON(); 
             delete proto.id;
-        }
+	}
         _.defaults(options, proto);
         
         if ( !options.id ){
