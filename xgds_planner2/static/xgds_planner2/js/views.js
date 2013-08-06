@@ -9,7 +9,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-save': function(){ app.simulatePlan(); app.currentPlan.save() },
         'click #btn-delete': 'deleteSelectedCommands',
 	'click #btn-undo': function(){ app.Actions.undo(); },
-	'click #btn-redo': function(){ app.Actions.redo(); }
+	'click #btn-redo': function(){ app.Actions.redo(); },
+	'click #btn-reverse': 'reverseStations'
     },
     
     initialize: function(){
@@ -34,6 +35,13 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 	    this.disableRedo();
 	else
 	    this.enableRedo();
+    },
+
+    reverseStations: function() {
+	app.vent.trigger("plan:reversing");
+	app.currentPlan.get('sequence').models.reverse();
+	app.currentPlan.get('sequence').resequence();
+	app.vent.trigger("plan:reverse");
     },
 
     disableUndo: function() {
@@ -277,6 +285,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 	// is re-rendered, reversed, on save.
 	this.listenTo(app.currentPlan, "sync", this.render);
 	app.vent.on("station:change", this.render);
+	app.vent.on("plan:reverse", this.render);
     }
 });
 

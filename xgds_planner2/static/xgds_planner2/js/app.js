@@ -25,9 +25,18 @@ var app = (function($, _, Backbone){
 	    this.undoStack = new Array();
 	    this.redoStack = new Array();
 	    this.currentState = undefined;
+	    this.enabled = true;
 	    app.vent.trigger('undoEmpty');
 	    app.vent.trigger('redoEmpty');
 	});
+
+	this.disable = function() {
+	    this.enabled = false;
+	};
+
+	this.enable = function() {
+	    this.enabled = true;
+	}
 
 	this.undoEmpty = function() {
 	    return this.undoStack.length == 0;
@@ -44,6 +53,7 @@ var app = (function($, _, Backbone){
 	};
 
 	this.action = function() {
+	    if (!this.enabled) return;
 	    if (this.currentState == undefined) return;
 	    var plan = app.currentPlan.toJSON();
 	    var planString = JSON.stringify(plan);
@@ -60,6 +70,7 @@ var app = (function($, _, Backbone){
 	}
 
 	this.undo = function() {
+	    if (!this.enabled) return;
 	    var plan = this.undoStack.pop();
 	    if (plan == undefined) {
 		app.vent.trigger('undoEmpty');
@@ -74,6 +85,7 @@ var app = (function($, _, Backbone){
 	}
 
 	this.redo = function() {
+	    if (!this.enabled) return;
 	    var plan = this.redoStack.pop();
 	    if (plan == undefined) {
 		app.vent.trigger('redoEmpty');
@@ -172,6 +184,11 @@ var app = (function($, _, Backbone){
 	} else if (eventname == "tab:change") {
 	    app.currentTab = args;
 	    console.log("new tab: "+app.currentTab+", should be " +args);
+	} else if (eventname == "plan:reversing") {
+	    app.Actions.disable();
+	} else if (eventname == "plan:reverse") {
+	    app.Actions.enable();
+	    app.Actions.action();
 	}
     });
 
