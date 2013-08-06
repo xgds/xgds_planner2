@@ -509,7 +509,10 @@ $(function(){
             var coords = this.model.get('geometry').coordinates; // lon, lat
             coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
-            this.placemark.setName( this.model.get('_sequenceLabel') || this.model.toString() );
+	    var name = ""+this.model.get('_sequenceLabel');
+	    if (!_.isUndefined(this.model.get('name')))
+		name += " "+this.model.get('name');
+            this.placemark.setName(name || this.model.toString() );
             //this.placemark.setStyle( this.getStyle() );
             this.placemark.getStyleSelector().getIconStyle().setHeading( this.model.get('headingDegrees') );
             this.placemark.getStyleSelector().getIconStyle().getIcon().setHref( this.model.get('isDirectional') ?

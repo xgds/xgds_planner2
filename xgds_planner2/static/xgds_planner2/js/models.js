@@ -100,7 +100,7 @@ app.models = app.models || {};
             var params = app.planSchema.planParams;
             this.schema = xpjsonToBackboneFormsSchema( params, 'Plan' );
             this.on('change', function(){ app.vent.trigger('change:plan'); } );
-        },
+        }
     });
 
     /*

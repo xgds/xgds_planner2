@@ -125,6 +125,7 @@ var app = (function($, _, Backbone){
 	    app.simulatePlan();
 	    if (!_.isUndefined(app.map.planView))
 		app.map.planView.render();
+	    app.vent.trigger("newPlan");
 	    app.tabs.currentView.render();
 	}
 
@@ -168,6 +169,9 @@ var app = (function($, _, Backbone){
 	    if (app.currentPlan == undefined) return;
 	    app.simulatePlan();
 	    app.Actions.action();
+	} else if (eventname == "tab:change") {
+	    app.currentTab = args;
+	    console.log("new tab: "+app.currentTab+", should be " +args);
 	}
     });
 

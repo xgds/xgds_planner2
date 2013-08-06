@@ -519,7 +519,10 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         if ( ! this.options.initialTab ) {
             this.options.initialTab = "meta";
         }
-        this.trigger('tabSelected', this.options.initialTab); 
+	if (!_.isUndefined(app.currentTab))
+	    this.trigger('tabSelected', app.currentTab);
+	else
+            this.trigger('tabSelected', this.options.initialTab); 
     },
 
     clickSelectTab: function(event){
@@ -543,6 +546,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 	    model: app.currentPlan,
         });
         this.tabContent.show(view);
+	app.vent.trigger("tab:change",tabId);
     },
     
 });
