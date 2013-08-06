@@ -19,6 +19,37 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo( app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo( app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
         this.listenTo( app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
+	this.listenTo( app.vent, 'undoEmpty', this.disableUndo);
+	this.listenTo( app.vent, 'redoEmpty', this.disableRedo);
+	this.listenTo( app.vent, 'undoNotEmpty', this.enableUndo);
+	this.listenTo( app.vent, 'redoNotEmpty', this.enableRedo);
+    },
+
+    onRender: function() {
+	if (app.Actions.undoEmpty())
+	    this.disableUndo();
+	else
+	    this.enableUndo();
+	if (app.Actions.redoEmpty())
+	    this.disableRedo();
+	else
+	    this.enableRedo();
+    },
+
+    disableUndo: function() {
+	this.$("#btn-undo").attr("disabled", "disabled");
+    },
+
+    disableRedo: function() {
+	this.$("#btn-redo").attr("disabled", "disabled");
+    },
+
+    enableUndo: function() {
+	this.$("#btn-undo").removeAttr("disabled");
+    },
+
+    enableRedo: function() {
+	this.$("#btn-redo").removeAttr("disabled");
     },
 
     ensureToggle: function(modeName) {

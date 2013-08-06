@@ -25,49 +25,65 @@ var app = (function($, _, Backbone){
 	    this.undoStack = new Array();
 	    this.redoStack = new Array();
 	    this.currentState = undefined;
+	    app.vent.trigger('undoEmpty');
+	    app.vent.trigger('redoEmpty');
 	});
+
+	this.undoEmpty = function() {
+	    return this.undoStack.length == 0;
+	};
+
+	this.redoEmpty = function() {
+	    return this.redoStack.length == 0;
+	};
 
 	this.setInitial = function () {
 	    if (this.currentState == undefined) {
 		this.currentState = app.currentPlan.toJSON();
 	    }
-	}
+	};
 
 	this.action = function() {
 	    if (this.currentState == undefined) return;
 	    var plan = app.currentPlan.toJSON();
 	    var planString = JSON.stringify(plan);
 	    if (JSON.stringify(this.currentState) == planString) {
-		console.log("plan unchanged from current state");
+		// plan unchanged from current state
+		return;
 	    } else {
 		this.undoStack.push(this.currentState);
 		this.currentState = plan;
 		this.redoStack = new Array();
-		console.log("pushing to undo stack");
+		app.vent.trigger('undoNotEmpty');
+		app.vent.trigger('redoEmpty');
 	    }
 	}
 
 	this.undo = function() {
 	    var plan = this.undoStack.pop();
 	    if (plan == undefined) {
-		console.log("No undo information");
+		app.vent.trigger('undoEmpty');
 	    } else {
 		this.redoStack.push(this.currentState);
 		this.currentState = plan;
 		app.updatePlan(plan);
-		console.log("pushing to redo stack");
+		app.vent.trigger('redoNotEmpty');
+		if (this.undoStack.length == 0)
+		    app.vent.trigger('undoEmpty');
 	    }
 	}
 
 	this.redo = function() {
 	    var plan = this.redoStack.pop();
 	    if (plan == undefined) {
-		console.log("No redo information");
+		app.vent.trigger('redoEmpty');
 	    } else {
 		this.undoStack.push(this.currentState);
 		this.currentState = plan;
 		app.updatePlan(plan);
-		console.log("pushing to undo stack");
+		app.vent.trigger('undoNotEmpty');
+		if (this.redoStack.length == 0)
+		    app.vent.trigger('redoEmpty');
 	    }
 	}
     });
@@ -107,7 +123,8 @@ var app = (function($, _, Backbone){
 	    console.log("Updating plan");
 	    app.currentPlan.set(planJSON);
 	    app.simulatePlan();
-	    app.map.planView.render();
+	    if (!_.isUndefined(app.map.planView))
+		app.map.planView.render();
 	    app.tabs.currentView.render();
 	}
 
@@ -123,7 +140,7 @@ var app = (function($, _, Backbone){
         app.map = new app.views.EarthView({ el: '#map'});
         app.toolbar.show( new app.views.ToolbarView() );
         app.tabs.show( new app.views.TabNavView() );
-        app.vent.trigger('clearSaveStatus')
+        app.vent.trigger('clearSaveStatus');
     });
 
     app.router = new Backbone.Router({
