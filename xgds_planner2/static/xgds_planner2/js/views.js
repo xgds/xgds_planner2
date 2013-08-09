@@ -348,6 +348,12 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
 	"sortstop .command-list": function(evt,ui){
 	    var commandOrder = this.$el.find('.command-list').sortable("toArray",{"attribute":"data-item-id"});
+	    var oldOrder = this.model.get('sequence').models.map(function(model){
+		return model.cid;
+	    });
+	    if (JSON.stringify(commandOrder) == JSON.stringify(oldOrder))
+		// no change in order
+		return;
 	    var commandModels = commandOrder.map(function(cid){
 		return this.model.get('sequence').filter(function(child){
 		    return child.cid == cid
