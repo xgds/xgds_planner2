@@ -5,6 +5,10 @@
     {% compressed_css 'planner_app' %}
 {% endblock cssExtras %}
 
+{% block sitemenu-content-secondary %}
+{% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
 {% block content %}
 <div id="application" class="container-fluid">
 
