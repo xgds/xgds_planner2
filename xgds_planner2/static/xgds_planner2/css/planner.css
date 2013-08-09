@@ -77,3 +77,47 @@ span.duration {
     float: right;
     padding-right: 4px;
 }
+
+span.entry-title {
+    vertical-align: middle;
+}
+
+.tool-input {
+    margin: 0px;
+}
+
+/* just the top .tool-input section isn't
+   specific enough to override bootstrap */
+.tool-input[type="checkbox"] {
+    margin-top: 0px;
+}
+
+div#application {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+a#tab-nav-link {
+    text-decoration: underline;
+    color: black;
+}
+
+div.tool-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+div.tool-entry {
+    margin-bottom: 5px;
+}
+
+span#select-title {
+    display: block;
+    margin-bottom: 5px;
+}
+
+span.entry-error {
+    font-weight: bold;
+    color: red;
+}

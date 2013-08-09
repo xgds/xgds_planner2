@@ -496,6 +496,126 @@ app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
     },
 });
 
+app.views.PlanToolsView = Backbone.View.extend({
+    template: '#template-plan-tools',
+    events: {
+	"click #ok-button": "okClicked"
+    },
+    initialize: function() {
+	var source = $(this.template).html();
+	if (_.isUndefined(source))
+	    this.template = function() {
+		return "";
+	    };
+	else
+	    this.template = Handlebars.compile(source);
+	this.listenTo(app.vent, "clearAppendTool", this.clearAppendTool);
+	this.listenTo(app.vent, "setAppendError", this.setAppendError);
+    },
+    render: function() {
+	this.$el.html(this.template({
+	    planIndex: app.planIndex
+	}));
+    },
+    okClicked: function() {
+	var selectPlan = parseInt(this.$("#plan-select").val());
+	var planUrl = undefined;
+	_.each(app.planIndex, function(plan) {
+	    if (plan.id == selectPlan) {
+		planUrl = plan.url;
+	    }
+	});
+	if (_.isUndefined(planUrl))
+	    // no plan selected
+	    return;
+	this.$("#ok-button").attr("disabled", "disabled");
+	this.$("#append-error").empty();
+	app.reversePlanOnAppend = this.$("#reverse-plan").is(":checked");
+	app.prependPlanOnAppend = this.$("#prepend-plan").is(":checked");
+	$.getJSON(planUrl).done(this.appendPlan).error(this.failAppendPlan);
+    },
+    failAppendPlan: function() {
+	app.vent.trigger("clearAppendTool");
+	app.vent.trigger("setAppendError", "Error gettting plan to append");
+    },
+    setAppendError: function(message) {
+	this.$("#append-error").empty().append(message);
+    },
+    clearAppendTool: function() {
+	this.$("#ok-button").removeAttr("disabled");
+	this.$("#append-error").empty();
+	delete app.reversePlanOnAppend;
+	delete app.prependPlanOnAppend;
+    },
+    appendPlan: function(data) {
+	console.log(data);
+	if (data.sequence.length == 0) {
+	    // no sequence to add
+	    app.vent.trigger("clearAppendTool");
+	    return;
+	}
+	if (app.reversePlanOnAppend)
+	    data.sequence.reverse();
+	delete app.reversePlanOnAppend;
+	var method = undefined;
+	var sequence = app.currentPlan.get('sequence').models.slice();
+	console.log("number of items");
+	console.log(data.sequence.length);
+	if (app.prependPlanOnAppend) {
+	    console.log("adding connecting segment");
+	    var segment = app.models.segmentFactory();
+	    sequence.unshift(segment);
+	    while (data.sequence.length > 0) {
+		console.log("pushing item");
+		console.log(data.sequence.length);
+		var item = data.sequence.shift();
+		var model = undefined;
+		if (item.type == "Station") {
+		    model = app.models.stationFactory(item);
+		} else if (item.type == "Segment") {
+		    model = app.models.segmentFactory(item);
+		} else {
+		    console.log("Error parsing sequence");
+		    break;
+		}
+		sequence.unshift(model);
+		console.log("pushed item");
+		console.log(data.sequence.length + " items left");
+		console.log(data.sequence.length > 0);
+	    }
+	} else {
+	    console.log("adding connecting segment");
+	    var segment = app.models.segmentFactory();
+	    sequence.push(segment);
+	    while (data.sequence.length > 0) {
+		var item = data.sequence.shift();
+		var model = undefined;
+		if (item.type == "Station") {
+		    model = app.models.stationFactory(item);
+		} else if (item.type == "Segment") {
+		    model = app.models.segmentFactory(item);
+		} else {
+		    console.log("Error parsing sequence");
+		    break;
+		}
+		console.log("pushing item");
+		console.log(data.sequence.length);
+		sequence.push(model);
+		console.log("pushed item");
+		console.log(data.sequence.length + " items left");
+		console.log(data.sequence.length > 0);
+	    }
+	}
+	delete app.prependPlanOnAppend;
+	app.Actions.disable();
+	app.currentPlan.get('sequence').models = sequence;
+	app.currentPlan.get('sequence').resequence();
+	app.vent.trigger("clearAppendTool");
+	app.Actions.enable();
+	app.vent.trigger("change:plan");
+    }
+});
+
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
     template: '#template-tabnav',
     regions:{
@@ -511,6 +631,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
         'layers': app.views.LayerTreeView,
+	'tools': app.views.PlanToolsView
     },
 
     initialize: function(){

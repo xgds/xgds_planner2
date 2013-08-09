@@ -94,6 +94,7 @@ XGDS_PLANNER_PIPELINE_CSS = {
             'xgds_planner2/css/planner.css',
         ),
         'output_filenames': 'css/planner_app.css',
+        'template_name': 'xgds_planner2/pipelineCSS.css',
     },
 }
 

@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {% load compressed %}
 
-{% block cssExtras %}
-    {% compressed_css 'planner_app' %}
-{% endblock cssExtras %}
-
 {% block content %}
+<style scoped="scoped">
+  {% compressed_css 'planner_app' %}
+</style>
 <div id="application" class="container-fluid">
 
     <div id="toolbar" class="row btn-toolbar">
@@ -19,6 +18,7 @@
 </div>
 {% endblock content %}
 
+
 {% block scripts %}
     {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
@@ -30,6 +30,7 @@
     {% endfor %}
     <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
     <script id="plan_library_json" type="application/json">{{ plan_library_json|safe }}</script>
+    <script id="plan_index_json" type="application/json">{{ plan_index_json|safe }}</script>
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
 {% endblock scripts %}
 
