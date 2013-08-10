@@ -22,6 +22,11 @@ $(function(){
     app.simulatePlan = function(){
         var sim = new app.Simulator();
         var plan = app.currentPlan;
+	if (plan.get('sequence').length == 0) {
+	    // no stations means we don't simulate
+	    setSimInfo(sim, plan, getSimState(sim));
+	    return;
+	}
 
         var prePlanSimState = getSimState(sim);
         sim.startPlan( plan );

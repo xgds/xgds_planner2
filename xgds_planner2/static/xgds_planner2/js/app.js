@@ -116,6 +116,7 @@ var app = (function($, _, Backbone){
         */
         this.planSchema = JSON.parse( $('#plan_schema_json').html() );
         this.planLibrary = JSON.parse( $('#plan_library_json').html() );
+	this.planIndex = JSON.parse( $('#plan_index_json').html() );
 
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy( this.planSchema.commandSpecs, 'id' );
@@ -145,6 +146,7 @@ var app = (function($, _, Backbone){
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);
 	    app.simulatePlan(); // do this before the change:plan event is mapped
+	    app.currentPlan.get('sequence').resequence();
 	    app.Actions.setInitial();
         }
 
@@ -196,7 +198,7 @@ var app = (function($, _, Backbone){
 
     /*
      * Application-level Request & Respond services
-    */
+     */
 
     // Return the color mapped to a given key.
     // If no color has been assigned to that key, allocate one to be forever associated with it.

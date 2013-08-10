@@ -179,7 +179,10 @@ $(function(){
         },
 
         earthFailure: function(){
-            alert("Earth plugin failed to load.");
+	    // the map view has a big "earth plugin not available"
+	    // text, so an alert isn't very necessary
+            //alert("Earth plugin failed to load.");
+	    app.vent.trigger('earth:failed');
         },
 
         drawPlan: function(){

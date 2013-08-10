@@ -101,6 +101,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_schema_json': SCHEMA,
             'plan_library_json': LIBRARY,
             'plan_json': json.dumps(plan_json),
+            'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable,
         }),
         # context_instance=RequestContext
@@ -122,6 +123,17 @@ def planIndex(request):
         },
         context_instance=RequestContext(request))
 
+def plan_index_json():
+    plan_objs = models.Plan.objects.all()
+    plans_json = []
+    for plan in plan_objs:
+        plans_json.append({
+            'id': plan.id,
+            'name': plan.name,
+            'url': plan.get_absolute_url()
+        })
+
+    return plans_json
 
 def getDbPlan(uuid):
     return get_object_or_404(models.Plan, uuid=uuid)

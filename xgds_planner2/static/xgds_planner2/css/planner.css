@@ -78,12 +78,55 @@ span.duration {
     padding-right: 4px;
 }
 
+span.entry-title {
+    vertical-align: middle;
+}
+
+.tool-input {
+    margin: 0px;
+}
+
+/* just the top .tool-input section isn't
+   specific enough to override bootstrap */
+.tool-input[type="checkbox"] {
+    margin-top: 0px;
+}
+
+div#application {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+a#tab-nav-link {
+    text-decoration: underline;
+    color: black;
+}
+
+div.tool-title {
+    font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+div.tool-entry {
+    margin-bottom: 5px;
+}
+
+span#select-title {
+    display: block;
+    margin-bottom: 5px;
+}
+
+span.entry-error {
+    font-weight: bold;
+    color: red;
+}
 
 /* having this here tunes the navigation from main.css to work with bootstrap.css */
-#sitemenu-content ul { /* general settings */
-	text-align: left; /* set to left, right or center */
-	margin: 11px 0px 0px 0px; /* set margins as desired */
-	border-bottom: 1px solid black; /*#18456b;*/ /* set border COLOR as desired */
+#sitemenu-content ul { general settings
+	text-align: left; set to left, right or center
+	margin: 11px 0px 0px 0px; set margins as desired
+	border-bottom: 1px solid black; #18456b; set border COLOR as desired
 	list-style-type: none;
-	padding: 3px 10px 2px 10px; /* THIRD number must change with respect to padding-top (X) below */
-}
+	padding: 3px 10px 2px 10px; THIRD number must change with respect to padding-top (X) below
+} 
