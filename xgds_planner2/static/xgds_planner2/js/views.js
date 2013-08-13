@@ -611,6 +611,7 @@ app.views.PlanToolsView = Backbone.View.extend({
 	app.currentPlan.get('sequence').models = sequence;
 	app.currentPlan.get('sequence').resequence();
 	app.vent.trigger("clearAppendTool");
+	app.updatePlan(undefined);
 	app.Actions.enable();
 	app.vent.trigger("change:plan");
     }

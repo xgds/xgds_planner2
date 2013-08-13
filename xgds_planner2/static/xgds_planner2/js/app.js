@@ -48,7 +48,7 @@ var app = (function($, _, Backbone){
 
 	this.setInitial = function () {
 	    if (this.currentState == undefined) {
-		this.currentState = app.currentPlan.toJSON();
+		this.currentState = JSON.stringify(app.currentPlan.toJSON());
 	    }
 	};
 
@@ -57,12 +57,11 @@ var app = (function($, _, Backbone){
 	    if (this.currentState == undefined) return;
 	    var plan = app.currentPlan.toJSON();
 	    var planString = JSON.stringify(plan);
-	    if (JSON.stringify(this.currentState) == planString) {
+	    if (this.currentState == planString) {
 		// plan unchanged from current state
-		return;
 	    } else {
 		this.undoStack.push(this.currentState);
-		this.currentState = plan;
+		this.currentState = planString;
 		this.redoStack = new Array();
 		app.vent.trigger('undoNotEmpty');
 		app.vent.trigger('redoEmpty');
@@ -71,32 +70,38 @@ var app = (function($, _, Backbone){
 
 	this.undo = function() {
 	    if (!this.enabled) return;
-	    var plan = this.undoStack.pop();
+	    this.disable();
+	    var planString = this.undoStack.pop();
+	    var plan = JSON.parse(planString);
 	    if (plan == undefined) {
 		app.vent.trigger('undoEmpty');
 	    } else {
 		this.redoStack.push(this.currentState);
-		this.currentState = plan;
+		this.currentState = planString;
 		app.updatePlan(plan);
 		app.vent.trigger('redoNotEmpty');
 		if (this.undoStack.length == 0)
 		    app.vent.trigger('undoEmpty');
 	    }
+	    this.enable();
 	}
 
 	this.redo = function() {
 	    if (!this.enabled) return;
-	    var plan = this.redoStack.pop();
+	    this.disable();
+	    var planString = this.redoStack.pop();
+	    var plan = JSON.parse(planString);
 	    if (plan == undefined) {
 		app.vent.trigger('redoEmpty');
 	    } else {
 		this.undoStack.push(this.currentState);
-		this.currentState = plan;
+		this.currentState = planString;
 		app.updatePlan(plan);
 		app.vent.trigger('undoNotEmpty');
 		if (this.redoStack.length == 0)
 		    app.vent.trigger('redoEmpty');
 	    }
+	    this.enable();
 	}
     });
 
@@ -134,7 +139,11 @@ var app = (function($, _, Backbone){
 
 	this.updatePlan = function(planJSON) {
 	    console.log("Updating plan");
-	    app.currentPlan.set(planJSON);
+	    console.log(planJSON);
+	    if (!_.isUndefined(planJSON)) {
+		app.currentPlan.get('sequence').reset(planJSON.sequence);
+		app.currentPlan.set(planJSON);
+	    }
 	    app.simulatePlan();
 	    if (!_.isUndefined(app.map.planView))
 		app.map.planView.render();
@@ -179,8 +188,9 @@ var app = (function($, _, Backbone){
     app.vent.on('all', function(eventname, args){
         console.log("event on app.vent: " + eventname, args);
 	if (eventname == "change:plan") {
-	    console.log("change plan event, running simulate and action if plan is loaded");
-	    if (app.currentPlan == undefined) return;
+	    console.log("change plan event, running simulate and action if plan is loaded and actions are enabled");
+	    if (_.isUndefined(app.currentPlan)) return;
+	    if (!app.Actions.enabled) return;
 	    app.simulatePlan();
 	    app.Actions.action();
 	} else if (eventname == "tab:change") {

@@ -234,6 +234,10 @@ app.models = app.models || {};
         resequence: function(){
             var stationCounter = 0;
 
+	    if (!_.isUndefined(app.Actions))
+		// prevent undo from capturing *every* change we make
+		app.Actions.disable();
+
             // Natural station numbering.
             this.each(
                 function( item, idx, list ) {
@@ -268,6 +272,11 @@ app.models = app.models || {};
                     item.set('id', stationId);
                 }
             );
+
+	    if (!_.isUndefined(app.Actions))
+		app.Actions.enable();
+
+	    app.vent.trigger("change:plan");
         },
 
         /*
