@@ -160,6 +160,7 @@ var app = (function($, _, Backbone){
         }
 
         app.selectedViews = [];  // This array holds the views currently selected by checkboxes
+	app.copiedCommands = []; // array of copied commands
 
         app.map = new app.views.EarthView({ el: '#map'});
         app.toolbar.show( new app.views.ToolbarView() );

@@ -205,6 +205,10 @@ app.models = app.models || {};
             var command = new models.Command( preset );
             this.get('sequence').add(command);
         },
+
+	appendCommandModel: function(model) {
+	    this.get('sequence').add(model);
+	},
         /*
         ** Relevant to stations only...
         ** A convenience mainly to keep details about the model's structure
