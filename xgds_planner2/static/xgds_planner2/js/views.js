@@ -17,6 +17,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     },
     
     initialize: function(){
+	this.cutAfterPaste = false;
         this.listenTo( app.vent, 'mapmode', this.ensureToggle);
 
         this.listenTo( app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
@@ -27,6 +28,9 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 	this.listenTo( app.vent, 'redoEmpty', this.disableRedo);
 	this.listenTo( app.vent, 'undoNotEmpty', this.enableUndo);
 	this.listenTo( app.vent, 'redoNotEmpty', this.enableRedo);
+	this.listenTo( app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
+
+	app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
 
     onRender: function() {
@@ -38,6 +42,14 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 	    this.disableRedo();
 	else
 	    this.enableRedo();
+    },
+
+    getCutAfterPaste: function() {
+	if (this.cutAfterPaste) {
+	    this.cutAfterPaste = false;
+	    return true;
+	}
+	return false;
     },
 
     reverseStations: function() {
@@ -87,9 +99,13 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 	var model = app.request('currentPathElement');
 	var sequence = model.get('sequence');
 	var type = model.get('type');
+	var cut = app.request('cutAfterPaste');
 	_.each(app.copiedCommands, function(command) {
 	    if (command.get('pathElement').get('type') == type) {
 		sequence.add(command.clone());
+	    }
+	    if (cut) {
+		command.collection.remove(command);
 	    }
 	});
 	app.simulatePlan();
@@ -100,9 +116,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 	app.copiedCommands = new Array();
 	app.copiedCommands.push.apply(app.copiedCommands, commands);
 	app.request('unselectAllCommands');
-	_.each(commands, function(command) {
-	    command.collection.remove(command);
-	});
+	app.vent.trigger("cutAfterPaste");
     },
 
     updateSaveStatus: function(eventName){
