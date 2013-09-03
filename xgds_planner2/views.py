@@ -27,6 +27,7 @@ from xgds_planner2 import (settings,
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
 
+Plan = models.getModelByName( getattr( settings, 'XGDS_PLANNER2_PLAN_MODEL' ) )
 
 def get_handlebars_templates():
     global _template_cache
@@ -52,7 +53,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     Read and write plan JSON.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
-    plan = models.Plan.objects.get(pk=plan_id)
+    plan = Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
         for k,v in data.items():
@@ -67,7 +68,7 @@ with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as l
     LIBRARY = libraryfile.read()
 
 def plan_detail_doc(request, plan_id=None):
-    plan = models.Plan.objects.get(pk=plan_id)
+    plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.id
@@ -86,7 +87,7 @@ def plan_detail_doc(request, plan_id=None):
 def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates()
 
-    plan = models.Plan.objects.get(pk=plan_id)
+    plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.id
@@ -118,13 +119,13 @@ def planIndex(request):
     return render_to_response(
         'xgds_planner2/planIndex.html',
         {
-            'plans': models.Plan.objects.all(),
+            'plans': Plan.objects.all(),
             'exporters': choosePlanExporter.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
 
 def plan_index_json():
-    plan_objs = models.Plan.objects.all()
+    plan_objs = Plan.objects.all()
     plans_json = []
     for plan in plan_objs:
         plans_json.append({
@@ -136,7 +137,7 @@ def plan_index_json():
     return plans_json
 
 def getDbPlan(uuid):
-    return get_object_or_404(models.Plan, uuid=uuid)
+    return get_object_or_404(Plan, uuid=uuid)
 
 
 def planExport(request, uuid, name):

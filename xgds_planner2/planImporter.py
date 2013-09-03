@@ -7,11 +7,14 @@
 import os
 import time
 import datetime
+import settings
 
 from geocamUtil.dotDict import convertToDotDictRecurse
 
 from xgds_planner2 import models, xpjson
 from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
+
+Plan = models.getModelByName( getattr( settings, 'XGDS_PLANNER2_PLAN_MODEL' ) )
 
 def posixTimestampToString(timestamp):
     return (datetime.datetime
@@ -71,7 +74,8 @@ class PlanImporter(object):
         planDoc = importer.importPlanFromBuffer(buf, meta, models.SCHEMA)
         planText = xpjson.dumpDocumentToString(planDoc)
 
-        dbPlan = models.Plan()
+        dbPlan = Plan()
+        
         dbPlan.jsonPlan = planText
         dbPlan.extractFromJson(overWriteDateModified=False)
 

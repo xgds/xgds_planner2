@@ -32,6 +32,12 @@ SIMPLIFIED_LIBRARY_PATH = settings.STATIC_ROOT + _library
 SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
 SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
 
+def getModelByName(name):
+    appName, modelName = name.split('.', 1)
+    modelsName = appName + '.models'
+    __import__(modelsName)
+    modelsModule = sys.modules[modelsName]
+    return getattr(modelsModule, modelName)
 
 class Plan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
@@ -55,6 +61,7 @@ class Plan(models.Model):
 
     class Meta:
         ordering = ['-dateModified']
+        abstract = True
 
     def get_absolute_url(self):
         return reverse( 'planner2_planREST', args=[self.id, self.jsonPlan.id] )
@@ -63,7 +70,7 @@ class Plan(models.Model):
         if overWriteUuid:
             if not self.uuid:
                 self.uuid = makeUuid()
-            self.jsonPlan.uuid = self.uuid
+            self.jsonPlan.serverId = self.id
         if overWriteDateModified:
             self.jsonPlan.dateModified = (datetime.datetime
                                           .utcnow()

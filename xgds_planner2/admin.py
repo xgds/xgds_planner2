@@ -7,4 +7,5 @@
 from django.contrib import admin
 import xgds_planner2.models
 
-admin.site.register(xgds_planner2.models.Plan)
+#this is now an abstract class so if you want it in the admin tool you should register your derived class
+#admin.site.register(xgds_planner2.models.Plan)
