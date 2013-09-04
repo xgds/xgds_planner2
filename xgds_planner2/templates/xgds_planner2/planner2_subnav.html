@@ -4,8 +4,7 @@
 	<ul>
 	<li {% currentnav planner2_index %}><a href="{% url planner2_index %}"> List Plans </a></li>
 	<li {% currentnav planner2_planCreate %}><a href="{% url planner2_planCreate %}"> Create Plan</a></li>
-	<li {% currentnav planner2_edit %} ><a>Edit</a></li> 
-	<li><a>Detail</a></li>
+		{% if plan_json %}<li {% currentnav planner2_edit %} ><a> Edit {{ plan_name }}</a></li>{% endif %}
 	</ul>
 </div>
 {% endblock %}
