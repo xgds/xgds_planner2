@@ -102,6 +102,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_schema_json': SCHEMA,
             'plan_library_json': LIBRARY,
             'plan_json': json.dumps(plan_json),
+            'plan_name': plan.name,
             'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable,
         }),
