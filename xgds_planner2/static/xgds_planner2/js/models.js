@@ -32,6 +32,10 @@ app.models = app.models || {};
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
             schema.geometry = 'Coordinates';
         }
+        
+        if ( modelType == 'Plan') {
+        	schema.creator = {type: 'Text', readonly: true, editorAttrs: { disabled: true }}
+        }
 
         _.each(xpjsonSchema, function(param){
 	    if (!param.widget) var type = app.models.paramTypeHash[param.valueType];
@@ -158,7 +162,7 @@ app.models = app.models || {};
                     repr = this.get('_sequenceLabel');
                     break;
                 case 'Segment':
-                    repr = "Segment";
+                    repr = '--';
                     break
             }
             return repr;
