@@ -139,3 +139,9 @@ class Plan(models.Model):
             return self.name
         else:
             return 'Unnamed plan ' + self.uuid
+
+class PlanSchema(models.Model):
+    platform = models.CharField(max_length=24)
+    schemaUrl = models.CharField(max_length=512)
+    libraryUrl = models.CharField(max_length=512)
+    
