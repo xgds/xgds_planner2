@@ -29,11 +29,11 @@ _template_cache = None
 
 Plan = models.getModelByName( getattr( settings, 'XGDS_PLANNER2_PLAN_MODEL' ) )
 
-def get_handlebars_templates():
+def get_handlebars_templates(input=HANDLEBARS_TEMPLATES_DIR):
     global _template_cache
     if settings.XGDS_PLANNER_TEMPLATE_DEBUG or not _template_cache:
         templates = {}
-        for template_file in glob.glob(os.path.join(HANDLEBARS_TEMPLATES_DIR, '*.handlebars')):
+        for template_file in glob.glob(os.path.join(input, '*.handlebars')):
             with open(template_file, 'r') as infile:
                 template_name = os.path.splitext(os.path.basename(template_file))[0]
                 templates[template_name] = infile.read()
