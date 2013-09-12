@@ -242,9 +242,10 @@ app.models = app.models || {};
         resequence: function(){
             var stationCounter = 0;
 
-	    if (!_.isUndefined(app.Actions))
-		// prevent undo from capturing *every* change we make
-		app.Actions.disable();
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
+    			// prevent undo from capturing *every* change we make
+    		    app.Actions.disable();
+    	    }
 
             // Natural station numbering.
             this.each(
@@ -281,8 +282,9 @@ app.models = app.models || {};
                 }
             );
 
-	    if (!_.isUndefined(app.Actions))
-		app.Actions.enable();
+	    if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
+	    	app.Actions.enable();
+	    }
 
 	    app.vent.trigger("change:plan");
         },
