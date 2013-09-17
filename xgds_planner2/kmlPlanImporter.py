@@ -62,6 +62,7 @@ class KmlLineStringPlanImporter(PlanImporter):
     """
     label = 'KML LineString'
 
+    #TODO set up plan schema
     def importPlanFromBuffer(self, buf, meta, schema):
         coords = coordsFromBuf(buf)
         planDict = planDictFromCoords(coords, meta)

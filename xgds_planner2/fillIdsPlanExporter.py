@@ -52,8 +52,9 @@ class FillIdsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     label = 'XPJSON'
     content_type = 'application/json'
 
-    def initPlan(self, plan, context):
-        context.schema = xpjson.loadDocument(models.SIMPLIFIED_SCHEMA_PATH)
+#     def initPlan(self, plan, context):
+#         schema should be set before we get here
+#         context.schema = xpjson.loadDocument(settings.STATIC_ROOT + planSchema.simplifiedSchemaPath)
 
     def transformStationCommand(self, command, context):
         command.id = getCommandId(context)

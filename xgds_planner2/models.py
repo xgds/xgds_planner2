@@ -9,6 +9,7 @@ import datetime
 import copy
 import sys
 import logging
+import os
 
 import iso8601
 from django.db import models
@@ -22,15 +23,17 @@ from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
 
-SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
-LIBRARY = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH, schema=SCHEMA)
+# SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
+# LIBRARY = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH, schema=SCHEMA)
+# 
+# _schema = 'xgds_planner2/schema.json'
+# _library = 'xgds_planner2/library.json'
+# SIMPLIFIED_SCHEMA_PATH = settings.STATIC_ROOT + _schema
+# SIMPLIFIED_LIBRARY_PATH = settings.STATIC_ROOT + _library
+# SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
+# SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
 
-_schema = 'xgds_planner2/schema.json'
-_library = 'xgds_planner2/library.json'
-SIMPLIFIED_SCHEMA_PATH = settings.STATIC_ROOT + _schema
-SIMPLIFIED_LIBRARY_PATH = settings.STATIC_ROOT + _library
-SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
-SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
+PLAN_SCHEMA_CACHE = {};
 
 def getModelByName(name):
     appName, modelName = name.split('.', 1)
@@ -97,7 +100,6 @@ class Plan(models.Model):
                 setattr(self, f, stats[f])
             for f in ('numCommandsByType',):
                 setattr(self.stats, f, stats[f])
-
             self.summary = statsPlanExporter.getSummary(stats)
         except:
             logging.warning('extractFromJson: could not extract stats from plan %s' % self.uuid)
@@ -108,9 +110,15 @@ class Plan(models.Model):
     def getSummaryOfCommandsByType(self):
         return statsPlanExporter.getSummaryOfCommandsByType(self.stats)
 
+    #TODO test
     def toXpjson(self):
-        return xpjson.loadDocumentFromDict(self.jsonPlan,
-                                           schema=SCHEMA)
+        platform = self.jsonPlan['platform']
+        if platform:
+            planSchema = getPlanSchema(platform[u'name'])
+            return xpjson.loadDocumentFromDict(self.jsonPlan,
+                                           schema=planSchema.getSchema())
+        logging.warning('toXpjson: could not convert to xpjson, probably no schema %s' % self.uuid)
+        raise # FIX
 
     def escapedName(self):
         name = re.sub(r'[^\w]', '', self.name)
@@ -140,8 +148,56 @@ class Plan(models.Model):
         else:
             return 'Unnamed plan ' + self.uuid
 
+#This will not change during runtime so we should cache these in PLAN_SCHEMA_CACHE
 class PlanSchema(models.Model):
     platform = models.CharField(max_length=24)
     schemaUrl = models.CharField(max_length=512)
     libraryUrl = models.CharField(max_length=512)
+    simplifiedSchemaPath = models.CharField(max_length=512)
+    simplifiedLibraryPath = models.CharField(max_length=512)
+    simulatorPath = models.CharField(max_length=512)
+    simulator = models.CharField(max_length=128)
+    schema = None
+    library = None
     
+    def getSchema(self): 
+        if not self.schema:
+            try:
+                SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
+#                 with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
+#                     self.schema = schemafile.read()
+#                     print 'loaded'
+                self.schema = xpjson.loadDocument(SIMPLIFIED_SCHEMA_PATH)
+            except:
+                self.schema = xpjson.loadDocument(self.schemaUrl)
+        return self.schema;
+    
+    def getLibrary(self):
+        if not self.library:
+            try:
+                SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT,self.simplifiedLibraryPath)
+#                 with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
+#                     self.library = libraryfile.read()
+#                     print 'loaded'
+                self.library = xpjson.loadDocument(SIMPLIFIED_LIBRARY_PATH, schema=self.getSchema(), fillInDefaults=True)
+            except:
+                self.library = xpjson.loadDocument(self.libraryUrl, schema=self.getSchema())
+        return self.library
+
+#get the cached plan schema, building it if need be.
+def getPlanSchema(platform):
+    try:
+        result = PLAN_SCHEMA_CACHE[platform]
+    except KeyError:
+        try:
+            result = PlanSchema.objects.get(platform=platform)
+            if result:
+                result.getSchema()
+                result.getLibrary()
+                PLAN_SCHEMA_CACHE[platform] = result
+        except:
+            logging.warning('could not find plan schema for platform %s' % platform)
+            raise # FIX
+    return result
+
+        

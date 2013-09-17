@@ -44,7 +44,7 @@ $(function(){
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
         layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}", 
-        simulator: {{ settings.XGDS_PLANNER_SIMULATOR }}
+        simulator: {{ simulator }}
     };
     app.start(options);
 })
