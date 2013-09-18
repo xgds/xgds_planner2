@@ -7,6 +7,7 @@
 import re
 import datetime
 import copy
+import json
 import sys
 import logging
 import os
@@ -83,6 +84,7 @@ class Plan(models.Model):
 
         self.jsonPlan.url = self.get_absolute_url()
         self.name = self.jsonPlan.name
+        print 'name is now ' + self.name
         self.jsonPlan.serverId = self.id
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
                              .replace(tzinfo=None))
@@ -95,6 +97,7 @@ class Plan(models.Model):
         # fill in stats
         try:
             exporter = statsPlanExporter.StatsPlanExporter()
+            print ' about to do stats'
             stats = exporter.exportDbPlan(self)
             for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters'):
                 setattr(self, f, stats[f])
@@ -116,7 +119,7 @@ class Plan(models.Model):
         if platform:
             planSchema = getPlanSchema(platform[u'name'])
             return xpjson.loadDocumentFromDict(self.jsonPlan,
-                                           schema=planSchema.getSchema())
+                                               schema=planSchema.getSchema())
         logging.warning('toXpjson: could not convert to xpjson, probably no schema %s' % self.uuid)
         raise # FIX
 
@@ -159,26 +162,63 @@ class PlanSchema(models.Model):
     simulator = models.CharField(max_length=128)
     schema = None
     library = None
+    jsonSchema = None
+    jsonLibrary = None
+    
+    def getJsonSchema(self):
+        if not self.jsonSchema:
+            try:
+                with open(self.schemaUrl) as schemafile:
+                    SCHEMA = schemafile.read()
+                self.jsonSchema = SCHEMA
+#                 self.jsonSchema = json.loads(SCHEMA)
+
+#                 SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
+#                 with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
+#                     SCHEMA = schemafile.read()
+#                 self.jsonSchema = json.loads(SCHEMA)
+            except:
+                logging.warning('could not load json schema from ' + self.schemaUrl)
+                raise #FIX
+
+#                 with open(self.schemaUrl) as schemafile:
+#                     SCHEMA = schemafile.read()
+#                 self.jsonSchema = json.loads(SCHEMA)
+        return self.jsonSchema
     
     def getSchema(self): 
         if not self.schema:
             try:
                 SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
-#                 with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
-#                     self.schema = schemafile.read()
-#                     print 'loaded'
                 self.schema = xpjson.loadDocument(SIMPLIFIED_SCHEMA_PATH)
             except:
                 self.schema = xpjson.loadDocument(self.schemaUrl)
         return self.schema;
     
+    def getJsonLibrary(self):
+        if not self.jsonLibrary:
+            try:
+                with open(self.libraryUrl) as libraryfile:
+                    LIBRARY = libraryfile.read()
+                self.jsonLibrary =  LIBRARY
+#                 self.jsonLibrary = json.loads(LIBRARY)
+#                 SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
+#                 with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
+#                     LIBRARY = libraryfile.read()
+#                 self.jsonLibrary = json.loads(LIBRARY)
+            except:
+                logging.warning('could not load json library from ' + self.libraryUrl)
+                raise #FIX
+
+#                 with open(self.libraryUrl) as libraryfile:
+#                     LIBRARY = libraryfile.read()
+#                 self.jsonLibrary = json.loads(LIBRARY)
+        return self.jsonLibrary
+    
     def getLibrary(self):
         if not self.library:
             try:
                 SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT,self.simplifiedLibraryPath)
-#                 with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
-#                     self.library = libraryfile.read()
-#                     print 'loaded'
                 self.library = xpjson.loadDocument(SIMPLIFIED_LIBRARY_PATH, schema=self.getSchema(), fillInDefaults=True)
             except:
                 self.library = xpjson.loadDocument(self.libraryUrl, schema=self.getSchema())

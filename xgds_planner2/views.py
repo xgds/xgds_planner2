@@ -7,6 +7,7 @@
 import os
 import glob
 import json
+import logging
 
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
@@ -59,6 +60,7 @@ def plan_REST(request, plan_id, jsonPlanId):
         data = json.loads(request.raw_post_data)
         for k,v in data.items():
             plan.jsonPlan[k] = v
+#         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
     return HttpResponse( json.dumps(plan.jsonPlan), content_type='application/json' )
@@ -81,8 +83,8 @@ def plan_detail_doc(request, plan_id=None):
         'xgds_planner2/planDetailDoc.html',
         RequestContext(request, {
                 'plan_json': plan_json,
-                'plan_schema': json.loads(planSchema.getSchema()),
-                'plan_library': json.loads(planSchema.getLibrary()),
+                'plan_schema': json.loads(planSchema.getJsonSchema()),
+                'plan_library': json.loads(planSchema.getJsonLibrary()),
         }),
     )
 
@@ -97,14 +99,14 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-    print "simulator: " + os.path.join(settings.STATIC_URL,planSchema.simulatorPath)
+    print planSchema.getJsonSchema();
     return render_to_response(
         'xgds_planner2/planner_app.html',
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
-            'plan_schema_json': xpjson.dumpDocumentToString(planSchema.getSchema()),
-            'plan_library_json': xpjson.dumpDocumentToString(planSchema.getLibrary()),
+            'plan_schema_json': planSchema.getJsonSchema(), #xpjson.dumpDocumentToString(planSchema.getSchema()),
+            'plan_library_json': planSchema.getJsonLibrary(), #xpjson.dumpDocumentToString(planSchema.getLibrary()),
             'plan_json': json.dumps(plan_json),
             'plan_name': plan.name,
             'plan_index_json': json.dumps(plan_index_json()),

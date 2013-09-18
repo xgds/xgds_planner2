@@ -21,7 +21,8 @@ app.models = app.models || {};
 	'textarea': 'TextArea'
     };
 
-    function xpjsonToBackboneFormsSchema( xpjsonSchema, modelType ){
+    function xpjsonToBackboneFormsSchema( params, modelType ){
+    	
         // name and notes are hard-coded fields from xpjson spec
         var schema = {
             name: {type: 'Text'},
@@ -37,23 +38,29 @@ app.models = app.models || {};
         	schema.creator = {type: 'Text', readonly: true, editorAttrs: { disabled: true }}
         }
 
-        _.each(xpjsonSchema, function(param){
-	    if (!param.widget) var type = app.models.paramTypeHash[param.valueType];
-	    else var type = app.models.widgetTypeHash[param.widget];
-	    if (param.hasOwnProperty('choices') &&
-		(type != 'Select' || type != 'Checkbox'))
-		type == 'Select';
-	    if (type == 'Select') {
-		var options = _.map(param.choices, function(choice) {
-		    return choice[0];
-		});
-		schema[param.id] = {type: type, options: options};
-	    } else {
-		schema[param.id] = {type: type};
-	    }
-	    if (param.name != null) {
-		schema[param.id]["title"] = param.name;
-	    }
+        //TODO FIX this iterator is never being called.
+//        console.log(params)
+        _.each(params, function(param){
+        	var foundType;
+        	if (!param.widget) {
+        		foundType = app.models.paramTypeHash[param.valueType];
+        	} else {
+        		foundType = app.models.widgetTypeHash[param.widget];
+        	}
+        	if (param.hasOwnProperty('choices') &&
+        			(foundType != 'Select' || foundType != 'Checkbox'))
+        		foundType == 'Select';
+        	if (foundType == 'Select') {
+        		var options = _.map(param.choices, function(choice) {
+        			return choice[0];
+        		});
+        		schema[param.id] = {type: foundType, options: options};
+        	} else {
+        		schema[param.id] = {type: foundType};
+        	}
+        	if (param.name != null) {
+        		schema[param.id]["title"] = param.name;
+        	}
         });
 
         return schema;
