@@ -168,7 +168,8 @@ class PlanSchema(models.Model):
     def getJsonSchema(self):
         if not self.jsonSchema:
             try:
-                with os.path.join(settings.STATIC_ROOT, self.schemaUrl) as schemafile:
+                SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
+                with open(SCHEMA_PATH) as schemafile:
                     SCHEMA = schemafile.read()
                     self.jsonSchema = SCHEMA
 #                 self.jsonSchema = json.loads(SCHEMA)
@@ -178,7 +179,7 @@ class PlanSchema(models.Model):
 #                     SCHEMA = schemafile.read()
 #                 self.jsonSchema = json.loads(SCHEMA)
             except:
-                logging.warning('could not load json schema from ' + self.schemaUrl)
+                logging.warning('could not load json schema from ' + SCHEMA_PATH)
                 raise #FIX
 
 #                 with open(self.schemaUrl) as schemafile:
@@ -198,7 +199,8 @@ class PlanSchema(models.Model):
     def getJsonLibrary(self):
         if not self.jsonLibrary:
             try:
-                with os.path.join(settings.STATIC_ROOT, self.libraryUrl) as libraryfile:
+                LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
+                with open(LIBRARY_PATH) as libraryfile:
                         LIBRARY = libraryfile.read()
                         self.jsonLibrary = LIBRARY
 #                 self.jsonLibrary = json.loads(LIBRARY)
@@ -207,7 +209,7 @@ class PlanSchema(models.Model):
 #                     LIBRARY = libraryfile.read()
 #                 self.jsonLibrary = json.loads(LIBRARY)
             except:
-                logging.warning('could not load json library from ' + self.libraryUrl)
+                logging.warning('could not load json library from ' + LIBRARY_PATH)
                 raise #FIX
 
 #                 with open(self.libraryUrl) as libraryfile:
