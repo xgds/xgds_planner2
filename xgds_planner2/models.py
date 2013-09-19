@@ -168,9 +168,9 @@ class PlanSchema(models.Model):
     def getJsonSchema(self):
         if not self.jsonSchema:
             try:
-                with open(self.schemaUrl) as schemafile:
+                with os.path.join(settings.STATIC_ROOT, self.schemaUrl) as schemafile:
                     SCHEMA = schemafile.read()
-                self.jsonSchema = SCHEMA
+                    self.jsonSchema = SCHEMA
 #                 self.jsonSchema = json.loads(SCHEMA)
 
 #                 SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
@@ -198,9 +198,9 @@ class PlanSchema(models.Model):
     def getJsonLibrary(self):
         if not self.jsonLibrary:
             try:
-                with open(self.libraryUrl) as libraryfile:
-                    LIBRARY = libraryfile.read()
-                self.jsonLibrary =  LIBRARY
+                with os.path.join(settings.STATIC_ROOT, self.libraryUrl) as libraryfile:
+                        LIBRARY = libraryfile.read()
+                        self.jsonLibrary = LIBRARY
 #                 self.jsonLibrary = json.loads(LIBRARY)
 #                 SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
 #                 with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
