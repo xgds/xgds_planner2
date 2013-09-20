@@ -38,8 +38,6 @@ app.models = app.models || {};
         	schema.creator = {type: 'Text', readonly: true, editorAttrs: { disabled: true }}
         }
 
-        //TODO FIX this iterator is never being called.
-//        console.log(params)
         _.each(params, function(param){
         	var foundType;
         	if (!param.widget) {
@@ -49,7 +47,7 @@ app.models = app.models || {};
         	}
         	if (param.hasOwnProperty('choices') &&
         			(foundType != 'Select' || foundType != 'Checkbox'))
-        		foundType == 'Select';
+        		foundType = 'Select';
         	if (foundType == 'Select') {
         		var options = _.map(param.choices, function(choice) {
         			return choice[0];
