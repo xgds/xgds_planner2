@@ -193,7 +193,8 @@ class PlanSchema(models.Model):
                 SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
                 self.schema = xpjson.loadDocument(SIMPLIFIED_SCHEMA_PATH)
             except:
-                self.schema = xpjson.loadDocument(self.schemaUrl)
+                SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
+                self.schema = xpjson.loadDocument(SCHEMA_PATH)
         return self.schema;
     
     def getJsonLibrary(self):
@@ -223,7 +224,8 @@ class PlanSchema(models.Model):
                 SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT,self.simplifiedLibraryPath)
                 self.library = xpjson.loadDocument(SIMPLIFIED_LIBRARY_PATH, schema=self.getSchema(), fillInDefaults=True)
             except:
-                self.library = xpjson.loadDocument(self.libraryUrl, schema=self.getSchema())
+                LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
+                self.library = xpjson.loadDocument(LIBRARY_PATH, schema=self.getSchema())
         return self.library
 
 #get the cached plan schema, building it if need be.
