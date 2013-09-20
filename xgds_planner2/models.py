@@ -168,23 +168,19 @@ class PlanSchema(models.Model):
     def getJsonSchema(self):
         if not self.jsonSchema:
             try:
-                SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
-                with open(SCHEMA_PATH) as schemafile:
+                SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
+                with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
                     SCHEMA = schemafile.read()
                     self.jsonSchema = SCHEMA
-#                 self.jsonSchema = json.loads(SCHEMA)
-
-#                 SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
-#                 with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
-#                     SCHEMA = schemafile.read()
-#                 self.jsonSchema = json.loads(SCHEMA)
             except:
-                logging.warning('could not load json schema from ' + SCHEMA_PATH)
-                raise #FIX
-
-#                 with open(self.schemaUrl) as schemafile:
-#                     SCHEMA = schemafile.read()
-#                 self.jsonSchema = json.loads(SCHEMA)
+                try:
+                    SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
+                    with open(SCHEMA_PATH) as schemafile:
+                        SCHEMA = schemafile.read()
+                        self.jsonSchema = SCHEMA
+                except:
+                    logging.warning('could not load json schema from ' + SCHEMA_PATH)
+                    raise #FIX
         return self.jsonSchema
     
     def getSchema(self): 
@@ -200,22 +196,19 @@ class PlanSchema(models.Model):
     def getJsonLibrary(self):
         if not self.jsonLibrary:
             try:
-                LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
-                with open(LIBRARY_PATH) as libraryfile:
-                        LIBRARY = libraryfile.read()
-                        self.jsonLibrary = LIBRARY
-#                 self.jsonLibrary = json.loads(LIBRARY)
-#                 SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
-#                 with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
-#                     LIBRARY = libraryfile.read()
-#                 self.jsonLibrary = json.loads(LIBRARY)
+                SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
+                with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
+                    LIBRARY = libraryfile.read()
+                    self.jsonLibrary = LIBRARY
             except:
-                logging.warning('could not load json library from ' + LIBRARY_PATH)
-                raise #FIX
-
-#                 with open(self.libraryUrl) as libraryfile:
-#                     LIBRARY = libraryfile.read()
-#                 self.jsonLibrary = json.loads(LIBRARY)
+                try:
+                    LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
+                    with open(LIBRARY_PATH) as libraryfile:
+                            LIBRARY = libraryfile.read()
+                            self.jsonLibrary = LIBRARY
+                except:
+                    logging.warning('could not load json library from ' + LIBRARY_PATH)
+                    raise #FIX
         return self.jsonLibrary
     
     def getLibrary(self):
