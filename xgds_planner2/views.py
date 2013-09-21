@@ -59,6 +59,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
         for k,v in data.items():
+            if k == "_simInfo": continue
             plan.jsonPlan[k] = v
 #         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)

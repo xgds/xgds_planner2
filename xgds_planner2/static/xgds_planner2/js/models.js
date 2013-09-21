@@ -329,7 +329,10 @@ app.models = app.models || {};
             } else {
                 segment = this.at(idx-1);
             }
-            this.remove([stationModel, segment]);
+	    // for whatever reason, relational would rather
+	    // you remove the segment first.
+	    this.remove(segment);
+            this.remove(stationModel);
 	    app.vent.trigger("station:change");
         },
     });
