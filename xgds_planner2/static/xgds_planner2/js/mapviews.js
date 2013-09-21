@@ -479,7 +479,10 @@ $(function(){
 
             var gex = this.options.ge.gex;
             var pmOptions = {};
-            pmOptions.name = this.model.get('_sequenceLabel') || this.model.toString();
+	    var name = ""+this.model.get("_sequenceLabel");
+	    if (!_.isUndefined(this.model.get("name")))
+		name += " " + this.model.get('name')
+            pmOptions.name = name || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = this.buildStyle();
             var point =  this.model.get('geometry').coordinates; // lon, lat
