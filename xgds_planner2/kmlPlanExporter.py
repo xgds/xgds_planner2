@@ -20,6 +20,9 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 
     def transformStation(self, station, tsequence, context):
         lon, lat = station.geometry['coordinates']
+        name = station.name
+        if not name:
+            name = station.id
         return ('''
 <Placemark>
   <name>%(name)s</name>
@@ -27,7 +30,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     <coordinates>%(lon)s,%(lat)s</coordinates>
   </Point>
 </Placemark>
-''' % {'name': station.id,
+''' % {'name': name,
        'lon': lon,
        'lat': lat})
 
@@ -40,9 +43,6 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 <Placemark>
   <name>%(name)s</name>
   <MultiGeometry>
-    <Point>
-      <coordinates>%(mlon)s,%(mlat)s</coordinates>
-    </Point>
     <LineString>
       <tessellate>1</tessellate>
       <coordinates>
