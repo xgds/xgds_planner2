@@ -84,7 +84,7 @@ class Plan(models.Model):
 
         self.jsonPlan.url = self.get_absolute_url()
         self.name = self.jsonPlan.name
-        print 'name is now ' + self.name
+#         print 'name is now ' + self.name
         self.jsonPlan.serverId = self.id
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
                              .replace(tzinfo=None))
@@ -97,7 +97,7 @@ class Plan(models.Model):
         # fill in stats
         try:
             exporter = statsPlanExporter.StatsPlanExporter()
-            print ' about to do stats'
+#             print ' about to do stats'
             stats = exporter.exportDbPlan(self)
             for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters'):
                 setattr(self, f, stats[f])

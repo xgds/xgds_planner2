@@ -100,7 +100,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-    print planSchema.getJsonSchema();
+#     print planSchema.getJsonSchema();
     return render_to_response(
         'xgds_planner2/planner_app.html',
         RequestContext(request, {
