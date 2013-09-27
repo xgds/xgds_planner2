@@ -20,89 +20,98 @@ var app = (function($, _, Backbone) {
         'tabs': '#tabs'
     });
 
-    app.module('Actions', function(options) {
-        this.addInitializer(function(options) {
-            this.undoStack = new Array();
-            this.redoStack = new Array();
-            this.currentState = undefined;
-            this.enabled = true;
-            app.vent.trigger('undoEmpty');
-            app.vent.trigger('redoEmpty');
-        });
+    app.module("State", function(optoins) {
+	this.addInitializer(function(options) {
+	    this.commandSelected = undefined;
+	    this.stationSelected = undefined;
+	    this.metaExpanded = undefined;
+	    this.addCommandsExpanded = undefined;
+	});
+    });
 
-        this.disable = function() {
-            this.enabled = false;
-        };
+    app.module("Actions", function(options) {
+	this.addInitializer(function(options) {
+	    this.undoStack = new Array();
+	    this.redoStack = new Array();
+	    this.currentState = undefined;
+	    this.enabled = true;
+	    app.vent.trigger('undoEmpty');
+	    app.vent.trigger('redoEmpty');
+	});
 
-        this.enable = function() {
-            this.enabled = true;
-        };
+	this.disable = function() {
+	    this.enabled = false;
+	};
 
-        this.undoEmpty = function() {
-            return this.undoStack.length == 0;
-        };
+	this.enable = function() {
+	    this.enabled = true;
+	}
 
-        this.redoEmpty = function() {
-            return this.redoStack.length == 0;
-        };
+	this.undoEmpty = function() {
+	    return this.undoStack.length == 0;
+	};
 
-        this.setInitial = function() {
-            if (this.currentState == undefined) {
-                this.currentState = JSON.stringify(app.currentPlan.toJSON());
-            }
-        };
+	this.redoEmpty = function() {
+	    return this.redoStack.length == 0;
+	};
 
-        this.action = function() {
-            if (!this.enabled) return;
-            if (this.currentState == undefined) return;
-            var plan = app.currentPlan.toJSON();
-            var planString = JSON.stringify(plan);
-            if (this.currentState == planString) {
-                // plan unchanged from current state
-            } else {
-                this.undoStack.push(this.currentState);
-                this.currentState = planString;
-                this.redoStack = new Array();
-                app.vent.trigger('undoNotEmpty');
-                app.vent.trigger('redoEmpty');
-            }
-        };
+	this.setInitial = function () {
+	    if (this.currentState == undefined) {
+		this.currentState = JSON.stringify(app.currentPlan.toJSON());
+	    }
+	};
 
-        this.undo = function() {
-            if (!this.enabled) return;
-            this.disable();
-            var planString = this.undoStack.pop();
-            var plan = JSON.parse(planString);
-            if (plan == undefined) {
-                app.vent.trigger('undoEmpty');
-            } else {
-                this.redoStack.push(this.currentState);
-                this.currentState = planString;
-                app.updatePlan(plan);
-                app.vent.trigger('redoNotEmpty');
-                if (this.undoStack.length == 0)
-                    app.vent.trigger('undoEmpty');
-            }
-            this.enable();
-        };
+	this.action = function() {
+	    if (!this.enabled) return;
+	    if (this.currentState == undefined) return;
+	    var plan = app.currentPlan.toJSON();
+	    var planString = JSON.stringify(plan);
+	    if (this.currentState == planString) {
+		// plan unchanged from current state
+	    } else {
+		this.undoStack.push(this.currentState);
+		this.currentState = planString;
+		this.redoStack = new Array();
+		app.vent.trigger('undoNotEmpty');
+		app.vent.trigger('redoEmpty');
+	    }
+	}
 
-        this.redo = function() {
-            if (!this.enabled) return;
-            this.disable();
-            var planString = this.redoStack.pop();
-            var plan = JSON.parse(planString);
-            if (plan == undefined) {
-                app.vent.trigger('redoEmpty');
-            } else {
-                this.undoStack.push(this.currentState);
-                this.currentState = planString;
-                app.updatePlan(plan);
-                app.vent.trigger('undoNotEmpty');
-                if (this.redoStack.length == 0)
-                    app.vent.trigger('redoEmpty');
-            }
-            this.enable();
-        };
+	this.undo = function() {
+	    if (!this.enabled) return;
+	    this.disable();
+	    var planString = this.undoStack.pop();
+	    var plan = JSON.parse(planString);
+	    if (plan == undefined) {
+		app.vent.trigger('undoEmpty');
+	    } else {
+		this.redoStack.push(this.currentState);
+		this.currentState = planString;
+		app.updatePlan(plan);
+		app.vent.trigger('redoNotEmpty');
+		if (this.undoStack.length == 0)
+		    app.vent.trigger('undoEmpty');
+	    }
+	    this.enable();
+	}
+
+	this.redo = function() {
+	    if (!this.enabled) return;
+	    this.disable();
+	    var planString = this.redoStack.pop();
+	    var plan = JSON.parse(planString);
+	    if (plan == undefined) {
+		app.vent.trigger('redoEmpty');
+	    } else {
+		this.undoStack.push(this.currentState);
+		this.currentState = planString;
+		app.updatePlan(plan);
+		app.vent.trigger('undoNotEmpty');
+		if (this.redoStack.length == 0)
+		    app.vent.trigger('redoEmpty');
+	    }
+	    this.enable();
+	}
     });
 
     app.addInitializer(function(options) {
@@ -186,23 +195,22 @@ var app = (function($, _, Backbone) {
         console.log('Router event: ' + eventname);
     });
 
-    app.vent.on('all', function(eventname, args) {
-        console.log('event on app.vent: ' + eventname, args);
-        if (eventname == 'change:plan') {
-            console.log('change plan event, running simulate and action if plan is loaded and actions are enabled');
-            if (_.isUndefined(app.currentPlan)) return;
-            if (!app.Actions.enabled) return;
-            app.simulatePlan();
-            app.Actions.action();
-        } else if (eventname == 'tab:change') {
-            app.currentTab = args;
-            console.log('new tab: ' + app.currentTab + ', should be ' + args);
-        } else if (eventname == 'plan:reversing') {
-            app.Actions.disable();
-        } else if (eventname == 'plan:reverse') {
-            app.Actions.enable();
-            app.Actions.action();
-        }
+    app.vent.on('all', function(eventname, args){
+        console.log("event on app.vent: " + eventname, args);
+	if (eventname == "change:plan") {
+	    if (_.isUndefined(app.currentPlan)) return;
+	    if (!app.Actions.enabled) return;
+	    app.simulatePlan();
+	    app.Actions.action();
+	} else if (eventname == "tab:change") {
+	    app.currentTab = args;
+	    console.log("new tab: "+app.currentTab+", should be " +args);
+	} else if (eventname == "plan:reversing") {
+	    app.Actions.disable();
+	} else if (eventname == "plan:reverse") {
+	    app.Actions.enable();
+	    app.Actions.action();
+	}
     });
 
     app.addInitializer(_.bind(Backbone.history.start, Backbone.history));
