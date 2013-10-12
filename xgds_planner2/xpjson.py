@@ -42,7 +42,7 @@ CRS84 = dotDict.DotDict({
 X_REGEX = re.compile(r'\+x_0=([^\s]+)')
 Y_REGEX = re.compile(r'\+y_0=([^\s]+)')
 
-URL_VALIDATOR = URLValidator(verify_exists=False)
+URL_VALIDATOR = URLValidator()
 
 GEOMETRY_TYPE_CHOICES = (
     'Point',
