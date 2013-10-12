@@ -4,8 +4,7 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-from django.conf.urls.defaults import url, patterns
-from django.views.generic.simple import direct_to_template
+from django.conf.urls import url, patterns
 
 from xgds_planner2 import views
 
