@@ -33,7 +33,7 @@ SIMPLIFIED_SCHEMA_URL = settings.STATIC_URL + _schema
 SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
 
 
-class Plan(models.Model):
+class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=256)
     dateModified = models.DateTimeField()
@@ -55,6 +55,7 @@ class Plan(models.Model):
 
     class Meta:
         ordering = ['-dateModified']
+        abstract = True
 
     def get_absolute_url(self):
         return reverse( 'planner2_planREST', args=[self.id, self.jsonPlan.id] )
@@ -132,3 +133,7 @@ class Plan(models.Model):
             return self.name
         else:
             return 'Unnamed plan ' + self.uuid
+
+
+class Plan(AbstractPlan):
+    pass
