@@ -12,7 +12,6 @@ import sys
 import os
 import json
 from collections import deque, Mapping, OrderedDict
-import pprint
 import re
 import logging
 
@@ -20,10 +19,12 @@ import iso8601
 import pyproj
 
 from django.core.validators import URLValidator
-from django.core.exceptions import ValidationError
 
 from geocamUtil import dotDict
 from geocamUtil.dotDict import DotDict
+
+# pylint: disable=R0911,C0204
+
 
 THIS_MODULE = sys.modules[__name__]
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -161,7 +162,11 @@ class InheritDict(Mapping):
     For fields in *localOnlyFields*, the value is drawn only from
     *localVals*.
     """
-    def __init__(self, localVals, parent, inheritFields=[], localOnlyFields=[]):
+    def __init__(self, localVals, parent, inheritFields=None, localOnlyFields=None):
+        if inheritFields is None:
+            inheritFields = []
+        if localOnlyFields is None:
+            localOnlyFields = []
         self.localDict = dict(localVals)
         self.parent = parent
         self.inheritFields = inheritFields
@@ -229,7 +234,11 @@ def resolveInheritanceLookup(spec, parentSpecLookup,
         return spec
 
 
-def resolveSpecInheritance(rawSpecs, inheritFields=[], localOnlyFields=[]):
+def resolveSpecInheritance(rawSpecs, inheritFields=None, localOnlyFields=None):
+    if inheritFields is None:
+        inheritFields = []
+    if localOnlyFields is None:
+        localOnlyFields = []
     rawSpecLookup = getIdDict(rawSpecs)
     q = deque(rawSpecs)
     parentSpecLookup = {}
@@ -262,8 +271,8 @@ def resolveSchemaInheritance(schemaDict):
         'abstract': True,
     }))
     commandSpecsLookup = resolveSpecInheritance(rawCommandSpecs,
-                                               inheritFields=('params'),
-                                               localOnlyFields=('id', 'name', 'abstract'))
+                                                inheritFields=('params'),
+                                                localOnlyFields=('id', 'name', 'abstract'))
 
     # filter out abstract commandSpecs
     commandSpecs = [commandSpecsLookup[spec.id]
@@ -334,7 +343,7 @@ class TypedObjectMetaClass(type):
     """
 
     def __new__(cls, name, bases, dct):
-        global TYPED_OBJECT_CLASSES
+        global TYPED_OBJECT_CLASSES  # pylint: disable=W0602
         TYPED_OBJECT_CLASSES.add(name)
 
         dct['fields'] = fields = {}
@@ -372,8 +381,10 @@ class TypedObject(object):
 
     def __init__(self, objDict,
                  schema=None,
-                 schemaParams={},
+                 schemaParams=None,
                  parseOpts=None):
+        if schemaParams is None:
+            schemaParams = {}
         self._objDict = objDict
         self._schema = schema
         self._schemaParams = schemaParams
@@ -412,8 +423,8 @@ class TypedObject(object):
 
         # may be a default declared in PlanSchema
         schemaParam = self._schemaParams.get(fieldName)
-        if (schemaParam is not None
-            and schemaParam.default is not None):
+        if (schemaParam is not None and
+                schemaParam.default is not None):
             return schemaParam.default
 
         return None
@@ -427,15 +438,15 @@ class TypedObject(object):
             val = self.get(fieldName)
             if val is None:
                 assert not spec.required, \
-                       'required field %s missing from %s' % (fieldName, self._objDict)
+                    'required field %s missing from %s' % (fieldName, self._objDict)
                 val = spec.default
             if val is not None:
                 assert isValueOfType(val, spec.valueType), \
-                       '%s should have valueType %s in %s' % (fieldName, spec.valueType, self._objDict)
+                    '%s should have valueType %s in %s' % (fieldName, spec.valueType, self._objDict)
             if val is not None and spec.validMethod is not None:
                 validMethod = getattr(self, spec.validMethod)
                 assert validMethod(val), \
-                       '%s should satisfy %s in %s' % (fieldName, validMethod, self._objDict)
+                    '%s should satisfy %s in %s' % (fieldName, validMethod, self._objDict)
 
             if self._parseOpts.fillInDefaults:
                 self._objDict[fieldName] = val
@@ -445,17 +456,17 @@ class TypedObject(object):
             val = self.get(fieldName)
             reason = paramSpec.invalidParamValueReason(val)
             assert reason is None, \
-                   ('%s; %s should match ParamSpec %s in %s'
-                    % (reason, fieldName, paramSpec.id, self._objDict))
+                ('%s; %s should match ParamSpec %s in %s'
+                 % (reason, fieldName, paramSpec.id, self._objDict))
 
             if self._parseOpts.fillInDefaults:
                 self._objDict[fieldName] = val
 
         # warn about unknown fields
-        for k, v in self._objDict.iteritems():
+        for k in self._objDict.iterkeys():
             if k not in self.fields and k not in self._schemaParams:
-                logging.warning('unknown field %s in object %s'
-                                % (k, self._objDict))
+                logging.warning('unknown field %s in object %s',
+                                k, self._objDict)
 
 
 class ParamSpec(TypedObject):
@@ -490,8 +501,8 @@ class ParamSpec(TypedObject):
 
     def isChoicesValid(self, enum):
         for val, desc in enum:
-            if (not isValueOfType(val, self.get('valueType'))
-                or not isinstance(desc, (str, unicode))):
+            if (not isValueOfType(val, self.get('valueType')) or
+                    not isinstance(desc, (str, unicode))):
                 return False
         return True
 
@@ -547,7 +558,7 @@ class CommandSpec(ClassSpec):
 
     def isColorString(self, s):
         # should be in HTML hex format '#rrggbb'
-        return re.match('\#[0-9a-fA-F]{6}', s) is not None
+        return re.match(r'\#[0-9a-fA-F]{6}', s) is not None
 
     def isValidCommand(self, cmd):
         for fieldName, paramSpec in self.paramsLookup.iteritems():
@@ -594,7 +605,7 @@ class PlanSchema(Document):
     def __init__(self, objDict, **kwargs):
         # resolveSchemaInheritance(objDict)
 
-        super(Document, self).__init__(objDict, **kwargs)
+        super(PlanSchema, self).__init__(objDict, **kwargs)
 
         paramsFields = (
             'planParams',
@@ -745,7 +756,7 @@ class PlanLibrary(Document):
 
 
 def encodeWithClassName(obj):
-    if hasattr(obj, '_objDict') and obj._objDict != None:
+    if hasattr(obj, '_objDict') and obj._objDict is not None:
         return obj._objDict
     else:
         return obj
@@ -769,6 +780,7 @@ def transformBottomUp(obj, func, **kwargs):
         return func(dict(((k, transformBottomUp(v, func, **kwargs))
                           for k, v in obj.iteritems())),
                     **kwargs)
+
 
 def transformTopDown(obj, func):
     if isinstance(obj, (list, tuple)):

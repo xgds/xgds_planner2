@@ -42,7 +42,7 @@ def compileXpjson(builder=None):
 def main():
     import optparse
     parser = optparse.OptionParser('usage: %prog')
-    opts, args = parser.parse_args()
+    _opts, args = parser.parse_args()
     if args:
         parser.error('expected no args')
     compileXpjson()

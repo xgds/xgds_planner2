@@ -6,7 +6,9 @@
 
 from django import forms
 
-from xgds_planner2 import xpjson, models
+from xgds_planner2 import models
+
+# pylint: disable=R0924
 
 SITE_CHOICES = [(x.id, x.name) for x in models.LIBRARY.sites]
 PLATFORM_CHOICES = [(x.id, x.name) for x in models.LIBRARY.platforms]

@@ -240,7 +240,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data){
         var displayName =  data.presetCode || data.name || data.presetName;
-	var timing = app.util.minutesToHMS(data.duration);
+        var timing = app.util.minutesToHMS(data.duration);
         return '<input class="select" type="checkbox"/>' + displayName + " <span class=\"duration\">" + timing +'</span><i/>';
     },
     events: function(){
@@ -294,16 +294,16 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     events: {
         "click .edit-meta": function(evt){ app.vent.trigger('showMeta', this.model); },
         "click .add-commands": function(evt){ app.vent.trigger('showPresets', this.model); },
-	"sortstop .command-list": function(evt,ui){
-	    var commandOrder = this.$el.find('.command-list').sortable("toArray",{"attribute":"data-item-id"});
-	    var commandModels = commandOrder.map(function(cid){
-		return this.model.get('sequence').filter(function(child){
-		    return child.cid == cid
-		})[0]
-	    }, this);
-	    this.model.get('sequence').models = commandModels;
-	    app.vent.trigger('change:plan');
-	}
+        "sortstop .command-list": function(evt,ui){
+            var commandOrder = this.$el.find('.command-list').sortable("toArray",{"attribute":"data-item-id"});
+            var commandModels = commandOrder.map(function(cid){
+                return this.model.get('sequence').filter(function(child){
+                    return child.cid == cid
+                })[0]
+            }, this);
+            this.model.get('sequence').models = commandModels;
+            app.vent.trigger('change:plan');
+        }
     },
     initialize: function(){
         app.reqres.addHandler('selectedCommands', this.getSelectedCommands, this);
@@ -333,7 +333,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //var container = this.$el.find('.sequence-list');
         //container.prepend(this.head.el);
         //container.append(this.foot.el);
-	this.$el.find('.command-list').sortable();
+        this.$el.find('.command-list').sortable();
     },
 });
 
@@ -443,7 +443,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
 app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
     template: '#template-layer-tree',
     onRender: function(){
-	app.vent.trigger("layerView:onRender");
+        app.vent.trigger("layerView:onRender");
         var tree = kmltree({
             url: app.options.layerFeedUrl,
             gex: ge.gex,
@@ -474,19 +474,19 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 
     initialize: function(){
         this.on('tabSelected', this.setTab);
-	// load layer tree ahead of time to load layers into map
-	app.tree = null;
-	app.vent.on('earth:loaded', function() {
-	    app.tree = kmltree({
-		url: app.options.layerFeedUrl,
-		gex: ge.gex,
-		mapElement: [],
-		element: [],
-		restoreState: true
-	    });
-	    app.tree.load();
-	});
-	app.vent.on('layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
+        // load layer tree ahead of time to load layers into map
+        app.tree = null;
+        app.vent.on('earth:loaded', function() {
+            app.tree = kmltree({
+                url: app.options.layerFeedUrl,
+                gex: ge.gex,
+                mapElement: [],
+                element: [],
+                restoreState: true
+            });
+            app.tree.load();
+        });
+        app.vent.on('layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
     },
 
     onRender: function(){
@@ -514,7 +514,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         var viewClass = this.viewMap[tabId];
         if ( ! viewClass ) { return undefined; }
         var view = new viewClass({
-	    model: app.currentPlan,
+            model: app.currentPlan,
         });
         this.tabContent.show(view);
     },

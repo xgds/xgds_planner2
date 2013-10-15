@@ -36,12 +36,12 @@ class ImporterInfo(object):
 
 PLAN_IMPORTERS = []
 PLAN_IMPORTERS_BY_FORMAT = {}
-for formatCode, extension, importerClassName in settings.XGDS_PLANNER_PLAN_IMPORTERS:
-    importerInfo = ImporterInfo(formatCode,
-                                extension,
-                                getClassByName(importerClassName))
-    PLAN_IMPORTERS.append(importerInfo)
-    PLAN_IMPORTERS_BY_FORMAT[formatCode] = importerInfo
+for _formatCode, _extension, _importerClassName in settings.XGDS_PLANNER_PLAN_IMPORTERS:
+    _importerInfo = ImporterInfo(_formatCode,
+                                 _extension,
+                                 getClassByName(_importerClassName))
+    PLAN_IMPORTERS.append(_importerInfo)
+    PLAN_IMPORTERS_BY_FORMAT[_formatCode] = _importerInfo
 
 
 def chooseImporter(name, formatCode=None):

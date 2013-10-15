@@ -6,6 +6,7 @@ import json
 # pip install jsonschema
 import jsonschema
 
+
 def jsonSchemaValidate(objPath, schemaPath):
     print 'Validating %s against %s' % (objPath, schemaPath),
     obj = json.loads(file(objPath).read())
@@ -16,10 +17,11 @@ def jsonSchemaValidate(objPath, schemaPath):
 
     print 'PASSED'
 
+
 def main():
     import optparse
     parser = optparse.OptionParser('usage: %prog <object.json> <schema.json>')
-    opts, args = parser.parse_args()
+    _opts, args = parser.parse_args()
     if len(args) != 2:
         parser.error('expected exactly 2 args')
     jsonSchemaValidate(args[0], args[1])

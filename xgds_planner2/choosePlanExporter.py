@@ -4,8 +4,6 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-import sys
-
 from xgds_planner2 import settings
 from geocamUtil import loader
 
@@ -21,9 +19,9 @@ class ExporterInfo(object):
 
 PLAN_EXPORTERS = []
 PLAN_EXPORTERS_BY_FORMAT = {}
-for formatCode, extension, exporterClassName in settings.XGDS_PLANNER_PLAN_EXPORTERS:
-    exporterInfo = ExporterInfo(formatCode,
-                                extension,
-                                loader.getClassByName(exporterClassName))
-    PLAN_EXPORTERS.append(exporterInfo)
-    PLAN_EXPORTERS_BY_FORMAT[formatCode] = exporterInfo
+for _formatCode, _extension, _exporterClassName in settings.XGDS_PLANNER_PLAN_EXPORTERS:
+    _exporterInfo = ExporterInfo(_formatCode,
+                                 _extension,
+                                 loader.getClassByName(_exporterClassName))
+    PLAN_EXPORTERS.append(_exporterInfo)
+    PLAN_EXPORTERS_BY_FORMAT[_formatCode] = _exporterInfo

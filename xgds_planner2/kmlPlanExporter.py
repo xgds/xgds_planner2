@@ -7,7 +7,7 @@
 from geocamUtil import KmlUtil
 
 from xgds_planner2.planExporter import TreeWalkPlanExporter
-from xgds_planner2 import xpjson, settings
+from xgds_planner2 import xpjson
 
 
 class KmlPlanExporter(TreeWalkPlanExporter):
@@ -27,9 +27,10 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     <coordinates>%(lon)s,%(lat)s</coordinates>
   </Point>
 </Placemark>
-''' % {'name': station.id,
-       'lon': lon,
-       'lat': lat})
+''' %
+                {'name': station.id,
+                 'lon': lon,
+                 'lat': lat})
 
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
@@ -52,13 +53,14 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     </LineString>
   </MultiGeometry>
 </Placemark>
-''' % {'name': segment.id,
-       'plon': plon,
-       'plat': plat,
-       'nlon': nlon,
-       'nlat': nlat,
-       'mlon': mlon,
-       'mlat': mlat})
+''' %
+                {'name': segment.id,
+                 'plon': plon,
+                 'plat': plat,
+                 'nlon': nlon,
+                 'nlat': nlat,
+                 'mlon': mlon,
+                 'mlat': mlat})
 
     def transformPlan(self, plan, tsequence, context):
         return KmlUtil.wrapKmlDocument('\n'.join(tsequence), plan.id)

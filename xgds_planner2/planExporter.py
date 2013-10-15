@@ -4,12 +4,13 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-import copy
 import json
 
 from django.http import HttpResponse
 
 from geocamUtil.dotDict import DotDict
+
+# pylint: disable=W0223
 
 
 class PlanExporter(object):
@@ -63,10 +64,10 @@ class TreeWalkPlanExporter(PlanExporter):
     A base class for plan exporters that walk the xpjson.Plan syntax
     tree.
 
-    The exportXXX() methods walk the tree for you.  Generally you will
-    just need to override the transformXXX() methods.
+    The export*() methods walk the tree for you.  Generally you will
+    just need to override the transform*() methods.
 
-    The 'tsequence' argument to your transformXXX() method is special --
+    The 'tsequence' argument to your transform*() method is special --
     it is the bottom-up list of transformed elements from the sequence
     member of the object you are transforming. For example, in
     transformStation() it will be the result of calling
@@ -80,7 +81,7 @@ class TreeWalkPlanExporter(PlanExporter):
     def initPlan(self, plan, context):
         """
         This hook is a place for derived classes to construct some
-        initial context before transformXXX() methods are called.
+        initial context before transform*() methods are called.
         """
         pass
 
@@ -101,7 +102,7 @@ class TreeWalkPlanExporter(PlanExporter):
 
     def getBracketingStations(self, plan, segmentIndex):
         stations = [s for s in plan.sequence if s.type == 'Station']
-        return stations[segmentIndex-1], stations[segmentIndex]
+        return stations[segmentIndex - 1], stations[segmentIndex]
 
     def exportStation(self, station, context):
         tsequence = []

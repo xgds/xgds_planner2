@@ -10,10 +10,9 @@ import json
 
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
-                         HttpResponseForbidden,
-                         Http404,
                          HttpResponse,
-                         HttpResponseNotAllowed)
+                         HttpResponseNotAllowed,
+                         HttpResponseBadRequest)
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
@@ -47,6 +46,7 @@ def aggregate_handlebars_templates(request):
     """
     return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
 
+
 def plan_REST(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
@@ -55,16 +55,17 @@ def plan_REST(request, plan_id, jsonPlanId):
     plan = models.Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
-        for k,v in data.items():
+        for k, v in data.iteritems():
             plan.jsonPlan[k] = v
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
-    return HttpResponse( json.dumps(plan.jsonPlan), content_type='application/json' )
+    return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
 with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
     SCHEMA = schemafile.read()
 with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
     LIBRARY = libraryfile.read()
+
 
 def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates()
@@ -118,7 +119,7 @@ def planExport(request, uuid, name):
         # user explicitly specified e.g. '?format=kml'
         exporterClass = choosePlanExporter.PLAN_EXPORTERS_BY_FORMAT.get(formatCode)
         if exporterClass is None:
-            return HttpResponseInvalidRequest('invalid export format %s' % formatCode)
+            return HttpResponseBadRequest('invalid export format %s' % formatCode)
     else:
         # filename ends with e.g. '.kml'
         exporterClass = None

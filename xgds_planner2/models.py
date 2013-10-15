@@ -7,13 +7,10 @@
 import re
 import datetime
 import copy
-import sys
 import logging
 
 import iso8601
 from django.db import models
-from django.db.models.signals import pre_save
-from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
@@ -21,6 +18,8 @@ from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
+
+# pylint: disable=C1001,E1101
 
 SCHEMA = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH)
 LIBRARY = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH, schema=SCHEMA)
@@ -58,7 +57,7 @@ class AbstractPlan(models.Model):
         abstract = True
 
     def get_absolute_url(self):
-        return reverse( 'planner2_planREST', args=[self.id, self.jsonPlan.id] )
+        return reverse('planner2_planREST', args=[self.id, self.jsonPlan.id])
 
     def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
         if overWriteUuid:
@@ -94,8 +93,9 @@ class AbstractPlan(models.Model):
 
             self.summary = statsPlanExporter.getSummary(stats)
         except:
-            logging.warning('extractFromJson: could not extract stats from plan %s' % self.uuid)
-            raise # FIX
+            logging.warning('extractFromJson: could not extract stats from plan %s',
+                            self.uuid)
+            raise  # FIX
 
         return self
 
@@ -124,8 +124,6 @@ class AbstractPlan(models.Model):
             info = copy.deepcopy(exporterInfo)
             info.url = self.getExportUrl(info.extension)
             result.append(info)
-        import sys
-        print >> sys.stderr, result
         return result
 
     def __unicode__(self):

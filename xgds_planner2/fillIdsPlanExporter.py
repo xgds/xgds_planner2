@@ -6,7 +6,9 @@
 
 from xgds_planner2.planExporter import (TreeWalkPlanExporter,
                                         JsonPlanExporter)
-from xgds_planner2 import xpjson, settings, models
+from xgds_planner2 import xpjson, models
+
+# pylint: disable=W0223
 
 
 def getCommandId(context):
