@@ -5,10 +5,12 @@
 # __END_LICENSE__
 
 import json
+import logging
 
 from django.http import HttpResponse
 
 from geocamUtil.dotDict import DotDict
+import models
 
 # pylint: disable=W0223
 
@@ -122,11 +124,12 @@ class TreeWalkPlanExporter(PlanExporter):
             tsequence.append(self.transformSegmentCommand(cmd, ctx))
         return self.transformSegment(segment, tsequence, context)
 
-    def exportPlan(self, plan):
+    def exportPlan(self, plan, schema):
         # plan = copy.deepcopy(plan)
         context = DotDict({
             'plan': plan
         })
+        context.schema = schema
         self.initPlan(plan, context)
         return self.exportPlanInternal(plan, context)
 
@@ -152,8 +155,14 @@ class TreeWalkPlanExporter(PlanExporter):
         return self.transformPlan(plan, tsequence, context)
 
     def exportDbPlan(self, dbPlan):
-        plan = dbPlan.toXpjson()
-        return self.exportPlan(plan)
+        try:
+            platform = dbPlan.jsonPlan['platform']
+            planSchema = models.getPlanSchema(platform["name"])
+            plan = dbPlan.toXpjson()
+            return self.exportPlan(plan, planSchema.getSchema())
+        except:
+            logging.warning('exportDbPlan: could not save plan %s', dbPlan.name)
+            raise  # FIX
 
 
 class ExamplePlanExporter(JsonPlanExporter, TreeWalkPlanExporter):

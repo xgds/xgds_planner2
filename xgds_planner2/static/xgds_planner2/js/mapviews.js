@@ -165,6 +165,7 @@ $(function() {
         },
 
        render: function() {
+           console.log('re-rendering map');
            google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
         },
 
@@ -198,7 +199,10 @@ $(function() {
         },
 
         earthFailure: function() {
-            alert('Earth plugin failed to load.');
+            // the map view has a big "earth plugin not available"
+            // text, so an alert isn't very necessary
+            //alert("Earth plugin failed to load.");
+            app.vent.trigger('earth:failed');
         },
 
         drawPlan: function() {
@@ -268,6 +272,7 @@ $(function() {
         },
 
         render: function() {
+            console.log('re-rending kml');
             _.each(this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
@@ -404,7 +409,7 @@ $(function() {
                     this.ge.gex.edit.makeDraggable(station, {
                         bounce: false,
                         dragCallback: function() {
-                            this.view.model.trigger('dragUpdate', this);
+                            //this.view.model.trigger('dragUpdate', this);
                         },
                         dropCallback: function() {
                             // "this" is the placemark GE object.
@@ -506,7 +511,11 @@ $(function() {
 
             var gex = this.options.ge.gex;
             var pmOptions = {};
-            pmOptions.name = this.model.get('_sequenceLabel') || this.model.toString();
+            var name = '' + this.model.get('_sequenceLabel');
+            if (!_.isUndefined(this.model.get('name'))) {
+                name += ' ' + this.model.get('name');
+            }
+            pmOptions.name = name || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = this.buildStyle();
             var point = this.model.get('geometry').coordinates; // lon, lat
@@ -534,13 +543,18 @@ $(function() {
         },
 
         redraw: function() {
+            console.log('redrawing point');
             // redraw code. To be invoked when relevant model attributes change.
             var kmlPoint = this.placemark.getGeometry();
 
             var coords = this.model.get('geometry').coordinates; // lon, lat
             coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
-            this.placemark.setName(this.model.get('_sequenceLabel') || this.model.toString());
+            var name = '' + this.model.get('_sequenceLabel');
+            if (!_.isUndefined(this.model.get('name'))) {
+                name += ' ' + this.model.get('name');
+            }
+            this.placemark.setName(name || this.model.toString());
             //this.placemark.setStyle( this.getStyle() );
             this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
             this.placemark.getStyleSelector().getIconStyle().getIcon()
@@ -715,6 +729,7 @@ $(function() {
         },
 
         render: function() {
+            console.log('re-rendering segment');
             var coords = _.map([this.fromStation, this.toStation], function(station) {
                 var geom = station.get('geometry').coordinates;
                 return [geom[1], geom[0]]; // Lon, Lat

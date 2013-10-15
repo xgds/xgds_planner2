@@ -50,8 +50,6 @@ import os
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 
-XGDS_PLANNER_SIMULATOR = 'xgds_kn.Simulator'
-
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': (
@@ -94,17 +92,13 @@ XGDS_PLANNER_PIPELINE_CSS = {
             'xgds_planner2/css/planner.css',
         ),
         'output_filenames': 'css/planner_app.css',
+        'template_name': 'xgds_planner2/pipelineCSS.css',
     },
 }
 
 _thisDir = os.path.dirname(__file__)
 
-# You will generally want to override these with your domain-specific
-# schema and library.  Note that manage.py prep builds simplified
-# versions of the schema and library. their locations are found in
-# models.py, e.g. SIMPLIFIED_SCHEMA_PATH.
-XGDS_PLANNER_SCHEMA_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanSchema.json')
-XGDS_PLANNER_LIBRARY_PATH = os.path.join(_thisDir, 'xpjsonSpec', 'examplePlanLibrary.json')
+# Schema used to be set in the settings, now they are set in the PlanSchema database table.
 
 # list of (formatCode, extension, exporterClass)
 XGDS_PLANNER_PLAN_EXPORTERS = (
@@ -120,3 +114,5 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 
 # kml root from xgds_map_server
 XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/"
+
+XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"

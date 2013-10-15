@@ -1,0 +1,23 @@
+<div class="plan-tool" id="append-plan">
+  <div class="tool-title">Append Plan</div>
+  <div class="tool-entry">
+    <span class="entry-title" id="select-title">Select Plan:</span>
+    <select id="plan-select" class="tool-input">
+      {{#each planIndex}}
+        <option value="{{id}}">{{name}}</option>
+      {{/each}}
+    </select>
+  </div><div class="tool-entry">
+    <span id="select-title">Plan Placement</span>
+    <input type="radio" name="plan-placement" id="prepend-plan" class="tool-input" checked="checked">
+    <span class="entry-title">Before</span>
+    <input type="radio" name="plan-placement" id="append-plan" class="tool-input">
+    <span class="entry-title">After</span>
+  </div><div class="tool-entry">
+    <input type="checkbox" id="reverse-plan" class="tool-input">
+    <span class="entry-title">Reverse Plan</span>
+  </div><div class="tool-submit">
+    <button class="btn" id="ok-button" class="tool-input">OK</button>
+    <span class="entry-error" id="append-error"><!-- error message space --></span>
+  </div>
+</div>

@@ -6,37 +6,44 @@ from geocamUtil.Builder import Builder
 
 from xgds_planner2 import settings, xpjson, models
 
-THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-
 
 def compileXpjson(builder=None):
     if builder is None:
         builder = Builder()
+    for planSchema in models.PlanSchema.objects.all():
+        doCompile(planSchema, builder)
 
-    outDir = os.path.dirname(models.SIMPLIFIED_SCHEMA_PATH)
+
+def doCompile(planSchema, builder=None):
+    SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, planSchema.schemaUrl)
+    SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT,
+                                          planSchema.simplifiedSchemaPath)
+    outDir = os.path.dirname(SIMPLIFIED_SCHEMA_PATH)
     if not os.path.exists(outDir):
         os.makedirs(outDir)
 
-    def buildSchema():
-        schema = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH,
-                                     fillInDefaults=True)
-        xpjson.dumpDocumentToPath(models.SIMPLIFIED_SCHEMA_PATH, schema)
-        print 'wrote normalized schema to %s' % models.SIMPLIFIED_SCHEMA_PATH
-    builder.applyRule(models.SIMPLIFIED_SCHEMA_PATH,
-                      [settings.XGDS_PLANNER_SCHEMA_PATH],
-                      buildSchema)
+    LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, planSchema.libraryUrl)
+    SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, planSchema.simplifiedLibraryPath)
+    outDir = os.path.dirname(SIMPLIFIED_LIBRARY_PATH)
+    if not os.path.exists(outDir):
+        os.makedirs(outDir)
 
-    def buildLibrary():
-        schema = xpjson.loadDocument(settings.XGDS_PLANNER_SCHEMA_PATH,
-                                     fillInDefaults=True)
-        library = xpjson.loadDocument(settings.XGDS_PLANNER_LIBRARY_PATH,
-                                      schema=schema, fillInDefaults=True)
-        xpjson.dumpDocumentToPath(models.SIMPLIFIED_LIBRARY_PATH, library)
-        print 'wrote normalized library to %s' % models.SIMPLIFIED_LIBRARY_PATH
-    builder.applyRule(models.SIMPLIFIED_LIBRARY_PATH,
-                      [settings.XGDS_PLANNER_LIBRARY_PATH,
-                       settings.XGDS_PLANNER_SCHEMA_PATH],
-                      buildLibrary)
+    def buildSchema(planSchema):
+        schema = planSchema.getSchema()
+        xpjson.dumpDocumentToPath(SIMPLIFIED_SCHEMA_PATH, schema)
+        print 'wrote normalized schema to %s' % (SIMPLIFIED_SCHEMA_PATH)
+    builder.applyRule(SIMPLIFIED_SCHEMA_PATH,
+                      [SCHEMA_PATH],
+                      buildSchema(planSchema))
+
+    def buildLibrary(planSchema):
+        library = planSchema.getLibrary()
+        xpjson.dumpDocumentToPath(SIMPLIFIED_LIBRARY_PATH, library)
+        print 'wrote normalized library to %s' % SIMPLIFIED_LIBRARY_PATH
+    builder.applyRule(SIMPLIFIED_LIBRARY_PATH,
+                      [LIBRARY_PATH,
+                       SCHEMA_PATH],
+                      buildLibrary(planSchema))
 
 
 def main():
@@ -45,4 +52,5 @@ def main():
     _opts, args = parser.parse_args()
     if args:
         parser.error('expected no args')
-    compileXpjson()
+    for planSchema in models.PlanSchema.objects.all():
+        doCompile(planSchema)

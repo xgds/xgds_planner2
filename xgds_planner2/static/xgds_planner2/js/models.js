@@ -12,11 +12,21 @@ app.models = app.models || {};
         'targetId': 'Select'
     };
 
-    function xpjsonToBackboneFormsSchema(xpjsonSchema, modelType) {
+    models.widgetTypeHash = {
+        'text': 'Text',
+        'number': 'Number',
+        'checkbox': 'Checkbox',
+        'datetime': 'DateTime',
+        'select': 'Select',
+        'textarea': 'TextArea'
+    };
+
+    function xpjsonToBackboneFormsSchema(params, modelType) {
+
         // name and notes are hard-coded fields from xpjson spec
         var schema = {
-            name: 'Text',
-            notes: 'TextArea'
+            name: {type: 'Text'},
+            notes: {type: 'TextArea'}
         };
 
         if (modelType == 'Station') {
@@ -24,8 +34,32 @@ app.models = app.models || {};
             schema.geometry = 'Coordinates';
         }
 
-        _.each(xpjsonSchema, function(param) {
-            schema[param.id] = {type: app.models.paramTypeHash[param.valueType]};
+        if (modelType == 'Plan') {
+            schema.creator = {type: 'Text', readonly: true,
+                              editorAttrs: { disabled: true }};
+        }
+
+        _.each(params, function(param) {
+            var foundType;
+            if (!param.widget) {
+                foundType = app.models.paramTypeHash[param.valueType];
+            } else {
+                foundType = app.models.widgetTypeHash[param.widget];
+            }
+            if (param.hasOwnProperty('choices') &&
+                (foundType != 'Select' || foundType != 'Checkbox'))
+                foundType = 'Select';
+            if (foundType == 'Select') {
+                var options = _.map(param.choices, function(choice) {
+                    return choice[0];
+                });
+                schema[param.id] = {'type': foundType, options: options};
+            } else {
+                schema[param.id] = {'type': foundType};
+            }
+            if (param.name != null) {
+                schema[param.id]['title'] = param.name;
+            }
         });
 
         return schema;
@@ -100,23 +134,31 @@ app.models = app.models || {};
                 }
             }
         ],
+
         schema: {
-            id: 'Text',
-            tolerance: 'Number',
-            headingDegrees: 'Number',
-            headingToleranceDegrees: 'Number'
+            id: 'Text'
+            //tolerance: 'Number',
+            //headingDegrees: 'Number',
+            //headingToleranceDegrees: 'Number',
         },
 
         initialize: function() {
+            // javascript is a weird beast and requires re-definition of this variable,
+            // or else stuff is added to it
+            this.schema = {
+                id: 'Text'
+                //tolerance: 'Number',
+                //headingDegrees: 'Number',
+                //headingToleranceDegrees: 'Number',
+            };
             var params = {
                 'Station': app.planSchema.stationParams,
                 'Segment': app.planSchema.segmentParams
-            }[this.get('type')];
-            if (params && ! _.isEmpty(params)) {
-                this.schema = xpjsonToBackboneFormsSchema(params, this.get('type'));
-            }
+            }[this.get('type')] || {};
+            _.extend(this.schema, xpjsonToBackboneFormsSchema(params, this.get('type')));
             this.on('change', function() {
-                if (this.changedAttributes() && ! _.isEmpty(_.omit(this.changedAttributes(), '_sequenceLabel'))) {
+                if (this.changedAttributes() &&
+                    ! _.isEmpty(_.omit(this.changedAttributes(), '_sequenceLabel'))) {
                     app.vent.trigger('change:plan');
                 }
             });
@@ -129,7 +171,7 @@ app.models = app.models || {};
                 repr = this.get('_sequenceLabel');
                 break;
             case 'Segment':
-                repr = 'Segment';
+                repr = '--';
                 break;
             }
             return repr;
@@ -138,8 +180,8 @@ app.models = app.models || {};
         toJSON: toJsonWithFilters,
 
         getDuration: function() {
-            var duration = 0.0;
-            if (this.get('speed')) {
+            /*var duration = 0.0;
+            if  ( this.get('speed') ){
                 // TODO: calculate distance and traverse time
             }
             this.get('sequence').each(function(command) {
@@ -147,14 +189,16 @@ app.models = app.models || {};
                     duration = duration + command.get('duration');
                 }
             });
-            return duration;
+            return duration;*/
+            // actually use the simulator
+            if (this.get('_simInfo') == undefined) app.simulatePlan();
+            if (this.get('_simInfo') == undefined) return undefined;
+            return this.get('_simInfo').deltaTimeSeconds / 60;
         },
 
         getCumulativeDuration: function(collection) {
-            // return the cumulative duration of all models in the collection up to and including this one.
-            if (collection === undefined) {
-                collection = app.currentPlan.get('sequence');
-            }
+            /*// return the cumulative duration of all models in the collection up to and including this one.
+            if ( collection === undefined ) { collection = app.currentPlan.get('sequence'); }
             var arr = collection.models;
             var idx = _.indexOf(arr, this);
             if (idx < 0) {
@@ -163,13 +207,20 @@ app.models = app.models || {};
             var duration = 0.0;
             _.each(_.first(arr, idx + 1), function(model) {
                 duration = duration + model.getDuration();
-            });
-            return duration;
+            } );
+            return duration;*/
+            if (this.get('_simInfo') == undefined) app.simulatePlan();
+            if (this.get('_simInfo') == undefined) return undefined;
+            return (this.get('_simInfo').elapsedTimeSeconds / 60) + this.getDuration();
         },
 
         appendCommandByPreset: function(preset) {
             var command = new models.Command(preset);
             this.get('sequence').add(command);
+        },
+
+        appendCommandModel: function(model) {
+            this.get('sequence').add(model);
         },
         /*
         ** Relevant to stations only...
@@ -199,6 +250,11 @@ app.models = app.models || {};
         */
         resequence: function() {
             var stationCounter = 0;
+
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
+                        // prevent undo from capturing *every* change we make
+                    app.Actions.disable();
+            }
 
             // Natural station numbering.
             this.each(
@@ -234,6 +290,12 @@ app.models = app.models || {};
                     item.set('id', stationId);
                 }
             );
+
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
+                app.Actions.enable();
+            }
+
+            app.vent.trigger('change:plan');
         },
 
         /*
@@ -247,6 +309,7 @@ app.models = app.models || {};
             } else {
                 this.add(stationModel);
             }
+            app.vent.trigger('station:change');
         },
 
         /*
@@ -258,6 +321,7 @@ app.models = app.models || {};
             if (segmentAfter.get('type') != 'Segment') { throw 'You can only insert stations before a Segment.'}
             var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone the stationAfter's properties.
             this.add([segmentBefore, stationModel], {at: idx});
+            app.vent.trigger('station:change');
         },
 
         removeStation: function(stationModel) {
@@ -269,7 +333,11 @@ app.models = app.models || {};
             } else {
                 segment = this.at(idx - 1);
             }
-            this.remove([stationModel, segment]);
+            // for whatever reason, relational would rather
+            // you remove the segment first.
+            this.remove(segment);
+            this.remove(stationModel);
+            app.vent.trigger('station:change');
         }
     });
 
@@ -285,14 +353,17 @@ app.models = app.models || {};
                 'coordinates': [],
                 'type': 'Point'
             },
-            'headingDegrees': 0,
-            'headingToleranceDegrees': 9.740282517223996,
+            //"headingDegrees": 0,
+            //"headingToleranceDegrees": 9.740282517223996,
             'id': '',
-            'isDirectional': false,
+            //"isDirectional": false,
             'sequence': [],
-            'tolerance': 1,
+            //"tolerance": 1,
             'type': 'Station'
         };
+        _.each(app.planSchema.stationParams, function(param) {
+            proto[param['id']] = param['default'];
+        });
         if (stationToClone) { proto = stationToClone.toJSON(); }
         _.defaults(options, proto);
 
@@ -313,11 +384,14 @@ app.models = app.models || {};
     models.segmentFactory = function(options, segmentToClone) {
         if (_.isUndefined(options)) { options = {}; }
         var proto = {
-            'hintedSpeed': 1,
+            //"hintedSpeed": 1,
             'id': '',
             'sequence': [],
             'type': 'Segment'
         };
+        _.each(app.planSchema.segmentParams, function(param) {
+            proto[param['id']] = param['default'];
+        });
         if (segmentToClone) {
             proto = segmentToClone.toJSON();
             delete proto.id;
@@ -335,16 +409,10 @@ app.models = app.models || {};
 
     models.Command = Backbone.RelationalModel.extend({
         initialize: function() {
-            /*
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
-            var schema = {};
-            var commandSpec = app.commandSpecs[this.get('type')];
-            _.each(commandSpec.params, function(param){
-                schema[param.id] = paramTypeHash[param.valueType];
-            });
-            this.schema = schema;
-            */
+            var params = app.commandSpecs[this.get('type')].params;
+            this.schema = xpjsonToBackboneFormsSchema(params, 'Command');
             this.on('change', function() { app.vent.trigger('change:plan'); });
         },
 

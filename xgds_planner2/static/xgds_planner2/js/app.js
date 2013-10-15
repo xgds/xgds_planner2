@@ -20,6 +20,91 @@ var app = (function($, _, Backbone) {
         'tabs': '#tabs'
     });
 
+    app.module('Actions', function(options) {
+        this.addInitializer(function(options) {
+            this.undoStack = new Array();
+            this.redoStack = new Array();
+            this.currentState = undefined;
+            this.enabled = true;
+            app.vent.trigger('undoEmpty');
+            app.vent.trigger('redoEmpty');
+        });
+
+        this.disable = function() {
+            this.enabled = false;
+        };
+
+        this.enable = function() {
+            this.enabled = true;
+        };
+
+        this.undoEmpty = function() {
+            return this.undoStack.length == 0;
+        };
+
+        this.redoEmpty = function() {
+            return this.redoStack.length == 0;
+        };
+
+        this.setInitial = function() {
+            if (this.currentState == undefined) {
+                this.currentState = JSON.stringify(app.currentPlan.toJSON());
+            }
+        };
+
+        this.action = function() {
+            if (!this.enabled) return;
+            if (this.currentState == undefined) return;
+            var plan = app.currentPlan.toJSON();
+            var planString = JSON.stringify(plan);
+            if (this.currentState == planString) {
+                // plan unchanged from current state
+            } else {
+                this.undoStack.push(this.currentState);
+                this.currentState = planString;
+                this.redoStack = new Array();
+                app.vent.trigger('undoNotEmpty');
+                app.vent.trigger('redoEmpty');
+            }
+        };
+
+        this.undo = function() {
+            if (!this.enabled) return;
+            this.disable();
+            var planString = this.undoStack.pop();
+            var plan = JSON.parse(planString);
+            if (plan == undefined) {
+                app.vent.trigger('undoEmpty');
+            } else {
+                this.redoStack.push(this.currentState);
+                this.currentState = planString;
+                app.updatePlan(plan);
+                app.vent.trigger('redoNotEmpty');
+                if (this.undoStack.length == 0)
+                    app.vent.trigger('undoEmpty');
+            }
+            this.enable();
+        };
+
+        this.redo = function() {
+            if (!this.enabled) return;
+            this.disable();
+            var planString = this.redoStack.pop();
+            var plan = JSON.parse(planString);
+            if (plan == undefined) {
+                app.vent.trigger('redoEmpty');
+            } else {
+                this.undoStack.push(this.currentState);
+                this.currentState = planString;
+                app.updatePlan(plan);
+                app.vent.trigger('undoNotEmpty');
+                if (this.redoStack.length == 0)
+                    app.vent.trigger('redoEmpty');
+            }
+            this.enable();
+        };
+    });
+
     app.addInitializer(function(options) {
 
         this.options = options = _.defaults(options || {}, {
@@ -36,6 +121,7 @@ var app = (function($, _, Backbone) {
         */
         this.planSchema = JSON.parse($('#plan_schema_json').html());
         this.planLibrary = JSON.parse($('#plan_library_json').html());
+        this.planIndex = JSON.parse($('#plan_index_json').html());
 
         // Indexes to make command types easier to retrieve.
         this.commandSpecs = this.util.indexBy(this.planSchema.commandSpecs, 'id');
@@ -51,12 +137,30 @@ var app = (function($, _, Backbone) {
             this.colors[commandSpec.id] = commandSpec.color;
         }, this);
 
+        this.updatePlan = function(planJSON) {
+            console.log('Updating plan');
+            console.log(planJSON);
+            if (!_.isUndefined(planJSON)) {
+                app.currentPlan.get('sequence').reset(planJSON.sequence);
+                app.currentPlan.set(planJSON);
+            }
+            app.simulatePlan();
+            if (!_.isUndefined(app.map.planView))
+                app.map.planView.render();
+            app.vent.trigger('newPlan');
+            app.tabs.currentView.render();
+        };
+
         var planJson = JSON.parse($('#plan_json').html());
         if (planJson) {
             app.currentPlan = new app.models.Plan(planJson);
+            app.simulatePlan(); // do this before the change:plan event is mapped
+            app.currentPlan.get('sequence').resequence();
+            app.Actions.setInitial();
         }
 
         app.selectedViews = [];  // This array holds the views currently selected by checkboxes
+        app.copiedCommands = []; // array of copied commands
 
         app.map = new app.views.EarthView({el: '#map'});
         app.toolbar.show(new app.views.ToolbarView());
@@ -84,13 +188,28 @@ var app = (function($, _, Backbone) {
 
     app.vent.on('all', function(eventname, args) {
         console.log('event on app.vent: ' + eventname, args);
+        if (eventname == 'change:plan') {
+            console.log('change plan event, running simulate and action if plan is loaded and actions are enabled');
+            if (_.isUndefined(app.currentPlan)) return;
+            if (!app.Actions.enabled) return;
+            app.simulatePlan();
+            app.Actions.action();
+        } else if (eventname == 'tab:change') {
+            app.currentTab = args;
+            console.log('new tab: ' + app.currentTab + ', should be ' + args);
+        } else if (eventname == 'plan:reversing') {
+            app.Actions.disable();
+        } else if (eventname == 'plan:reverse') {
+            app.Actions.enable();
+            app.Actions.action();
+        }
     });
 
     app.addInitializer(_.bind(Backbone.history.start, Backbone.history));
 
     /*
      * Application-level Request & Respond services
-    */
+     */
 
     // Return the color mapped to a given key.
     // If no color has been assigned to that key, allocate one to be forever associated with it.

@@ -38,6 +38,37 @@ $(function() {
         };
     };
 
+    geo.calculateLengthMeters = function(a, b) {
+        var partial = geo.calculateDiffMeters(a, b);
+        var result = Math.pow(partial.x, 2) + Math.pow(partial.y, 2);
+        if (a.depth && b.depth) {
+                result += Math.pow((a.depth - b.depth), 2);
+        }
+        length = Math.sqrt(result);
+        return {
+                x: partial.x,
+                y: partial.y,
+                length: length
+        };
+    };
+
+    geo.calculateBearing = function(a, b) {
+        var dLon = (b.lng - a.lng) * DEG2RAD;
+        var y = Math.sin(dLon) * Math.cos(b.lat);
+        var x = (Math.cos(a.lat) * Math.sin(b.lat) -
+                 Math.sin(a.lat) * Math.cos(b.lat) * Math.cos(dLon));
+        var result = Math.atan2(y, x);
+        return result * RAD2DEG;
+    };
+
+    geo.getBearingDegrees = function(x, y) {
+            var result = 90.0 - RAD2DEG * Math.atan2(y, x);
+            if (result < 0) {
+                result += 360;
+            }
+            return result;
+    };
+
     geo.norm = function(xy) {
         return Math.sqrt(xy.x * xy.x + xy.y * xy.y);
     };

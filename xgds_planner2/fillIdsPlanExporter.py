@@ -6,7 +6,7 @@
 
 from xgds_planner2.planExporter import (TreeWalkPlanExporter,
                                         JsonPlanExporter)
-from xgds_planner2 import xpjson, models
+from xgds_planner2 import xpjson
 
 # pylint: disable=W0223
 
@@ -54,8 +54,9 @@ class FillIdsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     label = 'XPJSON'
     content_type = 'application/json'
 
-    def initPlan(self, plan, context):
-        context.schema = xpjson.loadDocument(models.SIMPLIFIED_SCHEMA_PATH)
+#     def initPlan(self, plan, context):
+#         schema should be set before we get here
+#         context.schema = xpjson.loadDocument(settings.STATIC_ROOT + planSchema.simplifiedSchemaPath)
 
     def transformStationCommand(self, command, context):
         command.id = getCommandId(context)
@@ -91,11 +92,11 @@ class FillIdsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
 
 
 def test():
-    schema = xpjson.loadDocument(models.SIMPLIFIED_SCHEMA_PATH)
+    schema = xpjson.loadDocument('fix')
     plan = xpjson.loadDocument('/Users/mfsmith3/projects/gds/xgds_isru/apps/xgds_kn/planner/plans/K10Black/20100802/HMP_B013A_PLAN-xp.json',
                                schema=schema)
     exporter = FillIdsPlanExporter()
-    planDoc = exporter.exportPlan(plan)
+    planDoc = exporter.exportPlan(plan, schema)
     open('/tmp/foo.json', 'wb').write(xpjson.dumpDocumentToString(planDoc))
 
 

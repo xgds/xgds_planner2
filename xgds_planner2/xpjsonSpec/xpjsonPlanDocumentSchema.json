@@ -32,7 +32,8 @@
         },
 
         "creator": {
-            "type": "string"
+            "type": "string",
+            "name": "Author"
         },
 
         "contributors": {

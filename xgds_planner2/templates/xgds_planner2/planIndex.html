@@ -38,25 +38,30 @@ table.planIndex td.stats {
 
 {% block siteSection %}Planner Index{% endblock siteSection %}
 
+{% block sitemenu-content-secondary %}
+{% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
 {% block content %}
 {{ block.super }}
 
+<!-- This functionality is now in the subnav 
 <a href="{% url 'planner2_planCreate' %}" class="mybutton">Create Plan</a>
+-->
 
 <table class="planIndex">
   <tr>
     <th>Name</th>
-    <th>Edit</th>
     <th>Export</th>
     <th class="right">Dist</th>
     <th class="right">#Stn</th>
     <th class="right">#Cmd</th>
     <th>#Cmd by type</th>
+    <th class="right">Detail Doc</th>
   </tr>
 {% for plan in plans %}
   <tr>
-    <td class="name">{{ plan.name }}</td>
-    <td><a href="{% url 'planner2_edit' plan.id %}">EDIT</a></td>
+    <td class="name"><a href="{% url 'planner2_edit' plan.id %}">{{ plan.name }}</a></td>
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
         <a href="{{ exporter.url }}">
@@ -68,6 +73,7 @@ table.planIndex td.stats {
     <td class="stats right">{{ plan.numStations }}</td>
     <td class="stats right">{{ plan.numCommands }}</td>
     <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
+    <td><a href="{% url 'planner2_doc' plan.id %}">Detail Doc</a></td>
   </tr>
 {% endfor %}
 </table>

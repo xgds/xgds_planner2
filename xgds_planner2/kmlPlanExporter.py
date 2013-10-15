@@ -20,6 +20,9 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 
     def transformStation(self, station, tsequence, context):
         lon, lat = station.geometry['coordinates']
+        name = station.name
+        if not name:
+            name = station.id
         return ('''
 <Placemark>
   <name>%(name)s</name>
@@ -28,22 +31,19 @@ class KmlPlanExporter(TreeWalkPlanExporter):
   </Point>
 </Placemark>
 ''' %
-                {'name': station.id,
+                {'name': name,
                  'lon': lon,
                  'lat': lat})
 
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
         nlon, nlat = context.nextStation.geometry['coordinates']
-        mlon = 0.5 * (plon + nlon)
-        mlat = 0.5 * (plat + nlat)
+        # mlon = 0.5 * (plon + nlon)
+        # mlat = 0.5 * (plat + nlat)
         return ('''
 <Placemark>
   <name>%(name)s</name>
   <MultiGeometry>
-    <Point>
-      <coordinates>%(mlon)s,%(mlat)s</coordinates>
-    </Point>
     <LineString>
       <tessellate>1</tessellate>
       <coordinates>
@@ -59,8 +59,9 @@ class KmlPlanExporter(TreeWalkPlanExporter):
                  'plat': plat,
                  'nlon': nlon,
                  'nlat': nlat,
-                 'mlon': mlon,
-                 'mlat': mlat})
+                 #'mlon': mlon,
+                 #'mlat': mlat
+                 })
 
     def transformPlan(self, plan, tsequence, context):
         return KmlUtil.wrapKmlDocument('\n'.join(tsequence), plan.id)
@@ -70,7 +71,7 @@ def test():
     schema = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_SCHEMA_PATH)
     plan = xpjson.loadDocument(xpjson.EXAMPLE_PLAN_PATH, schema=schema)
     exporter = KmlPlanExporter()
-    open('/tmp/foo.kml', 'wb').write(exporter.exportPlan(plan))
+    open('/tmp/foo.kml', 'wb').write(exporter.exportPlan(plan, schema))
 
 
 if __name__ == '__main__':

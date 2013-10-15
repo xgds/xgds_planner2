@@ -26,12 +26,14 @@ from xgds_planner2 import (settings,
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
 
+Plan = models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 
-def get_handlebars_templates():
+
+def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
     global _template_cache
     if settings.XGDS_PLANNER_TEMPLATE_DEBUG or not _template_cache:
         templates = {}
-        for template_file in glob.glob(os.path.join(HANDLEBARS_TEMPLATES_DIR, '*.handlebars')):
+        for template_file in glob.glob(os.path.join(inp, '*.handlebars')):
             with open(template_file, 'r') as infile:
                 template_name = os.path.splitext(os.path.basename(template_file))[0]
                 templates[template_name] = infile.read()
@@ -52,40 +54,66 @@ def plan_REST(request, plan_id, jsonPlanId):
     Read and write plan JSON.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
-    plan = models.Plan.objects.get(pk=plan_id)
+    plan = Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
         for k, v in data.iteritems():
+            if k == "_simInfo":
+                continue
             plan.jsonPlan[k] = v
+#         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
     return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
-with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
-    SCHEMA = schemafile.read()
-with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
-    LIBRARY = libraryfile.read()
+# with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
+#     SCHEMA = schemafile.read()
+# with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
+#     LIBRARY = libraryfile.read()
 
 
-def plan_editor_app(request, plan_id=None, editable=True):
-    templates = get_handlebars_templates()
-
-    plan = models.Plan.objects.get(pk=plan_id)
+def plan_detail_doc(request, plan_id=None):
+    plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.id
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
 
+    planSchema = models.getPlanSchema(plan_json.platform.name)
+    return render_to_response(
+        'xgds_planner2/planDetailDoc.html',
+        RequestContext(request,
+                       {'plan_json': plan_json,
+                        'plan_schema': json.loads(planSchema.getJsonSchema()),
+                        'plan_library': json.loads(planSchema.getJsonLibrary())}))
+
+
+def plan_editor_app(request, plan_id=None, editable=True):
+    templates = get_handlebars_templates()
+
+    plan = Plan.objects.get(pk=plan_id)
+    plan_json = plan.jsonPlan
+    if not plan_json.serverId:
+        plan_json.serverId = plan.id
+    if "None" in plan_json.url:
+        plan_json.url = plan.get_absolute_url()
+
+    planSchema = models.getPlanSchema(plan_json.platform.name)
+#     print planSchema.getJsonSchema();
     return render_to_response(
         'xgds_planner2/planner_app.html',
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
-            'plan_schema_json': SCHEMA,
-            'plan_library_json': LIBRARY,
-            'plan_json': plan_json,
+            'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
+            'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
+            'plan_json': json.dumps(plan_json),
+            'plan_name': plan.name,
+            'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable,
+            'simulatorPath': os.path.join(settings.STATIC_URL, planSchema.simulatorPath),
+            'simulator': planSchema.simulator,
         }),
         # context_instance=RequestContext
     )
@@ -101,14 +129,27 @@ def planIndex(request):
     return render_to_response(
         'xgds_planner2/planIndex.html',
         {
-            'plans': models.Plan.objects.all(),
+            'plans': Plan.objects.all(),
             'exporters': choosePlanExporter.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
 
 
+def plan_index_json():
+    plan_objs = Plan.objects.all()
+    plans_json = []
+    for plan in plan_objs:
+        plans_json.append({
+            'id': plan.id,
+            'name': plan.name,
+            'url': plan.get_absolute_url()
+        })
+
+    return plans_json
+
+
 def getDbPlan(uuid):
-    return get_object_or_404(models.Plan, uuid=uuid)
+    return get_object_or_404(Plan, uuid=uuid)
 
 
 def planExport(request, uuid, name):
