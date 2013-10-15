@@ -1,5 +1,5 @@
 
-(function(Form){
+(function(Form) {
     Form.editors.Coordinates = Form.editors.Text.extend({
         /**
         * Returns the current editor value
@@ -18,14 +18,14 @@
 
         /**
         * Sets the value of the form element
-        * @param {String}
+        * @param {String} value
         */
         setValue: function(value) {
             var lng = value.coordinates[0];
             var lat = value.coordinates[1];
             var str = '' + lng + ', ' + lat;
             this.$el.val(str);
-        },
+        }
 
     });
 

@@ -1,17 +1,17 @@
-$(function(){
+$(function() {
     app.views = app.views || {};
 
     function parseAltitudeMode(ge, modeString) {
         // Return an AltitudeMode object corresponding to the given string.
         // Stolen directly from the old planner
-        var kml = ('<Document>'
-                   +'<Placemark>'
-                   +'<Point>'
-                   +'<coordinates>0,0</coordinates>'
-                   +'<altitudeMode>'+modeString+'</altitudeMode>'
-                   +'</Point>'
-                   +'</Placemark>'
-                   +'</Document>');
+        var kml = ('<Document>' +
+                   '<Placemark>' +
+                   '<Point>' +
+                   '<coordinates>0,0</coordinates>' +
+                   '<altitudeMode>' + modeString + '</altitudeMode>' +
+                   '</Point>' +
+                   '</Placemark>' +
+                   '</Document>');
         return (ge.parseKml(kml)
                 .getFeatures()
                 .getFirstChild()
@@ -19,9 +19,23 @@ $(function(){
                 .getAltitudeMode());
     }
 
-    function vectorDiff(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] - vec2[i]; }) };
-    function vectorAdd(vec1, vec2){ var l = vec1.length; return _.map( _.range(l), function(i){ return vec1[i] + vec2[i]; }) };
-    function vectorAbs(vec) { return Math.sqrt( _.reduce(vec, function(memo, num){ return memo + Math.pow(num, 2); }, 0) ); };
+    function vectorDiff(vec1, vec2) {
+        var l = vec1.length;
+        return _.map(_.range(l), function(i) {
+            return vec1[i] - vec2[i];
+        });
+    };
+    function vectorAdd(vec1, vec2) {
+        var l = vec1.length;
+        return _.map(_.range(l), function(i) {
+            return vec1[i] + vec2[i];
+        });
+    };
+    function vectorAbs(vec) {
+        return Math.sqrt(_.reduce(vec, function(memo, num) {
+            return memo + Math.pow(num, 2);
+        }, 0));
+    };
 
 
     var EARTH_RADIUS_METERS = 6371010;
@@ -31,9 +45,9 @@ $(function(){
     /*
      * Spherical Mercator projectionator,
      * from: https://github.com/geocam/geocamTiePoint/blob/master/geocamTiePoint/static/geocamTiePoint/js/coords.js
-     */ 
+     */
     var ORIGIN_SHIFT = 2 * Math.PI * 6378137 / 2.0;
-    
+
     function latLonToMeters(latLon) {
         var mx = latLon.lng * ORIGIN_SHIFT / 180;
         var my = Math.log(Math.tan((90 + latLon.lat) * Math.PI / 360)) /
@@ -47,7 +61,7 @@ $(function(){
         var lng = meters.x * 180 / ORIGIN_SHIFT;
         var lat = meters.y * 180 / ORIGIN_SHIFT;
         lat = ((Math.atan(Math.exp((lat * (Math.PI / 180)))) * 360) / Math.PI) - 90;
-        return { lat: lat, lng: lng }
+        return { lat: lat, lng: lng };
     }
 
     function getBearing(pointA, pointB) {
@@ -60,18 +74,24 @@ $(function(){
         var lat2 = pointB.lat;
         var lon2 = pointB.lng;
 
-        var bearing = Math.atan2(Math.sin(lon2-lon1)*Math.cos(lat2), Math.cos(lat1)*Math.sin(lat2)-Math.sin(lat1)*Math.cos(lat2)*Math.cos(lon2-lon1)) % (2*Math.PI);
+        var bearing = Math.atan2(Math.sin(lon2 - lon1) * Math.cos(lat2),
+                                 Math.cos(lat1) * Math.sin(lat2) -
+                                 Math.sin(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1)) %
+            (2 * Math.PI);
         bearing = bearing * 180 / Math.PI; // radions --> degrees
-        if ( bearing < 0.0 ) { bearing = bearing + 360.0 }
+        if (bearing < 0.0) { bearing = bearing + 360.0; }
         return bearing;
     }
 
-    function makeDraggable( placemark, options) {
+    function makeDraggable(placemark, options) {
         options = _.defaults(options, {
-            startCallback: function(placemark, data){},
-            dragCallback: function(placemark, data){},
-            dropCallback: function(placemark, data){},
-            getObjectPosition: function(placemark){ var geom = placemark.getGeometry(); return [ geom.getLatitude(), geom.getLongitude() ]; },
+            startCallback: function(placemark, data) {},
+            dragCallback: function(placemark, data) {},
+            dropCallback: function(placemark, data) {},
+            getObjectPosition: function(placemark) {
+                var geom = placemark.getGeometry();
+                return [geom.getLatitude(), geom.getLongitude()];
+            }
             /*
             setPosition: function(placemark, lat, lon) {
                 var geom = placemark.getGeometry();
@@ -84,10 +104,10 @@ $(function(){
         var dragEngaged = false;
         var data = {
             cursorStartPos: undefined, // [lat, lon] position of the drag start point
-            cursorPos: undefined, // [lat, lon] of the current cursor while dragging
+            cursorPos: undefined // [lat, lon] of the current cursor while dragging
             //objectStartPos: undefined,
             //objectPos: undefined, // Whatever we determine to be the object's "location" ( i.e. the output of the getObjectPosition() callback )
-            //dragOffset: undefined, // [lat, lon] offset between the curson position and object position         
+            //dragOffset: undefined, // [lat, lon] offset between the curson position and object position
         };
 
         function dragStart(evt) {
@@ -95,34 +115,34 @@ $(function(){
             dragEngaged = true;
             //data.objectPos = data.objectStartPos = options.getObjectPosition(placemark);
             data.cursorStartPos = data.cursorPos = [evt.getLatitude(), evt.getLongitude()];
-            google.earth.addEventListener( ge.getWindow(), 'mouseup', dragEnd)
-            google.earth.addEventListener( ge.getWindow(), 'mousemove', dragMove)
+            google.earth.addEventListener(ge.getWindow(), 'mouseup', dragEnd);
+            google.earth.addEventListener(ge.getWindow(), 'mousemove', dragMove);
             options.startCallback(placemark, data);
         };
-        
+
         function dragMove(evt) {
             evt.preventDefault();
             data.cursorPos = [evt.getLatitude(), evt.getLongitude()];
-            options.dragCallback( placemark, data);
+            options.dragCallback(placemark, data);
         };
 
-        function dragEnd(evt){
+        function dragEnd(evt) {
             evt.preventDefault();
             dragEngaged = false;
             //data.dragOffset = undefined;
-            google.earth.removeEventListener( ge.getWindow(), 'mouseup', dragEnd)
-            google.earth.removeEventListener( ge.getWindow(), 'mousemove', dragMove)
+            google.earth.removeEventListener(ge.getWindow(), 'mouseup', dragEnd);
+            google.earth.removeEventListener(ge.getWindow(), 'mousemove', dragMove);
             options.dropCallback(placemark, data);
         };
 
-        google.earth.addEventListener( placemark, 'mousedown', dragStart);
+        google.earth.addEventListener(placemark, 'mousedown', dragStart);
         return [placemark, 'mousedown', dragStart];  // Need these references to tear down the event handler later.
     };
 
-    function kmlColor( rgbColor, alpha ) {
+    function kmlColor(rgbColor, alpha) {
         // Convert rgb hex color values to aabbggrr, which is what KML uses.
-        if ( alpha == undefined ) { alpha = 'ff';}
-        if ( rgbColor.charAt(0) == '#' ) { rgbColor = rgbColor.slice(1); }
+        if (alpha == undefined) { alpha = 'ff';}
+        if (rgbColor.charAt(0) == '#') { rgbColor = rgbColor.slice(1); }
         var rr = rgbColor.substr(0, 2);
         var gg = rgbColor.substr(2, 2);
         var bb = rgbColor.substr(4, 2);
@@ -132,27 +152,27 @@ $(function(){
     app.views.EarthView = Backbone.View.extend({
         el: 'div',
 
-        initialize: function(){
+        initialize: function() {
             _.bindAll(this);
-            if ( ! app.options.offline ) {
+            if (! app.options.offline) {
                 this.on('earth:loaded', this.render);
                 google.load('earth', '1', {
-                    callback: this.render, 
+                    callback: this.render
                 });
             } else {
                 this.$el.css({'background-color': 'blue', 'height': '800px'});
             }
         },
 
-       render: function(){
+       render: function() {
            google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
         },
 
-        earthInit: function(ge){
+        earthInit: function(ge) {
             this.ge = ge;
             window.ge = ge;
             ge.getWindow().setVisibility(true);
-            app.vent.trigger("earth:init");
+            app.vent.trigger('earth:init');
 
             // Configure the Earth instance
             ge.getNavigationControl().setVisibility(ge.VISIBILITY_AUTO);
@@ -164,12 +184,12 @@ $(function(){
 
             // Disable the terrain
             ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
-            
+
             ge.gex = new GEarthExtensions(ge);
 
             app.options.XGDS_PLANNER_CLAMP_MODE_JS =
                 parseAltitudeMode(this.ge, app.options.XGDS_PLANNER2_CLAMP_MODE_KML || 'relativeToSeaFloor');
-            
+
             app.vent.trigger('earth:init');
             this.trigger('earth:init');
             this.drawPlan();
@@ -177,20 +197,20 @@ $(function(){
             app.vent.trigger('earth:loaded');
         },
 
-        earthFailure: function(){
-            alert("Earth plugin failed to load.");
+        earthFailure: function() {
+            alert('Earth plugin failed to load.');
         },
 
-        drawPlan: function(){
-            if (this.planView){ alert("PlanView was previosly instantiated.  It's intended to be a singleton."); }
-            this.planView = new PlanKmlView({ 
-                collection: app.currentPlan.get('sequence'), 
-                ge: this.ge,
+        drawPlan: function() {
+            if (this.planView) { alert("PlanView was previosly instantiated.  It's intended to be a singleton."); }
+            this.planView = new PlanKmlView({
+                collection: app.currentPlan.get('sequence'),
+                ge: this.ge
             });
             this.planView.render();
             this.ge.getFeatures().appendChild(this.planView.doc);
-            this.ge.gex.util.flyToObject( this.planView.doc );
-        },
+            this.ge.gex.util.flyToObject(this.planView.doc);
+        }
 
     });
 
@@ -203,15 +223,17 @@ $(function(){
         template: Handlebars.compile($('#template-plan-kml').html()),
         geEvents: [], // container holds GE events for later removal
 
-        initialize: function(){
+        initialize: function() {
             var ge = this.ge = this.options.ge;
-            var doc = this.doc = ge.parseKml( this.template( {options: app.options} ) );
-            this.stationsFolder = ge.gex.dom.buildFolder({ name: "stations" });
-            this.dragHandlesFolder = ge.gex.dom.buildFolder({ name: "dragHandles" });
-            this.segmentsFolder = ge.gex.dom.buildFolder({ name: "segments" });
-            this.fovWedgesFolder = ge.gex.dom.buildFolder({ name: "fovWedges" });
+            var doc = this.doc = ge.parseKml(this.template({options: app.options}));
+            this.stationsFolder = ge.gex.dom.buildFolder({name: 'stations'});
+            this.dragHandlesFolder = ge.gex.dom.buildFolder({name: 'dragHandles'});
+            this.segmentsFolder = ge.gex.dom.buildFolder({name: 'segments'});
+            this.fovWedgesFolder = ge.gex.dom.buildFolder({name: 'fovWedges'});
             this.kmlFolders = [this.stationsFolder, this.segmentsFolder, this.dragHandlesFolder, this.fovWedgesFolder];
-            _.each( this.kmlFolders, function(folder){ doc.getFeatures().appendChild(folder); });
+            _.each(this.kmlFolders, function(folder) {
+                doc.getFeatures().appendChild(folder);
+            });
 
             // re-rendering the whole KML View on add proves to be pretty slow.
             //this.collection.on('add', this.render, this);
@@ -222,14 +244,14 @@ $(function(){
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
 
             // move to bounding box defined in plan, probably wrong place to do this
-            var site = app.currentPlan.get("site");
+            var site = app.currentPlan.get('site');
             if (site != undefined)
                 var bbox = site.bbox;
             if (bbox != undefined) {
-                var aspect = $("#map").width() / $("#map").height();
+                var aspect = $('#map').width() / $('#map').height();
                 var folder = ge.gex.dom.addFolder([
-                    ge.gex.dom.buildPointPlacemark([bbox[0],bbox[1]]),
-                    ge.gex.dom.buildPointPlacemark([bbox[2],bbox[3]])
+                    ge.gex.dom.buildPointPlacemark([bbox[0], bbox[1]]),
+                    ge.gex.dom.buildPointPlacemark([bbox[2], bbox[3]])
                 ]);
                 var bounds = ge.gex.dom.computeBounds(folder);
                 ge.gex.view.setToBoundsView(bounds, {aspectRatio: aspect,
@@ -238,13 +260,15 @@ $(function(){
             }
         },
 
-        clearKmlFolder: function(folder){
+        clearKmlFolder: function(folder) {
             var featureContainer = folder.getFeatures();
-            while( featureContainer.hasChildNodes() ) { featureContainer.removeChild( featureContainer.getLastChild() ); }
+            while (featureContainer.hasChildNodes()) {
+                featureContainer.removeChild(featureContainer.getLastChild());
+            }
         },
 
-        render: function(){
-            _.each( this.kmlFolders, this.clearKmlFolder);
+        render: function() {
+            _.each(this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
             if (this.currentMode) {
@@ -252,37 +276,39 @@ $(function(){
             }
         },
 
-        drawStation: function(station){
-            var stationPointView = new StationPointView({ge: this.ge, model: station, planKmlView: this});          
+        drawStation: function(station) {
+            var stationPointView = new StationPointView({ge: this.ge, model: station, planKmlView: this});
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
 
-            station.on('change', function(station){
-                console.log("geometry change: " + JSON.stringify(station.get('geometry').coordinates));
+            station.on('change', function(station) {
+                console.log('geometry change: ' + JSON.stringify(station.get('geometry').coordinates));
             });
 
             return stationPointView;
         },
 
-        drawStations: function(){
+        drawStations: function() {
             this.stationViews = [];
-            _.each( 
-                this.collection.filter( function(model){ return model.get('type') == 'Station'; } ),
-                function(station){
-                    this.stationViews.push( this.drawStation(station) );
+            _.each(
+                this.collection.filter(function(model) {
+                    return model.get('type') == 'Station';
+                }),
+                function(station) {
+                    this.stationViews.push(this.drawStation(station));
                 },
                 this // view context
             );
 
-            _.each(  
+            _.each(
                 this.stationViews,
-                function(stationView){
+                function(stationView) {
                     stationView.addPanoWedges();
                 }
             );
         },
 
-        drawSegment: function(segment, fromStation, toStation){
+        drawSegment: function(segment, fromStation, toStation) {
             var segmentLineView = new SegmentLineView({
                 model: segment,
                 fromStation: fromStation,
@@ -292,14 +318,14 @@ $(function(){
             this.segmentsFolder.getFeatures().appendChild(segmentLineView.placemark);
         },
 
-        drawSegments: function(){
-            if ( this.segmentsFolder.getFeatures().hasChildNodes() ) {
-                this.clearKmlFolder( this.segmentsFolder);
+        drawSegments: function() {
+            if (this.segmentsFolder.getFeatures().hasChildNodes()) {
+                this.clearKmlFolder(this.segmentsFolder);
             }
-            this.collection.each(function(item, index, list){
+            this.collection.each(function(item, index, list) {
                 if (item.get('type') == 'Segment') {
-                    var fromStation = list[index-1];
-                    var toStation = list[index+1];
+                    var fromStation = list[index - 1];
+                    var toStation = list[index + 1];
                     this.drawSegment(item, fromStation, toStation);
                 }
             }, this);
@@ -313,20 +339,20 @@ $(function(){
 
         // Remove event handlers that were added with this.addGeEvent()
         clearGeEvents: function() {
-            while( this.geEvents.length > 0 ) {
-                google.earth.removeEventListener.apply(google.earth, this.geEvents.pop() );
+            while (this.geEvents.length > 0) {
+                google.earth.removeEventListener.apply(google.earth, this.geEvents.pop());
             }
         },
 
-        setMode: function(modeName){
-            console.log("Set mouse mode: " + modeName);
+        setMode: function(modeName) {
+            console.log('Set mouse mode: ' + modeName);
             var modeMap = {
                 'addStations': 'addStationsMode',
                 'navigate': 'navigateMode',
-                'reposition': 'repositionMode',
+                'reposition': 'repositionMode'
             };
 
-            if ( this.currentMode ) { this.currentMode.exit.call(this); }
+            if (this.currentMode) { this.currentMode.exit.call(this); }
             var mode = _.isObject(modeName) ? modeName : this[modeMap[modeName]];
             mode.enter.call(this);
             this.currentMode = mode;
@@ -334,7 +360,7 @@ $(function(){
 
         // Clean up, then re-enter the mode.  Useful for re-draws/
         resetMode: function() {
-            if ( this.currentMode) {
+            if (this.currentMode) {
                 var mode = this.currentMode;
                 mode.exit.call(this);
                 mode.enter.call(this);
@@ -342,54 +368,56 @@ $(function(){
         },
 
         addStationsMode: {
-            enter: function(){
+            enter: function() {
                 this.addGeEvent(this.ge.getGlobe(), 'click', this.clickAddStation);
             },
-            exit: function(){
+            exit: function() {
                 this.clearGeEvents();
-            },
+            }
         }, // end addStationMode
 
         navigateMode: {
-            enter: function(){
+            enter: function() {
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
-                for ( var placemark,i=0; i<l; i++ ) {
+                for (var placemark, i = 0; i < l; i++) {
                     placemark = stations.item(i);
-                    this.addGeEvent( placemark, 'dblclick', function(evt){ evt.preventDefault(); });
+                    this.addGeEvent(placemark, 'dblclick', function(evt) {
+                        evt.preventDefault();
+                    });
                 }
             },
-            exit: function(){
+            exit: function() {
                 this.clearGeEvents();
             }
         },
 
         repositionMode: {
-            enter: function(){
+            enter: function() {
                 var planview = this;
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
                 var point;
-                for ( var station,i=0; i<l; i++ ) {
+                for (var station, i = 0; i < l; i++) {
                     station = stations.item(i);
                     //point = station.getGeometry().getGeometries().getFirstChild();
                     this.ge.gex.edit.makeDraggable(station, {
                         bounce: false,
-                        dragCallback: function(){
+                        dragCallback: function() {
                             this.view.model.trigger('dragUpdate', this);
                         },
-                        dropCallback: function(){
+                        dropCallback: function() {
                             // "this" is the placemark GE object.
                             var model = this.view.model;
                             var point = this.getGeometry();
                             model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
                             planview.render();
-                        },
+                        }
                     });
 
                     // Double-click to delete
                     var planKmlView = this;
-                    this.addGeEvent( station, 'dblclick', function(evt){
+                    this.addGeEvent(station, 'dblclick', function(evt) {
                         evt.preventDefault();
                         var pm = evt.getTarget();
                         planKmlView.stationsFolder.getFeatures().removeChild(pm);
@@ -406,24 +434,24 @@ $(function(){
 
 
             }, // end enter
-            exit: function(){
+            exit: function() {
                 this.destroyMidpoints();
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
-                for ( var station,i=0; i<l; i++ ) {
+                for (var station, i = 0; i < l; i++) {
                     station = stations.item(i);
                     this.ge.gex.edit.endDraggable(station);
 
                     station.view.model.off('change:headingDegrees'); // kill drag handle update binding
                 }
-                
+
                 this.clearKmlFolder(this.dragHandlesFolder);
 
-            },
+            }
         }, // end repositionMode
 
-        clickAddStation: function(evt){
-            console.log("Add Station");
+        clickAddStation: function(evt) {
+            console.log('Add Station');
             var coords = [evt.getLongitude(), evt.getLatitude()];
             var station = app.models.stationFactory({ coordinates: coords });
             var segment = app.models.segmentFactory();
@@ -433,17 +461,21 @@ $(function(){
             app.currentPlan.kmlView.drawStation(station);
             var seq = app.currentPlan.get('sequence');
             var l = seq.length;
-            app.currentPlan.kmlView.drawSegment( seq.at(l-2), seq.at(l-3), seq.at(l-1) );
+            app.currentPlan.kmlView.drawSegment(seq.at(l - 2),
+                                                seq.at(l - 3),
+                                                seq.at(l - 1));
         },
 
-        drawMidpoints: function(){
-            if (! this.midpoitnsFolder) { this.midpointsFolder = this.ge.gex.dom.buildFolder({ name: "midpoints" }); }
+        drawMidpoints: function() {
+            if (! this.midpointsFolder) {
+                this.midpointsFolder = this.ge.gex.dom.buildFolder({name: 'midpoints'});
+            }
             this.doc.getFeatures().appendChild(this.midpointsFolder);
             var fldrFeatures = this.midpointsFolder.getFeatures();
 
-            this.collection.each(function(item, idx, list){
+            this.collection.each(function(item, idx, list) {
                 var station1, station2;
-                if ( item.get('type') == "Segment" ) {
+                if (item.get('type') == 'Segment') {
                     station1 = list[idx - 1];
                     station2 = list[idx + 1];
                     midpoint = midpointPlacemark({
@@ -460,16 +492,16 @@ $(function(){
             this.kmlFolders.push(this.midpointsFolder);
         },
 
-        destroyMidpoints: function(){
-            this.doc.getFeatures().removeChild( this.midpointsFolder );
+        destroyMidpoints: function() {
+            this.doc.getFeatures().removeChild(this.midpointsFolder);
             this.kmlFolders.pop();
             delete this.midpointsFolder;
-        },
+        }
     });
 
     // This view class manages the map point for a single Station model
     var StationPointView = Backbone.View.extend({
-        initialize: function(){
+        initialize: function() {
             this.planKmlView = this.options.planKmlView;
 
             var gex = this.options.ge.gex;
@@ -477,102 +509,110 @@ $(function(){
             pmOptions.name = this.model.get('_sequenceLabel') || this.model.toString();
             pmOptions.altitudeMode = app.options.plannerClampMode || this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
             pmOptions.style = this.buildStyle();
-            var point =  this.model.get('geometry').coordinates; // lon, lat
+            var point = this.model.get('geometry').coordinates; // lon, lat
 
-            var pointGeom = gex.dom.buildPoint([ point[1], point[0] ]); // lat, lon
+            var pointGeom = gex.dom.buildPoint([point[1], point[0]]); // lat, lon
 
             pmOptions.point = pointGeom;
             this.placemark = gex.dom.buildPlacemark(
                 pmOptions
             );
-            
+
             // Stop the balloon from popping on click.
-            google.earth.addEventListener(this.placemark, 'click', function(evt){ evt.preventDefault() });
+            google.earth.addEventListener(this.placemark, 'click', function(evt) {
+                evt.preventDefault();
+            });
 
             this.placemark.view = this; // 2-way link for GE event handlers to use
             //this.model.on('change', this.redraw, this);
-            this.listenTo( this.model, 'change', this.redraw);
-            this.listenTo( this.model, 'add:sequence remove:sequence', function(command, collection){
-                if ( command.hasParam('showWedge') ) {
+            this.listenTo(this.model, 'change', this.redraw);
+            this.listenTo(this.model, 'add:sequence remove:sequence', function(command, collection) {
+                if (command.hasParam('showWedge')) {
                     this.redrawPanoWedges();
                 }
             });
         },
 
-        redraw: function(){
+        redraw: function() {
             // redraw code. To be invoked when relevant model attributes change.
             var kmlPoint = this.placemark.getGeometry();
 
             var coords = this.model.get('geometry').coordinates; // lon, lat
             coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
-            this.placemark.setName( this.model.get('_sequenceLabel') || this.model.toString() );
+            this.placemark.setName(this.model.get('_sequenceLabel') || this.model.toString());
             //this.placemark.setStyle( this.getStyle() );
-            this.placemark.getStyleSelector().getIconStyle().setHeading( this.model.get('headingDegrees') );
-            this.placemark.getStyleSelector().getIconStyle().getIcon().setHref( this.model.get('isDirectional') ?
-                    'http://earth.google.com/images/kml-icons/track-directional/track-0.png' : 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png' );
+            this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
+            this.placemark.getStyleSelector().getIconStyle().getIcon()
+                .setHref(this.model.get('isDirectional') ?
+                         'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
+                         'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
 
-            if ( this.wedgeViews) {
-                _.each( this.wedgeViews, function(wedgeView) {
+            if (this.wedgeViews) {
+                _.each(this.wedgeViews, function(wedgeView) {
                     wedgeView.update();
                 });
             }
         },
 
-        buildStyle: function(){
+        buildStyle: function() {
             var gex = this.options.ge.gex;
             var ge = this.options.ge;
 
-            var iconUrl = this.model.get('isDirectional') ? 
-                'http://earth.google.com/images/kml-icons/track-directional/track-0.png' : 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
+            var iconUrl = this.model.get('isDirectional') ?
+                'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
+                'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
             var icon = ge.createIcon('');
             icon.setHref(iconUrl);
             var style = ge.createStyle('');
             style.getIconStyle().setIcon(icon);
-            style.getIconStyle().setHeading( this.model.get('headingDegrees'));
+            style.getIconStyle().setHeading(this.model.get('headingDegrees'));
             return style;
         },
 
-        dragRotateHandleCoords: function(){
-            
+        dragRotateHandleCoords: function() {
+
             //var radius = 14.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
             var cameraAltitude = ge.getView().copyAsCamera(ge.ALTITUDE_RELATIVE_TO_GROUND).getAltitude();
-            var radius = 0.25 * cameraAltitude; // distance in meters in front of the waypoint location to place the rotational handle. 
+            var radius = 0.25 * cameraAltitude; // distance in meters in front of the waypoint location to place the rotational handle.
 
             var theta = this.model.get('headingDegrees') * Math.PI / 180.00; // radians
             var stationCoords = this.model.get('geometry').coordinates;
-            var stationPosMeters = latLonToMeters( { lat: stationCoords[1], lng: stationCoords[0] } );
+            var stationPosMeters = latLonToMeters({
+                lat: stationCoords[1],
+                lng: stationCoords[0]
+            });
             var handlePosMeters = {
                 x: stationPosMeters.x + radius * Math.sin(theta),
-                y: stationPosMeters.y + radius * Math.cos(theta),
+                y: stationPosMeters.y + radius * Math.cos(theta)
             };
-            return metersToLatLon( handlePosMeters );
+            return metersToLatLon(handlePosMeters);
         },
 
-        updateDragRotateHandlePm: function(){
+        updateDragRotateHandlePm: function() {
             var gex = this.options.ge.gex;
             var newLatLng = this.dragRotateHandleCoords();
 
             var geom = this.dragHandlePm.getGeometry(); // a MultiGeometry
             var point = geom.getGeometries().getFirstChild();
-            point.setLatLng( newLatLng.lat, newLatLng.lng );
-            
+            point.setLatLng(newLatLng.lat, newLatLng.lng);
+
             var stLoc = this.model.get('geometry').coordinates; // lon, lat
-            stLoc = _.object(['lat','lng'], stLoc);
+            stLoc = _.object(['lat', 'lng'], stLoc);
 
             var newLineString = gex.dom.buildLineString([[stLoc.lat, stLoc.lng], [newLatLng.lat, newLatLng.lng]]);
             var oldLineString = geom.getGeometries().getLastChild();
             geom.getGeometries().replaceChild(newLineString, oldLineString);
         },
 
-        createDragRotateHandle: function(){
+        createDragRotateHandle: function() {
             var station = this.model;
             var gex = this.options.ge.gex;
 
             var coords = this.dragRotateHandleCoords();
             var stLoc = _.object(['lng', 'lat'], this.model.get('geometry').coordinates);
             var linestring = gex.dom.buildLineString(
-                    [ [stLoc.lat, stLoc.lng], [coords.lat, coords.lng] ],
+                    [[stLoc.lat, stLoc.lng], [coords.lat, coords.lng]],
                     {tessellate: true}
             );
 
@@ -580,95 +620,102 @@ $(function(){
                 {
                     point: new geo.Point([coords.lat, coords.lng]),
                     lineString: linestring,
-                    style: '#direction', // circle with a target
+                    style: '#direction' // circle with a target
                 }
             );
 
-            this.model.on( 'change:headingDegrees', this.updateDragRotateHandlePm, this );
+            this.model.on('change:headingDegrees', this.updateDragRotateHandlePm, this);
             var station = this.model;
 
-            makeDraggable( this.dragHandlePm, {
+            makeDraggable(this.dragHandlePm, {
                 //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
-                startCallback: function(placemark, data){
+                startCallback: function(placemark, data) {
                     console.log('mousedown');
                     var coords = station.get('geometry').coordinates;
                     data.stationLoc = { lng: coords[0], lat: coords[1] };
                     data.startHeading = station.get('headingDegrees');
                 } ,
-                dragCallback: function(placemark, data){
-                    var newHeading = getBearing( data.stationLoc, _.object(['lat','lng'], data.cursorPos) );
+                dragCallback: function(placemark, data) {
+                    var newHeading = getBearing(data.stationLoc, _.object(['lat', 'lng'], data.cursorPos));
                     console.log(newHeading);
                     station.set({
                         headingDegrees: newHeading,
-                        isDirectional: true 
+                        isDirectional: true
                     });
-                },
+                }
             });
-            
+
             return this.dragHandlePm;
         },
 
-        addPanoWedges: function(){
+        addPanoWedges: function() {
             var station = this.model;
             var wedgeViews = this.wedgeViews = [];
             var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
-            this.model.get('sequence').each(function(command){
-                if ( command.hasParam('showWedge') ) {
-                    var wedgeView = new PanoWedgeView({ station: station, command: command });
-                    wedgeViews.push( wedgeView );
-                    wedgeFeatures.appendChild( wedgeView.placemark );
+            this.model.get('sequence').each(function(command) {
+                if (command.hasParam('showWedge')) {
+                    var wedgeView = new PanoWedgeView({
+                        station: station,
+                        command: command
+                    });
+                    wedgeViews.push(wedgeView);
+                    wedgeFeatures.appendChild(wedgeView.placemark);
                 }
             });
         },
 
-        destroyPanoWedges: function(){
+        destroyPanoWedges: function() {
             var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
-            while ( this.wedgeViews.length > 0 ) {
+            while (this.wedgeViews.length > 0) {
                 wedgeView = this.wedgeViews.pop();
-                wedgeFeatures.removeChild( wedgeView.placemark );
+                wedgeFeatures.removeChild(wedgeView.placemark);
                 wedgeView.close();
             }
         },
 
-        redrawPanoWedges: function(){
+        redrawPanoWedges: function() {
             this.destroyPanoWedges();
             this.addPanoWedges();
         },
 
-        close: function(){
+        close: function() {
             this.destroyPanoWedges();
             this.stopListening();
-        },
+        }
 
     });
 
     var SegmentLineView = Backbone.View.extend({
-        initialize: function(){
+        initialize: function() {
             var options = this.options;
-            if ( ! options.ge && options.toStation && options.fromStation) { throw "Missing a required option!"; }
+            if (! options.ge && options.toStation && options.fromStation) {
+                throw 'Missing a required option!';
+            }
             this.ge = this.options.ge;
             this.gex = this.options.ge.gex;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
             this.otherStation = {};
-            this.otherStation[options.toStation.cid]= options.fromStation;
-            this.otherStation[options.fromStation.cid]= options.toStation;
-            _.each([this.fromStation, this.toStation], function(stationModel){
-                stationModel.on('change:geometry', function(){ this.updateGeom(stationModel); }, this);
-                stationModel.on('dragUpdate', function( placemark ) {
+            this.otherStation[options.toStation.cid] = options.fromStation;
+            this.otherStation[options.fromStation.cid] = options.toStation;
+            _.each([this.fromStation, this.toStation], function(stationModel) {
+                stationModel.on('change:geometry', function() {
+                    this.updateGeom(stationModel);
+                }, this);
+                stationModel.on('dragUpdate', function(placemark) {
                     var geom = placemark.getGeometry();
                     var coords = {lat: geom.getLatitude(), lng: geom.getLongitude()};
-                    this.update( this.otherStation[placemark.view.model.cid], coords );
+                    this.update(this.otherStation[placemark.view.model.cid], coords);
                 }, this);
             }, this);
             this.render();
-            this.listenTo( this.model, 'add:sequence delete:sequence change:sequence', function(evt, options){
+            this.listenTo(this.model, 'add:sequence delete:sequence change:sequence', function(evt, options) {
                 this.updateStyle();
-            }, this );
+            }, this);
         },
 
-        render: function(){
-            var coords = _.map( [this.fromStation, this.toStation], function(station){
+        render: function() {
+            var coords = _.map([this.fromStation, this.toStation], function(station) {
                 var geom = station.get('geometry').coordinates;
                 return [geom[1], geom[0]]; // Lon, Lat
             });
@@ -678,9 +725,9 @@ $(function(){
             this.placemark = this.gex.dom.buildPlacemark({
                 lineString: linestring,
                 style: style,
-                altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND,
+                altitudeMode: app.options.plannerClampMode || this.ge.ALTITUDE_CLAMP_TO_GROUND
             });
-            this.updateGeom.apply(this, coords );
+            this.updateGeom.apply(this, coords);
         },
 
         /*
@@ -688,23 +735,23 @@ $(function(){
         ** points can be either station PathElements, or an array of coordinates (lon, lat)
         ** You can also supply just one station PathElement
         */
-        updateGeom: function(point1, point2){
+        updateGeom: function(point1, point2) {
 
-            if ( _.isUndefined(point2) && ! _.isUndefined(point1) && point1.cid ) {
+            if (_.isUndefined(point2) && ! _.isUndefined(point1) && point1.cid) {
                 // only one model was supplied for update.  Go get the other one.
                 point2 = this.otherStation[point1.cid];
             }
 
-            if ( point1 && point2 ) {
+            if (point1 && point2) {
                 var coords = [];
                 _.each([point1, point2], function(point) {
-                    if ( _.isArray(point) ) { 
+                    if (_.isArray(point)) {
                         coords.push(point);
-                    } else if ( _.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng') ) {
-                        coords.push( [ point.lat, point.lng ] );
-                    } else if ( _.isObject(point) && _.isFunction(point.get) ) {
+                    } else if (_.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng')) {
+                        coords.push([point.lat, point.lng]);
+                    } else if (_.isObject(point) && _.isFunction(point.get)) {
                         var geom = point.get('geometry').coordinates;
-                        coords.push( [geom[1], geom[0]] ); // Lon, Lat --> lat, lon
+                        coords.push([geom[1], geom[0]]); // Lon, Lat --> lat, lon
                     }
                 });
 
@@ -717,67 +764,71 @@ $(function(){
         updateStyle: function() {
             var style = this.model.get('sequence').isEmpty() ? '#segment' : '#segment_with_commands';
             this.placemark.setStyleUrl(style);
-        },
+        }
     });
 
     /*
     ** Calculate the midpoint from an array of arrays of coordinates.
     */
-    var calcMidpoint = function(coordsArr){
-        var sums = _.reduce( coordsArr, function(memo, arr) {
-                var result = [];
-                _.each(arr, function(n, idx){
-                    result.push(n + memo[idx]);
-                });
-                return result
-            }, 
-            _.map(coordsArr[0], function(){return 0;})
-        );
-        return _.map(sums, function(n){ return n / coordsArr.length });
+    var calcMidpoint = function(coordsArr) {
+        var sums = _.reduce(coordsArr,
+                            function(memo, arr) {
+                                var result = [];
+                                _.each(arr, function(n, idx) {
+                                    result.push(n + memo[idx]);
+                                });
+                                return result;
+                            },
+                            _.map(coordsArr[0], function() {
+                                return 0;
+                            }));
+        return _.map(sums, function(n) {
+            return n / coordsArr.length;
+        });
     };
 
-    var midpointPlacemark = function(options){        
+    var midpointPlacemark = function(options) {
         var points = [];
-        _.each([options.station1,options.station2], function(station){
+        _.each([options.station1, options.station2], function(station) {
             var coords = station.get('geometry').coordinates;
             points.push([coords[1], coords[0]]);
         });
         var midpoint = calcMidpoint(points);
         var placemark = this.ge.gex.dom.buildPlacemark({
             point: midpoint,
-            style: "#midpoint"
+            style: '#midpoint'
         });
 
         options.ge.gex.edit.makeDraggable(placemark, {
             bounce: false,
-            dropCallback: function(){
+            dropCallback: function() {
                 var view = options.view, index = options.index;
                 var geom = this.getGeometry();
                 var station = app.models.stationFactory({
-                    coordinates: [geom.getLongitude(), geom.getLatitude()],
+                    coordinates: [geom.getLongitude(), geom.getLatitude()]
                 });
-                view.collection.insertStation( index, station );
+                view.collection.insertStation(index, station);
                 view.render(); //redraw
-            },
+            }
         });
 
         return placemark;
     };
 
     var PanoWedgeView = Backbone.View.extend({
-        initialize: function(){
-            console.log("PanoWedgeView init: " + this.cid);
+        initialize: function() {
+            console.log('PanoWedgeView init: ' + this.cid);
             this.station = this.options.station;
             this.command = this.options.command;
 
             this.lineColor = 'ffffffff';
-            var rgbFillColor = app.request( 'getColor', this.command.get('type') );
-            this.fillColor = kmlColor( rgbFillColor, '80' );
-            this.placemark = this.createWedgePlacemark( this.computeWedgeCoords() );
-            
-            this.listenTo( this.command, 'change', this.update);
-            this.listenTo( this.station, 'change:geometry', this.update );
-            this.listenTo( this.station, 'change:headingDegrees', this.update );
+            var rgbFillColor = app.request('getColor', this.command.get('type'));
+            this.fillColor = kmlColor(rgbFillColor, '80');
+            this.placemark = this.createWedgePlacemark(this.computeWedgeCoords());
+
+            this.listenTo(this.command, 'change', this.update);
+            this.listenTo(this.station, 'change:geometry', this.update);
+            this.listenTo(this.station, 'change:headingDegrees', this.update);
         },
 
         /*
@@ -788,13 +839,13 @@ $(function(){
             var station = this.station;
             var command = this.command;
 
-            var stationLL = _.object( ['lng','lat'], station.get('geometry').coordinates );
+            var stationLL = _.object(['lng', 'lat'], station.get('geometry').coordinates);
             var headingRadians = station.get('headingDegrees') * DEG2RAD;
             var hfov = command.get('hfov');
             var range = command.get('range');
 
             var fullCircle, leftAngle, RightAngle;
-            if ( hfov >= 360 ) {
+            if (hfov >= 360) {
                 fullCircle = true;
                 leftAngle = 0.0;
                 rightAngle = 2 * Math.PI;
@@ -803,41 +854,47 @@ $(function(){
                 halfAngle = (hfov / 2.0) * DEG2RAD;
                 leftAngle = headingRadians - halfAngle;
                 rightAngle = headingRadians + halfAngle;
-                while ( (rightAngle - leftAngle) > 2 * Math.PI ) { rightAngle = rightAngle - 2*Math.PI; }
-                while ( (rightAngle - leftAngle) < 0 ) { rightAngle = rightAngle + 2*Math.PI; }
+                while ((rightAngle - leftAngle) > 2 * Math.PI) {
+                    rightAngle = rightAngle - 2 * Math.PI;
+                }
+                while ((rightAngle - leftAngle) < 0) {
+                    rightAngle = rightAngle + 2 * Math.PI;
+                }
             }
             wedgeCoords = [];
 
             // start wedge at the station point
-            if ( ! fullCircle ) { wedgeCoords.push(stationLL); }
+            if (! fullCircle) { wedgeCoords.push(stationLL); }
 
             var theta = leftAngle;
-            var dtheta = 3*Math.PI / 180;
+            var dtheta = 3 * Math.PI / 180;
             var offsetMeters;
 
-            while ( theta < rightAngle ) {
+            while (theta < rightAngle) {
                 offsetMeters = {
                     x: range * Math.sin(theta),
                     y: range * Math.cos(theta)
                 };
-                wedgeCoords.push( geo.addMeters( stationLL, offsetMeters ) );
+                wedgeCoords.push(geo.addMeters(stationLL, offsetMeters));
                 theta = theta + dtheta;
             }
 
             // end wedge at the station point
-            if ( ! fullCircle ) { wedgeCoords.push(stationLL); }
+            if (! fullCircle) { wedgeCoords.push(stationLL); }
 
             return wedgeCoords;
         },
 
-        createWedgePlacemark: function(wedgeCoords){
+        createWedgePlacemark: function(wedgeCoords) {
             var gex = ge.gex;
 
             var visibility = this.command.get('showWedge');
             if (visibility === undefined) visibility = false;
 
-            var polygon = gex.dom.buildPolygon( 
-                _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
+            var polygon = gex.dom.buildPolygon(
+                _.map(wedgeCoords, function(coord) {
+                    return [coord.lat, coord.lng];
+                })
             );
 
             var style = gex.dom.buildStyle({
@@ -845,30 +902,32 @@ $(function(){
                 poly: {
                     fill: true,
                     outline: true,
-                    color: this.fillColor,
+                    color: this.fillColor
                 }
             });
 
-            var placemark = gex.dom.buildPolygonPlacemark( polygon, {style: style} );
-            placemark.setVisibility( visibility );
+            var placemark = gex.dom.buildPolygonPlacemark(polygon, {style: style});
+            placemark.setVisibility(visibility);
             return placemark;
         },
 
-        update: function(){
+        update: function() {
             var visibility = this.command.get('showWedge');
             this.placemark.setVisibility(visibility);
-            if ( visibility ) {
+            if (visibility) {
                 var wedgeCoords = this.computeWedgeCoords();
-                var polygon = ge.gex.dom.buildPolygon( 
-                    _.map( wedgeCoords, function(coord){ return [coord.lat, coord.lng]; } ) 
+                var polygon = ge.gex.dom.buildPolygon(
+                    _.map(wedgeCoords, function(coord) {
+                        return [coord.lat, coord.lng];
+                    })
                 );
                 this.placemark.setGeometry(polygon);
             }
         },
 
-        close: function(){
+        close: function() {
             this.stopListening();
-        },
+        }
     });
 
 });
