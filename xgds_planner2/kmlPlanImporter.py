@@ -6,7 +6,7 @@
 
 import re
 
-from xgds_pipeline.scripts.xml2json import xml2struct
+from geocamUtil.xml2json import xml2struct
 
 from xgds_planner2.planImporter import PlanImporter, planDocFromPlanDict
 
