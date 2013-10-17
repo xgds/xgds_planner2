@@ -153,6 +153,10 @@ class AbstractPlan(models.Model):
             return 'Unnamed plan ' + self.uuid
 
 
+class Plan(AbstractPlan):
+    pass
+
+
 #This will not change during runtime so we should cache these in PLAN_SCHEMA_CACHE
 class PlanSchema(models.Model):
     platform = models.CharField(max_length=24)
