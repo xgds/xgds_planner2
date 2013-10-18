@@ -180,7 +180,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.listenTo(app.vent, 'showMeta', this.showMeta, this);
         this.listenTo(app.vent, 'showPresets', this.showPresets, this);
         this.listenTo(app.vent, 'all', function(evt) {
-            console.log('PlanSequenceView event: 'a + evt);
+            console.log('PlanSequenceView event: ' + evt);
         });
     },
 
