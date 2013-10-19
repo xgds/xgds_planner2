@@ -246,6 +246,7 @@ $(function() {
 
             this.collection.resequence();  // Sometimes it doesn't resequence itself on load
             this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
+	    this.listenTo(app.currentPlan, "sync", this.render, this);
 
             // move to bounding box defined in plan, probably wrong place to do this
             var site = app.currentPlan.get('site');
@@ -421,15 +422,15 @@ $(function() {
                     });
 
                     // Double-click to delete
-                    var planKmlView = this;
                     this.addGeEvent(station, 'dblclick', function(evt) {
+			console.log("double click");
                         evt.preventDefault();
                         var pm = evt.getTarget();
-                        planKmlView.stationsFolder.getFeatures().removeChild(pm);
+                        //planView.stationsFolder.getFeatures().removeChild(pm);
                         var view = pm.view;
                         var sequence = app.currentPlan.get('sequence');
                         sequence.removeStation(view.model);
-                        planKmlView.render();
+                        planview.render();
                     });
 
                     var handle = station.view.createDragRotateHandle();
@@ -459,16 +460,14 @@ $(function() {
             console.log('Add Station');
             var coords = [evt.getLongitude(), evt.getLatitude()];
             var station = app.models.stationFactory({ coordinates: coords });
-            var segment = app.models.segmentFactory();
-            app.currentPlan.get('sequence').appendStation(station);
+	    var seq = app.currentPlan.get('sequence');
+            seq.appendStation(station); // returns a segment if one was created
+	    // this returns an array of the last three elements
+	    var end = seq.last(3);
 
             // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
             app.currentPlan.kmlView.drawStation(station);
-            var seq = app.currentPlan.get('sequence');
-            var l = seq.length;
-            app.currentPlan.kmlView.drawSegment(seq.at(l - 2),
-                                                seq.at(l - 3),
-                                                seq.at(l - 1));
+	    app.currentPlan.kmlView.drawSegment(end[1],end[0],end[2]);
         },
 
         drawMidpoints: function() {
@@ -555,12 +554,13 @@ $(function() {
                 name += ' ' + this.model.get('name');
             }
             this.placemark.setName(name || this.model.toString());
-            //this.placemark.setStyle( this.getStyle() );
-            this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
-            this.placemark.getStyleSelector().getIconStyle().getIcon()
-                .setHref(this.model.get('isDirectional') ?
-                         'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
-                         'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
+	    var style = this.buildStyle();
+            this.placemark.setStyleSelector(this.buildStyle());
+            //this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
+            //this.placemark.getStyleSelector().getIconStyle().getIcon()
+            //    .setHref(this.model.get('isDirectional') ?
+            //             'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
+            //             'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
 
             if (this.wedgeViews) {
                 _.each(this.wedgeViews, function(wedgeView) {

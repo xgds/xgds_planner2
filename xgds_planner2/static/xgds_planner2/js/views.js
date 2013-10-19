@@ -179,6 +179,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.listenTo(app.vent, 'showItem:command', this.showCommand, this);
         this.listenTo(app.vent, 'showMeta', this.showMeta, this);
         this.listenTo(app.vent, 'showPresets', this.showPresets, this);
+	this.listenTo(app.vent, 'showNothing', this.showNothing, this);
         this.listenTo(app.vent, 'all', function(evt) {
             console.log('PlanSequenceView event: ' + evt);
         });
@@ -231,6 +232,12 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col3.show(new app.views.CommandPresetsView({
             model: itemModel
         }));
+    },
+
+    showNothing: function() {
+	// clear the columns
+	this.col2.close();
+	this.col3.close();
     }
 
 });
@@ -353,6 +360,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 		if (_.isUndefined(childModel)) {
 		    // can't find by id, so the view is gone
 		    app.State.stationSelected = undefined;
+		    app.vent.trigger('showNothing');
 		} else {
 		    app.State.stationSelected = childModel;
 		    app.vent.trigger('showItem:'+childModel.get('type').toLowerCase(), childModel);

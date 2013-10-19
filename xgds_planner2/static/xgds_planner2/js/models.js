@@ -250,6 +250,12 @@ app.models = app.models || {};
         */
         resequence: function() {
             var stationCounter = 0;
+	    var reEnableActions = true;
+	    if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enabled)
+		&& app.Actions.enabled == false) {
+		// don't re-enable actions if they weren't enabled in the first place
+		reEnableActions = false;
+	    }
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
                         // prevent undo from capturing *every* change we make
@@ -291,7 +297,8 @@ app.models = app.models || {};
                 }
             );
 
-            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable) &&
+	       reEnableActions) {
                 app.Actions.enable();
             }
 
@@ -303,12 +310,15 @@ app.models = app.models || {};
         the station-segment-station adjecency.
         */
         appendStation: function(stationModel) {
+	    app.Actions.disable();
             if (this.length > 0) { // Don't append a segment if this is the first station in the list.
                 var segment = models.segmentFactory();
                 this.add([segment, stationModel]);
             } else {
                 this.add(stationModel);
             }
+	    app.Actions.enable();
+	    app.Actions.action();
             app.vent.trigger('station:change');
         },
 
@@ -335,8 +345,12 @@ app.models = app.models || {};
             }
             // for whatever reason, relational would rather
             // you remove the segment first.
-            this.remove(segment);
-            this.remove(stationModel);
+	    // disable actions so that the segment and
+	    // the station get removed in the same action
+	    app.Actions.disable();
+            this.remove([segment,stationModel]);
+	    app.Actions.enable();
+	    app.Actions.action();
             app.vent.trigger('station:change');
         }
     });
