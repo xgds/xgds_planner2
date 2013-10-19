@@ -223,12 +223,18 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showMeta: function(model) {
+	app.State.metaExpanded = true;
+	app.State.addCommandsExpanded = false;
+	app.State.commandSelected = undefined;
         this.col3.show(new app.views.PropertiesForm({
             model: model
         }));
     },
 
     showPresets: function(itemModel) {
+	app.State.metaExpanded = false;
+	app.State.addCommandsExpanded = false;
+	app.State.commandsSelected = undefined;
         this.col3.show(new app.views.CommandPresetsView({
             model: itemModel
         }));
@@ -256,6 +262,9 @@ app.views.makeExpandable = function(view, expandClass) {
             this._ensureIcon();
             this.$el.find('i').addClass('icon-chevron-right');
             app.vent.trigger('viewExpanded', this, expandClass);
+	    if (!_.isUndefined(this.onExpand) && _.isFunction(this.onExpand)) {
+		this.onExpand();
+	    }
         },
         unexpand: function() {
             this.expanded = false;
@@ -303,6 +312,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     events: {
         click: function() {
             this.triggerMethod('expand');  // trigger the "expand" event AND call this.onExpand()
+	    app.vent.trigger("showMeta", this.model);
         }
     },
     modelEvents: {
@@ -337,7 +347,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     initialize: function() {
 	// re-render on plan save because for some reason, the collection
 	// is re-rendered, reversed, on save.
-	app.State.stationSelected = undefined;
+	//app.State.stationSelected is our state variable
 	this.listenTo(app.currentPlan, "sync", this.render);
 	app.vent.on("station:change", this.render);
 	app.vent.on("plan:reverse", this.render);
@@ -538,7 +548,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 		if (_.isUndefined(childModel)) {
 		    // can't find by id, so view is gone
 		    app.State.commandSelected = undefined;
-		} else {
+	} else {
 		    app.State.commandSelected = childModel;
 		    app.vent.trigger("showItem:command", childModel);
 		}

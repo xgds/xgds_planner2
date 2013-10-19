@@ -539,6 +539,15 @@ $(function() {
                     this.redrawPanoWedges();
                 }
             });
+
+	    // redraw when we're selected
+	    app.vent.on('showItem:station', function() {
+		this.redraw();
+	    }, this);
+	    // redraw when we've been unselected
+	    app.vent.on('tab:change', function() {
+		this.redraw();
+	    }, this);
         },
 
         redraw: function() {
@@ -580,6 +589,10 @@ $(function() {
             icon.setHref(iconUrl);
             var style = ge.createStyle('');
             style.getIconStyle().setIcon(icon);
+	    if (app.State.stationSelected === this.model) {
+		// grow icon when we're selected
+		style.getIconStyle().setScale(1.5);
+	    }
             style.getIconStyle().setHeading(this.model.get('headingDegrees'));
             return style;
         },
