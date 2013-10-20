@@ -20,6 +20,9 @@ $(function() {
     }
 
     app.simulatePlan = function() {
+	if (app.State.disableSimulate) return; // don't simulate while we simulate
+	app.State.disableSimulate = true;
+	app.Actions.disable();
         var sim = new app.Simulator();
         var plan = app.currentPlan;
         if (plan.get('sequence').length == 0) {
@@ -68,6 +71,8 @@ $(function() {
 
         sim.endPlan(plan);
         setSimInfo(sim, plan, prePlanSimState);
+	app.Actions.enable();
+	app.State.disableSimulate = false;
     };
 
     function renderSimState(plan) {

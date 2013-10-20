@@ -86,6 +86,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             command.collection.remove(command);
             command.destroy();
         });
+	app.vent.trigger("change:plan");
     },
 
     copySelectedCommands: function() {
@@ -108,7 +109,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                 command.collection.remove(command);
             }
         });
-        app.simulatePlan();
+	app.vent.trigger("change:plan");
     },
 
     cutSelectedCommands: function() {
@@ -180,9 +181,18 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.listenTo(app.vent, 'showMeta', this.showMeta, this);
         this.listenTo(app.vent, 'showPresets', this.showPresets, this);
 	this.listenTo(app.vent, 'showNothing', this.showNothing, this);
-        this.listenTo(app.vent, 'all', function(evt) {
-            console.log('PlanSequenceView event: ' + evt);
-        });
+	//this.listenTo(this.col1, 'all', function(evt) {
+	//    console.log("Event on column 1: " + evt);
+	//});
+	//this.listenTo(this.col2, 'all', function(evt) {
+	//    console.log("Event on column 2: " + evt);
+	//});
+	//this.listenTo(this.col3, 'all', function(evt) {
+	//    console.log("Event on column 3: " + evt);
+	//});
+        //this.listenTo(app.vent, 'all', function(evt) {
+        //    console.log('PlanSequenceView event: ' + evt);
+        //});
     },
 
     onClose: function() {
@@ -190,6 +200,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     onRender: function() {
+	this.col1.close();
         app.psv = this;
         var sscView = new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence')
@@ -200,6 +211,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     showStation: function(itemModel) {
         // Clear columns
         this.col3.close();
+	this.col2.close();
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('sequence')});
         this.col2.show(view);
@@ -209,6 +221,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     showSegment: function(itemModel) {
         this.col3.close();
+	this.col2.close();
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('sequence')});
         this.col2.show(view);
@@ -223,6 +236,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showMeta: function(model) {
+	this.col3.close();
 	app.State.metaExpanded = true;
 	app.State.addCommandsExpanded = false;
 	app.State.commandSelected = undefined;
@@ -232,8 +246,9 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showPresets: function(itemModel) {
+	this.col3.close();
 	app.State.metaExpanded = false;
-	app.State.addCommandsExpanded = false;
+	app.State.addCommandsExpanded = true;
 	app.State.commandsSelected = undefined;
         this.col3.show(new app.views.CommandPresetsView({
             model: itemModel
@@ -255,36 +270,57 @@ app.views.makeExpandable = function(view, expandClass) {
      * the global "viewExpanded" event.  On recieving a global "viewExpoanded" event with an
      * expandClass that matches its own, the view will remove it's chevron.
     */
+    if (app.currentTab != "sequence") {
+	// memory leak work around
+	return;
+    }
     var expandable = {
         expand: function() {
             var expandClass = this.options.expandClass;
             this.expanded = true;
             this._ensureIcon();
+//	    console.log("----adding icon");
             this.$el.find('i').addClass('icon-chevron-right');
             app.vent.trigger('viewExpanded', this, expandClass);
 	    if (!_.isUndefined(this.onExpand) && _.isFunction(this.onExpand)) {
 		this.onExpand();
-	    }
+	    } 
         },
         unexpand: function() {
+//	    console.log("(((((((Unexpanding");
             this.expanded = false;
             this.$el.find('i').removeClass('icon-chevron-right');
         },
         onExpandOther: function(target, expandClass) {
-            if (this.options.expandClass === expandClass && this != target) {
+//	    console.log("Got onExpandOther");
+            if (this.options.expandClass === expandClass && this != target && target.isClosed != true) {
                 this.unexpand();
+//		console.log("target:");
+//		console.log(target);
             }
         },
         _ensureIcon: function() {
             if (view.$el.find('i').length == 0) {
                 view.$el.append('<i/>');
             }
-        }
+        },
+	_restoreIcon: function() {
+//	    console.log("!!!!!!!!!!!restoring icon");
+//	    console.log("Expanded:", this.expanded);
+	    if (this.expanded) {
+		this._ensureIcon();
+		this.$el.find('i').addClass('icon-chevron-right');
+	    }
+	},
+	onClose: function() {
+	    this.stopListening();
+	}
     };
     view = _.defaults(view, expandable);
     view.option = _.defaults(view.options, {expandClass: expandClass});
     view.listenTo(app.vent, 'viewExpanded', view.onExpandOther, view);
     view.on('expand', view.expand, view);
+    view.on('render', view._restoreIcon, view);
 };
 
 app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
@@ -312,15 +348,20 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     events: {
         click: function() {
             this.triggerMethod('expand');  // trigger the "expand" event AND call this.onExpand()
-	    app.vent.trigger("showMeta", this.model);
         }
     },
     modelEvents: {
-        'change': 'render' // Re-render when the model changes.
+        'change': 'render'
     }
 });
 
 app.views.PathElementItemView = app.views.SequenceListItemView.extend({
+    events: {
+	click: function() {
+	    this.triggerMethod('expand');
+	    app.vent.trigger("showMeta", this.model);
+	}
+    },
     onExpand: function() {
         var type = this.model.get('type'); // "Station" or "Segment"
         app.vent.trigger('showItem:' + type.toLowerCase(), this.model);
@@ -353,6 +394,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 	app.vent.on("plan:reverse", this.render);
 	this.on("itemview:expand", this.onItemExpand, this);
 	this.on("itemview:render", this.restoreExpanded, this);
+	this.restoreExpanded();
     },
 
     onItemExpand: function(itemView) {
@@ -384,6 +426,12 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
     onRender: function() {
 	this.restoreExpanded();
+    },
+
+    onClose: function() {
+	this.children.each(function (view) {
+	    view.close();
+	});
     }
 	
 });
@@ -419,6 +467,9 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     },
     toggleSelect: function(evt) {
         evt.stopPropagation();
+    },
+    onClose: function() {
+	this.stopListening();
     }
 });
 
@@ -481,7 +532,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 	}
     },
     modelEvents: {
-        'change': 'render'
+        'change': 'close' // it's really stupid that we actually have to do this
     },
     initialize: function(){
 	this.head = new app.views.MiscItemView({
@@ -496,7 +547,6 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         this.foot.setElement( this.$el.find('.add-commands') );
         this.head.render();
         this.foot.render();
-	this.head.expand();
         app.reqres.addHandler('selectedCommands', this.getSelectedCommands, this);
 	app.reqres.addHandler('unselectAllCommands', this.unselectAll, this);
 	app.reqres.addHandler('currentPathElement', function() {return this.model;}, this);
@@ -506,6 +556,12 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 	    app.State.addCommandsExpanded = false;
 	this.on("itemview:expand", this.onItemExpand, this);
 	this.on("itemview:render", this.restoreExpanded, this);
+	this.restoreExpanded();
+	//console.log("++++++new command sequence collection view created");
+	//console.log("Presets/Meta/Command:", app.State.addCommandsExpanded,
+	//	    app.State.metaExpanded, app.State.commandSelected);
+	//var stack = new Error().stack;
+	//console.log(stack);
     },
 
     getSelectedCommands: function() {
@@ -533,12 +589,15 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     },
 
     restoreExpanded: function() {
+	//console.log("restoring closed view:", this.isClosed);
 	if (app.State.metaExpanded) {
 	    app.vent.trigger('showMeta', this.model);
 	    this.head.expand();
 	} else if (app.State.addCommandsExpanded) {
+	    //console.log("----expanding foot");
 	    app.vent.trigger('showPresets', this.model);
 	    this.foot.expand();
+	    //console.log(this.foot.expanded);
 	} else if (!_.isUndefined(app.State.commandSelected)) {
 	    var childView = this.children.findByModel(app.State.commandSelected);
 	    if (_.isUndefined(childView)) {
@@ -548,7 +607,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 		if (_.isUndefined(childModel)) {
 		    // can't find by id, so view is gone
 		    app.State.commandSelected = undefined;
-	} else {
+		} else {
 		    app.State.commandSelected = childModel;
 		    app.vent.trigger("showItem:command", childModel);
 		}
@@ -570,6 +629,15 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 	this.$el.find('.command-list').sortable();
 	this.restoreExpanded();
     },
+
+    onClose: function() {
+	this.head.close();
+	this.foot.close();
+	this.children.each(function (view) {
+	    view.close();
+	});
+	this.stopListening();
+    }
 });
 
 
@@ -639,7 +707,9 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
             var station = this.model;
             var target = $(evt.target);
             var preset = app.commandPresetsByName[target.data('preset-name')];
+	    app.Actions.disable();
             station.appendCommandByPreset(preset);
+	    app.Actions.enable();
             app.vent.trigger('change:plan');
         }
     },
@@ -843,6 +913,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 
     clickSelectTab: function(event) {
         var newmode = $(event.target).parents('li').data('target');
+	app.currentTab = newmode;
         this.trigger('tabSelected', newmode);
     },
 

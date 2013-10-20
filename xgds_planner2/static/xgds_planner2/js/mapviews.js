@@ -165,7 +165,7 @@ $(function() {
         },
 
        render: function() {
-           console.log('re-rendering map');
+//	   console.log('re-rendering map');
            google.earth.createInstance(this.el, _.bind(this.earthInit, this), _.bind(this.earthFailure, this));
         },
 
@@ -273,7 +273,7 @@ $(function() {
         },
 
         render: function() {
-            console.log('re-rending kml');
+            //console.log('re-rending kml');
             _.each(this.kmlFolders, this.clearKmlFolder);
             this.drawStations();
             this.drawSegments();
@@ -287,9 +287,9 @@ $(function() {
             var stationFeatures = this.stationsFolder.getFeatures();
             stationFeatures.appendChild(stationPointView.placemark);
 
-            station.on('change', function(station) {
-                console.log('geometry change: ' + JSON.stringify(station.get('geometry').coordinates));
-            });
+            //station.on('change', function(station) {
+            //    console.log('geometry change: ' + JSON.stringify(station.get('geometry').coordinates));
+            //});
 
             return stationPointView;
         },
@@ -321,6 +321,7 @@ $(function() {
                 toStation: toStation,
                 ge: this.ge
             });
+	    segment._geSegment = segmentLineView;
             this.segmentsFolder.getFeatures().appendChild(segmentLineView.placemark);
         },
 
@@ -351,7 +352,7 @@ $(function() {
         },
 
         setMode: function(modeName) {
-            console.log('Set mouse mode: ' + modeName);
+            //console.log('Set mouse mode: ' + modeName);
             var modeMap = {
                 'addStations': 'addStationsMode',
                 'navigate': 'navigateMode',
@@ -362,6 +363,7 @@ $(function() {
             var mode = _.isObject(modeName) ? modeName : this[modeMap[modeName]];
             mode.enter.call(this);
             this.currentMode = mode;
+	    this.currentModeName = modeName;
         },
 
         // Clean up, then re-enter the mode.  Useful for re-draws/
@@ -407,34 +409,8 @@ $(function() {
                 for (var station, i = 0; i < l; i++) {
                     station = stations.item(i);
                     //point = station.getGeometry().getGeometries().getFirstChild();
-                    this.ge.gex.edit.makeDraggable(station, {
-                        bounce: false,
-                        dragCallback: function() {
-                            //this.view.model.trigger('dragUpdate', this);
-                        },
-                        dropCallback: function() {
-                            // "this" is the placemark GE object.
-                            var model = this.view.model;
-                            var point = this.getGeometry();
-                            model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
-                            planview.render();
-                        }
-                    });
-
-                    // Double-click to delete
-                    this.addGeEvent(station, 'dblclick', function(evt) {
-			console.log("double click");
-                        evt.preventDefault();
-                        var pm = evt.getTarget();
-                        //planView.stationsFolder.getFeatures().removeChild(pm);
-                        var view = pm.view;
-                        var sequence = app.currentPlan.get('sequence');
-                        sequence.removeStation(view.model);
-                        planview.render();
-                    });
-
-                    var handle = station.view.createDragRotateHandle();
-                    this.dragHandlesFolder.getFeatures().appendChild(handle);
+		    var handle = station.view.createDragRotateHandle();
+                    this.processStation(station, handle);
                 }
                 this.drawMidpoints();
 
@@ -457,7 +433,7 @@ $(function() {
         }, // end repositionMode
 
         clickAddStation: function(evt) {
-            console.log('Add Station');
+            //console.log('Add Station');
             var coords = [evt.getLongitude(), evt.getLatitude()];
             var station = app.models.stationFactory({ coordinates: coords });
 	    var seq = app.currentPlan.get('sequence');
@@ -469,6 +445,63 @@ $(function() {
             app.currentPlan.kmlView.drawStation(station);
 	    app.currentPlan.kmlView.drawSegment(end[1],end[0],end[2]);
         },
+
+	
+	processStation: function(stationPoint, handle) {
+	    // do all the other things related to drawing a station on the map
+	    var view = app.currentPlan.kmlView;
+	    var station = stationPoint.view;
+	    station._geHandle = handle;
+	    view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+	    view.addGeEvent(stationPoint, 'dblclick', function(evt) {
+		evt.preventDefault();
+		app.Actions.disable();
+		var pm = evt.getTarget();
+		var sequence = app.currentPlan.get('sequence');
+		var index = sequence.indexOf(pm.view.model);
+		var segmentBefore = sequence.at(index - 1);
+		var segmentAfter = sequence.at(index + 1);
+		sequence.removeStation(pm.view.model);
+		pm.view.remove();
+		var newSegment = sequence.at(index - 1);
+		view.stationsFolder.getFeatures().removeChild(pm);
+		if (!_.isUndefined(segmentBefore))
+		    view.segmentsFolder.getFeatures().removeChild(segmentBefore._geSegment.placemark);
+		if (!_.isUndefined(segmentAfter))
+		    view.segmentsFolder.getFeatures().removeChild(segmentAfter._geSegment.placemark);
+		view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+		view.stationsFolder.getFeatures().removeChild(stationPoint);
+		if (!_.isUndefined(newSegment))
+		    view.drawSegment(newSegment, sequence.at(index - 2), sequence.at(index));
+		view.destroyMidpoints();
+		view.drawMidpoints();
+		app.Actions.enable();
+		app.Actions.action();
+	    });
+	    view.ge.gex.edit.makeDraggable(stationPoint, {
+		bounce: false,
+		dragCallback: function() {
+		    //nothing
+		},
+		dropCallback: function() {
+		    // "this" is the placemark GE object
+		    app.Actions.disable();
+		    var model = this.view.model;
+		    var point = this.getGeometry();
+		    model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
+		    var sequence = app.currentPlan.get('sequence');
+		    var index = sequence.indexOf(model);
+		    var newHandle = station.createDragRotateHandle();
+		    view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+		    station._geHandle = newHandle;
+		    view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+		    view.destroyMidpoints();
+		    view.drawMidpoints();
+		    app.Actions.enable();
+		    app.Actions.action();
+		}
+	    });
+	},
 
         drawMidpoints: function() {
             if (! this.midpointsFolder) {
@@ -541,22 +574,36 @@ $(function() {
             });
 
 	    // redraw when we're selected
-	    app.vent.on('showItem:station', function() {
+	    this.listenTo(app.vent, 'showItem:station', function() {
 		this.redraw();
-	    }, this);
+	    });
 	    // redraw when we've been unselected
-	    app.vent.on('tab:change', function() {
+	    this.listenTo(app.vent, 'tab:change', function() {
 		this.redraw();
-	    }, this);
+	    });
         },
 
+	redrawHandles: function() {
+	    if (_.isUndefined(this._geHandle)) return;
+	    if (app.currentPlan.kmlView.currentModeName != "reposition") return;
+	    app.currentPlan.kmlView.dragHandlesFolder.getFeatures().removeChild(this._geHandle);
+	    this._geHandle = this.createDragRotateHandle();
+	    app.currentPlan.kmlView.dragHandlesFolder.getFeatures().appendChild(this._geHandle);
+	    app.currentPlan.kmlView.destroyMidpoints();
+	    app.currentPlan.kmlView.drawMidpoints();
+	},
+
         redraw: function() {
-            console.log('redrawing point');
+            //console.log('redrawing point');
             // redraw code. To be invoked when relevant model attributes change.
+	    app.Actions.disable();
             var kmlPoint = this.placemark.getGeometry();
 
             var coords = this.model.get('geometry').coordinates; // lon, lat
-            coords = [coords[1], coords[0]]; // lat, lon
+	    if (this.placemark.getGeometry().getLongitude() - coords[0] != 0 ||
+		this.placemark.getGeometry().getLatitude() - coords[1] != 0)
+		this.redrawHandles();
+	    coords = [coords[1], coords[0]]; // lat, lon
             kmlPoint.setLatLng.apply(kmlPoint, coords);
             var name = '' + this.model.get('_sequenceLabel');
             if (!_.isUndefined(this.model.get('name'))) {
@@ -576,6 +623,8 @@ $(function() {
                     wedgeView.update();
                 });
             }
+	    app.Actions.enable();
+	    app.Actions.action();
         },
 
         buildStyle: function() {
@@ -589,7 +638,8 @@ $(function() {
             icon.setHref(iconUrl);
             var style = ge.createStyle('');
             style.getIconStyle().setIcon(icon);
-	    if (app.State.stationSelected === this.model) {
+	    if (app.State.stationSelected === this.model &&
+		app.currentTab == "sequence") {
 		// grow icon when we're selected
 		style.getIconStyle().setScale(1.5);
 	    }
@@ -657,14 +707,14 @@ $(function() {
             makeDraggable(this.dragHandlePm, {
                 //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
                 startCallback: function(placemark, data) {
-                    console.log('mousedown');
+                    //console.log('mousedown');
                     var coords = station.get('geometry').coordinates;
                     data.stationLoc = { lng: coords[0], lat: coords[1] };
                     data.startHeading = station.get('headingDegrees');
                 } ,
                 dragCallback: function(placemark, data) {
                     var newHeading = getBearing(data.stationLoc, _.object(['lat', 'lng'], data.cursorPos));
-                    console.log(newHeading);
+                    //console.log(newHeading);
                     station.set({
                         headingDegrees: newHeading,
                         isDirectional: true
@@ -693,6 +743,9 @@ $(function() {
 
         destroyPanoWedges: function() {
             var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
+	    if (_.isUndefined(this.wedgeViews)) {
+		return;
+	    }
             while (this.wedgeViews.length > 0) {
                 wedgeView = this.wedgeViews.pop();
                 wedgeFeatures.removeChild(wedgeView.placemark);
@@ -742,7 +795,7 @@ $(function() {
         },
 
         render: function() {
-            console.log('re-rendering segment');
+            //console.log('re-rendering segment');
             var coords = _.map([this.fromStation, this.toStation], function(station) {
                 var geom = station.get('geometry').coordinates;
                 return [geom[1], geom[0]]; // Lon, Lat
@@ -830,13 +883,26 @@ $(function() {
         options.ge.gex.edit.makeDraggable(placemark, {
             bounce: false,
             dropCallback: function() {
+		app.Actions.disable();
                 var view = options.view, index = options.index;
                 var geom = this.getGeometry();
+		var seq = app.currentPlan.get('sequence');
+		var oldSegment = seq.at(index);
                 var station = app.models.stationFactory({
                     coordinates: [geom.getLongitude(), geom.getLatitude()]
                 });
                 view.collection.insertStation(index, station);
-                view.render(); //redraw
+		view.segmentsFolder.getFeatures().removeChild(oldSegment._geSegment.placemark);
+		var stationPointView = view.drawStation(station);
+		var handle = stationPointView.createDragRotateHandle();
+		view.processStation(stationPointView.placemark, handle);
+		var idx = seq.indexOf(station);
+		view.drawSegment(seq.at(idx - 1), seq.at(idx - 2), station);
+		view.drawSegment(seq.at(idx + 1), station, seq.at(idx + 2));
+		view.destroyMidpoints();
+		view.drawMidpoints();
+		app.Actions.enable();
+		app.Actions.action();
             }
         });
 
@@ -845,7 +911,7 @@ $(function() {
 
     var PanoWedgeView = Backbone.View.extend({
         initialize: function() {
-            console.log('PanoWedgeView init: ' + this.cid);
+            //console.log('PanoWedgeView init: ' + this.cid);
             this.station = this.options.station;
             this.command = this.options.command;
 

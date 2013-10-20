@@ -26,6 +26,7 @@ var app = (function($, _, Backbone) {
 	    this.stationSelected = undefined;
 	    this.metaExpanded = undefined;
 	    this.addCommandsExpanded = undefined;
+	    this.disableSimulate = false
 	});
     });
 
@@ -35,16 +36,41 @@ var app = (function($, _, Backbone) {
 	    this.redoStack = new Array();
 	    this.currentState = undefined;
 	    this.enabled = true;
+	    this._disableCount = 0;
+	    this._inAction = false;
 	    app.vent.trigger('undoEmpty');
 	    app.vent.trigger('redoEmpty');
 	});
 
+	this._enterAction = function() {
+	    this._inAction = true;
+	};
+
+	this._exitAction = function() {
+	    this._inAction = false;
+	};
+
 	this.disable = function() {
+	    if (this._inAction) return;
+	    //console.log("Disable called");
+	    //console.log(new Error().stack);
+	    this._enterAction();
+	    this._disableCount += 1;
 	    this.enabled = false;
+	    this._exitAction();
 	};
 
 	this.enable = function() {
-	    this.enabled = true;
+	    if (this._inAction) return;
+	    //console.log("Enable called");
+	    //console.log(new Error().stack);
+	    this._enterAction();
+	    this._disableCount -= 1;
+	    if (this._disableCount <= 0) {
+		this.enabled = true;
+		this._disableCount = 0;
+	    }
+	    this._exitAction();
 	}
 
 	this.undoEmpty = function() {
@@ -62,8 +88,13 @@ var app = (function($, _, Backbone) {
 	};
 
 	this.action = function() {
+//	    console.log("\\\\\\\\\\Action called");
+	    //console.log("Disable stack: " + this._disableCount);
+	    if (this._inAction) return;
 	    if (!this.enabled) return;
 	    if (this.currentState == undefined) return;
+	    this.disable();
+	    this._enterAction();
 	    var plan = app.currentPlan.toJSON();
 	    var planString = JSON.stringify(plan);
 	    if (this.currentState == planString) {
@@ -75,11 +106,15 @@ var app = (function($, _, Backbone) {
 		app.vent.trigger('undoNotEmpty');
 		app.vent.trigger('redoEmpty');
 	    }
+	    this._exitAction();
+	    this.enable();
 	}
 
 	this.undo = function() {
+	    if (this._inAction) return;
 	    if (!this.enabled) return;
 	    this.disable();
+	    this._enterAction();
 	    var planString = this.undoStack.pop();
 	    var plan = JSON.parse(planString);
 	    if (plan == undefined) {
@@ -92,12 +127,16 @@ var app = (function($, _, Backbone) {
 		if (this.undoStack.length == 0)
 		    app.vent.trigger('undoEmpty');
 	    }
+	    //console.log("-----------------------------------Undo finished");
+	    this._exitAction();
 	    this.enable();
 	}
 
 	this.redo = function() {
+	    if (this._inAction) return;
 	    if (!this.enabled) return;
 	    this.disable();
+	    this._enterAction();
 	    var planString = this.redoStack.pop();
 	    var plan = JSON.parse(planString);
 	    if (plan == undefined) {
@@ -110,6 +149,7 @@ var app = (function($, _, Backbone) {
 		if (this.redoStack.length == 0)
 		    app.vent.trigger('redoEmpty');
 	    }
+	    this._exitAction();
 	    this.enable();
 	}
     });
@@ -147,8 +187,8 @@ var app = (function($, _, Backbone) {
         }, this);
 
         this.updatePlan = function(planJSON) {
-            console.log('Updating plan');
-            console.log(planJSON);
+            //console.log('Updating plan');
+            //console.log(planJSON);
             if (!_.isUndefined(planJSON)) {
                 app.currentPlan.get('sequence').reset(planJSON.sequence);
                 app.currentPlan.set(planJSON);
@@ -197,14 +237,20 @@ var app = (function($, _, Backbone) {
 
     app.vent.on('all', function(eventname, args){
         console.log("event on app.vent: " + eventname, args);
-	if (eventname == "change:plan") {
+//	var stack = new Error().stack;
+//	console.log("current state:");
+//	console.log("Command Selected:", app.State.commandSelected);
+//	console.log("Station Selected:", app.State.stationSelected);
+//	console.log("Meta Expanded:", app.State.metaExpanded);
+//	console.log("Presets Expanded:", app.State.addCommandsExpanded);
+	//var stack = new Error().stack;
+	//console.log(stack);
+	if (eventname == "change:plan") {	    
 	    if (_.isUndefined(app.currentPlan)) return;
 	    if (!app.Actions.enabled) return;
+	    app.Actions.action();
 	    app.simulatePlan();
 	    app.Actions.action();
-	} else if (eventname == "tab:change") {
-	    app.currentTab = args;
-	    console.log("new tab: "+app.currentTab+", should be " +args);
 	} else if (eventname == "plan:reversing") {
 	    app.Actions.disable();
 	} else if (eventname == "plan:reverse") {
