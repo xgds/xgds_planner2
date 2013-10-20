@@ -105,6 +105,7 @@ var app = (function($, _, Backbone) {
 		this.redoStack = new Array();
 		app.vent.trigger('undoNotEmpty');
 		app.vent.trigger('redoEmpty');
+		app.vent.trigger('actionOcurred');
 	    }
 	    this._exitAction();
 	    this.enable();
@@ -237,25 +238,25 @@ var app = (function($, _, Backbone) {
 
     app.vent.on('all', function(eventname, args){
         console.log("event on app.vent: " + eventname, args);
-//	var stack = new Error().stack;
 //	console.log("current state:");
 //	console.log("Command Selected:", app.State.commandSelected);
 //	console.log("Station Selected:", app.State.stationSelected);
 //	console.log("Meta Expanded:", app.State.metaExpanded);
 //	console.log("Presets Expanded:", app.State.addCommandsExpanded);
-	//var stack = new Error().stack;
-	//console.log(stack);
-	if (eventname == "change:plan") {	    
-	    if (_.isUndefined(app.currentPlan)) return;
-	    if (!app.Actions.enabled) return;
-	    app.Actions.action();
-	    app.simulatePlan();
+	//if (eventname != "change:plan") {
+	//    var stack = new Error().stack;
+	//    console.log(stack);
+	//}
+	if (eventname == "change:plan") {
 	    app.Actions.action();
 	} else if (eventname == "plan:reversing") {
 	    app.Actions.disable();
 	} else if (eventname == "plan:reverse") {
 	    app.Actions.enable();
 	    app.Actions.action();
+	} else if (eventname == "actionOcurred") {
+	    if (_.isUndefined(app.currentPlan)) return;
+	    app.simulatePlan();
 	}
     });
 
