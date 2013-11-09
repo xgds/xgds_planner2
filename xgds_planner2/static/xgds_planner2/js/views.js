@@ -910,7 +910,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         this.on('tabSelected', this.setTab);
         // load layer tree ahead of time to load layers into map
         app.tree = null;
-        app.vent.on('earth:loaded', function() {
+        this.listenTo(app.vent, 'earth:loaded', function() {
             app.tree = kmltree({
                 url: app.options.layerFeedUrl,
                 gex: ge.gex,
@@ -921,7 +921,11 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
             });
             app.tree.load();
         });
-        app.vent.on('layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
+        this.listenTo(app.vent, 'layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
+	this.listenTo(app.vent, 'setTabRequested', function(tabId) {
+	    app.currentTab = tabId;
+	    this.setTab(tabId);
+	});
     },
 
     onRender: function() {

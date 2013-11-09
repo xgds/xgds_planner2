@@ -377,31 +377,51 @@ $(function() {
 
         addStationsMode: {
             enter: function() {
+		this.clearGeEvents();
                 this.addGeEvent(this.ge.getGlobe(), 'click', this.clickAddStation);
             },
             exit: function() {
-                this.clearGeEvents();
+		// nothing
             }
         }, // end addStationMode
 
         navigateMode: {
             enter: function() {
+		this.clearGeEvents();
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
-                for (var placemark, i = 0; i < l; i++) {
-                    placemark = stations.item(i);
+                for (var i = 0; i < l; i++) {
+                    var placemark = stations.item(i);
+		    var station = placemark.view;
+		    this.addClickSelectEvent(station, placemark);
                     this.addGeEvent(placemark, 'dblclick', function(evt) {
                         evt.preventDefault();
                     });
                 }
             },
             exit: function() {
-                this.clearGeEvents();
+		// nothing
             }
         },
 
+	addClickSelectEvent: function(station, placemark) {
+	    // this is necessary to overcome pointer issues
+	    this.addGeEvent(placemark, 'click', function(evt) {
+		app.State.stationSelected = station.model;
+		app.State.metaExpanded = true;
+		app.State.addCommandsExpanded = false;
+		app.State.commandSelected = undefined;
+		if (app.currentTab != 'sequence') {
+		    app.vent.trigger("setTabRequested", "sequence");
+		} else {
+		    app.tabs.currentView.tabContent.currentView.render();
+		}
+	    });
+	},
+
         repositionMode: {
             enter: function() {
+		this.clearGeEvents();
                 var planview = this;
                 var stations = this.stationsFolder.getFeatures().getChildNodes();
                 var l = stations.getLength();
@@ -453,6 +473,7 @@ $(function() {
 	    var station = stationPoint.view;
 	    station._geHandle = handle;
 	    view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+	    this.addClickSelectEvent(station, stationPoint);
 	    view.addGeEvent(stationPoint, 'dblclick', function(evt) {
 		evt.preventDefault();
 		app.Actions.disable();
