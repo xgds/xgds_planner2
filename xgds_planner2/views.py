@@ -7,6 +7,7 @@
 import os
 import glob
 import json
+import logging
 
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
@@ -26,8 +27,8 @@ from xgds_planner2 import (settings,
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
 
-Plan = models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
-
+def get_plan_model():
+    return models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 
 def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
     global _template_cache
@@ -54,6 +55,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     Read and write plan JSON.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
+    Plan = get_plan_model()
     plan = Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.raw_post_data)
@@ -73,6 +75,7 @@ def plan_REST(request, plan_id, jsonPlanId):
 
 
 def plan_detail_doc(request, plan_id=None):
+    Plan = get_plan_model()
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
@@ -90,6 +93,7 @@ def plan_detail_doc(request, plan_id=None):
 
 
 def plan_editor_app(request, plan_id=None, editable=True):
+    Plan = get_plan_model()
     templates = get_handlebars_templates()
 
     plan = Plan.objects.get(pk=plan_id)
@@ -126,6 +130,7 @@ def planIndex(request):
     complemented with a nice index API method for rich JavaScript
     clients.
     """
+    Plan = get_plan_model()
     return render_to_response(
         'xgds_planner2/planIndex.html',
         {
@@ -136,6 +141,7 @@ def planIndex(request):
 
 
 def plan_index_json():
+    Plan = get_plan_model()
     plan_objs = Plan.objects.all()
     plans_json = []
     for plan in plan_objs:
@@ -149,6 +155,7 @@ def plan_index_json():
 
 
 def getDbPlan(uuid):
+    Plan = get_plan_model()
     return get_object_or_404(Plan, uuid=uuid)
 
 
