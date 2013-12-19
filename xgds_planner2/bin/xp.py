@@ -9,7 +9,6 @@
 Command-line utility for performing common operations on XPJSON documents.
 """
 
-import json
 import traceback
 import os
 
@@ -92,7 +91,6 @@ def main():
             traceback.print_exc()
             print
             print 'ERROR could not simplify %s' % docPath
-
 
     ######################################################################
     elif cmd == 'import':

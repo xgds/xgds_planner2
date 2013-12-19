@@ -11,8 +11,6 @@ Test xpjson.py.
 
 import unittest
 import os
-import sys
-import json
 
 from xgds_planner2 import xpjson
 
@@ -24,19 +22,19 @@ LIBRARY_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanLibrary.json')
 
 class XpjsonTest(unittest.TestCase):
     def test_resolve(self):
-        schemaDict = xpjson.loadPath(SCHEMA_PATH)
+        schemaDict = xpjson.loadDocument(SCHEMA_PATH)
         xpjson.resolveSchemaInheritance(schemaDict)
 
     def test_schema(self):
-        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
+        _schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
 
     def test_plan(self):
-        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
-        plan = xpjson.Plan(xpjson.loadPath(PLAN_PATH), schema=schema)
+        schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
+        _plan = xpjson.Plan(xpjson.loadDocument(PLAN_PATH), schema=schema)
 
     def test_library(self):
-        schema = xpjson.PlanSchema(xpjson.loadPath(SCHEMA_PATH))
-        plan = xpjson.PlanLibrary(xpjson.loadPath(LIBRARY_PATH), schema=schema)
+        schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
+        _plan = xpjson.PlanLibrary(xpjson.loadDocument(LIBRARY_PATH), schema=schema)
 
 
 if __name__ == '__main__':

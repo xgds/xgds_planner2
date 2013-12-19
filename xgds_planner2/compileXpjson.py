@@ -6,19 +6,22 @@ from geocamUtil.Builder import Builder
 
 from xgds_planner2 import settings, xpjson, models
 
+
 def compileXpjson(builder=None):
     if builder is None:
         builder = Builder()
     for planSchema in models.PlanSchema.objects.all():
-        compile(planSchema, builder)
-        
-def compile( planSchema, builder=None):
-    SCHEMA_PATH = os.path.join(settings.STATIC_ROOT,planSchema.schemaUrl)
-    SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT,planSchema.simplifiedSchemaPath)
+        doCompile(planSchema, builder)
+
+
+def doCompile(planSchema, builder=None):
+    SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, planSchema.schemaUrl)
+    SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT,
+                                          planSchema.simplifiedSchemaPath)
     outDir = os.path.dirname(SIMPLIFIED_SCHEMA_PATH)
     if not os.path.exists(outDir):
         os.makedirs(outDir)
-        
+
     LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, planSchema.libraryUrl)
     SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, planSchema.simplifiedLibraryPath)
     outDir = os.path.dirname(SIMPLIFIED_LIBRARY_PATH)
@@ -46,8 +49,8 @@ def compile( planSchema, builder=None):
 def main():
     import optparse
     parser = optparse.OptionParser('usage: %prog')
-    opts, args = parser.parse_args()
+    _opts, args = parser.parse_args()
     if args:
         parser.error('expected no args')
     for planSchema in models.PlanSchema.objects.all():
-        compile(planSchema)
+        doCompile(planSchema)

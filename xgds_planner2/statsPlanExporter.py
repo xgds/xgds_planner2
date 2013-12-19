@@ -9,6 +9,8 @@ import pyproj
 
 from xgds_planner2.planExporter import JsonPlanExporter, TreeWalkPlanExporter
 
+# pylint: disable=W0223
+
 GEOD = pyproj.Geod(ellps='WGS84')
 
 
@@ -26,7 +28,7 @@ def getDistanceMeters(lonLat1, lonLat2):
     lon1, lat1 = lonLat1
     lon2, lat2 = lonLat2
     # print 'GEOD.inv(%s, %s, %s, %s)' % (lon1, lat1, lon2, lat2)
-    az12, az21, dist = GEOD.inv(lon1, lat1, lon2, lat2)
+    _az12, _az21, dist = GEOD.inv(lon1, lat1, lon2, lat2)
     return dist
 
 

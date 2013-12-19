@@ -17,13 +17,13 @@ function check(objPath, schemaPath) {
     var result;
 
     if (schemaPath) {
-        console.log("Checking if " + objPath + " is consistent with " + schemaPath + ":");
+        console.log('Checking if ' + objPath + ' is consistent with ' + schemaPath + ':');
         var obj = JSON.parse(fs.readFileSync(objPath));
         var schema = JSON.parse(fs.readFileSync(schemaPath));
         result = validate(obj, schema);
     } else {
         var schemaPath = objPath;
-        console.log("Checking if " + schemaPath + " is self-consistent");
+        console.log('Checking if ' + schemaPath + ' is self-consistent');
         var schema = JSON.parse(fs.readFileSync(schemaPath));
         result = validate(schema);
     }
@@ -41,6 +41,6 @@ function checkBoth(objPath, schemaPath) {
     check(objPath, schemaPath);
 }
 
-checkBoth("examplePlan.json", "xpjsonPlanDocumentSchema.json");
-checkBoth("examplePlanSchema.json", "xpjsonPlanSchemaDocumentSchema.json");
-checkBoth("examplePlanLibrary.json", "xpjsonPlanLibraryDocumentSchema.json");
+checkBoth('examplePlan.json', 'xpjsonPlanDocumentSchema.json');
+checkBoth('examplePlanSchema.json', 'xpjsonPlanSchemaDocumentSchema.json');
+checkBoth('examplePlanLibrary.json', 'xpjsonPlanLibraryDocumentSchema.json');

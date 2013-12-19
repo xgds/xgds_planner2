@@ -4,8 +4,8 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-from django.contrib import admin
-import xgds_planner2.models
+# from django.contrib import admin
+# import xgds_planner2.models
 
 #this is now an abstract class so if you want it in the admin tool you should register your derived class
 #admin.site.register(xgds_planner2.models.Plan)

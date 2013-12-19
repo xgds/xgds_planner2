@@ -4,20 +4,11 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-import os
-import copy
-import json
 import re
-import datetime
 
-from django.http import HttpResponse
+from geocamUtil.xml2json import xml2struct
 
-from geocamUtil.dotDict import DotDict, convertToDotDictRecurse
-from xgds_pipeline.scripts.xml2json import xml2struct
-
-from xgds_planner2 import models, xpjson
-from xgds_planner2.planImporter import PlanImporter
-from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
+from xgds_planner2.planImporter import PlanImporter, planDocFromPlanDict
 
 
 def parseCoordinateTuple(s):
@@ -27,7 +18,7 @@ def parseCoordinateTuple(s):
 def parseCoordinateTuples(s):
     s = s.strip()
     return [parseCoordinateTuple(s)[:2]
-            for s in re.split('\s+', s)]
+            for s in re.split(r'\s+', s)]
 
 
 def coordsFromBuf(buf):
@@ -47,7 +38,7 @@ def planDictFromCoords(coords, meta):
                 'coordinates': lonLat
             }
         })
-        if i != n-1:
+        if i != n - 1:
             plan['sequence'].append({
                 'type': 'Segment'
             })

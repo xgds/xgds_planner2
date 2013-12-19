@@ -5,17 +5,16 @@
 # __END_LICENSE__
 
 import os
-from os import path
 import time
 import datetime
-import settings
 
 from geocamUtil.dotDict import convertToDotDictRecurse
 
-from xgds_planner2 import models, xpjson
+from xgds_planner2 import models, xpjson, settings
 from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
 
-Plan = models.getModelByName( getattr( settings, 'XGDS_PLANNER2_PLAN_MODEL' ) )
+PLAN_MODEL = models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+
 
 def posixTimestampToString(timestamp):
     return (datetime.datetime
@@ -73,25 +72,25 @@ class PlanImporter(object):
         importer = cls()
 
         meta.setdefault('name', name)
-        
+
         if not planSchema:
             try:
                 wholePlatform = meta['platform']
                 planSchema = models.getPlanSchema(wholePlatform.name)
-            except:
+            except:  # pylint: disable=W0702
                 #bad news
                 print "no platform, you need to pass the plan Schema" + name
                 return
         importer.setDefaultMeta(meta, path, planSchema)
-       
+
         planDoc = importer.importPlanFromBuffer(buf, meta, planSchema)
         planText = xpjson.dumpDocumentToString(planDoc)
-        
-        dbPlan = Plan()
-        
+
+        dbPlan = PLAN_MODEL()
+
         dbPlan.jsonPlan = planText
         dbPlan.extractFromJson(overWriteDateModified=False)
-        
+
         return dbPlan
 
     def importPlanFromBuffer(self, buf, meta, planSchema):
@@ -99,6 +98,6 @@ class PlanImporter(object):
 
 
 class BlankPlanImporter(PlanImporter):
-    
+
     def importPlanFromBuffer(self, buf, meta, planSchema):
         return planDocFromPlanDict(meta, planSchema.getSchema())
