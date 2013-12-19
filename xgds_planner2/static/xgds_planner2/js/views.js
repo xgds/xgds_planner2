@@ -712,7 +712,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 		gex: ge.gex,
 		mapElement: [],
 		element: [],
-		restoreState: true,
+		restoreState: false,
 		bustCache: true
 	    });
 	    app.tree.load();
