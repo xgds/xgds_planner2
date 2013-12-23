@@ -9,30 +9,36 @@ from django.contrib.auth.models import User
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 
+from xgds_planner2 import models
+
 import logging
 
 @override_settings(XGDS_PLANNER2_PLAN_MODEL="xgds_planner2.Plan", PIPELINE_ENABLED=False)
 class xgds_planner2Test(TestCase):
     fixtures = ['xgds_planner2_testing.json',
                 'xgds_planner2_testing_auth.json']
+    urls = "xgds_planner2.testing_urls"
 
     def setUp(self):
         logging.disable(logging.WARNING)
+        self.test_plan_data = {"planNumber": 1,
+                               "planVersion": "A",
+                               "platform": "Diver"}
 
     def test_index(self):
-        response = self.client.get(reverse('planner2_index'), follow=True)
+        response = self.client.get(reverse('planner2_index'))
         self.assertEquals(response.status_code, 200)
 
     def test_edit(self):
-        response = self.client.get(reverse('planner2_edit', args=['1']), follow=True)
+        response = self.client.get(reverse('planner2_edit', args=['1']))
         self.assertEquals(response.status_code, 200)
 
     def test_doc(self):
-        response = self.client.get(reverse('planner2_doc', args=['1']), follow=True)
+        response = self.client.get(reverse('planner2_doc', args=['1']))
         self.assertEquals(response.status_code, 200)
 
     def test_plan_REST(self):
-        response = self.client.get(reverse('planner2_planREST', args=['1', 'test']), follow=True)
+        response = self.client.get(reverse('planner2_planREST', args=['1', 'test']))
         self.assertEquals(response.status_code, 200)
 
     def test_plan_export(self):
@@ -41,7 +47,13 @@ class xgds_planner2Test(TestCase):
                                    follow=True)
         self.assertEquals(response.status_code, 200)
 
+    def test_create_plan_page(self):
+        self.client.login(username="vagrant", password="vagrant")
+        response = self.client.get(reverse('planner2_planCreate'))
+        self.assertEquals(response.status_code, 200)
+
     def test_create_plan(self):
         self.client.login(username="vagrant", password="vagrant")
-        response = self.client.get(reverse('planner2_planCreate'), follow=True)
-        self.assertEquals(response.status_code, 200)
+        response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(models.Plan.objects.all()), 2)
