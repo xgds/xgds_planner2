@@ -41,6 +41,35 @@ def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
         _template_cache = templates
     return _template_cache
 
+def plan_tests(request, plan_id, editable=True):
+    Plan = get_plan_model()
+    templates = get_handlebars_templates()
+
+    plan = Plan.objects.get(pk=plan_id)
+    plan_json = plan.jsonPlan
+    if not plan_json.serverId:
+        plan_json.serverId = plan.id
+    if "None" in plan_json.url:
+        plan_json.url = plan.get_absolute_url()
+
+    planSchema = models.getPlanSchema(plan_json.platform.name)
+#     print planSchema.getJsonSchema();
+    return render_to_response(
+        'xgds_planner2/planner_tests.html',
+        RequestContext(request, {
+            'templates': templates,
+            'settings': settings,
+            'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
+            'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
+            'plan_json': json.dumps(plan_json),
+            'plan_name': plan.name,
+            'plan_index_json': json.dumps(plan_index_json()),
+            'editable': editable,
+            'simulatorPath': os.path.join(settings.STATIC_URL, planSchema.simulatorPath),
+            'simulator': planSchema.simulator,
+        }),
+        # context_instance=RequestContext
+    )
 
 def aggregate_handlebars_templates(request):
     """
