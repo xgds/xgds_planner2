@@ -7,6 +7,7 @@
     {% compressed_css "xgds_planner2_testing" %}
   </head>
   <body>
+    <!-- as a simple hack, give the js app some hidden DOM to work with -->
     <div id="hidden-content-container" style="display:none">
       <div id="application" class="container-fluid">
 	<div id="toolbar" class="row btn-toolbar">
@@ -18,8 +19,13 @@
 	</div>
       </div>
     </div>
+
+    <!-- begin visible DOM -->
     <div id="qunit"></div>
     <div id="qunit-fixture"></div>
+
+    <!-- begin planner js
+	 css isn't included (for the planner app) because it doesn't change js execution -->
     {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
     {% compressed_js 'simulator' %}
@@ -43,6 +49,8 @@
         app.start(options);
       });
     </script>
+
+    <!-- begin unit test js -->
     {% compressed_js "xgds_planner2_testing" %}
   </body>
 </html>
