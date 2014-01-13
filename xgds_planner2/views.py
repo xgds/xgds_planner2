@@ -193,9 +193,12 @@ def planCreate(request):
                          for f in ('planNumber', 'planVersion')])
             meta['creator'] = request.user.username
             importer = planImporter.BlankPlanImporter()
+            planSchema = models.getPlanSchema(form.cleaned_data['platform'])
             dbPlan = importer.importPlan('tempName',
                                          buf=None,
-                                         meta=meta)
+                                         meta=meta,
+                                         planSchema=planSchema)
+            
 
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
