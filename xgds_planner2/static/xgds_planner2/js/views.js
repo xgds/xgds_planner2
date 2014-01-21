@@ -911,7 +911,6 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         // load layer tree ahead of time to load layers into map
         app.tree = null;
        this.listenTo(app.vent, 'earth:loaded', function() {
-    	    console.log("EARTH:LOADED");
             app.tree = kmltree({
                 url: app.options.layerFeedUrl,
                 gex: ge.gex,
