@@ -81,6 +81,13 @@ XGDS_PLANNER_PIPELINE_JS = {
         'output_filenames': 'js/planner_app.js'
     },
     # must create 'simulator' entry in top-level siteSettings.py
+    'xgds_planner2_testing': {
+        'source_filenames': (
+            'external/js/qunit-1.12.0.js',
+            'xgds_planner2/js/tests.js',
+        ),
+        'output_filenames': 'js/planner_tests.js'
+    }
 }
 
 XGDS_PLANNER_PIPELINE_CSS = {
@@ -93,6 +100,12 @@ XGDS_PLANNER_PIPELINE_CSS = {
         ),
         'output_filenames': 'css/planner_app.css',
         'template_name': 'xgds_planner2/pipelineCSS.css',
+    },
+    'xgds_planner2_testing': {
+        'source_filenames': (
+            'external/css/qunit-1.12.0.css',
+        ),
+        'output_filenames': 'css/planner_tests.css',
     },
 }
 

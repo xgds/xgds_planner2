@@ -924,7 +924,6 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         });
         this.listenTo(app.vent, 'layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
 	this.listenTo(app.vent, 'setTabRequested', function(tabId) {
-	    app.currentTab = tabId;
 	    this.setTab(tabId);
 	});
     },
@@ -963,6 +962,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
             model: app.currentPlan
         });
         this.tabContent.show(view);
+	app.currentTab = tabId;
         app.vent.trigger('tab:change', tabId);
     }
 

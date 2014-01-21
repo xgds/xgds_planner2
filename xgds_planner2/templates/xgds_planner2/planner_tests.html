@@ -1,0 +1,57 @@
+{% load compressed %}
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>XGDS Planner2 Tests</title>
+    {% compressed_css "xgds_planner2_testing" %}
+  </head>
+  <body>
+    <!-- as a simple hack, give the js app some hidden DOM to work with -->
+    <div id="hidden-content-container" style="display:none">
+      <div id="application" class="container-fluid">
+	<div id="toolbar" class="row btn-toolbar">
+	</div>
+	
+	<div class="row-fluid">
+	  <div id="map" class="span6"></div>
+	  <div id="tabs" class="span6"></div>
+	</div>
+      </div>
+    </div>
+
+    <!-- begin visible DOM -->
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+
+    <!-- begin planner js
+	 css isn't included (for the planner app) because it doesn't change js execution -->
+    {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
+    {% compressed_js 'planner_app' %}
+    {% compressed_js 'simulator' %}
+    {% for template_name, template in templates.items %}
+    <script type="text/handlebars" id="template-{{template_name}}">
+      {{template|safe}}
+    </script>
+    {% endfor %}
+    <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
+    <script id="plan_library_json" type="application/json">{{ plan_library_json|safe }}</script>
+    <script id="plan_index_json" type="application/json">{{ plan_index_json|safe }}</script>
+    {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
+    <script type="text/javascript">
+      $(function(){
+        var options = {
+          offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
+          planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
+          layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}", 
+          simulator: {{ simulator }}
+        };
+        app.start(options);
+      });
+    </script>
+
+    <!-- begin unit test js -->
+    {% compressed_js "xgds_planner2_testing" %}
+  </body>
+</html>
+      
