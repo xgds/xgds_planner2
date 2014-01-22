@@ -2,9 +2,10 @@
 Main Stuff
 ==========
 
- * xpjson.rst - Specification for XPJSON and XPSJSON
+ * xpjson.rst - Specification for XPJSON
  * examplePlan.json - An example XPJSON plan
  * examplePlanSchema.json - An example XPSJSON plan schema
+ * examplePlanLibrary.json - An example XPSJSON plan library
 
 Validation Tests
 ================
