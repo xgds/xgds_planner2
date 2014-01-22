@@ -16,8 +16,9 @@ import logging
 @override_settings(XGDS_PLANNER2_PLAN_MODEL="xgds_planner2.Plan", PIPELINE_ENABLED=False)
 class xgds_planner2Test(TestCase):
     fixtures = ['xgds_planner2_testing.json',
-                'xgds_planner2_testing_auth.json']
-    urls = "xgds_planner2.testing_urls"
+                'xgds_planner2_testing_auth.json',
+                ]
+    # urls = "xgds_planner2.testing_urls"
 
     def setUp(self):
         logging.disable(logging.WARNING)
