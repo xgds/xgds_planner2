@@ -5,7 +5,6 @@
 # __END_LICENSE__
 
 from django.test import TestCase
-from django.contrib.auth.models import User
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 

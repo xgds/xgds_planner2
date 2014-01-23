@@ -7,7 +7,6 @@
 import os
 import glob
 import json
-import logging
 
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
@@ -227,7 +226,7 @@ def planCreate(request):
                                          buf=None,
                                          meta=meta,
                                          planSchema=planSchema)
-            
+
 
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
