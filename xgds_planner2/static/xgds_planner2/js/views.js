@@ -756,14 +756,16 @@ app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
     template: '#template-layer-tree',
     onRender: function() {
         app.vent.trigger('layerView:onRender');
-        var tree = kmltree({
-            url: app.options.layerFeedUrl,
-            gex: ge.gex,
-            mapElement: $('#map'),
-            element: this.$el.find('#layertree'),
-            restoreState: true
-        });
-        tree.load();
+	if (!_.isUndefined(ge)) {
+            var tree = kmltree({
+		url: app.options.layerFeedUrl,
+		gex: ge.gex,
+		mapElement: $('#map'),
+		element: this.$el.find('#layertree'),
+		restoreState: true
+            });
+            tree.load();
+	}
     }
 });
 
@@ -921,10 +923,16 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
             });
             app.tree.load();
         });
-        this.listenTo(app.vent, 'layerView:onRender', function() {app.tree.destroy()}); // remove tree once user loads layers tab
-        this.listenTo(app.vent, 'setTabRequested', function(tabId) {
-            this.setTab(tabId);
-        });
+        this.listenTo(app.vent, 'layerView:onRender', function() {
+	    // remove tree once user loads layers tab
+	    if (!_.isNull(app.tree)) {
+		// only remove if it's there in the first place
+		app.tree.destroy();
+	    }
+	});
+	this.listenTo(app.vent, 'setTabRequested', function(tabId) {
+	    this.setTab(tabId);
+	});
     },
 
     onRender: function() {

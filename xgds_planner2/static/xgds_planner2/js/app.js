@@ -165,6 +165,9 @@ var app = (function($, _, Backbone) {
 
         this.Simulator = this.options.simulator;
 
+	// temporarily define ge so that we don't get a reference error later
+	window.ge = undefined;
+
         /*
         * Initialize the plan schema, and build easy-access indecies.
         * The plan schema is global to the planner deployment
