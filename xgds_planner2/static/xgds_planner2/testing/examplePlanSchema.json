@@ -1,0 +1,134 @@
+{
+  "xpjson": "0.1",
+  "type": "PlanSchema",
+
+  "name": "Robot Science Schema",
+  "notes": "Define available robot science commands",
+  "id": "http://example.com/robotScienceSchema.json",
+
+  "planIdFormat": "{plan.site.id}_{plan.planNumber:03d}{plan.planVersion}",
+  "stationIdFormat": "STN{stationIndex:02d}",
+  "segmentIdFormat": "SEG{stationIndex:02d}",
+  "commandIdFormat": "{parent.id}_{commandIndex:1d}_{command.presetCode}",
+
+  "segmentParams": [
+    {
+      "type": "ParamSpec",
+      "id": "speed",
+      "name": "speed (m/s)",
+      "valueType": "number",
+      "minimum": 0,
+      "default": 0.4,
+      "notes": "Estimated mean speed of drive (m/s)"
+    },
+    {
+      "type": "ParamSpec",
+      "id": "tolerance",
+      "name": "tolerance (m)",
+      "valueType": "number",
+      "minimum": 0,
+      "default": 1.0,
+      "notes": "How close we need to get to the target coordinates (meters)"
+    }
+  ],
+
+  "paramSpecs": [
+    {
+      "type": "ParamSpec",
+      "id": "duration",
+      "valueType": "number",
+      "minimum": 0,
+      "notes": "Estimated time required to execute command (minutes)",
+      "required": false
+    }
+  ],
+
+  "commandSpecs": [
+    {
+      "type": "CommandSpec",
+      "id": "CommandWithDuration",
+      "parent": "Command",
+      "abstract": true,
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "duration",
+          "parent": "duration"
+        },
+        {
+          "type": "ParamSpec",
+          "id": "presetCode",
+          "valueType": "string",
+          "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
+        }
+      ]
+    },
+    {
+      "type": "CommandSpec",
+      "id": "Image",
+      "parent": "CommandWithDuration",
+      "abstract": true,
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "whiteBalance",
+          "name": "White balance",
+          "valueType": "string",
+          "choices": [
+            ["A", "Auto"],
+            ["D", "Daylight"],
+            ["C", "Cloudy"]
+          ],
+          "notes": "White balance setting for camera; auto is usually ok"
+        },
+        {
+          "type": "ParamSpec",
+          "id": "focalLengthMm",
+          "name": "Focal length (mm)",
+          "valueType": "number",
+          "minimum": 7.4,
+          "maximum": 44,
+          "notes": "Actual (not 35 mm-equivalent) focal length of camera."
+        }
+      ]
+    },
+    {
+      "type": "CommandSpec",
+      "id": "MicroImage",
+      "parent": "Image",
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "duration",
+          "parent": "duration",
+          "default": 0.1
+        }
+      ]
+    },
+    {
+      "type": "CommandSpec",
+      "id": "PeriodicPancam",
+      "parent": "Image",
+      "blocking": false,
+      "params": [
+        {
+          "type": "ParamSpec",
+          "id": "intervalSeconds",
+          "name": "Interval between images (seconds)",
+          "valueType": "number",
+          "minimum": 2
+        }
+      ]
+    }
+  ],
+
+  "planSequenceCommands": [],
+
+  "stationSequenceCommands": [
+    "MicroImage"
+  ],
+
+  "segmentSequenceCommands": [
+    "PeriodicPancam"
+  ]
+}

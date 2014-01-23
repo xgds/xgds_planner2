@@ -1,0 +1,61 @@
+{
+  "xpjson": "0.1",
+  "type": "PlanLibrary",
+
+  "name": "Robot Science Library",
+  "notes": "Reusable elements for robot driving plans",
+  "id": "http://example.com/robotScienceLibrary.json",
+  "schemaUrl": "http://example.com/robotScienceSchema.json",
+
+  "sites": [
+    {
+      "type": "Site",
+      "name": "NASA Ames Marscape",
+      "id": "ARC",
+      "crs": {
+        "type": "name",
+        "properties": {
+          "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+        }
+      }
+    }
+  ],
+
+  "platforms": [
+    {
+      "type": "Platform",
+      "name": "K10 Red",
+      "id": "R"
+    }
+  ],
+
+  "stations": [
+    {
+      "type": "Station",
+      "id": "RoverStagingArea",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-122.065483, 37.416433]
+      }
+    }
+  ],
+
+  "commands": [
+    {
+      "type": "PeriodicPancam",
+      "name": "FastPeriodicPancam",
+      "id": "FPP",
+      "whiteBalance": "A",
+      "focalLengthMm": 7.4,
+      "intervalSeconds": 2
+    },
+    {
+      "type": "PeriodicPancam",
+      "name": "SlowPeriodicPancam",
+      "id": "SPP",
+      "whiteBalance": "A",
+      "focalLengthMm": 7.4,
+      "intervalSeconds": 5
+    }
+  ]
+}

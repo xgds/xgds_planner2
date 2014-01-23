@@ -136,7 +136,7 @@ class TreeWalkPlanExporter(PlanExporter):
     def exportPlanInternal(self, plan, context):
         index = 0
         tsequence = []
-        for elt in plan.sequence:
+        for elt in plan.get("sequence", []):
             ctx = context.copy()
             ctx.stationIndex = index
             if elt.type == 'Station':

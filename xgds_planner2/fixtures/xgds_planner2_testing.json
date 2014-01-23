@@ -4,14 +4,14 @@
             "creator": 1,
             "dateModified": "2013-12-09T02:12:55",
             "estimatedDurationSeconds": null,
-            "jsonPlan": "{\n    \"contributors\": [],\n    \"creator\": \"vagrant\",\n    \"dateCreated\": \"2013-12-09T02:12:55Z\",\n    \"dateModified\": \"2013-12-09T02:12:55Z\",\n    \"defaultSpeed\": 0.2,\n    \"id\": \"test_cntr_vagrant_1_A\",\n    \"libraryUrls\": [\n        \"planner/plrpDiverPlanLibrary.json\"\n    ],\n    \"name\": \"test_cntr_vagrant_1_A\",\n    \"notes\": \"\",\n    \"planNumber\": 0,\n    \"planVersion\": \"A\",\n    \"platform\": {\n        \"id\": \"D\",\n        \"name\": \"Diver\",\n        \"notes\": null,\n        \"type\": \"Platform\"\n    },\n    \"purpose\": \"\",\n    \"schemaUrl\": \"planner/plrpDiverPlanSchema.json\",\n    \"sequence\": [],\n    \"serverId\": null,\n    \"site\": {\n        \"alternateCrs\": null,\n        \"bbox\": [\n            50.90887870855735,\n            -121.81905973759058,\n            50.81780251969274,\n            -121.64577926497385\n        ],\n        \"crs\": {\n            \"properties\": {\n                \"name\": \"urn:ogc:def:crs:OGC:1.3:CRS84\"\n            },\n            \"type\": \"name\"\n        },\n        \"id\": \"PL\",\n        \"name\": \"Pavilion Lake\",\n        \"notes\": null,\n        \"type\": \"Site\"\n    },\n    \"subject\": [],\n    \"targets\": [],\n    \"type\": \"Plan\",\n    \"url\": \"/xgds_planner2/plan/None/PLD000_A_PLAN.json\",\n    \"xpjson\": \"0.1\"\n}",
+            "jsonPlan": "{\"platform\": {\"name\": \"R\"}, \"url\": \"\", \"xpjson\": \"0.1\", \"id\":\"A\"}",
             "lengthMeters": 0.0,
             "name": "test_cntr_vagrant_1_A",
             "numCommands": 0,
             "numSegments": 0,
             "numStations": 0,
             "stats": "{\n    \"numCommandsByType\": {}\n}",
-            "summary": "Stn:&nbsp;0 Cmd:&nbsp;0 ",
+            "summary": "",
             "uuid": "421d0eb5-f04d-4f36-a4f7-503e0ca8ef2e"
         },
         "model": "xgds_planner2.plan",
@@ -19,28 +19,15 @@
     },
     {
         "fields": {
-            "libraryUrl": "planner/plrpDiverPlanLibrary.json",
-            "platform": "Diver",
-            "schemaUrl": "planner/plrpDiverPlanSchema.json",
-            "simplifiedLibraryPath": "plrpExplorer/schema/plrpDiverPlanLibrary.json",
-            "simplifiedSchemaPath": "plrpExplorer/schema/plrpDiverPlanSchema.json",
-            "simulator": "plrp_explore.DiverSimulator",
-            "simulatorPath": "plrpExplorer/js/DiverSimulator.js"
+            "libraryUrl": "xgds_planner2/testing/examplePlanLibrary.json",
+            "platform": "R",
+            "schemaUrl": "xgds_planner2/testing/examplePlanSchema.json",
+            "simplifiedLibraryPath": "xgds_planner2/testing/examplePlanLibrary.json",
+            "simplifiedSchemaPath": "xgds_planner2/testing/examplePlanSchema.json",
+            "simulator": "",
+            "simulatorPath": ""
         },
         "model": "xgds_planner2.planschema",
         "pk": 1
-    },
-    {
-        "fields": {
-            "libraryUrl": "planner/plrpROVPlanLibrary.json",
-            "platform": "ROV",
-            "schemaUrl": "planner/plrpROVPlanSchema.json",
-            "simplifiedLibraryPath": "plrpExplorer/schema/plrpROVPlanLibrary.json",
-            "simplifiedSchemaPath": "plrpExplorer/schema/plrpROVPlanSchema.json",
-            "simulator": "plrp_explore.ROVSimulator",
-            "simulatorPath": "plrpExplorer/js/ROVSimulator.js"
-        },
-        "model": "xgds_planner2.planschema",
-        "pk": 2
     }
 ]
