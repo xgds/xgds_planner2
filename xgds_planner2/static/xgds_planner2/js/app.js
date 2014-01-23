@@ -20,139 +20,139 @@ var app = (function($, _, Backbone) {
         'tabs': '#tabs'
     });
 
-    app.module("State", function(optoins) {
-	this.addInitializer(function(options) {
-	    this.commandSelected = undefined;
-	    this.stationSelected = undefined;
-	    this.metaExpanded = undefined;
-	    this.addCommandsExpanded = undefined;
-	    this.disableSimulate = false
-	});
+    app.module('State', function(optoins) {
+        this.addInitializer(function(options) {
+            this.commandSelected = undefined;
+            this.stationSelected = undefined;
+            this.metaExpanded = undefined;
+            this.addCommandsExpanded = undefined;
+            this.disableSimulate = false;
+        });
     });
 
-    app.module("Actions", function(options) {
-	this.addInitializer(function(options) {
-	    this.undoStack = new Array();
-	    this.redoStack = new Array();
-	    this.currentState = undefined;
-	    this.enabled = true;
-	    this._disableCount = 0;
-	    this._inAction = false;
-	    app.vent.trigger('undoEmpty');
-	    app.vent.trigger('redoEmpty');
-	});
+    app.module('Actions', function(options) {
+        this.addInitializer(function(options) {
+            this.undoStack = new Array();
+            this.redoStack = new Array();
+            this.currentState = undefined;
+            this.enabled = true;
+            this._disableCount = 0;
+            this._inAction = false;
+            app.vent.trigger('undoEmpty');
+            app.vent.trigger('redoEmpty');
+        });
 
-	this._enterAction = function() {
-	    this._inAction = true;
-	};
+        this._enterAction = function() {
+            this._inAction = true;
+        };
 
-	this._exitAction = function() {
-	    this._inAction = false;
-	};
+        this._exitAction = function() {
+            this._inAction = false;
+        };
 
-	this.disable = function() {
-	    if (this._inAction) return;
-	    //console.log("Disable called");
-	    //console.log(new Error().stack);
-	    this._enterAction();
-	    this._disableCount += 1;
-	    this.enabled = false;
-	    this._exitAction();
-	};
+        this.disable = function() {
+            if (this._inAction) return;
+            //console.log('Disable called');
+            //console.log(new Error().stack);
+            this._enterAction();
+            this._disableCount += 1;
+            this.enabled = false;
+            this._exitAction();
+        };
 
-	this.enable = function() {
-	    if (this._inAction) return;
-	    //console.log("Enable called");
-	    //console.log(new Error().stack);
-	    this._enterAction();
-	    this._disableCount -= 1;
-	    if (this._disableCount <= 0) {
-		this.enabled = true;
-		this._disableCount = 0;
-	    }
-	    this._exitAction();
-	}
+        this.enable = function() {
+            if (this._inAction) return;
+            //console.log('Enable called');
+            //console.log(new Error().stack);
+            this._enterAction();
+            this._disableCount -= 1;
+            if (this._disableCount <= 0) {
+                this.enabled = true;
+                this._disableCount = 0;
+            }
+            this._exitAction();
+        };
 
-	this.undoEmpty = function() {
-	    return this.undoStack.length == 0;
-	};
+        this.undoEmpty = function() {
+            return this.undoStack.length == 0;
+        };
 
-	this.redoEmpty = function() {
-	    return this.redoStack.length == 0;
-	};
+        this.redoEmpty = function() {
+            return this.redoStack.length == 0;
+        };
 
-	this.setInitial = function () {
-	    if (this.currentState == undefined) {
-		this.currentState = JSON.stringify(app.currentPlan.toJSON());
-	    }
-	};
+        this.setInitial = function() {
+            if (this.currentState == undefined) {
+                this.currentState = JSON.stringify(app.currentPlan.toJSON());
+            }
+        };
 
-	this.action = function() {
-//	    console.log("\\\\\\\\\\Action called");
-	    //console.log("Disable stack: " + this._disableCount);
-	    if (this._inAction) return;
-	    if (!this.enabled) return;
-	    if (this.currentState == undefined) return;
-	    this.disable();
-	    this._enterAction();
-	    var plan = app.currentPlan.toJSON();
-	    var planString = JSON.stringify(plan);
-	    if (this.currentState == planString) {
-		// plan unchanged from current state
-	    } else {
-		this.undoStack.push(this.currentState);
-		this.currentState = planString;
-		this.redoStack = new Array();
-		app.vent.trigger('undoNotEmpty');
-		app.vent.trigger('redoEmpty');
-		app.vent.trigger('actionOcurred');
-	    }
-	    this._exitAction();
-	    this.enable();
-	}
+        this.action = function() {
+//            console.log('\\\\\\\\\\Action called');
+            //console.log('Disable stack: ' + this._disableCount);
+            if (this._inAction) return;
+            if (!this.enabled) return;
+            if (this.currentState == undefined) return;
+            this.disable();
+            this._enterAction();
+            var plan = app.currentPlan.toJSON();
+            var planString = JSON.stringify(plan);
+            if (this.currentState == planString) {
+                // plan unchanged from current state
+            } else {
+                this.undoStack.push(this.currentState);
+                this.currentState = planString;
+                this.redoStack = new Array();
+                app.vent.trigger('undoNotEmpty');
+                app.vent.trigger('redoEmpty');
+                app.vent.trigger('actionOcurred');
+            }
+            this._exitAction();
+            this.enable();
+        };
 
-	this.undo = function() {
-	    if (this._inAction) return;
-	    if (!this.enabled) return;
-	    this.disable();
-	    this._enterAction();
-	    var planString = this.undoStack.pop();
-	    var plan = JSON.parse(planString);
-	    if (plan == undefined) {
-		app.vent.trigger('undoEmpty');
-	    } else {
-		this.redoStack.push(this.currentState);
-		this.currentState = planString;
-		app.updatePlan(plan);
-		app.vent.trigger('redoNotEmpty');
-		if (this.undoStack.length == 0)
-		    app.vent.trigger('undoEmpty');
-	    }
-	    //console.log("-----------------------------------Undo finished");
-	    this._exitAction();
-	    this.enable();
-	}
+        this.undo = function() {
+            if (this._inAction) return;
+            if (!this.enabled) return;
+            this.disable();
+            this._enterAction();
+            var planString = this.undoStack.pop();
+            var plan = JSON.parse(planString);
+            if (plan == undefined) {
+                app.vent.trigger('undoEmpty');
+            } else {
+                this.redoStack.push(this.currentState);
+                this.currentState = planString;
+                app.updatePlan(plan);
+                app.vent.trigger('redoNotEmpty');
+                if (this.undoStack.length == 0)
+                    app.vent.trigger('undoEmpty');
+            }
+            //console.log('-----------------------------------Undo finished');
+            this._exitAction();
+            this.enable();
+        };
 
-	this.redo = function() {
-	    if (this._inAction) return;
-	    if (!this.enabled) return;
-	    this.disable();
-	    this._enterAction();
-	    var planString = this.redoStack.pop();
-	    var plan = JSON.parse(planString);
-	    if (plan == undefined) {
-		app.vent.trigger('redoEmpty');
-	    } else {
-		this.undoStack.push(this.currentState);
-		this.currentState = planString;
-		app.updatePlan(plan);
-		app.vent.trigger('undoNotEmpty');
-		if (this.redoStack.length == 0)
-		    app.vent.trigger('redoEmpty');
-	    }
-	    this._exitAction();
-	    this.enable();
-	}
+        this.redo = function() {
+            if (this._inAction) return;
+            if (!this.enabled) return;
+            this.disable();
+            this._enterAction();
+            var planString = this.redoStack.pop();
+            var plan = JSON.parse(planString);
+            if (plan == undefined) {
+                app.vent.trigger('redoEmpty');
+            } else {
+                this.undoStack.push(this.currentState);
+                this.currentState = planString;
+                app.updatePlan(plan);
+                app.vent.trigger('undoNotEmpty');
+                if (this.redoStack.length == 0)
+                    app.vent.trigger('redoEmpty');
+            }
+            this._exitAction();
+            this.enable();
+        };
     });
 
     app.addInitializer(function(options) {
@@ -236,28 +236,28 @@ var app = (function($, _, Backbone) {
         console.log('Router event: ' + eventname);
     });
 
-    app.vent.on('all', function(eventname, args){
-        console.log("event on app.vent: " + eventname, args);
-//	console.log("current state:");
-//	console.log("Command Selected:", app.State.commandSelected);
-//	console.log("Station Selected:", app.State.stationSelected);
-//	console.log("Meta Expanded:", app.State.metaExpanded);
-//	console.log("Presets Expanded:", app.State.addCommandsExpanded);
-	//if (eventname != "change:plan") {
-	//    var stack = new Error().stack;
-	//    console.log(stack);
-	//}
-	if (eventname == "change:plan") {
-	    app.Actions.action();
-	} else if (eventname == "plan:reversing") {
-	    app.Actions.disable();
-	} else if (eventname == "plan:reverse") {
-	    app.Actions.enable();
-	    app.Actions.action();
-	} else if (eventname == "actionOcurred") {
-	    if (_.isUndefined(app.currentPlan)) return;
-	    app.simulatePlan();
-	}
+    app.vent.on('all', function(eventname, args) {
+        console.log('event on app.vent: ' + eventname, args);
+//        console.log('current state:');
+//        console.log('Command Selected:', app.State.commandSelected);
+//        console.log('Station Selected:', app.State.stationSelected);
+//        console.log('Meta Expanded:', app.State.metaExpanded);
+//        console.log('Presets Expanded:', app.State.addCommandsExpanded);
+        //if (eventname != 'change:plan') {
+        //    var stack = new Error().stack;
+        //    console.log(stack);
+        //}
+        if (eventname == 'change:plan') {
+            app.Actions.action();
+        } else if (eventname == 'plan:reversing') {
+            app.Actions.disable();
+        } else if (eventname == 'plan:reverse') {
+            app.Actions.enable();
+            app.Actions.action();
+        } else if (eventname == 'actionOcurred') {
+            if (_.isUndefined(app.currentPlan)) return;
+            app.simulatePlan();
+        }
     });
 
     app.addInitializer(_.bind(Backbone.history.start, Backbone.history));
@@ -302,7 +302,7 @@ var app = (function($, _, Backbone) {
             return obj;
         },
         minutesToHMS: function(minutes) {
-            // given a floating point time duration in minutes, output "hh:mm:ss"
+            // given a floating point time duration in minutes, output 'hh:mm:ss'
             var hh = Math.floor(minutes / 60);
             minutes = minutes - (hh * 60.0);
             var mm = Math.floor(minutes);
@@ -316,7 +316,7 @@ var app = (function($, _, Backbone) {
         },
         randomColor: function() { return '#' + ((1 << 24) * Math.random() | 0).toString(16) },
         rainbow: function(numOfSteps, step) {
-            // This function generates vibrant, "evenly spaced" colours (i.e. no clustering). This is ideal for creating easily distiguishable vibrant markers in Google Maps and other apps.
+            // This function generates vibrant, 'evenly spaced' colours (i.e. no clustering). This is ideal for creating easily distiguishable vibrant markers in Google Maps and other apps.
             // Adam Cole, 2011-Sept-14
             // HSV to RBG adapted from: http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
             // source: http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript/7419630

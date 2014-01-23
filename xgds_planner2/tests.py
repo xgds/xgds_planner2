@@ -12,6 +12,7 @@ from xgds_planner2 import models
 
 import logging
 
+
 @override_settings(XGDS_PLANNER2_PLAN_MODEL="xgds_planner2.Plan", PIPELINE_ENABLED=False)
 class xgds_planner2Test(TestCase):
     fixtures = ['xgds_planner2_testing.json',

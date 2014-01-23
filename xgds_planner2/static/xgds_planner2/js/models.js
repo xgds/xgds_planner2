@@ -114,7 +114,7 @@ app.models = app.models || {};
             });
         },
 
-	toJSON: toJsonWithFilters
+        toJSON: toJsonWithFilters
     });
 
     /*
@@ -305,15 +305,15 @@ app.models = app.models || {};
         the station-segment-station adjecency.
         */
         appendStation: function(stationModel) {
-	    app.Actions.disable();
+            app.Actions.disable();
             if (this.length > 0) { // Don't append a segment if this is the first station in the list.
                 var segment = models.segmentFactory();
                 this.add([segment, stationModel]);
             } else {
                 this.add(stationModel);
             }
-	    app.Actions.enable();
-	    app.Actions.action();
+            app.Actions.enable();
+            app.Actions.action();
             app.vent.trigger('station:change');
         },
 
@@ -340,12 +340,12 @@ app.models = app.models || {};
             }
             // for whatever reason, relational would rather
             // you remove the segment first.
-	    // disable actions so that the segment and
-	    // the station get removed in the same action
-	    app.Actions.disable();
-            this.remove([segment,stationModel]);
-	    app.Actions.enable();
-	    app.Actions.action();
+            // disable actions so that the segment and
+            // the station get removed in the same action
+            app.Actions.disable();
+            this.remove([segment, stationModel]);
+            app.Actions.enable();
+            app.Actions.action();
             app.vent.trigger('station:change');
         }
     });

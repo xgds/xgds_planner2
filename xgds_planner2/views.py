@@ -26,8 +26,10 @@ from xgds_planner2 import (settings,
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
 
+
 def get_plan_model():
     return models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+
 
 def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
     global _template_cache
@@ -39,6 +41,7 @@ def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
                 templates[template_name] = infile.read()
         _template_cache = templates
     return _template_cache
+
 
 def plan_tests(request, plan_id, editable=True):
     Plan = get_plan_model()
@@ -69,6 +72,7 @@ def plan_tests(request, plan_id, editable=True):
         }),
         # context_instance=RequestContext
     )
+
 
 def aggregate_handlebars_templates(request):
     """
@@ -226,7 +230,6 @@ def planCreate(request):
                                          buf=None,
                                          meta=meta,
                                          planSchema=planSchema)
-
 
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
