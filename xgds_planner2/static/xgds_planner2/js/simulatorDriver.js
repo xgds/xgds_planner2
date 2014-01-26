@@ -28,6 +28,8 @@ $(function() {
         if (plan.get('sequence').length == 0) {
             // no stations means we don't simulate
             setSimInfo(sim, plan, getSimState(sim));
+	    app.State.disableSimulate = false;
+	    app.Actions.enable();
             return;
         }
 
