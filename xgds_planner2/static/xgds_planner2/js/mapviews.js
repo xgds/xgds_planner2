@@ -412,11 +412,11 @@ $(function() {
                 app.State.addCommandsExpanded = false;
                 app.State.commandSelected = undefined;
                 if (app.currentTab != 'sequence') {
-                    app.vent.trigger('setTabRequested', 'sequence');
+		    app.vent.trigger('setTabRequested', 'sequence');
                 } else {
-                    app.tabs.currentView.tabContent.currentView.render();
+		    app.tabs.currentView.tabContent.currentView.render();
                 }
-            });
+	    });
         },
 
         repositionMode: {
@@ -470,8 +470,10 @@ $(function() {
             // do all the other things related to drawing a station on the map
             var view = app.currentPlan.kmlView;
             var station = stationPoint.view;
-            station._geHandle = handle;
-            view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+	    if (app.mapRotationHandles) {
+		station._geHandle = handle;
+		view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+	    }
             this.addClickSelectEvent(station, stationPoint);
             view.addGeEvent(stationPoint, 'dblclick', function(evt) {
                 evt.preventDefault();
@@ -489,7 +491,9 @@ $(function() {
                     view.segmentsFolder.getFeatures().removeChild(segmentBefore._geSegment.placemark);
                 if (!_.isUndefined(segmentAfter))
                     view.segmentsFolder.getFeatures().removeChild(segmentAfter._geSegment.placemark);
-                view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+		if (app.mapRotationHandles) {
+                    view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+		}
                 view.stationsFolder.getFeatures().removeChild(stationPoint);
                 if (!_.isUndefined(newSegment))
                     view.drawSegment(newSegment, sequence.at(index - 2), sequence.at(index));
@@ -511,10 +515,12 @@ $(function() {
                     model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
                     var sequence = app.currentPlan.get('sequence');
                     var index = sequence.indexOf(model);
-                    var newHandle = station.createDragRotateHandle();
-                    view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
-                    station._geHandle = newHandle;
-                    view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+		    if (app.mapRotationHandles) {
+			var newHandle = station.createDragRotateHandle();
+			view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+			station._geHandle = newHandle;
+			view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+		    }
                     view.destroyMidpoints();
                     view.drawMidpoints();
                     app.Actions.enable();
@@ -604,6 +610,7 @@ $(function() {
         },
 
         redrawHandles: function() {
+	    if (!app.mapRotationHandles) return;
             if (_.isUndefined(this._geHandle)) return;
             if (app.currentPlan.kmlView.currentModeName != 'reposition') return;
             app.currentPlan.kmlView.dragHandlesFolder.getFeatures().removeChild(this._geHandle);

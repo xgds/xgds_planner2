@@ -165,6 +165,9 @@ var app = (function($, _, Backbone) {
 
         this.Simulator = this.options.simulator;
 
+	// rotation handles option
+	this.mapRotationHandles = (_.isBoolean(this.options.mapRotationHandles)) ? this.options.mapRotationHandles : true;
+
 	// temporarily define ge so that we don't get a reference error later
 	window.ge = undefined;
 
@@ -204,9 +207,9 @@ var app = (function($, _, Backbone) {
             app.tabs.currentView.render();
         };
 
-        var planJson = JSON.parse($('#plan_json').html());
-        if (planJson) {
-            app.currentPlan = new app.models.Plan(planJson);
+        this.planJson = JSON.parse($('#plan_json').html());
+        if (this.planJson) {
+            app.currentPlan = new app.models.Plan(this.planJson);
             app.simulatePlan(); // do this before the change:plan event is mapped
             app.currentPlan.get('sequence').resequence();
             app.Actions.setInitial();

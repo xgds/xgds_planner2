@@ -948,11 +948,11 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
 
     clickSelectTab: function(event) {
         var newmode = $(event.target).parents('li').data('target');
-        app.currentTab = newmode;
         this.trigger('tabSelected', newmode);
     },
 
     setTab: function(tabId) {
+	app.currentTab = tabId;
         var $tabList = this.$el.find('ul.nav-tabs li');
         $tabList.each(function() {
             li = $(this);
@@ -969,7 +969,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
             model: app.currentPlan
         });
         this.tabContent.show(view);
-        app.currentTab = tabId;
+
         app.vent.trigger('tab:change', tabId);
     }
 

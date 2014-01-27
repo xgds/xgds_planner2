@@ -44,7 +44,8 @@ $(function(){
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
         layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}", 
-        simulator: {{ simulator }}
+        simulator: {{ simulator }},
+        mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }}
     };
     app.start(options);
 })
