@@ -157,89 +157,90 @@ class Plan(AbstractPlan):
     pass
 
 
-#This will not change during runtime so we should cache these in PLAN_SCHEMA_CACHE
-class PlanSchema(models.Model):
-    platform = models.CharField(max_length=24)
-    schemaUrl = models.CharField(max_length=512)
-    libraryUrl = models.CharField(max_length=512)
-    simplifiedSchemaPath = models.CharField(max_length=512)
-    simplifiedLibraryPath = models.CharField(max_length=512)
-    simulatorPath = models.CharField(max_length=512)
-    simulator = models.CharField(max_length=128)
-    schema = None
-    library = None
-    jsonSchema = None
-    jsonLibrary = None
+# PlanSchema used to be a database model, but is now a normal Python
+# class built from the Django settings.  This will not change during
+# runtime so we should cache these in PLAN_SCHEMA_CACHE.
+class PlanSchema:
+    def __init__(self, platform, schemaDict):
+        self.platform = platform
+        self.schemaSource = settings.PROJ_ROOT + schemaDict['schemaSource']
+        self.librarySource = settings.PROJ_ROOT + schemaDict['librarySource']
+        self.simulatorUrl = settings.STATIC_URL + schemaDict['simulatorUrl']
+        self.simulator = schemaDict['simulator']
+
+        schemaSuffix = os.path.join('xgds_planner2', os.path.basename(self.schemaSource))
+        librarySuffix = os.path.join('xgds_planner2', os.path.basename(self.librarySource))
+
+        self.simplifiedSchemaPath = os.path.join(settings.STATIC_ROOT, schemaSuffix)
+        self.simplifiedLibraryPath = os.path.join(settings.STATIC_ROOT, librarySuffix)
+
+        self.schemaUrl = os.path.join(settings.STATIC_URL, schemaSuffix)
+        self.libraryUrl = os.path.join(settings.STATIC_URL, librarySuffix)
+
+        self.schema = None
+        self.library = None
+        self.jsonSchema = None
+        self.jsonLibrary = None
 
     def getJsonSchema(self):
         if not self.jsonSchema:
             try:
-                SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
-                with open(SIMPLIFIED_SCHEMA_PATH) as schemafile:
-                    SCHEMA = schemafile.read()
-                    self.jsonSchema = SCHEMA
+                with open(self.simplifiedSchemaPath) as schemaFile:
+                    self.jsonSchema = schemaFile.read()
             except:  # pylint: disable=W0702
-                try:
-                    SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
-                    with open(SCHEMA_PATH) as schemafile:
-                        SCHEMA = schemafile.read()
-                        self.jsonSchema = SCHEMA
-                except:
-                    logging.warning('could not load json schema from ' + SCHEMA_PATH)
-                    raise   # FIX
+                logging.warning('could not load XPJSON schema from ' + self.simplifiedSchemaPath)
+                raise
         return self.jsonSchema
 
     def getSchema(self):
         if not self.schema:
             try:
-                SIMPLIFIED_SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedSchemaPath)
-                self.schema = xpjson.loadDocument(SIMPLIFIED_SCHEMA_PATH)
+                self.schema = xpjson.loadDocument(self.simplifiedSchemaPath)
             except:  # pylint: disable=W0702
-                SCHEMA_PATH = os.path.join(settings.STATIC_ROOT, self.schemaUrl)
-                self.schema = xpjson.loadDocument(SCHEMA_PATH)
+                logging.warning('could not load XPJSON schema from ' + self.simplifiedSchemaPath)
+                raise
         return self.schema
 
     def getJsonLibrary(self):
         if not self.jsonLibrary:
             try:
-                SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
-                with open(SIMPLIFIED_LIBRARY_PATH) as libraryfile:
-                    LIBRARY = libraryfile.read()
-                    self.jsonLibrary = LIBRARY
+                with open(self.simplifiedLibraryPath) as libraryFile:
+                    self.jsonLibrary = libraryFile.read()
             except:  # pylint: disable=W0702
-                try:
-                    LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
-                    with open(LIBRARY_PATH) as libraryfile:
-                        LIBRARY = libraryfile.read()
-                        self.jsonLibrary = LIBRARY
-                except:
-                    logging.warning('could not load json library from ' + LIBRARY_PATH)
-                    raise  # FIX
+                logging.warning('could not load XPJSON library from ' + self.simplifiedLibraryPath)
+                raise
         return self.jsonLibrary
 
     def getLibrary(self):
         if not self.library:
             try:
-                SIMPLIFIED_LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.simplifiedLibraryPath)
-                self.library = xpjson.loadDocument(SIMPLIFIED_LIBRARY_PATH, schema=self.getSchema(), fillInDefaults=True)
+                self.library = xpjson.loadDocument(self.simplifiedLibraryPath,
+                                                   schema=self.getSchema(),
+                                                   fillInDefaults=True)
             except:  # pylint: disable=W0702
-                LIBRARY_PATH = os.path.join(settings.STATIC_ROOT, self.libraryUrl)
-                self.library = xpjson.loadDocument(LIBRARY_PATH, schema=self.getSchema())
+                logging.warning('could not load XPJSON library from ' + self.simplifiedLibraryPath)
+                raise
         return self.library
 
 
-#get the cached plan schema, building it if need be.
+def loadSchema(platform):
+    schemaDict = settings.XGDS_PLANNER_SCHEMAS[platform]
+    schema = PlanSchema(platform, schemaDict)
+    schema.getSchema()
+    schema.getJsonSchema()
+    schema.getLibrary()
+    schema.getJsonLibrary()
+    return schema
+
+
+# get the cached plan schema, building it if need be.
 def getPlanSchema(platform):
-    try:
-        result = PLAN_SCHEMA_CACHE[platform]
-    except KeyError:
+    result = PLAN_SCHEMA_CACHE.get(platform)
+    if not result:
         try:
-            result = PlanSchema.objects.get(platform=platform)
-            if result:
-                result.getSchema()
-                result.getLibrary()
-                PLAN_SCHEMA_CACHE[platform] = result
+            result = loadSchema(platform)
+            PLAN_SCHEMA_CACHE[platform] = result
         except:
             logging.warning('could not find plan schema for platform %s', platform)
-            raise  # FIX
+            raise
     return result

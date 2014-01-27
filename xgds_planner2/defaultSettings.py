@@ -112,8 +112,6 @@ XGDS_PLANNER_PIPELINE_CSS = {
 
 _thisDir = os.path.dirname(__file__)
 
-# Schema used to be set in the settings, now they are set in the PlanSchema database table.
-
 # list of (formatCode, extension, exporterClass)
 XGDS_PLANNER_PLAN_EXPORTERS = (
     ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
@@ -130,3 +128,34 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/"
 
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
+
+# Schema used to be set in the settings, now they are set in the PlanSchema database table.
+XGDS_PLANNER_SCHEMAS = [
+]
+
+# XGDS_PLANNER_SCHEMAS: A list of XPJSON schemas available in the
+# planner. Notes:
+#
+# * @schemaSource and @librarySource are paths relative to the PROJ_ROOT
+#   base directory for the site. They point to the XPJSON PlanSchema and
+#   PlanLibrary source files.  One of the steps within 'manage.py prep'
+#   is 'prepapps'. During that step, those files are processed by
+#   compileXpjson.py and the simplified/canonical versions are written
+#   to the build/static/xgds_planner2 directory.  The client-side JS
+#   reads the simplified versions from there.
+#
+# * @simulatorUrl is relative to STATIC_URL. It should point to a JavaScript
+#   file that defines the simulator model for the schema. The model is loaded
+#   as part of the client-side planner JS.
+#
+# * @simulator is the JavaScript name of the simulator module defined by
+#   the file at @simulatorUrl.
+#
+XGDS_PLANNER_SCHEMAS = {
+    "test": {
+        "schemaSource": "apps/xgds_planner2/testing/examplePlanSchema.json",
+        "librarySource": "apps/xgds_planner2/testing/examplePlanLibrary.json",
+        "simulatorUrl": "xgds_planner2/testing/exampleSimulator.js",
+        "simulator": "xgds_planner2.ExampleSimulator",
+    }
+}

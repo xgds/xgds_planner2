@@ -67,7 +67,7 @@ def plan_tests(request, plan_id, editable=True):
             'plan_name': plan.name,
             'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable,
-            'simulatorPath': os.path.join(settings.STATIC_URL, planSchema.simulatorPath),
+            'simulatorUrl': planSchema.simulatorUrl,
             'simulator': planSchema.simulator,
         }),
         # context_instance=RequestContext
@@ -148,7 +148,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_name': plan.name,
             'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable,
-            'simulatorPath': os.path.join(settings.STATIC_URL, planSchema.simulatorPath),
+            'simulatorUrl': planSchema.simulatorUrl,
             'simulator': planSchema.simulator,
         }),
         # context_instance=RequestContext
