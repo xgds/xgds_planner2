@@ -12,6 +12,7 @@ from xgds_planner2 import models
 
 import logging
 
+
 @override_settings(PIPELINE_ENABLED=False)
 class xgds_planner2Test(TestCase):
     fixtures = ['xgds_planner2_testing.json',
@@ -54,8 +55,8 @@ class xgds_planner2Test(TestCase):
 
     def test_create_plan(self):
         # Note: this test conflicts with plrp, so disabled.
-        return
-        self.client.login(username="vagrant", password="vagrant")
-        response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(models.Plan.objects.all()), 2)
+        if 0:
+            self.client.login(username="vagrant", password="vagrant")
+            response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(len(models.Plan.objects.all()), 2)
