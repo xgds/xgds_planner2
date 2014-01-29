@@ -69,7 +69,7 @@ class AbstractPlan(models.Model):
         abstract = True
 
     def get_absolute_url(self):
-        return reverse('planner2_planREST', args=[self.id, self.jsonPlan.id])
+        return reverse('planner2_planREST', args=[self.id, self.name])
 
     def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
         if overWriteUuid:
