@@ -83,8 +83,8 @@ class AbstractPlan(models.Model):
                                           .isoformat()
                                           + 'Z')
 
-        self.jsonPlan.url = self.get_absolute_url()
         self.name = self.jsonPlan.name
+        self.jsonPlan.url = self.get_absolute_url()
 #         print 'name is now ' + self.name
         self.jsonPlan.serverId = self.id
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
