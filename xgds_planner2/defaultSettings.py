@@ -125,7 +125,7 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 )
 
 # kml root from xgds_map_server
-XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/"
+XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/?logo=0"
 
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
 
