@@ -53,13 +53,16 @@ app.models = app.models || {};
                 var options = _.map(param.choices, function(choice) {
                     return choice[0];
                 });
-                schema[param.id] = {'type': foundType, options: options};
+                schema[param.id] = {'type': foundType, 'validators': [], options: options};
             } else {
-                schema[param.id] = {'type': foundType};
+                schema[param.id] = {'type': foundType, 'validators': []};
             }
             if (param.name != null) {
                 schema[param.id]['title'] = param.name;
             }
+	    if (param.required) {
+		schema[param.id]['validators'].push('required');
+	    }
         });
 
         return schema;
@@ -76,7 +79,6 @@ app.models = app.models || {};
         });
         return obj;
     };
-
 
     models.Plan = Backbone.RelationalModel.extend({
         url: function() {

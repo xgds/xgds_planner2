@@ -87,6 +87,13 @@ var app = (function($, _, Backbone) {
             }
         };
 
+	this.resetCurrent = function() {
+	    if (this._inAction) return;
+	    this._enterAction();
+	    this.currentState = JSON.stringify(app.currentPlan.toJSON());
+	    this._exitAction();
+	};
+
         this.action = function() {
 //            console.log('\\\\\\\\\\Action called');
             //console.log('Disable stack: ' + this._disableCount);
