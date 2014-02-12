@@ -60,9 +60,9 @@ app.models = app.models || {};
             if (param.name != null) {
                 schema[param.id]['title'] = param.name;
             }
-	    if (param.required) {
-		schema[param.id]['validators'].push('required');
-	    }
+            if (param.required) {
+                schema[param.id]['validators'].push('required');
+            }
         });
 
         return schema;

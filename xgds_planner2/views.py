@@ -16,6 +16,7 @@ from django.http import (HttpResponseRedirect,
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.storage import staticfiles_storage
 
 from xgds_planner2 import (settings,
                            models,
@@ -150,6 +151,12 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'editable': editable,
             'simulatorUrl': planSchema.simulatorUrl,
             'simulator': planSchema.simulator,
+            'placemark_circle_url': request.build_absolute_uri(
+                staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
+            ),
+            'placemark_circle_highlighted_url': request.build_absolute_uri(
+                staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
+            )
         }),
         # context_instance=RequestContext
     )
