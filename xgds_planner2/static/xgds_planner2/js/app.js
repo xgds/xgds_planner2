@@ -1,4 +1,3 @@
-
 /*
 ** Override the TemplateCache function responsible for
 ** rendering templates so that it will use Handlebars.
@@ -87,12 +86,12 @@ var app = (function($, _, Backbone) {
             }
         };
 
-	this.resetCurrent = function() {
-	    if (this._inAction) return;
-	    this._enterAction();
-	    this.currentState = JSON.stringify(app.currentPlan.toJSON());
-	    this._exitAction();
-	};
+        this.resetCurrent = function() {
+            if (this._inAction) return;
+            this._enterAction();
+            this.currentState = JSON.stringify(app.currentPlan.toJSON());
+            this._exitAction();
+        };
 
         this.action = function() {
 //            console.log('\\\\\\\\\\Action called');
@@ -172,11 +171,11 @@ var app = (function($, _, Backbone) {
 
         this.Simulator = this.options.simulator;
 
-	// rotation handles option
-	this.mapRotationHandles = (_.isBoolean(this.options.mapRotationHandles)) ? this.options.mapRotationHandles : true;
+        // rotation handles option
+        this.mapRotationHandles = (_.isBoolean(this.options.mapRotationHandles)) ? this.options.mapRotationHandles : true;
 
-	// temporarily define ge so that we don't get a reference error later
-	window.ge = undefined;
+        // temporarily define ge so that we don't get a reference error later
+        window.ge = undefined;
 
         /*
         * Initialize the plan schema, and build easy-access indecies.

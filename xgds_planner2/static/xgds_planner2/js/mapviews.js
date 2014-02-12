@@ -412,11 +412,11 @@ $(function() {
                 app.State.addCommandsExpanded = false;
                 app.State.commandSelected = undefined;
                 if (app.currentTab != 'sequence') {
-		    app.vent.trigger('setTabRequested', 'sequence');
+                    app.vent.trigger('setTabRequested', 'sequence');
                 } else {
-		    app.tabs.currentView.tabContent.currentView.render();
+                    app.tabs.currentView.tabContent.currentView.render();
                 }
-	    });
+            });
         },
 
         repositionMode: {
@@ -470,10 +470,10 @@ $(function() {
             // do all the other things related to drawing a station on the map
             var view = app.currentPlan.kmlView;
             var station = stationPoint.view;
-	    if (app.mapRotationHandles) {
-		station._geHandle = handle;
-		view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
-	    }
+            if (app.mapRotationHandles) {
+                station._geHandle = handle;
+                view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+            }
             this.addClickSelectEvent(station, stationPoint);
             view.addGeEvent(stationPoint, 'dblclick', function(evt) {
                 evt.preventDefault();
@@ -491,9 +491,9 @@ $(function() {
                     view.segmentsFolder.getFeatures().removeChild(segmentBefore._geSegment.placemark);
                 if (!_.isUndefined(segmentAfter))
                     view.segmentsFolder.getFeatures().removeChild(segmentAfter._geSegment.placemark);
-		if (app.mapRotationHandles) {
+                if (app.mapRotationHandles) {
                     view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
-		}
+                }
                 view.stationsFolder.getFeatures().removeChild(stationPoint);
                 if (!_.isUndefined(newSegment))
                     view.drawSegment(newSegment, sequence.at(index - 2), sequence.at(index));
@@ -515,12 +515,12 @@ $(function() {
                     model.setPoint({lng: point.getLongitude(), lat: point.getLatitude()});
                     var sequence = app.currentPlan.get('sequence');
                     var index = sequence.indexOf(model);
-		    if (app.mapRotationHandles) {
-			var newHandle = station.createDragRotateHandle();
-			view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
-			station._geHandle = newHandle;
-			view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
-		    }
+                    if (app.mapRotationHandles) {
+                        var newHandle = station.createDragRotateHandle();
+                        view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+                        station._geHandle = newHandle;
+                        view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
+                    }
                     view.destroyMidpoints();
                     view.drawMidpoints();
                     app.Actions.enable();
@@ -610,7 +610,7 @@ $(function() {
         },
 
         redrawHandles: function() {
-	    if (!app.mapRotationHandles) return;
+            if (!app.mapRotationHandles) return;
             if (_.isUndefined(this._geHandle)) return;
             if (app.currentPlan.kmlView.currentModeName != 'reposition') return;
             app.currentPlan.kmlView.dragHandlesFolder.getFeatures().removeChild(this._geHandle);
@@ -658,9 +658,11 @@ $(function() {
             var gex = this.options.ge.gex;
             var ge = this.options.ge;
 
-            var iconUrl = this.model.get('isDirectional') ?
+            var iconUrl = app.State.stationSelected === this.model && app.currentTab == 'sequence' ?
+                app.options.placemarkCircleHighlightedUrl :
+                this.model.get('isDirectional') ?
                 'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
-                'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
+                app.options.placemarkCircleUrl;
             var icon = ge.createIcon('');
             icon.setHref(iconUrl);
             var style = ge.createStyle('');
