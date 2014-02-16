@@ -174,7 +174,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     initialize: function() {
-        this.listenTo(app.vent, 'showItem', this.showItem, this);
+        //this.listenTo(app.vent, 'showItem', this.showItem, this);
         this.listenTo(app.vent, 'showItem:station', this.showStation, this);
         this.listenTo(app.vent, 'showItem:segment', this.showSegment, this);
         this.listenTo(app.vent, 'showItem:command', this.showCommand, this);
@@ -260,7 +260,6 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col2.close();
         this.col3.close();
     }
-
 });
 
 app.views.makeExpandable = function(view, expandClass) {
