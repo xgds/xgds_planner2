@@ -57,14 +57,11 @@ app.models = app.models || {};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
             }
-            if (!_.isNull(param.name)) {
+            if (param.name != null) {
                 schema[param.id]['title'] = param.name;
             }
             if (param.required) {
                 schema[param.id]['validators'].push('required');
-            }
-            if (!_.isNull(param.notes)) {
-                schema[param.id]['help'] = param.notes;
             }
         });
 
