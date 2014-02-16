@@ -4,7 +4,7 @@
             "creator": 1,
             "dateModified": "2013-12-09T02:12:55",
             "estimatedDurationSeconds": null,
-            "jsonPlan": "{\"platform\": {\"name\": \"R\"}, \"url\": \"\", \"xpjson\": \"0.1\", \"id\":\"A\"}",
+            "jsonPlan": "{\"platform\": {\"name\": \"test\"}, \"url\": \"\", \"xpjson\": \"0.1\", \"id\":\"A\"}",
             "lengthMeters": 0.0,
             "name": "test_cntr_vagrant_1_A",
             "numCommands": 0,
@@ -15,19 +15,6 @@
             "uuid": "421d0eb5-f04d-4f36-a4f7-503e0ca8ef2e"
         },
         "model": "xgds_planner2.plan",
-        "pk": 1
-    },
-    {
-        "fields": {
-            "libraryUrl": "xgds_planner2/testing/examplePlanLibrary.json",
-            "platform": "R",
-            "schemaUrl": "xgds_planner2/testing/examplePlanSchema.json",
-            "simplifiedLibraryPath": "xgds_planner2/testing/examplePlanLibrary.json",
-            "simplifiedSchemaPath": "xgds_planner2/testing/examplePlanSchema.json",
-            "simulator": "",
-            "simulatorPath": ""
-        },
-        "model": "xgds_planner2.planschema",
         "pk": 1
     }
 ]

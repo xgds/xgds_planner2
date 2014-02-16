@@ -6,6 +6,7 @@
 
 from django import forms
 from xgds_planner2 import models
+from django.conf import settings
 
 # pylint: disable=R0924
 
@@ -23,4 +24,5 @@ class CreatePlanForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
-        self.fields['platform'].choices = models.PlanSchema.objects.all().values_list("platform", "platform").distinct()
+        platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
+        self.fields['platform'].choices = [(p, p) for p in platforms]

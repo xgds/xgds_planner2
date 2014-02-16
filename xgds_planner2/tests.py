@@ -24,7 +24,7 @@ class xgds_planner2Test(TestCase):
         logging.disable(logging.WARNING)
         self.test_plan_data = {"planNumber": 1,
                                "planVersion": "A",
-                               "platform": "Diver"}
+                               "platform": "test"}
 
     def test_index(self):
         response = self.client.get(reverse('planner2_index'))
