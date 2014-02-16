@@ -5,7 +5,6 @@
 # __END_LICENSE__
 
 from django import forms
-from xgds_planner2 import models
 from django.conf import settings
 
 # pylint: disable=R0924
