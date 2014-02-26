@@ -249,7 +249,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col3.close();
         app.State.metaExpanded = false;
         app.State.addCommandsExpanded = true;
-        app.State.commandsSelected = undefined;
+        app.State.commandSelected = undefined;
         this.col3.show(new app.views.CommandPresetsView({
             model: itemModel
         }));

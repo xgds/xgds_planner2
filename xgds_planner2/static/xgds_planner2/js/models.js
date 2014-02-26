@@ -427,6 +427,9 @@ app.models = app.models || {};
             // https://github.com/powmedia/backbone-forms#schema-definition
             var params = app.commandSpecs[this.get('type')].params;
             this.schema = xpjsonToBackboneFormsSchema(params, 'Command');
+            if (_.isUndefined(this.get('id'))) {
+                this.set('id', _.uniqueId('command_'));
+            }
             this.on('change', function() { app.vent.trigger('change:plan'); });
         },
 
