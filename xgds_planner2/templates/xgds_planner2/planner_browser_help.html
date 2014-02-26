@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block siteSection %}Browser Help{% endblock siteSection %}
+
+{% block sitemenu-content-secondary %}
+{% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+<h2>Browser Help</h2>
+
+<p>The XGDS Planner has specific requirements for end-users in order to function properly.</p>
+
+<p>The planner is known to work in Google Chrome and Mozilla Firefox. Although older versions of the browsers may work, the latest versions are recommended.</p>
+
+<p>Most of the functionality in the planner is dependent on Javascript. Javascript must be enabled in order for the planner to work properly.</p>
+
+<p>The planner has a Google Earth component, which can only function if the Google Earth Plugin is installed and working. Though certain plan information can be accessed without the plugin, adding and removing stations, as well as a visual representation of the plan isn't possible.</p>
+{% endblock %}

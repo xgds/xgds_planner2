@@ -44,6 +44,13 @@ def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
     return _template_cache
 
 
+def plan_browser_help(request):
+    return render_to_response(
+        'xgds_planner2/planner_browser_help.html',
+        RequestContext(request, {})
+    )
+
+
 def plan_tests(request, plan_id, editable=True):
     Plan = get_plan_model()
     templates = get_handlebars_templates()
