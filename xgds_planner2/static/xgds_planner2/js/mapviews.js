@@ -463,7 +463,11 @@ $(function() {
 
             // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
             app.currentPlan.kmlView.drawStation(station);
-            app.currentPlan.kmlView.drawSegment(end[1], end[0], end[2]);
+
+            // only drow a segment if other stations exist
+            if (end.length == 3) {
+                app.currentPlan.kmlView.drawSegment(end[1], end[0], end[2]);
+            }
         },
 
         processStation: function(stationPoint, handle) {
