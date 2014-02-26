@@ -45,6 +45,7 @@ $(function(){
         planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
         layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}", 
         simulator: {{ simulator }},
+        directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
         mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }},
         placemarkCircleUrl: "{{ placemark_circle_url }}",
         placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}"

@@ -169,6 +169,11 @@ var app = (function($, _, Backbone) {
             plannerClampMode: undefined // This enum value has to be sniffed out of the Plugin once it's loaded.
         });
 
+        // no directional stations defaults rotation handles to false
+        if (!this.options.directionalStations) {
+            this.options.mapRotationHandles = false;
+        }
+
         this.Simulator = this.options.simulator;
 
         // rotation handles option

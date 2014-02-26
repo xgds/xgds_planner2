@@ -660,7 +660,7 @@ $(function() {
 
             var iconUrl = app.State.stationSelected === this.model && app.currentTab == 'sequence' ?
                 app.options.placemarkCircleHighlightedUrl :
-                this.model.get('isDirectional') ?
+                (this.model.get('isDirectional') && app.options.directionalStations) ?
                 'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
                 app.options.placemarkCircleUrl;
             var icon = ge.createIcon('');
@@ -672,7 +672,9 @@ $(function() {
                 // grow icon when we're selected
                 style.getIconStyle().setScale(1.5);
             }
-            style.getIconStyle().setHeading(this.model.get('headingDegrees'));
+            if (app.options.directionalStations) {
+                style.getIconStyle().setHeading(this.model.get('headingDegrees'));
+            }
             return style;
         },
 
