@@ -429,7 +429,9 @@ $(function() {
                 for (var station, i = 0; i < l; i++) {
                     station = stations.item(i);
                     //point = station.getGeometry().getGeometries().getFirstChild();
-                    var handle = station.view.createDragRotateHandle();
+                    if (app.options.mapRotationHandles) {
+                        var handle = station.view.createDragRotateHandle();
+                    }
                     this.processStation(station, handle);
                 }
                 this.drawMidpoints();
@@ -718,6 +720,7 @@ $(function() {
         },
 
         createDragRotateHandle: function() {
+            if (!app.mapRotationHandles) return;
             var station = this.model;
             var gex = this.options.ge.gex;
 
