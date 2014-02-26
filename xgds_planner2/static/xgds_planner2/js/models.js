@@ -438,6 +438,11 @@ app.models = app.models || {};
             var params = app.commandSpecs[this.get('type')].params;
             var paramNames = _.pluck(params, 'id');
             return _.contains(paramNames, paramName);
+        },
+
+        sync: function() {
+            // this isn't a model on a remote server, so do nothing
+            return;
         }
     });
 

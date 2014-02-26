@@ -617,7 +617,6 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
                 var childModel = this.collection.find(function(model) {return model.get('id') == childId;});
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so view is gone
-                    app.State.commandSelected = undefined;
                     app.vent.trigger('showMeta', this.model);
                 } else {
                     childView = this.children.findByModel(childModel);
