@@ -208,7 +208,6 @@ var app = (function($, _, Backbone) {
             //console.log('Updating plan');
             //console.log(planJSON);
             if (!_.isUndefined(planJSON)) {
-                app.currentPlan.get('sequence').reset(planJSON.sequence);
                 app.currentPlan.set(planJSON);
             }
             app.simulatePlan();

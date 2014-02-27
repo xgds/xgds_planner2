@@ -169,6 +169,10 @@ app.models = app.models || {};
                     app.vent.trigger('change:plan');
                 }
             });
+            // this model needs an id attribute b/c relational can't find old models
+            // and so creates infinite new ones
+            // furthermore, this id needs to be the same as cid. Oh relational...
+            this.set("_id", this.cid);
         },
 
         toString: function() {
@@ -427,10 +431,11 @@ app.models = app.models || {};
             // https://github.com/powmedia/backbone-forms#schema-definition
             var params = app.commandSpecs[this.get('type')].params;
             this.schema = xpjsonToBackboneFormsSchema(params, 'Command');
-            // set a unique id for this session so that command selection can
-            // be restored
-            this.set('id', _.uniqueId('command_'));
             this.on('change', function() { app.vent.trigger('change:plan'); });
+            // the model needs an "id" attribute, else a memory leak occurs b/c
+            // relational can't find the model (it tries to use the id attribute)
+            // and so creates a new one, which is bad
+            this.set("_id", this.cid);
         },
 
         hasParam: function(paramName) {

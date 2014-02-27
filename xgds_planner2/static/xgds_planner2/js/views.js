@@ -413,8 +413,8 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
             if (_.isUndefined(childView)) {
                 // try to find the child view by ID since models
                 // change on save
-                var childId = app.State.stationSelected.get('id');
-                var childModel = this.collection.find(function(model) {return model.get('id') == childId;});
+                var childId = app.State.stationSelected.cid;
+                var childModel = this.collection.find(function(model) {return model.cid == childId;});
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so the view is gone
                     app.State.stationSelected = undefined;
@@ -613,8 +613,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             var childView = this.children.findByModel(app.State.commandSelected);
             if (_.isUndefined(childView)) {
                 // try to find the model by id
-                var childId = app.State.commandSelected.get('id');
-                var childModel = this.collection.find(function(model) {return model.get('id') == childId;});
+                var childId = app.State.commandSelected.cid;
+                var childModel = this.collection.find(function(model) {return model.cid == childId;});
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so view is gone
                     app.vent.trigger('showMeta', this.model);
