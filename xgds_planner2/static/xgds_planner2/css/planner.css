@@ -1,3 +1,7 @@
+input[type="checkbox"].select {
+    vertical-align: top;
+}
+
 #map{
     height: 600px;
 }
