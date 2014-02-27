@@ -172,7 +172,7 @@ app.models = app.models || {};
             // this model needs an id attribute b/c relational can't find old models
             // and so creates infinite new ones
             // furthermore, this id needs to be the same as cid. Oh relational...
-            this.set("_id", this.cid);
+            this.set('_id', this.cid);
         },
 
         toString: function() {
@@ -435,7 +435,7 @@ app.models = app.models || {};
             // the model needs an "id" attribute, else a memory leak occurs b/c
             // relational can't find the model (it tries to use the id attribute)
             // and so creates a new one, which is bad
-            this.set("_id", this.cid);
+            this.set('_id', this.cid);
         },
 
         hasParam: function(paramName) {
