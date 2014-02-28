@@ -414,7 +414,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                 // try to find the child view by ID since models
                 // change on save
                 var childId = app.State.stationSelected.cid;
-                var childModel = this.collection.find(function(model) {return model.cid == childId;});
+                var childModel = this.collection.get(childId);
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so the view is gone
                     app.State.stationSelected = undefined;
@@ -614,7 +614,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             if (_.isUndefined(childView)) {
                 // try to find the model by id
                 var childId = app.State.commandSelected.cid;
-                var childModel = this.collection.find(function(model) {return model.cid == childId;});
+                var childModel = this.collection.get(childId);
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so view is gone
                     app.vent.trigger('showMeta', this.model);
@@ -679,6 +679,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         // Construct a schema compatible with backbone-forms
         // https://github.com/powmedia/backbone-forms#schema-definition
         this.options.schema = this.options.schema || this.options.model.schema;
+        this.options.data = this.options.data || this.options.model.data;
         var schema = this.options.schema;
 
         _.each(schema, function(field, key) {

@@ -29,6 +29,10 @@ app.models = app.models || {};
             notes: {type: 'TextArea'}
         };
 
+        // data object contains object defaults
+        var data = {
+        };
+
         if (modelType == 'Station') {
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
             schema.geometry = 'Coordinates';
@@ -66,9 +70,15 @@ app.models = app.models || {};
             if (!_.isNull(param.notes)) {
                 schema[param.id]['help'] = param.notes;
             }
+            if (!_.isUndefined(param.default)) {
+                data[param.id] = param.default;
+            }
         });
 
-        return schema;
+        return {
+            schema: schema,
+            data: data
+        };
     }
 
     function toJsonWithFilters() {
@@ -143,26 +153,42 @@ app.models = app.models || {};
         ],
 
         schema: {
-            id: 'Text'
+            //id: 'Text'
             //tolerance: 'Number',
             //headingDegrees: 'Number',
             //headingToleranceDegrees: 'Number',
+        },
+
+        data: {
         },
 
         initialize: function() {
             // javascript is a weird beast and requires re-definition of this variable,
             // or else stuff is added to it
             this.schema = {
-                id: 'Text'
+                //id: 'Text'
                 //tolerance: 'Number',
                 //headingDegrees: 'Number',
                 //headingToleranceDegrees: 'Number',
+            };
+            this.data = {
             };
             var params = {
                 'Station': app.planSchema.stationParams,
                 'Segment': app.planSchema.segmentParams
             }[this.get('type')] || {};
-            _.extend(this.schema, xpjsonToBackboneFormsSchema(params, this.get('type')));
+            var formsData = xpjsonToBackboneFormsSchema(params, this.get('type'));
+            _.extend(this.schema, formsData.schema);
+            _.extend(this.data, formsData.data);
+            // all attributes in the schema need to be defined, else they won't be in the
+            // json and so won't change when undo/redo is hit
+            _.each(_.keys(this.schema), function(attr) {
+                if (!this.has(attr)) {
+                    if (_.has(this.data, attr)) {
+                        this.set(attr, this.data[attr]);
+                    }
+                }
+            }, this);
             this.on('change', function() {
                 if (this.changedAttributes() &&
                     ! _.isEmpty(_.omit(this.changedAttributes(), '_sequenceLabel'))) {
@@ -172,7 +198,7 @@ app.models = app.models || {};
             // this model needs an id attribute b/c relational can't find old models
             // and so creates infinite new ones
             // furthermore, this id needs to be the same as cid. Oh relational...
-            this.set('_id', this.cid);
+            this.set(this.idAttribute, this.cid);
         },
 
         toString: function() {
@@ -430,12 +456,23 @@ app.models = app.models || {};
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
             var params = app.commandSpecs[this.get('type')].params;
-            this.schema = xpjsonToBackboneFormsSchema(params, 'Command');
+            var formsData = xpjsonToBackboneFormsSchema(params, 'Command');
+            this.schema = formsData.schema;
+            this.data = formsData.data;
             this.on('change', function() { app.vent.trigger('change:plan'); });
+            // all attributes in the schema need to be defined, else they won't be in the
+            // json and so won't change when undo/redo is hit
+            _.each(_.keys(this.schema), function(attr) {
+                if (!this.has(attr)) {
+                    if (_.has(this.data, attr)) {
+                        this.set(attr, this.data[attr]);
+                    }
+                }
+            }, this);
             // the model needs an "id" attribute, else a memory leak occurs b/c
             // relational can't find the model (it tries to use the id attribute)
             // and so creates a new one, which is bad
-            this.set('_id', this.cid);
+            this.set(this.idAttribute, this.cid);
         },
 
         hasParam: function(paramName) {
