@@ -44,9 +44,9 @@ def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
     return _template_cache
 
 
-def plan_browser_help(request):
+def plan_help(request):
     return render_to_response(
-        'xgds_planner2/planner_browser_help.html',
+        'xgds_planner2/planner_help.html',
         RequestContext(request, {})
     )
 

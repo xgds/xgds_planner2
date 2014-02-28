@@ -2,9 +2,9 @@
 {% load nav %}
 <div class="sitemenu-nav-secondary">
 	<ul>
-	<li {% currentnav planner2_index %}><a href="{% url planner2_index %}"> List Plans </a></li>
-	<li {% currentnav planner2_planCreate %}><a href="{% url planner2_planCreate %}"> Create Plan</a></li>
-        <li {% currentnav planner2_browserHelp %}><a href="{% url planner2_browserHelp %}"> Browser Help</a></li>
+	<li {% currentnav planner2_index %}><a href="{% url 'planner2_index' %}"> List Plans </a></li>
+	<li {% currentnav planner2_planCreate %}><a href="{% url 'planner2_planCreate' %}"> Create Plan</a></li>
+        <li {% currentnav planner2_help %}><a href="{% url 'planner2_help' %}"> Help</a></li>
 	{% if plan_json %}<li {% currentnav planner2_edit %} ><a> Edit {{ plan_name }}</a></li>{% endif %}
 	</ul>
 </div>
