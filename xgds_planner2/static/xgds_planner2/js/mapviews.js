@@ -191,6 +191,11 @@ $(function() {
             app.options.XGDS_PLANNER_CLAMP_MODE_JS =
                 parseAltitudeMode(this.ge, app.options.XGDS_PLANNER2_CLAMP_MODE_KML || 'relativeToSeaFloor');
 
+            var cb = app.options.XGDS_PLANNER_EARTH_LOADED_CALLBACK;
+            if (cb != null) {
+                cb();
+            }
+
             app.vent.trigger('earth:init');
             this.trigger('earth:init');
             this.drawPlan();

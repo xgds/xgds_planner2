@@ -69,6 +69,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/extensions-0.2.1.pack.js',
             'external/js/string-format.js',
             'external/js/kmltree.min.js',
+            'external/js/usng.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/geo.js',
@@ -160,3 +161,7 @@ XGDS_PLANNER_SCHEMAS = {
         "simulator": "xgds_planner2.ExampleSimulator",
     }
 }
+
+# XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
+# extra JavaScript callback to call after Google Earth is loaded.
+XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'

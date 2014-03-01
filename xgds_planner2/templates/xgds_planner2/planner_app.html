@@ -39,17 +39,19 @@
 {% endblock scripts %}
 
 {% block jsInit %}
-$(function(){
-    var options = {
+    plannerAppOptions = {
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
-        layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}", 
+        layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}",
+        dataUrl: "{{ settings.DATA_URL }}",
         simulator: {{ simulator }},
         directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
         mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }},
         placemarkCircleUrl: "{{ placemark_circle_url }}",
-        placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}"
+        placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
+        XGDS_PLANNER_EARTH_LOADED_CALLBACK: {{ settings.XGDS_PLANNER_EARTH_LOADED_CALLBACK }}
     };
-    app.start(options);
+$(function(){
+    app.start(plannerAppOptions);
 })
 {% endblock jsInit %}
