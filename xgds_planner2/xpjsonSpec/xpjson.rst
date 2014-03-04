@@ -884,6 +884,17 @@ Inherits from:
 |                  |                |                        |between the location of the referrer|
 |                  |                |                        |and the location of the Target.     |
 +------------------+----------------+------------------------+------------------------------------+
+|``unit``          |string          |optional                |The (plural) name of the physical   |
+|                  |                |                        |unit associated with the            |
+|                  |                |                        |parameter. Example: ``"meters"``.   |
+|                  |                |                        |                                    |
+|                  |                |                        |If this unit appears in a UnitSpec_ |
+|                  |                |                        |of the PlanSchema_, the planning    |
+|                  |                |                        |interface may offer alternative     |
+|                  |                |                        |comparable units to the user. But   |
+|                  |                |                        |the parameter value stored in the   |
+|                  |                |                        |Plan_ must be in terms of this unit.|
++------------------+----------------+------------------------+------------------------------------+
 |``minimum``       |``valueType``   |optional                |Minimum legal value for parameter   |
 |                  |                |                        |(parameter must have integer or     |
 |                  |                |                        |number type).                       |
@@ -978,6 +989,7 @@ Example
     // defined in ParamSpec
     "parent": "(parent ParamSpec id)",
     "valueType": "(type name)"
+    "units": "meters",
     "minimum": (minimum value),
     "strictMinimum": false,
     "maximum": (maximum value),
@@ -1273,6 +1285,9 @@ Inherits from:
 |``commandSpecs``           |array of    |optional        |Commands available in the planning  |
 |                           |CommandSpec_|                |interface.                          |
 +---------------------------+------------+----------------+------------------------------------+
+|``unitSpecs``              |array of    |optional        |Unit conversions available in the   |
+|                           |UnitSpec_   |                |planning interface.                 |
++---------------------------+------------+----------------+------------------------------------+
 |``planParams``             |array of    |optional        |Extra parameters that may be        |
 |                           |ParamSpec_  |                |specified in Plan_ instances.       |
 +---------------------------+------------+----------------+------------------------------------+
@@ -1379,6 +1394,10 @@ Example
       { (CommandSpec 1) },
       ...
     ],
+    "unitSpecs": [
+      { (UnitSpec 1) },
+      ...
+    ]
     "planParams": [
       { (ParamSpec 1) },
       ...
@@ -1687,6 +1706,49 @@ Example
     "geometry": {
       "type": "Point",
       "coordinates": [-122, 37]
+    }
+  }
+
+.. _UnitSpec:
+
+UnitSpec Class
+~~~~~~~~~~~~~~
+
+A UnitSpec instance defines a set of comparable units and their relative values,
+allowing a planning interface to support automatic unit conversion.
+
+Abstract class:
+  No
+
+Inherits from:
+  TypedObject
+
++-------------------+----------------+-----------------+------------------------------------+
+|Member             |Type            |Values           |Meaning                             |
++===================+================+=================+====================================+
+|``units``          |Dictionary of   |required         |A Dictionary mapping the (plural)   |
+|                   |number          |                 |name of a unit to its relative      |
+|                   |                |                 |value.                              |
++-------------------+----------------+-----------------+------------------------------------+
+
+Example
+-------
+
+::
+
+  {
+    // inherited from TypedObject
+    "type": "UnitSpec",
+    "name": "length",
+    "notes": "(notes)",
+    "id": "(id)",
+
+    // defined in UnitSpec
+    "units": {
+      "meters": 1.0,
+      "km": 1000,
+      "feet": 0.3048,
+      "miles": 1609.344
     }
   }
 
