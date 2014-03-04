@@ -888,7 +888,19 @@ Inherits from:
 |                  |                |                        |(parameter must have integer or     |
 |                  |                |                        |number type).                       |
 +------------------+----------------+------------------------+------------------------------------+
+|``strictMinimum`` |boolean         |``true``                |Interpret the ``minimum`` field as a|
+|                  |                |                        |strictly-greater-than constraint.   |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``false`` (default)     |Interpret the ``minimum`` field as a|
+|                  |                |                        |greater-than-or-equal-to constraint.|
++------------------+----------------+------------------------+------------------------------------+
 |``maximum``       |``valueType``   |optional                |Maximum legal value for parameter.  |
++------------------+----------------+------------------------+------------------------------------+
+|``strictMaximum`` |boolean         |``true``                |Interpret the ``maximum`` field as a|
+|                  |                |                        |strictly-less-than constraint.      |
+|                  |                +------------------------+------------------------------------+
+|                  |                |``false`` (default)     |Interpret the ``maximum`` field as a|
+|                  |                |                        |less-than-or-equal-to constraint.   |
 +------------------+----------------+------------------------+------------------------------------+
 |``maxLength``     |integer         |optional                |If ``valueType`` is ``"string"``,   |
 |                  |                |                        |you can specify the maximum allowed |
@@ -967,7 +979,9 @@ Example
     "parent": "(parent ParamSpec id)",
     "valueType": "(type name)"
     "minimum": (minimum value),
+    "strictMinimum": false,
     "maximum": (maximum value),
+    "strictMaximum": false,
     "maxLength": (max length of string),
     "choices": [
       [(value choice 1), "(label for value choice 1)"],
