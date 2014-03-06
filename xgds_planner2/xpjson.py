@@ -469,14 +469,33 @@ class TypedObject(object):
                                 k, self._objDict)
 
 
+class UnitSpec(TypedObject):
+    """
+    Implements the UnitSpec type from the XPJSON spec.
+    """
+    units = Field('custom', validMethod='isUnitsValid')
+
+    def isUnitsValid(self, unitsDict):
+        if not isinstance(unitsDict, (dict, dotDict.DotDict)):
+            return False
+        for unitName, relativeSize in unitsDict.iteritems():
+            if not (isValueOfType(unitName, 'string') and
+                    isValueOfType(relativeSize, 'number')):
+                return False
+        return True
+
+
 class ParamSpec(TypedObject):
     """
     Implements the ParamSpec type from the XPJSON spec.
     """
 
     valueType = Field('string', required=True, validMethod='isValidValueType')
+    unit = Field('string')
     minimum = Field('custom', validMethod='matchesValueType')
+    strictMinimum = Field('boolean', default=False)
     maximum = Field('custom', validMethod='matchesValueType')
+    strictMaximum = Field('boolean', default=False)
     maxLength = Field('integer', validMethod='isPositive')
     choices = Field('custom', validMethod='isChoicesValid')
     widget = Field('string', validMethod='isLowerCase')
@@ -587,6 +606,7 @@ class PlanSchema(Document):
     Implements the PlanSchema type from the XPJSON spec.
     """
 
+    unitSpecs = Field('array.UnitSpec', default=[])
     commandSpecs = Field('array.CommandSpec', default=[])
     planParams = Field('array.ParamSpec', default=[])
     stationParams = Field('array.ParamSpec', default=[])
