@@ -538,12 +538,26 @@ class ParamSpec(TypedObject):
 
         if not isValueOfType(val, self.valueType):
             return 'value %s should have type %s' % (val, repr(self.valueType))
-        elif self.minimum is not None and val < self.minimum:
-            return 'value %s should exceed minimum %s' % (val, repr(self.minimum))
-        elif self.maximum is not None and val > self.maximum:
-            return 'value %s should not exceed maximum %s' % (val, repr(self.maximum))
-        elif self.enum is not None and val not in self.enum:
+
+        if self.minimum is not None:
+            if self.strictMinimum:
+                if not val > self.minimum:
+                    return 'value %s should be strictly greater than minimum %s' % (val, repr(self.minimum))
+            else:
+                if not val >= self.minimum:
+                    return 'value %s should be greater than or equal to minimum %s' % (val, repr(self.minimum))
+
+        if self.maximum is not None:
+            if self.strictMaximum:
+                if not val < self.maximum:
+                    return 'value %s should be strictly less than maximum %s' % (val, repr(self.maximum))
+            else:
+                if not val <= self.maximum:
+                    return 'value %s should be less than or equal to maximum %s' % (val, repr(self.maximum))
+
+        if self.enum is not None and val not in self.enum:
             return 'value %s should be one of %s' % (val, repr(self.enum))
+
         return None
 
     def isValidParamValue(self, val):
