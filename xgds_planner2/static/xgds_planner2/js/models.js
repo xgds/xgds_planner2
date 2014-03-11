@@ -61,16 +61,22 @@ app.models = app.models || {};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
             }
-            if (!_.isNull(param.name)) {
+            if (param.hasOwnProperty('name')) {
                 schema[param.id]['title'] = param.name;
+            } else {
+                // default to using parameter id for its name
+                // your parameters shouldn't do this by default
+                schema[param.id]['title'] = param.id;
             }
-            if (param.required) {
+            if (param.hasOwnProperty('required') &&
+                _.isBoolean(param.required) &&
+               param.required) {
                 schema[param.id]['validators'].push('required');
             }
-            if (!_.isNull(param.notes)) {
+            if (param.hasOwnProperty('notes')) {
                 schema[param.id]['help'] = param.notes;
             }
-            if (!_.isUndefined(param.default)) {
+            if (param.hasOwnProperty('default')) {
                 data[param.id] = param.default;
             }
         });
@@ -123,7 +129,15 @@ app.models = app.models || {};
 
         initialize: function() {
             var params = app.planSchema.planParams;
-            this.schema = xpjsonToBackboneFormsSchema(params, 'Plan');
+            this.schema = {
+                // put static schema elements here
+            };
+            this.data = {
+                // put static data elements here
+            };
+            var formsData = xpjsonToBackboneFormsSchema(params, 'Plan');
+            _.extend(this.schema, formsData.schema);
+            _.extend(this.data, formsData.data);
             this.on('change', function() {
                 app.vent.trigger('change:plan');
             });
@@ -455,10 +469,16 @@ app.models = app.models || {};
         initialize: function() {
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
+            this.schema = {
+                // put static schema elements here
+            };
+            this.data = {
+                // put static data elements here
+            };
             var params = app.commandSpecs[this.get('type')].params;
             var formsData = xpjsonToBackboneFormsSchema(params, 'Command');
-            this.schema = formsData.schema;
-            this.data = formsData.data;
+            _.extend(this.schema, formsData.schema);
+            _.extend(this.data, formsData.data);
             this.on('change', function() { app.vent.trigger('change:plan'); });
             // all attributes in the schema need to be defined, else they won't be in the
             // json and so won't change when undo/redo is hit
