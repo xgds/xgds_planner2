@@ -32,64 +32,53 @@
 
         initialize: function(options) {
             Form.Field.prototype.initialize.call(this, options);
+            this.subUnits = {};
+            if (this.schema.hasOwnProperty('unit')) {
+                this.unit = this.schema.unit;
+                if (!app.units.hasOwnProperty(this.schema.unit)) {
+                    console.warn('UnitField initialized with a unit not found in the plan schema: ' + this.schema.unit);
+                } else {
+                    _.each(_.filter(_.keys(app.unitSpecs[app.units[this.unit]].units), function(unit) {
+                        return unit != this.unit;
+                    }, this), function(subUnit) {
+                        this.subUnits[subUnit] = (app.unitSpecs[app.units[this.unit]].units[this.unit] /
+                                                  app.unitSpecs[app.units[this.unit]].units[subUnit]);
+                    }, this);
+                }
+            } else {
+                this.unit = undefined;
+            }
             this.template = Handlebars.compile($('#template-unit-field').html());
             this.listenTo(this.editor, 'change', this.updateUnits);
         },
 
         updateUnits: function() {
-            if (!_.isFunction(this.editor.getUnitText)) {
+            if (_.isUndefined(this.unit)) {
+                // don't do anything if there isn't a unit defined
                 return;
             }
             var element = this.$el.find('#bbf-units');
-            var unitText = this.editor.getUnitText();
-            element.html(unitText);
+            element.html(this.getUnitText());
         },
 
         templateData: function() {
             var initialData = Form.Field.prototype.templateData.call(this);
-            var schema = this.schema;
-            var unitText = '';
-            if (_.isFunction(this.editor.getUnitText)) {
-                unitText = this.editor.getUnitText();
-            }
-            initialData['unitText'] = unitText;
-            initialData['unit'] = this.editor.unit;
+            initialData['unitText'] = this.getUnitText();
+            initialData['unit'] = this.unit;
             return initialData;
-        }
-    });
-
-    Form.editors.UnitEditor = Form.editors.Number.extend({
-        tagName: 'input',
-
-        initialize: function(options) {
-            Backbone.Form.editors.Number.prototype.initialize.call(this, options);
-            this.unit = this.schema.unit;
-            this.subUnits = {};
-            if (!this.schema.hasOwnProperty('unit')) {
-                // this should never happen
-                throw 'UnitEditor initialized with a non-unit field';
-            } else if (!app.units.hasOwnProperty(this.schema.unit)) {
-                console.warn('UnitEditor initialized with a unit not found in the plan schema: ' + this.schema.unit);
-            } else {
-                _.each(_.filter(_.keys(app.unitSpecs[app.units[this.unit]].units), function(unit) {
-                    return unit != this.unit;
-                }, this), function(subUnit) {
-                    this.subUnits[subUnit] = (app.unitSpecs[app.units[this.unit]].units[this.unit] /
-                                              app.unitSpecs[app.units[this.unit]].units[subUnit]);
-                }, this);
-            }
         },
 
         getUnitText: function() {
-            // reset help text
-            var unitText = '';
             if (!_.isEmpty(this.subUnits)) {
-                unitText = _.map(_.keys(this.subUnits), function(subUnit) {
-                    return subUnit + ': ' + ((this.getValue() || this.value) * this.subUnits[subUnit]);
+                return _.map(_.keys(this.subUnits), function(subUnit) {
+                    return subUnit + ': ' + ((this.editor.getValue() || this.editor.value) * this.subUnits[subUnit]);
                 }, this).join(' ');
+            } else {
+                // return empty string if there isn't a unit defined
+                return '';
             }
-            return unitText;
         }
     });
+
 })(Backbone.Form);
 

@@ -59,10 +59,6 @@ app.models = app.models || {};
                     return choice[0];
                 });
                 schema[param.id] = {'type': foundType, 'validators': [], options: options};
-            } else if (foundType == 'Number' &&
-                param.hasOwnProperty('unit')) {
-                schema[param.id] = {'type': 'UnitEditor', 'validators': [],
-                                    'unit': param.unit};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
             }
@@ -83,6 +79,9 @@ app.models = app.models || {};
             }
             if (param.hasOwnProperty('default')) {
                 data[param.id] = param.default;
+            }
+            if (param.hasOwnProperty('unit')) {
+                schema[param.id]['unit'] = param.unit;
             }
         });
 
