@@ -46,21 +46,15 @@
         },
 
         templateData: function() {
+            var initialData = Form.Field.prototype.templateData.call(this);
             var schema = this.schema;
             var unitText = '';
             if (_.isFunction(this.editor.getUnitText)) {
                 unitText = this.editor.getUnitText();
             }
-
-            return {
-                help: schema.help || '',
-                title: schema.title,
-                fieldAttrs: schema.fieldAttrs,
-                editorAttrs: schema.editorAttrs,
-                key: this.key,
-                editorId: this.editor.id,
-                unitText: unitText
-            };
+            initialData['unitText'] = unitText;
+            initialData['unit'] = this.editor.unit;
+            return initialData;
         }
     });
 
