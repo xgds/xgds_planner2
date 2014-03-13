@@ -662,7 +662,6 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     }
 });
 
-
 /*
 ** PropertiesForm is a hybrid between Marionette.ItemView and Backbone.Form (from the backbone-forms extension).
 ** Becuase it extends Marionette.ItemView, it can be used cleanly with a region manager.
@@ -680,6 +679,8 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         // https://github.com/powmedia/backbone-forms#schema-definition
         this.options.schema = this.options.schema || this.options.model.schema;
         this.options.data = this.options.data || this.options.model.data;
+        this.Field = Backbone.Form.UnitField;
+        this.template = Handlebars.compile('<form class="bbf-form"><ul data-fieldsets></ul></form>');
         var schema = this.options.schema;
 
         _.each(schema, function(field, key) {

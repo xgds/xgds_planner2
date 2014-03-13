@@ -197,6 +197,22 @@ var app = (function($, _, Backbone) {
         _.extend(this.commandPresetsByName, this.util.indexBy(this.planLibrary.commands, 'presetName'));
         this.commandPresetsByType = this.util.groupBy(this.planLibrary.commands, 'type');
 
+        // create lookup table for units, based on the unit spects
+        this.unitSpecs = this.util.indexBy(this.planSchema.unitSpecs, 'id');
+        this.units = {
+            // this object will be filled
+        }
+
+        // creates lookup table for which unitspec a unit is contained in
+        _.each(_.keys(this.unitSpecs), function(unitSpec) {
+            _.each(_.keys(this.unitSpecs[unitSpec].units), function(unit) {
+                if (this.units.hasOwnProperty(unit)) {
+                    throw "Unit conflict: " + unit + " is defined in multiple unitSpecs";
+                }
+                this.units[unit] = unitSpec;
+            }, this);
+        }, this);
+
         // Extract color from command specs
         // The app.colors object holds a key --> color map for the whole application
         this.colors = {};

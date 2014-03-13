@@ -45,11 +45,12 @@ app.models = app.models || {};
 
         _.each(params, function(param) {
             var foundType;
-            if (!param.widget) {
-                foundType = app.models.paramTypeHash[param.valueType];
-            } else {
+            if (param.hasOwnProperty('widget')) {
                 foundType = app.models.widgetTypeHash[param.widget];
+            } else {
+                foundType = app.models.paramTypeHash[param.valueType];
             }
+            
             if (param.hasOwnProperty('choices') &&
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';
@@ -58,6 +59,10 @@ app.models = app.models || {};
                     return choice[0];
                 });
                 schema[param.id] = {'type': foundType, 'validators': [], options: options};
+            } else if (foundType == 'Number' &&
+                param.hasOwnProperty('unit')) {
+                schema[param.id] = {'type': 'UnitEditor', 'validators': [],
+                                    'unit': param.unit};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
             }
