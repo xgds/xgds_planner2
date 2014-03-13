@@ -50,7 +50,7 @@ app.models = app.models || {};
             } else {
                 foundType = app.models.paramTypeHash[param.valueType];
             }
-            
+
             if (param.hasOwnProperty('choices') &&
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';

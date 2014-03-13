@@ -201,13 +201,13 @@ var app = (function($, _, Backbone) {
         this.unitSpecs = this.util.indexBy(this.planSchema.unitSpecs, 'id');
         this.units = {
             // this object will be filled
-        }
+        };
 
         // creates lookup table for which unitspec a unit is contained in
         _.each(_.keys(this.unitSpecs), function(unitSpec) {
             _.each(_.keys(this.unitSpecs[unitSpec].units), function(unit) {
                 if (this.units.hasOwnProperty(unit)) {
-                    throw "Unit conflict: " + unit + " is defined in multiple unitSpecs";
+                    throw 'Unit conflict: ' + unit + ' is defined in multiple unitSpecs';
                 }
                 this.units[unit] = unitSpec;
             }, this);
