@@ -456,7 +456,9 @@ app.models = app.models || {};
         });
         if (segmentToClone) {
             proto = segmentToClone.toJSON();
-            delete proto.id;
+            if (proto.hasOwnProperty(segmentToClone.idAttribute)) {
+                delete proto[segmentToClone.idAttribute];
+            }
         }
         _.defaults(options, proto);
 
