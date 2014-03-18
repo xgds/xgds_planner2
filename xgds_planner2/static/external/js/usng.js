@@ -716,7 +716,7 @@ Expected Input args:
 
 ***********************************************************************************/ 
 
-function USNGtoUTM(zone,let,sq1,sq2,east,north,ret) { 
+function USNGtoUTM(zone,lett,sq1,sq2,east,north,ret) { 
 
   //Starts (southern edge) of N-S zones in millons of meters
   var zoneBase = [1.1,2.0,2.9,3.8,4.7,5.6,6.5,7.3,8.2,9.1,   0, 0.8, 1.7, 2.6, 3.5, 4.4, 5.3, 6.2, 7.0, 7.9];
@@ -728,7 +728,7 @@ function USNGtoUTM(zone,let,sq1,sq2,east,north,ret) {
   var appxEast=1+eSqrs%8; 
 
   // convert northing to UTM
-  var letNorth = "CDEFGHJKLMNPQRSTUVWX".indexOf(let);
+  var letNorth = "CDEFGHJKLMNPQRSTUVWX".indexOf(lett);
   if (zone%2)  //odd number zone
     var nSqrs="ABCDEFGHJKLMNPQRSTUV".indexOf(sq2) 
   else        // even number zone
@@ -742,7 +742,7 @@ function USNGtoUTM(zone,let,sq1,sq2,east,north,ret) {
   ret.N=appxNorth*1000000+Number(north)*Math.pow(10,5-north.length);
   ret.E=appxEast*100000+Number(east)*Math.pow(10,5-east.length)
   ret.zone=zone;
-  ret.letter=let;
+  ret.letter=lett;
 
   return;
  } 
