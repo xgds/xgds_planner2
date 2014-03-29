@@ -26,7 +26,9 @@ app.models = app.models || {};
         // name and notes are hard-coded fields from xpjson spec
         var schema = {
             name: {type: 'Text'},
-            notes: {type: 'TextArea'}
+            notes: {type: 'TextArea'},
+            id: {type: 'Text', readonly: true,
+                editorAttrs: { disabled: true}}
         };
 
         // data object contains object defaults
@@ -35,7 +37,7 @@ app.models = app.models || {};
 
         if (modelType == 'Station') {
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
-            schema.geometry = 'Coordinates';
+            schema.geometry = {type: 'Coordinates', help: 'Lon, Lat'};
         }
 
         if (modelType == 'Plan') {
@@ -472,6 +474,8 @@ app.models = app.models || {};
 
 
     models.Command = Backbone.RelationalModel.extend({
+        idAttribute: '_id', // prevent clobbering command ID's
+
         initialize: function() {
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
