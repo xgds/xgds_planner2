@@ -95,7 +95,7 @@ app.models = app.models || {};
 
     function toJsonWithFilters() {
         var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-        var blacklist = ['_sequenceLabel', '_simInfo'];
+        var blacklist = ['_sequenceLabel', '_simInfo', '_id'];
         _.each(blacklist, function(property) {
             if (_.has(obj, property)) {
                 // exclude this from the serialized version
