@@ -55,7 +55,7 @@ app.models = app.models || {};
 
             if (foundType == 'Number' && (param.hasOwnProperty('minimum') ||
                                           param.hasOwnProperty('maximum'))) {
-                foundType = 'MinMaxNumber'
+                foundType = 'MinMaxNumber';
             }
 
             if (param.hasOwnProperty('choices') &&
