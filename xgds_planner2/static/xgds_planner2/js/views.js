@@ -477,6 +477,10 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     }
 });
 
+app.views.NoStationsView = Backbone.Marionette.ItemView.extend({
+    template: '#template-no-stations'
+});
+
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     tagName: 'ul',
     className: 'sequence-list station-list',
@@ -484,6 +488,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
     itemViewOptions: {
         expandClass: 'col1'
     },
+    emptyView: app.views.NoStationsView,
 
     initialize: function() {
         // re-render on plan save because for some reason, the collection
@@ -603,6 +608,10 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
     }
 });
 
+app.views.NoCommandsView = Backbone.Marionette.ItemView.extend({
+    template: '#template-no-commands'
+});
+
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
     template: '#template-sequence-list-station',
     itemView: app.views.CommandItemView,
@@ -611,6 +620,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         selectable: true,
         expandClass: 'col2'
     },
+    emptyView: app.views.NoCommandsView,
     events: {
         'click .edit-meta': function(evt) {
             app.vent.trigger('showMeta', this.model);
