@@ -53,6 +53,11 @@ app.models = app.models || {};
                 foundType = app.models.paramTypeHash[param.valueType];
             }
 
+            if (foundType == 'Number' && (param.hasOwnProperty('minimum') ||
+                                          param.hasOwnProperty('maximum'))) {
+                foundType = 'MinMaxNumber'
+            }
+
             if (param.hasOwnProperty('choices') &&
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';
@@ -84,6 +89,18 @@ app.models = app.models || {};
             }
             if (param.hasOwnProperty('unit')) {
                 schema[param.id]['unit'] = param.unit;
+            }
+            if (param.hasOwnProperty('minimum')) {
+                schema[param.id]['minimum'] = param.minimum;
+            }
+            if (param.hasOwnProperty('maximum')) {
+                schema[param.id]['maximum'] = param.maximum;
+            }
+            if (param.hasOwnProperty('strictMinimum')) {
+                schema[param.id]['strictMinimum'] = param.strictMinimum;
+            }
+            if (param.hasOwnProperty('strictMaximum')) {
+                schema[param.id]['strictMaximum'] = param.strictMaximum;
             }
         });
 

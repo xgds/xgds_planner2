@@ -28,6 +28,54 @@
 
     });
 
+    Form.editors.MinMaxNumber = Form.editors.Number.extend({
+        initialize: function(options) {
+            Form.editors.Number.prototype.initialize.call(this, options);
+            this.minimum = _.isNumber(this.schema.minimum) ? this.schema.minimum : undefined;
+            this.maximum = _.isNumber(this.schema.maximum) ? this.schema.maximum : undefined;
+            this.strictMinimum = _.isBoolean(this.schema.strictMinimum) ? this.schema.strictMinimum : false;
+            this.strictMaximum = _.isBoolean(this.schema.strictMaximum) ? this.schema.strictMaximum : false;
+            if (_.isUndefined(this.maximum) && _.isUndefined(this.minimum)) {
+                console.warn('MinMaxField initialized without supplying a minimum or a maximum');
+
+            }
+        },
+
+        validate: function() {
+            var error = Form.editors.Number.prototype.validate.call(this);
+            if (!_.isNull(error)) {
+                return error;
+            }
+            if (_.isNumber(this.minimum)) {
+                if (this.strictMinimum && this.minimum >= this.getValue()) {
+                    error = {
+                        type: 'minimum',
+                        message: 'Value must be greater than ' + this.minimum
+                    };
+                } else if (this.minimum > this.getValue()) {
+                    error = {
+                        type: 'minimum',
+                        message: 'Value must be greater than or equal to ' + this.minimum
+                    };
+                }
+            }
+            if (_.isNumber(this.maximum)) {
+                if (this.strictMaximum && this.maximum <= this.getValue()) {
+                    error = {
+                        type: 'maximum',
+                        message: 'Value must be less than ' + this.maximum
+                    };
+                } else if (this.maximum < this.getValue()) {
+                    error = {
+                        type: 'maximum',
+                        message: 'Value must be less than or equal to ' + this.minimum
+                    };
+                }
+            }
+            return error;
+        }
+    });
+
     Form.UnitField = Form.Field.extend({
 
         initialize: function(options) {
