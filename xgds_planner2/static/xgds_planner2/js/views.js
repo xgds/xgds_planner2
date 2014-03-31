@@ -29,19 +29,29 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
+        this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
+        this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
 
     onRender: function() {
-        if (app.Actions.undoEmpty())
+        if (app.Actions.undoEmpty()) {
             this.disableUndo();
-        else
+        } else {
             this.enableUndo();
-        if (app.Actions.redoEmpty())
+        }
+        if (app.Actions.redoEmpty()) {
             this.disableRedo();
-        else
+        } else {
             this.enableRedo();
+        }
+        if (app.hasHandler('selectedCommands') &&
+            !_.isEmpty(app.request('selectedCommands'))) {
+            this.enableCommandActions();
+        } else {
+            this.disableCommandActions();
+        }
     },
 
     getCutAfterPaste: function() {
@@ -65,6 +75,20 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     disableRedo: function() {
         this.$('#btn-redo').attr('disabled', 'disabled');
+    },
+
+    disableCommandActions: function() {
+        this.$('#btn-copy').attr('disabled', 'disabled');
+        this.$('#btn-paste').attr('disabled', 'disabled');
+        this.$('#btn-cut').attr('disabled', 'disabled');
+        this.$('#btn-delete').attr('disabled', 'disabled');
+    },
+
+    enableCommandActions: function() {
+        this.$('#btn-copy').removeAttr('disabled');
+        this.$('#btn-paste').removeAttr('disabled');
+        this.$('#btn-cut').removeAttr('disabled');
+        this.$('#btn-delete').removeAttr('disabled');
     },
 
     enableUndo: function() {
@@ -549,6 +573,11 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
         this.$el.find('input.select').prop('checked', false);
     },
     toggleSelect: function(evt) {
+        if (this.isSelected()) {
+            this.trigger('selected');
+        } else {
+            this.trigger('unselected');
+        }
         evt.stopPropagation();
     },
     onClose: function() {
@@ -632,6 +661,9 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         if (_.isUndefined(app.State.addCommandsExpanded))
             app.State.addCommandsExpanded = false;
         this.on('itemview:expand', this.onItemExpand, this);
+        this.on('itemview:selected', this.onItemSelected, this);
+        this.on('itemview:unselected', this.onItemUnSelected, this);
+        this.itemsSelected = false;
         //this.on('itemview:render', this.restoreExpanded, this);
         this.listenTo(app.vent, 'showMeta', function() {
             this.head.expand();
@@ -644,6 +676,22 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //            app.State.metaExpanded, app.State.commandSelected);
         //var stack = new Error().stack;
         //console.log(stack);
+    },
+
+    onItemSelected: function() {
+        if (this.itemsSelected) return;
+        if (!_.isEmpty(this.getSelectedCommands())) {
+            this.itemsSelected = true;
+            app.vent.trigger('commandsSelected');
+        }
+    },
+
+    onItemUnSelected: function() {
+        if (!this.itemsSelected) return;
+        if (_.isEmpty(this.getSelectedCommands())) {
+            this.itemsSelected = false;
+            app.vent.trigger('commandsUnSelected');
+        }
     },
 
     getSelectedCommands: function() {
