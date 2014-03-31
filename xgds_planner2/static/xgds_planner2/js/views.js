@@ -220,6 +220,18 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-command-presets-header'
 });
 
+app.views.HideableRegion = Backbone.Marionette.Region.extend({
+    close: function() {
+        Backbone.Marionette.Region.prototype.close.call(this);
+        this.ensureEl();
+        this.$el.hide();
+    },
+    show: function(view) {
+        Backbone.Marionette.Region.prototype.show.call(this, view);
+        this.$el.show();
+    }
+});
+
 app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     template: '#template-sequence-view',
 
@@ -231,8 +243,14 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
         //Column content
         col1: '#col1',
-        col2: '#col2',
-        col3: '#col3'
+        col2: {
+            selector: '#col2',
+            regionType: app.views.HideableRegion
+        },
+        col3: {
+            selector: '#col3',
+            regionType: app.views.HideableRegion
+        }
     },
 
     initialize: function() {
@@ -267,6 +285,8 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         });
         this.colhead1.show(headerView);
         this.col1.close();
+        this.col2.close();
+        this.col3.close();
         app.psv = this;
         var sscView = new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence')
