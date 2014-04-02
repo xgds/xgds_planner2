@@ -298,6 +298,10 @@ var app = (function($, _, Backbone) {
      * Application-level Request & Respond services
      */
 
+    app.hasHandler = function(name) {
+        return !! this.reqres._handlers[name];
+    };
+
     // Return the color mapped to a given key.
     // If no color has been assigned to that key, allocate one to be forever associated with it.
     app.reqres.addHandler('getColor', function(key) {

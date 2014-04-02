@@ -26,7 +26,9 @@ app.models = app.models || {};
         // name and notes are hard-coded fields from xpjson spec
         var schema = {
             name: {type: 'Text'},
-            notes: {type: 'TextArea'}
+            notes: {type: 'TextArea'},
+            id: {type: 'Text', readonly: true,
+                editorAttrs: { disabled: true}}
         };
 
         // data object contains object defaults
@@ -35,7 +37,7 @@ app.models = app.models || {};
 
         if (modelType == 'Station') {
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
-            schema.geometry = 'Coordinates';
+            schema.geometry = {type: 'Coordinates', help: 'Lon, Lat'};
         }
 
         if (modelType == 'Plan') {
@@ -49,6 +51,11 @@ app.models = app.models || {};
                 foundType = app.models.widgetTypeHash[param.widget];
             } else {
                 foundType = app.models.paramTypeHash[param.valueType];
+            }
+
+            if (foundType == 'Number' && (param.hasOwnProperty('minimum') ||
+                                          param.hasOwnProperty('maximum'))) {
+                foundType = 'MinMaxNumber';
             }
 
             if (param.hasOwnProperty('choices') &&
@@ -83,6 +90,18 @@ app.models = app.models || {};
             if (param.hasOwnProperty('unit')) {
                 schema[param.id]['unit'] = param.unit;
             }
+            if (param.hasOwnProperty('minimum')) {
+                schema[param.id]['minimum'] = param.minimum;
+            }
+            if (param.hasOwnProperty('maximum')) {
+                schema[param.id]['maximum'] = param.maximum;
+            }
+            if (param.hasOwnProperty('strictMinimum')) {
+                schema[param.id]['strictMinimum'] = param.strictMinimum;
+            }
+            if (param.hasOwnProperty('strictMaximum')) {
+                schema[param.id]['strictMaximum'] = param.strictMaximum;
+            }
         });
 
         return {
@@ -93,7 +112,7 @@ app.models = app.models || {};
 
     function toJsonWithFilters() {
         var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-        var blacklist = ['_sequenceLabel', '_simInfo'];
+        var blacklist = ['_sequenceLabel', '_simInfo', '_id'];
         _.each(blacklist, function(property) {
             if (_.has(obj, property)) {
                 // exclude this from the serialized version
@@ -472,6 +491,8 @@ app.models = app.models || {};
 
 
     models.Command = Backbone.RelationalModel.extend({
+        idAttribute: '_id', // prevent clobbering command ID's
+
         initialize: function() {
             // Construct a schema compatible with backbone-forms
             // https://github.com/powmedia/backbone-forms#schema-definition
