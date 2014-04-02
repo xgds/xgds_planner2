@@ -18,6 +18,8 @@ from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+from geocamUtil.loader import getModelByName
+
 from xgds_planner2 import (settings,
                            models,
                            choosePlanExporter,
@@ -29,7 +31,7 @@ _template_cache = None
 
 
 def get_plan_model():
-    return models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    return getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 
 
 def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):

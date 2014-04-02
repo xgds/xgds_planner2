@@ -9,12 +9,13 @@ import time
 import datetime
 
 from geocamUtil.dotDict import convertToDotDictRecurse
+from geocamUtil.loader import getModelByName
 
 from xgds_planner2 import models, xpjson, settings
 from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
 
 # Please don't put lines like this at the root of modules, this breaks testing
-#PLAN_MODEL = models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+#PLAN_MODEL = getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 
 
 def posixTimestampToString(timestamp):
@@ -70,7 +71,7 @@ class PlanImporter(object):
 
     @classmethod
     def importPlan(cls, name, buf, meta, planSchema=None, path=None):
-        PLAN_MODEL = models.getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+        PLAN_MODEL = getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
         importer = cls()
 
         meta.setdefault('name', name)

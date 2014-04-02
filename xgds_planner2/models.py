@@ -35,15 +35,6 @@ from xgds_planner2 import xpjson, settings, statsPlanExporter
 
 PLAN_SCHEMA_CACHE = {}
 
-
-def getModelByName(name):
-    appName, modelName = name.split('.', 1)
-    modelsName = appName + '.models'
-    __import__(modelsName)
-    modelsModule = sys.modules[modelsName]
-    return getattr(modelsModule, modelName)
-
-
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=256)

@@ -6,6 +6,8 @@
 
 import sys
 
+from geocamUtil.loader import getClassByName
+
 from xgds_planner2 import settings
 
 
@@ -16,15 +18,6 @@ def getModClass(name):
     except ValueError:
         return name, ''
     return name[:dot], name[dot + 1:]
-
-
-def getClassByName(qualifiedName):
-    """converts 'xgds_planner.forms.PlanMetaForm' to the PlanMetaForm class object in
-    module xgds_planner.forms"""
-    modName, klassName = getModClass(qualifiedName)
-    __import__(modName)
-    mod = sys.modules[modName]
-    return getattr(mod, klassName)
 
 
 class ImporterInfo(object):
