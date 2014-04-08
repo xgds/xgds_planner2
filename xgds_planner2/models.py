@@ -7,7 +7,6 @@
 import re
 import datetime
 import copy
-import sys
 import logging
 import os
 
@@ -34,6 +33,7 @@ from xgds_planner2 import xpjson, settings, statsPlanExporter
 # SIMPLIFIED_LIBRARY_URL = settings.STATIC_URL + _library
 
 PLAN_SCHEMA_CACHE = {}
+
 
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)

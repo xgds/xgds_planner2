@@ -49,7 +49,9 @@ def get_handlebars_templates(inp=HANDLEBARS_TEMPLATES_DIR):
 def plan_help(request):
     return render_to_response(
         'xgds_planner2/planner_help.html',
-        RequestContext(request, {})
+        RequestContext(request, {
+            "settings": settings
+        })
     )
 
 

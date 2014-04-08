@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block siteSection %}Browser Help{% endblock siteSection %}
+{% block siteSection %}Planner Help{% endblock siteSection %}
 
 {% block sitemenu-content-secondary %}
 {% include "xgds_planner2/planner2_subnav.html" %}
@@ -8,13 +8,16 @@
 
 {% block content %}
 {{ block.super }}
-<h2>Browser Help</h2>
+<h2>Planner Help</h2>
 
 <p>The XGDS Planner has specific requirements for end-users in order to function properly.</p>
 
-<p>The planner is known to work in Google Chrome. Although older versions Chrome may work, the latest versions are recommended. The planner may also work in other browsers, but testing is done in Chrome, so functionality may be broken in browsers other than Chrome.</p>
+<p>The planner is known to work in <a href="https://www.google.com/intl/en/chrome/browser/">Google Chrome</a>. Make sure you're on the latest version by typing "about:help" in the URL bar.</p>
 
 <p>Most of the functionality in the planner is dependent on Javascript. Javascript must be enabled in order for the planner to work properly.</p>
 
-<p>The planner has a Google Earth component, which can only function if the Google Earth Plugin is installed and working. Though certain plan information can be accessed without the plugin, adding and removing stations, as well as a visual representation of the plan isn't possible.</p>
+<p>The <a href="http://www.google.com/earth/explore/products/plugin.html">Google Earth Plugin</a> is required to edit plans in any significant way. If you have an old version of the plugin and the planner doesn't work, you may need to uninstall it manually and re-install it to make it work.</p>
+
+<p>Here is a video demonstrating the planner and its capabilities:</p>
+<video src="{{ settings.DATA_URL }}xgds_planner2/help_video_short.webm" controls style="width:854px;height:480px"></video>
 {% endblock %}

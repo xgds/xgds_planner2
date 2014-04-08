@@ -4,8 +4,6 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
-import sys
-
 from geocamUtil.loader import getClassByName
 
 from xgds_planner2 import settings
