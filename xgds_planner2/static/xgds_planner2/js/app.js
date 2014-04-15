@@ -26,6 +26,8 @@ var app = (function($, _, Backbone) {
             this.metaExpanded = undefined;
             this.addCommandsExpanded = undefined;
             this.disableSimulate = false;
+            this.untiltTimeoutId = undefined;
+            this.untiltModalEnabled = true;
         });
     });
 

@@ -186,6 +186,16 @@ $(function() {
             // Disable the terrain
             ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
 
+            // Event to auto untilt the map
+            google.earth.addEventListener(ge.getView(), 'viewchangeend', function() {
+                if (app.State.untiltTimeoutId) {
+                    clearTimeout(app.State.untiltTimeoutId);
+                }
+                if (app.State.untiltModalEnabled) {
+                    app.State.untiltTimeoutId = setTimeout(app.map.untiltMap, 100);
+                }
+            });
+
             ge.gex = new GEarthExtensions(ge);
 
             app.options.XGDS_PLANNER_CLAMP_MODE_JS =
@@ -201,6 +211,13 @@ $(function() {
             this.drawPlan();
             app.vent.trigger('clearSaveStatus');
             app.vent.trigger('earth:loaded');
+        },
+
+        untiltMap: function() {
+            var lookAt = app.map.ge.getView().copyAsLookAt(app.map.ge.ALTITUDE_RELATIVE_TO_GROUND);
+            if (lookAt.getTilt() == 0) return; // map isn't tilted
+            lookAt.setTilt(0);
+            app.map.ge.getView().setAbstractView(lookAt);
         },
 
         earthFailure: function() {

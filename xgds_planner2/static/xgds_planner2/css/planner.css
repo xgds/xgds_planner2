@@ -134,3 +134,8 @@ span.entry-error {
 	list-style-type: none;
 	padding: 3px 10px 2px 10px; THIRD number must change with respect to padding-top (X) below
 } 
+
+div.gearth-auto-untilt {
+    display: inline-block;
+    float: right;
+}

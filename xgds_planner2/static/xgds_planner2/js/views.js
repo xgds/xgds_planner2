@@ -13,7 +13,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-reverse': 'reverseStations',
         'click #btn-copy': 'copySelectedCommands',
         'click #btn-paste': 'pasteCommands',
-        'click #btn-cut': 'cutSelectedCommands'
+        'click #btn-cut': 'cutSelectedCommands',
+        'change #gearth-auto-untilt': 'toggleModalUntilt'
     },
 
     initialize: function() {
@@ -153,6 +154,11 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         };
         var msg = msgMap[eventName];
         this.$el.find('#save-status').text(msg);
+    },
+
+    toggleModalUntilt: function() {
+        app.State.untiltModalEnabled = this.$el.find('#gearth-auto-untilt').prop('checked');
+        app.map.untiltMap();
     }
 });
 
