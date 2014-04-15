@@ -188,13 +188,25 @@ $(function() {
 
             // Event to auto untilt the map
             google.earth.addEventListener(ge.getView(), 'viewchangeend', function() {
-                if (app.State.untiltTimeoutId) {
+                if (!_.isUndefined(app.State.untiltTimeoutId)) {
                     clearTimeout(app.State.untiltTimeoutId);
+                    app.State.untiltTimeoutId = undefined;
                 }
                 if (app.State.untiltModalEnabled) {
-                    app.State.untiltTimeoutId = setTimeout(app.map.untiltMap, 100);
+                    app.State.untiltTimeoutId = setTimeout(function() {
+                        app.map.untiltMap();
+                        app.State.untiltTimeoutId = undefined;
+                    }, 500);
                 }
             });
+
+            // Clear timeout if user has started moving map again
+            google.earth.addEventListener(ge.getView(), 'viewchangebegin', function() {
+                if (!_.isUndefined(app.State.untiltTimeoutId)) {
+                    clearTimeout(app.State.untiltTimeoutId);
+                    app.State.untiltTimeoutId = undefined;
+                }
+            }, 500);
 
             ge.gex = new GEarthExtensions(ge);
 
