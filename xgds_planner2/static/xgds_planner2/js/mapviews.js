@@ -492,8 +492,8 @@ $(function() {
 
         addStationsMouseDown: function(evt) {
             if (!_.isUndefined(app.State.addStationLocation) && _.isFinite(app.State.addStationTime)) {
-                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0],2),
-                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1],2));
+                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
+                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1], 2));
                 if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
                     distance >= 5) { // at least five client pixels away from the last station
                     // start state change leading to adding a station
@@ -504,8 +504,9 @@ $(function() {
         },
 
         addStationsMouseMove: function(evt) {
-            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0],2),
-                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1],2));
+            if (_.isUndefined(app.State.mouseDownLocation)) return;
+            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
+                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
             if (distance >= 5) { // allow for small movements due to double-clicking on touchpad
                 app.State.addStationOnMouseUp = false;
                 app.State.mouseDownLocation = undefined;
@@ -513,8 +514,10 @@ $(function() {
         },
 
         addStationsMouseUp: function(evt) {
-            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0],2),
-                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1],2));
+            if (_.isUndefined(app.State.mouseDownLocation)) return;
+            if (!_.isBoolean(app.State.addStationOnMouseUp) || !app.State.addStationOnMouseUp) return;
+            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
+                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
             if (distance < 5) { // all conditions met to add station
                 var coords = [evt.getLongitude(), evt.getLatitude()];
                 var station = app.models.stationFactory({ coordinates: coords });
@@ -522,10 +525,10 @@ $(function() {
                 seq.appendStation(station); // returns a segment if one was created
                 // this returns an array of the last three elements
                 var end = seq.last(3);
-                
+
                 // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
                 app.currentPlan.kmlView.drawStation(station);
-                
+
                 // only drow a segment if other stations exist
                 if (end.length == 3) {
                     app.currentPlan.kmlView.drawSegment(end[1], end[0], end[2]);
@@ -536,6 +539,8 @@ $(function() {
                 app.State.addStationTime = Date.now();
             }
 
+            // reset state
+            app.State.mouseDownLocation = undefined;
             app.State.addStationOnMouseUp = false;
         },
 
