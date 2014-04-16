@@ -412,7 +412,9 @@ $(function() {
         addStationsMode: {
             enter: function() {
                 this.clearGeEvents();
-                this.addGeEvent(this.ge.getGlobe(), 'click', this.clickAddStation);
+                this.addGeEvent(this.ge.getGlobe(), 'mousedown', this.addStationsMouseDown);
+                this.addGeEvent(this.ge.getGlobe(), 'mousemove', this.addStationsMouseMove);
+                this.addGeEvent(this.ge.getGlobe(), 'mouseup', this.addStationsMouseUp);
             },
             exit: function() {
                 // nothing
@@ -488,22 +490,53 @@ $(function() {
             }
         }, // end repositionMode
 
-        clickAddStation: function(evt) {
-            //console.log('Add Station');
-            var coords = [evt.getLongitude(), evt.getLatitude()];
-            var station = app.models.stationFactory({ coordinates: coords });
-            var seq = app.currentPlan.get('sequence');
-            seq.appendStation(station); // returns a segment if one was created
-            // this returns an array of the last three elements
-            var end = seq.last(3);
+        addStationsMouseDown: function(evt) {
+            if (!_.isUndefined(app.State.addStationLocation) && _.isFinite(app.State.addStationTime)) {
+                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0],2),
+                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1],2));
+                if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
+                    distance >= 5) { // at least five client pixels away from the last station
+                    // start state change leading to adding a station
+                    app.State.addStationOnMouseUp = true;
+                    app.State.mouseDownLocation = [evt.getClientX(), evt.getClientY()];
+                }
+            } // ignore all other clicks
+        },
 
-            // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
-            app.currentPlan.kmlView.drawStation(station);
-
-            // only drow a segment if other stations exist
-            if (end.length == 3) {
-                app.currentPlan.kmlView.drawSegment(end[1], end[0], end[2]);
+        addStationsMouseMove: function(evt) {
+            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0],2),
+                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1],2));
+            if (distance >= 5) { // allow for small movements due to double-clicking on touchpad
+                app.State.addStationOnMouseUp = false;
+                app.State.mouseDownLocation = undefined;
             }
+        },
+
+        addStationsMouseUp: function(evt) {
+            var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0],2),
+                                     Math.pow(evt.getClientY() - app.State.mouseDownLocation[1],2));
+            if (distance < 5) { // all conditions met to add station
+                var coords = [evt.getLongitude(), evt.getLatitude()];
+                var station = app.models.stationFactory({ coordinates: coords });
+                var seq = app.currentPlan.get('sequence');
+                seq.appendStation(station); // returns a segment if one was created
+                // this returns an array of the last three elements
+                var end = seq.last(3);
+                
+                // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
+                app.currentPlan.kmlView.drawStation(station);
+                
+                // only drow a segment if other stations exist
+                if (end.length == 3) {
+                    app.currentPlan.kmlView.drawSegment(end[1], end[0], end[2]);
+                }
+
+                // set time and location for added station
+                app.State.addStationLocation = [evt.getClientX(), evt.getClientY()];
+                app.State.addStationTime = Date.now();
+            }
+
+            app.State.addStationOnMouseUp = false;
         },
 
         processStation: function(stationPoint, handle) {

@@ -28,6 +28,10 @@ var app = (function($, _, Backbone) {
             this.disableSimulate = false;
             this.untiltTimeoutId = undefined;
             this.untiltModalEnabled = true;
+            this.addStationOnMouseUp = false;
+            this.mouseDownLocation = undefined;
+            this.addStationLocation = undefined;
+            this.addStationTime = undefined;
         });
     });
 
