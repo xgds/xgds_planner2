@@ -439,7 +439,6 @@ $(function() {
                 for (var i = 0; i < l; i++) {
                     var placemark = stations.item(i);
                     var station = placemark.view;
-                    this.addClickSelectEvent(station, placemark);
                     this.addGeEvent(placemark, 'dblclick', function(evt) {
                         evt.preventDefault();
                     });
@@ -448,21 +447,6 @@ $(function() {
             exit: function() {
                 // nothing
             }
-        },
-
-        addClickSelectEvent: function(station, placemark) {
-            // this is necessary to overcome pointer issues
-            this.addGeEvent(placemark, 'click', function(evt) {
-                app.State.stationSelected = station.model;
-                app.State.metaExpanded = true;
-                app.State.addCommandsExpanded = false;
-                app.State.commandSelected = undefined;
-                if (app.currentTab != 'sequence') {
-                    app.vent.trigger('setTabRequested', 'sequence');
-                } else {
-                    app.tabs.currentView.tabContent.currentView.render();
-                }
-            });
         },
 
         repositionMode: {
@@ -570,7 +554,6 @@ $(function() {
                 station._geHandle = handle;
                 view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
             }
-            this.addClickSelectEvent(station, stationPoint);
             view.addGeEvent(stationPoint, 'dblclick', function(evt) {
                 evt.preventDefault();
                 app.Actions.disable();
@@ -681,10 +664,19 @@ $(function() {
                 pmOptions
             );
 
-            // Stop the balloon from popping on click.
-            google.earth.addEventListener(this.placemark, 'click', function(evt) {
+            // Change click event for station points
+            google.earth.addEventListener(this.placemark, 'click', _.bind(function(evt) {
                 evt.preventDefault();
-            });
+                app.State.stationSelected = this.model;
+                app.State.metaExpanded = true;
+                app.State.addCommandsExpanded = false;
+                app.State.commandSelected = undefined;
+                if (app.currentTab != 'sequence') {
+                    app.vent.trigger('setTabRequested', 'sequence');
+                } else {
+                    app.tabs.currentView.tabContent.currentView.render();
+                }
+            }, this));
 
             // Keep from creating a new station when clicking on an existing one in
             // add stations mode
