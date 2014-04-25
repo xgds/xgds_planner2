@@ -32,6 +32,7 @@ var app = (function($, _, Backbone) {
             this.mouseDownLocation = undefined;
             this.addStationLocation = undefined;
             this.addStationTime = undefined;
+            this.planKMLLoaded = false;
         });
     });
 

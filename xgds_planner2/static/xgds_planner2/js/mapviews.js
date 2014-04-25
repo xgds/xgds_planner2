@@ -186,8 +186,14 @@ $(function() {
             // Disable the terrain
             ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
 
+            // Event to prevent double-clicks on the map (they're confusing)
+            google.earth.addEventListener(ge.getGlobe(), 'dblclick', function(evt) {
+                evt.preventDefault();
+            });
+
             // Event to auto untilt the map
             google.earth.addEventListener(ge.getView(), 'viewchangeend', function() {
+                if (!app.State.planKMLLoaded) return; // don't untilt until KML is loaded
                 if (!_.isUndefined(app.State.untiltTimeoutId)) {
                     clearTimeout(app.State.untiltTimeoutId);
                     app.State.untiltTimeoutId = undefined;
@@ -297,6 +303,9 @@ $(function() {
                                                      scaleRange: 1.2});
                 ge.gex.dom.removeObject(folder);
             }
+
+            // set state so untilt can begin
+            app.State.planKMLLoaded = true;
         },
 
         clearKmlFolder: function(folder) {
@@ -491,16 +500,18 @@ $(function() {
         }, // end repositionMode
 
         addStationsMouseDown: function(evt) {
+            var distance = -1;
             if (!_.isUndefined(app.State.addStationLocation) && _.isFinite(app.State.addStationTime)) {
-                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
-                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1], 2));
-                if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
-                    distance >= 5) { // at least five client pixels away from the last station
-                    // start state change leading to adding a station
-                    app.State.addStationOnMouseUp = true;
-                    app.State.mouseDownLocation = [evt.getClientX(), evt.getClientY()];
-                }
-            } // ignore all other clicks
+                distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
+                                     Math.pow(evt.getClientY() - app.State.addStationLocation[1], 2));
+            }
+            if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
+                (distance >= 5 || distance == -1)) { // at least five client pixels away from the last station
+                                                     // or no previous click or added station
+                // start state change leading to adding a station
+                app.State.addStationOnMouseUp = true;
+                app.State.mouseDownLocation = [evt.getClientX(), evt.getClientY()];
+            }
         },
 
         addStationsMouseMove: function(evt) {
