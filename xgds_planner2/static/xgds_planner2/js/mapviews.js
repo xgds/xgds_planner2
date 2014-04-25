@@ -500,6 +500,12 @@ $(function() {
         }, // end repositionMode
 
         addStationsMouseDown: function(evt) {
+            if (app.State.disableAddStation) {
+                // don't react to a single click
+                // usually from events that fire before this one is
+                app.State.disableAddStation = false;
+                return;
+            }
             var distance = -1;
             if (!_.isUndefined(app.State.addStationLocation) && _.isFinite(app.State.addStationTime)) {
                 distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
@@ -677,6 +683,12 @@ $(function() {
             // Stop the balloon from popping on click.
             google.earth.addEventListener(this.placemark, 'click', function(evt) {
                 evt.preventDefault();
+            });
+
+            // Keep from creating a new station when clicking on an existing one in
+            // add stations mode
+            google.earth.addEventListener(this.placemark, 'mousedown', function(evt) {
+                app.State.disableAddStation = true;
             });
 
             this.placemark.view = this; // 2-way link for GE event handlers to use
