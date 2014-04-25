@@ -424,6 +424,7 @@ $(function() {
                 this.addGeEvent(this.ge.getGlobe(), 'mousedown', this.addStationsMouseDown);
                 this.addGeEvent(this.ge.getGlobe(), 'mousemove', this.addStationsMouseMove);
                 this.addGeEvent(this.ge.getGlobe(), 'mouseup', this.addStationsMouseUp);
+                app.State.disableAddStation = false; // reset state possibly set in other mode
             },
             exit: function() {
                 // nothing
