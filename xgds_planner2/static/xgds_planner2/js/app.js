@@ -34,6 +34,7 @@ var app = (function($, _, Backbone) {
             this.addStationTime = undefined;
             this.planKMLLoaded = false;
             this.disableAddStation = false;
+            this.selection = new Array();
         });
     });
 
@@ -232,6 +233,7 @@ var app = (function($, _, Backbone) {
             //console.log('Updating plan');
             //console.log(planJSON);
             if (!_.isUndefined(planJSON)) {
+                app.currentPlan.clear();
                 app.currentPlan.set(planJSON);
             }
             app.simulatePlan();

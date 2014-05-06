@@ -381,6 +381,42 @@ $(function() {
             }, this);
         },
 
+        findPlacemark: function(model) {
+            // find a station placemark from a station's model
+            // useful for removeStation usage
+            var station = this.collection.get(model);
+            var placemark = station.placemark;
+            return placemark;
+        },
+
+        removeStation: function(placemark) {
+            // remove a station from its placemark
+            app.Actions.disable();
+            var station = placemark.view;
+            var model = station.model;
+            var index = this.collection.indexOf(model);
+            var segmentBefore = this.collection.at(index - 1);
+            var segmentAfter = this.collection.at(index + 1);
+            this.collection.removeStation(model);
+            station.remove();
+            var newSegment = this.collection.at(index - 1);
+            this.stationsFolder.getFeatures().removeChild(placemark);
+            if (!_.isUndefined(segmentBefore))
+                this.segmentsFolder.getFeatures().removeChild(segmentBefore._geSegment.placemark);
+            if (!_.isUndefined(segmentAfter))
+                this.segmentsFolder.getFeatures().removeChild(segmentAfter._geSegment.placemark);
+            if (app.mapRotationHandles) {
+                this.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
+            }
+            this.stationsFolder.getFeatures().removeChild(placemark);
+            if (!_.isUndefined(newSegment))
+                this.drawSegment(newSegment, this.collection.at(index - 2), this.collection.at(index));
+            this.destroyMidpoints();
+            this.drawMidpoints();
+            app.Actions.enable();
+            app.Actions.action();
+        },
+
         // Add an event handler and store a reference to it so we can clean up later.
         addGeEvent: function(target, eventID, listenerCallback, useCapture) {
             this.geEvents.push(arguments);
@@ -554,34 +590,8 @@ $(function() {
                 station._geHandle = handle;
                 view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
             }
-            view.addGeEvent(stationPoint, 'dblclick', function(evt) {
-                evt.preventDefault();
-                app.Actions.disable();
-                var pm = evt.getTarget();
-                var sequence = app.currentPlan.get('sequence');
-                var index = sequence.indexOf(pm.view.model);
-                var segmentBefore = sequence.at(index - 1);
-                var segmentAfter = sequence.at(index + 1);
-                sequence.removeStation(pm.view.model);
-                pm.view.remove();
-                var newSegment = sequence.at(index - 1);
-                view.stationsFolder.getFeatures().removeChild(pm);
-                if (!_.isUndefined(segmentBefore))
-                    view.segmentsFolder.getFeatures().removeChild(segmentBefore._geSegment.placemark);
-                if (!_.isUndefined(segmentAfter))
-                    view.segmentsFolder.getFeatures().removeChild(segmentAfter._geSegment.placemark);
-                if (app.mapRotationHandles) {
-                    view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
-                }
-                view.stationsFolder.getFeatures().removeChild(stationPoint);
-                if (!_.isUndefined(newSegment))
-                    view.drawSegment(newSegment, sequence.at(index - 2), sequence.at(index));
-                view.destroyMidpoints();
-                view.drawMidpoints();
-                app.Actions.enable();
-                app.Actions.action();
-            });
-            view.ge.gex.edit.makeDraggable(stationPoint, {
+            this.addGeEvent(stationPoint, 'dblclick', _.bind(this.removeStation, this, stationPoint));
+            ge.gex.edit.makeDraggable(stationPoint, {
                 bounce: false,
                 dragCallback: function() {
                     //nothing

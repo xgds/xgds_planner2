@@ -7,7 +7,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); },
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
-        'click #btn-delete': 'deleteSelectedCommands',
+        'click #btn-delete': 'deleteButton',
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); },
         'click #btn-reverse': 'reverseStations',
@@ -19,6 +19,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     initialize: function() {
         this.cutAfterPaste = false;
+        this.commandsSelected = false;
         this.listenTo(app.vent, 'mapmode', this.ensureToggle);
 
         this.listenTo(app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
@@ -30,8 +31,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
-        this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
-        this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
+        this.listenTo(app.vent, 'commandsSelected', this.onCommandsSelected);
+        this.listenTo(app.vent, 'commandsUnSelected', this.onCommandsUnSelected);
+        this.listenTo(app.vent, 'showItem:station', this.onCommandsUnSelected);
+        this.listenTo(app.vent, 'stationUpdateSelectionStatus', this.updateStationDelete);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
@@ -49,10 +52,11 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         }
         if (app.hasHandler('selectedCommands') &&
             !_.isEmpty(app.request('selectedCommands'))) {
-            this.enableCommandActions();
+            this.onCommandsSelected();
         } else {
-            this.disableCommandActions();
+            this.onCommandsUnSelected();
         }
+        this.updatePasteButton();
     },
 
     getCutAfterPaste: function() {
@@ -78,18 +82,35 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.$('#btn-redo').attr('disabled', 'disabled');
     },
 
-    disableCommandActions: function() {
-        this.$('#btn-copy').attr('disabled', 'disabled');
-        this.$('#btn-paste').attr('disabled', 'disabled');
-        this.$('#btn-cut').attr('disabled', 'disabled');
-        this.$('#btn-delete').attr('disabled', 'disabled');
+    updatePasteButton: function() {
+        if (_.isEmpty(app.copiedCommands)) {
+            this.$('#btn-paste').attr('disabled', 'disabled');
+        } else {
+            this.$('#btn-paste').removeAttr('disabled');
+        }
     },
 
-    enableCommandActions: function() {
+    updateStationDelete: function() {
+        if (_.isEmpty(app.State.selection)) {
+            this.$('#btn-delete').attr('disabled', 'disabled');
+        } else {
+            this.$('#btn-delete').removeAttr('disabled');
+        }
+        this.updatePasteButton();
+    },
+
+    onCommandsUnSelected: function() {
+        this.$('#btn-copy').attr('disabled', 'disabled');
+        this.$('#btn-cut').attr('disabled', 'disabled');
+        this.updateStationDelete();
+        this.commandsSelected = false;
+    },
+
+    onCommandsSelected: function() {
         this.$('#btn-copy').removeAttr('disabled');
-        this.$('#btn-paste').removeAttr('disabled');
         this.$('#btn-cut').removeAttr('disabled');
         this.$('#btn-delete').removeAttr('disabled');
+        this.commandsSelected = true;
     },
 
     enableUndo: function() {
@@ -105,12 +126,34 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         if (! btn.hasClass('active')) { btn.button('toggle'); }
     },
 
+    deleteButton: function() {
+        // station selection is emptied by selecting commands
+        if (!_.isEmpty(app.State.selection)) {
+            this.deleteSelectedStations();
+        } else {
+            this.deleteSelectedCommands();
+        }
+    },
+
+    deleteSelectedStations: function() {
+        // find and remove stations from the selected list
+        app.Actions.disable();
+        _.map(app.State.selection, app.currentPlan.get('sequence').removeStation,
+              app.currentPlan.get('sequence'));
+        app.currentPlan.kmlView.render();
+        app.State.selection = new Array();
+        this.updateStationDelete();
+        app.Actions.enable();
+        app.Actions.action();
+    },
+
     deleteSelectedCommands: function() {
         var commands = app.request('selectedCommands');
         _.each(commands, function(command) {
             command.collection.remove(command);
             command.destroy();
         });
+        app.vent.trigger('commandsUnSelected');
         app.vent.trigger('change:plan');
     },
 
@@ -119,6 +162,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         app.copiedCommands = new Array();
         app.copiedCommands.push.apply(app.copiedCommands, commands);
         app.request('unselectAllCommands');
+        this.updatePasteButton();
     },
 
     pasteCommands: function() {
@@ -226,6 +270,10 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-command-presets-header'
 });
 
+app.views.MultipleStationsHeaderView = Backbone.Marionette.ItemView.extend({
+    template: '#template-multiple-stations-header'
+});
+
 app.views.HideableRegion = Backbone.Marionette.Region.extend({
     close: function() {
         Backbone.Marionette.Region.prototype.close.call(this);
@@ -261,12 +309,13 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     initialize: function() {
         //this.listenTo(app.vent, 'showItem', this.showItem, this);
-        this.listenTo(app.vent, 'showItem:station', this.showStation, this);
-        this.listenTo(app.vent, 'showItem:segment', this.showSegment, this);
-        this.listenTo(app.vent, 'showItem:command', this.showCommand, this);
-        this.listenTo(app.vent, 'showMeta', this.showMeta, this);
-        this.listenTo(app.vent, 'showPresets', this.showPresets, this);
-        this.listenTo(app.vent, 'showNothing', this.showNothing, this);
+        this.listenTo(app.vent, 'showItem:station', this.showStation);
+        this.listenTo(app.vent, 'showItem:segment', this.showSegment);
+        this.listenTo(app.vent, 'showItem:command', this.showCommand);
+        this.listenTo(app.vent, 'showMeta', this.showMeta);
+        this.listenTo(app.vent, 'showPresets', this.showPresets);
+        this.listenTo(app.vent, 'showNothing', this.showNothing);
+        this.listenTo(app.vent, 'stationUpdateSelectionStatus', this.updateSelect);
         //this.listenTo(this.col1, 'all', function(evt) {
         //    console.log('Event on column 1: ' + evt);
         //});
@@ -332,6 +381,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
     },
 
     showCommand: function(itemModel) {
+        app.State.lastClicked = itemModel;
         this.colhead3.close();
         var headerView = new app.views.CommandPropertiesHeaderView();
         this.colhead3.show(headerView);
@@ -378,8 +428,30 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         this.col3.close();
         this.colhead2.close();
         this.colhead3.close();
+    },
+
+    updateSelect: function(selection) {
+        if (selection.length > 1) {
+            // multiple things selected
+            var headerView = new app.views.MultipleStationsHeaderView();
+            this.showNothing();
+            this.colhead2.show(headerView);
+        }
     }
+
 });
+
+app.views.clearSelection = function() {
+    if (window.getSelection) {
+        if (window.getSelection().empty) {  // Chrome
+            window.getSelection().empty();
+        } else if (window.getSelection().removeAllRanges) {  // Firefox
+            window.getSelection().removeAllRanges();
+        }
+    } else if (document.selection) {  // IE?
+        document.selection.empty();
+    }
+};
 
 app.views.makeExpandable = function(view, expandClass) {
     /*
@@ -408,7 +480,7 @@ app.views.makeExpandable = function(view, expandClass) {
         unexpand: function() {
 //            console.log('(((((((Unexpanding');
             this.expanded = false;
-            this.$el.find('i').removeClass('icon-chevron-right');
+            this._removeIcon();
         },
         onExpandOther: function(target, expandClass) {
 //            console.log('Got onExpandOther');
@@ -434,8 +506,17 @@ app.views.makeExpandable = function(view, expandClass) {
             this._ensureIcon();
             this.$el.find('i').addClass('icon-chevron-right');
         },
+        _removeIcon: function() {
+            this.$el.find('i').removeClass('icon-chevron-right');
+        },
         onClose: function() {
             this.stopListening();
+        },
+        markSelected: function() {
+            this._addIcon();
+        },
+        unmarkSelected: function() {
+            this._removeIcon();
         }
     };
     view = _.defaults(view, expandable);
@@ -450,6 +531,7 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
     tagName: 'li',
     initialize: function() {
         app.views.makeExpandable(this, this.options.expandClass);
+        this.listenTo(app.vent, 'stationUpdateSelectionStatus', this.updateSelectionStatus);
     },
     template: function(data) {
         //return '' + data.model.toString()+ ' <i/>';
@@ -467,6 +549,16 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
             'class': this.model.get('type').toLowerCase() + '-sequence-item'
         };
     },
+    updateSelectionStatus: function(selection) {
+        // only stations
+        if (this.model.get('type') != 'Station') return;
+        if (this.expanded) return; // ignore if we're expanded
+        if (_.contains(selection, this.model)) {
+            this.markSelected();
+        } else {
+            this.unmarkSelected();
+        }
+    },
     events: {
         click: function() {
             this.expand();
@@ -479,13 +571,22 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
 
 app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     events: {
-        click: function() {
-            app.State.metaExpanded = true;
-            app.State.addCommandsExpanded = false;
-            app.State.commandSelected = undefined;
-            this.expand();
-            var type = this.model.get('type'); // "Station" or "Segment"
-            app.vent.trigger('showItem:' + type.toLowerCase(), this.model);
+        click: function(event) {
+            // expand if shift/ctrl aren't pressed
+            if (event.ctrlKey || event.shiftKey) {
+                app.views.clearSelection();
+            } else {
+                app.State.metaExpanded = true;
+                app.State.addCommandsExpanded = false;
+                app.State.commandSelected = undefined;
+                this.expand();
+                var type = this.model.get('type'); // "Station" or "Segment"
+                app.vent.trigger('showItem:' + type.toLowerCase(), this.model);
+            }
+            // forward event
+            var args = Array.prototype.slice.call(arguments);
+            args.unshift('click');
+            this.trigger.apply(this, args);
         }
     },
     onExpand: function() {
@@ -524,7 +625,54 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         this.listenTo(app.vent, 'station:change', this.render);
         this.listenTo(app.vent, 'plan:reverse', this.render);
         this.on('itemview:expand', this.onItemExpand, this);
+        this.on('itemview:click', this.onItemClick, this);
         //this.on('itemview:render', this.restoreExpanded, this);
+    },
+
+    onItemClick: function(itemView, event) {
+        if (app.State.selection.length == 0) {
+            app.State.selection.push(itemView.model);
+            app.vent.trigger('stationUpdateSelectionStatus', app.State.selection);
+        } else {
+            if (event.ctrlKey) {
+                // add to current list
+                app.State.selection.push(itemView.model);
+                itemView.markSelected();
+            } else if (event.shiftKey) {
+                // hard; re-calculate selection
+                var pivot = app.State.selection[0];
+                var sequence = app.currentPlan.get('sequence');
+                var pivotId = sequence.indexOf(pivot);
+                var itemId = sequence.indexOf(itemView.model);
+                var selection = [];
+                // check to make sure the selection exists in the plan
+                if (pivotId == -1) {
+                    throw 'Selection pivot not found in plan sequence';
+                }
+                if (itemId == -1) {
+                    throw 'Selection not found in plan squence';
+                }
+                // re-create selection
+                if (itemId - pivotId > 0) {
+                    selection = _.filter(sequence.slice(pivotId, itemId + 1), function(item) {
+                        return item.get('type') == 'Station';
+                    });
+                } else if (pivotId - itemId > 0) {
+                    // pivot is always first
+                    selection = _.filter(sequence.slice(itemId, pivotId + 1).reverse(), function(item) {
+                        return item.get('type') == 'Station';
+                    });
+                }
+                // trigger update select status
+                app.vent.trigger('stationUpdateSelectionStatus', selection);
+                app.State.selection = selection;
+            } else {
+                // replace list
+                app.State.selection = [itemView.model];
+                // update selection marks
+                app.vent.trigger('stationUpdateSelectionStatus', app.State.selection);
+            }
+        }
     },
 
     onItemExpand: function(itemView) {
@@ -718,6 +866,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         if (this.itemsSelected) return;
         if (!_.isEmpty(this.getSelectedCommands())) {
             this.itemsSelected = true;
+            app.State.selection = new Array();
+            app.copiedCommands = new Array();
             app.vent.trigger('commandsSelected');
         }
     },
@@ -746,6 +896,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         this.children.each(function(view) {
             view.setUnselected();
         });
+        app.vent.trigger('commandsUnSelected');
     },
 
     onItemExpand: function(itemView) {
