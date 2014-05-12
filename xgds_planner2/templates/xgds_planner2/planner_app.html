@@ -26,9 +26,14 @@
 
 
 {% block scripts %}
+   {{ block.super }}
     {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
     {% compressed_js 'simulator' %}
+    <!-- 
+    <script type="text/javascript" src="{{ planner_appUrl }}"></script>
+    <script type="text/javascript" src="{{ simulatorUrl}}"></script>
+    -->
     {% for template_name, template in templates.items %}
 <script type="text/handlebars" id="template-{{template_name}}">
 {{template|safe}}
