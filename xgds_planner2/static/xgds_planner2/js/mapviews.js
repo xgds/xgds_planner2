@@ -882,7 +882,8 @@ $(function() {
 						// grow icon when we're selected
 						style.getIconStyle().setScale(1.5);
 					}
-					if (app.options.directionalStations) {
+					if (app.options.directionalStations &&
+                                           this.model.get('isDirectional')) {
 						style.getIconStyle().setHeading(
 								this.model.get('headingDegrees'));
 					}
