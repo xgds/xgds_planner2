@@ -28,7 +28,7 @@ app.models = app.models || {};
             name: {type: 'Text'},
             notes: {type: 'TextArea'},
             id: {type: 'Text', readonly: true,
-                editorAttrs: { disabled: true}}
+                 editorAttrs: { disabled: true}}
         };
 
         // data object contains object defaults
@@ -78,7 +78,7 @@ app.models = app.models || {};
             }
             if (param.hasOwnProperty('required') &&
                 _.isBoolean(param.required) &&
-               param.required) {
+                param.required) {
                 schema[param.id]['validators'].push('required');
             }
             if (param.hasOwnProperty('notes')) {
@@ -125,18 +125,18 @@ app.models = app.models || {};
     models.Plan = Backbone.RelationalModel.extend({
         url: function() {
             // return '/xgds_planner2/plan/{uuid}/{name}.json'.format({name:
-			// this.get('name')});
+            // this.get('name')});
             return this.get('url');
         },
         isNew: function() {
             /*
-			 * The way we have things set up, plan models can never be new,
-			 * since we create the on the server side before passing them to the
-			 * app. Backbone uses this value on sync/save to determine whether
-			 * to sent a POST request or a PUT request. Setting it to always be
-			 * false forces a PUT. The default implementation is: "return
-			 * this.id == null"
-			 */
+             * The way we have things set up, plan models can never be new,
+             * since we create the on the server side before passing them to the
+             * app. Backbone uses this value on sync/save to determine whether
+             * to sent a POST request or a PUT request. Setting it to always be
+             * false forces a PUT. The default implementation is: "return
+             * this.id == null"
+             */
             return false;
         },
         relations: [
@@ -173,13 +173,13 @@ app.models = app.models || {};
     });
 
     /*
-	 * * The PathElement model represents both Station and Sequence objects. *
-	 * This is inconvenient, but it has to be this way until we invent * a
-	 * Collection that can instantiate more than one model type.
-	 */
+     * * The PathElement model represents both Station and Sequence objects. *
+     * This is inconvenient, but it has to be this way until we invent * a
+     * Collection that can instantiate more than one model type.
+     */
     models.PathElement = Backbone.RelationalModel.extend({
         idAttribute: '_id', // Doesn't exist, but allows us to change the "id"
-							// attribute with impunity.
+        // attribute with impunity.
         relations: [
             {
                 type: Backbone.HasMany,
@@ -205,7 +205,7 @@ app.models = app.models || {};
 
         initialize: function() {
             // javascript is a weird beast and requires re-definition of this
-			// variable,
+            // variable,
             // or else stuff is added to it
             this.schema = {
                 // id: 'Text'
@@ -223,7 +223,7 @@ app.models = app.models || {};
             _.extend(this.schema, formsData.schema);
             _.extend(this.data, formsData.data);
             // all attributes in the schema need to be defined, else they won't
-			// be in the
+            // be in the
             // json and so won't change when undo/redo is hit
             _.each(_.keys(this.schema), function(attr) {
                 if (!this.has(attr)) {
@@ -239,10 +239,10 @@ app.models = app.models || {};
                 }
             });
             // this model needs an id attribute b/c relational can't find old
-			// models
+            // models
             // and so creates infinite new ones
             // furthermore, this id needs to be the same as cid. Oh
-			// relational...
+            // relational...
             this.set(this.idAttribute, this.cid);
         },
 
@@ -263,12 +263,12 @@ app.models = app.models || {};
 
         getDuration: function() {
             /*
-			 * var duration = 0.0; if ( this.get('speed') ){ // TODO: calculate
-			 * distance and traverse time }
-			 * this.get('sequence').each(function(command) { if
-			 * (command.get('duration') != undefined) { duration = duration +
-			 * command.get('duration'); } }); return duration;
-			 */
+             * var duration = 0.0; if ( this.get('speed') ){ // TODO: calculate
+             * distance and traverse time }
+             * this.get('sequence').each(function(command) { if
+             * (command.get('duration') != undefined) { duration = duration +
+             * command.get('duration'); } }); return duration;
+             */
             // actually use the simulator
             if (this.get('_simInfo') == undefined) app.simulatePlan();
             if (this.get('_simInfo') == undefined) return undefined;
@@ -277,15 +277,15 @@ app.models = app.models || {};
 
         getCumulativeDuration: function(collection) {
             /*
-			 * // return the cumulative duration of all models in the collection
-			 * up to and including this one. if ( collection === undefined ) {
-			 * collection = app.currentPlan.get('sequence'); } var arr =
-			 * collection.models; var idx = _.indexOf(arr, this); if (idx < 0) {
-			 * throw 'Model {model} was not found in the collection
-			 * {collection}'.format({model: this, collection: collection}); }
-			 * var duration = 0.0; _.each(_.first(arr, idx + 1), function(model) {
-			 * duration = duration + model.getDuration(); } ); return duration;
-			 */
+             * // return the cumulative duration of all models in the collection
+             * up to and including this one. if ( collection === undefined ) {
+             * collection = app.currentPlan.get('sequence'); } var arr =
+             * collection.models; var idx = _.indexOf(arr, this); if (idx < 0) {
+             * throw 'Model {model} was not found in the collection
+             * {collection}'.format({model: this, collection: collection}); }
+             * var duration = 0.0; _.each(_.first(arr, idx + 1), function(model) {
+             * duration = duration + model.getDuration(); } ); return duration;
+             */
             if (this.get('_simInfo') == undefined) app.simulatePlan();
             if (this.get('_simInfo') == undefined) return undefined;
             return (this.get('_simInfo').elapsedTimeSeconds / 60) + this.getDuration();
@@ -300,13 +300,13 @@ app.models = app.models || {};
             this.get('sequence').add(model);
         },
         /*
-		 * * Relevant to stations only... * A convenience mainly to keep details
-		 * about the model's structure * out of the map drag handler.
-		 */
+         * * Relevant to stations only... * A convenience mainly to keep details
+         * about the model's structure * out of the map drag handler.
+         */
         setPoint: function(coords) {
             var geom = this.get('geometry');
             geom = _.extend({}, geom); // make a copy so it triggers the change
-										// event
+            // event
             if (! geom) { throw 'PathElement has no geometry'; }
             geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);
@@ -321,17 +321,17 @@ app.models = app.models || {};
         },
 
         /*
-		 * * resequence supplies the stations with easier to read sequential
-		 * numbers * for use in the map view. (Start, 1, 2...End) * It is also
-		 * responsible for computing station and sequence ids from the templates
-		 * in planSchema.
-		 */
+         * * resequence supplies the stations with easier to read sequential
+         * numbers * for use in the map view. (Start, 1, 2...End) * It is also
+         * responsible for computing station and sequence ids from the templates
+         * in planSchema.
+         */
         resequence: function() {
             var stationCounter = 0;
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
-                        // prevent undo from capturing *every* change we make
-                    app.Actions.disable();
+                // prevent undo from capturing *every* change we make
+                app.Actions.disable();
             }
 
             // Natural station numbering.
@@ -377,13 +377,13 @@ app.models = app.models || {};
         },
 
         /*
-		 * This collection needs special logic to maintain the
-		 * station-segment-station adjecency.
-		 */
+         * This collection needs special logic to maintain the
+         * station-segment-station adjecency.
+         */
         appendStation: function(stationModel) {
             app.Actions.disable();
             if (this.length > 0) { // Don't append a segment if this is the
-									// first station in the list.
+                // first station in the list.
                 var segment = models.segmentFactory();
                 this.add([segment, stationModel]);
             } else {
@@ -395,16 +395,16 @@ app.models = app.models || {};
         },
 
         /*
-		 * Insert a station just before the segment at the given index. Also add
-		 * a new segment.
-		 */
+         * Insert a station just before the segment at the given index. Also add
+         * a new segment.
+         */
         insertStation: function(idx, stationModel) {
             var segmentAfter = this.at(idx);
             if (segmentAfter.get('type') != 'Segment') { throw 'You can only insert stations before a Segment.'}
             var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone
-																			// the
-																			// stationAfter's
-																			// properties.
+            // the
+            // stationAfter's
+            // properties.
             this.add([segmentBefore, stationModel], {at: idx});
             app.vent.trigger('station:change');
         },
@@ -431,10 +431,10 @@ app.models = app.models || {};
     });
 
     /*
-	 * * The factories below contain proto objects that act as * templates for
-	 * creating new Station and Segment PathElement * models when the user adds
-	 * them from the map display.
-	 */
+     * * The factories below contain proto objects that act as * templates for
+     * creating new Station and Segment PathElement * models when the user adds
+     * them from the map display.
+     */
 
     models.stationFactory = function(options, stationToClone) {
         var proto = {
@@ -516,7 +516,7 @@ app.models = app.models || {};
             _.extend(this.data, formsData.data);
             this.on('change', function() { app.vent.trigger('change:plan'); });
             // all attributes in the schema need to be defined, else they won't
-			// be in the
+            // be in the
             // json and so won't change when undo/redo is hit
             _.each(_.keys(this.schema), function(attr) {
                 if (!this.has(attr)) {
@@ -527,7 +527,7 @@ app.models = app.models || {};
             }, this);
             // the model needs an "id" attribute, else a memory leak occurs b/c
             // relational can't find the model (it tries to use the id
-			// attribute)
+            // attribute)
             // and so creates a new one, which is bad
             this.set(this.idAttribute, this.cid);
         },
