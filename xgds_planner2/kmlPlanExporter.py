@@ -58,10 +58,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
                  'plon': plon,
                  'plat': plat,
                  'nlon': nlon,
-                 'nlat': nlat,
-                 #'mlon': mlon,
-                 #'mlat': mlat
-                 })
+                 'nlat': nlat})
 
     def transformPlan(self, plan, tsequence, context):
         return KmlUtil.wrapKmlDocument('\n'.join(tsequence), plan.get("id", ""))

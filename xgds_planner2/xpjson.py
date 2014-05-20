@@ -112,11 +112,11 @@ def isValueOfType(val, valueType):
         if not isinstance(val, (str, unicode)):
             return False
         # hm, django url validation only allows absolute urls and is a pain sometimes
-        #try:
-        #    URL_VALIDATOR(val)
-        #    return True
-        #except ValidationError:
-        #    return False
+        # try:
+        #     URL_VALIDATOR(val)
+        #     return True
+        # except ValidationError:
+        #     return False
         return True
     elif valueType == 'bbox':
         # must be an array of 4 floats (2d) or 6 floats (3d)

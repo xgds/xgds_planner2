@@ -15,7 +15,7 @@ from xgds_planner2 import models, xpjson, settings
 from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
 
 # Please don't put lines like this at the root of modules, this breaks testing
-#PLAN_MODEL = getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+# PLAN_MODEL = getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 
 
 def posixTimestampToString(timestamp):
@@ -81,7 +81,7 @@ class PlanImporter(object):
                 wholePlatform = meta['platform']
                 planSchema = models.getPlanSchema(wholePlatform.name)
             except:  # pylint: disable=W0702
-                #bad news
+                # bad news
                 print "no platform, you need to pass the plan Schema" + name
                 return
         importer.setDefaultMeta(meta, path, planSchema)

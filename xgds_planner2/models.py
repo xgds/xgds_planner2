@@ -106,7 +106,7 @@ class AbstractPlan(models.Model):
     def getSummaryOfCommandsByType(self):
         return statsPlanExporter.getSummaryOfCommandsByType(self.stats)
 
-    #TODO test
+    # TODO test
     def toXpjson(self):
         platform = self.jsonPlan['platform']
         if platform:
