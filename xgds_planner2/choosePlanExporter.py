@@ -9,19 +9,30 @@ from geocamUtil import loader
 
 
 class ExporterInfo(object):
-    def __init__(self, formatCode, extension, exporterClass):
+    def __init__(self, formatCode, extension, exporterClass, customLabel=None):
         self.formatCode = formatCode
         self.extension = extension
         self.exporterClass = exporterClass
-        self.label = exporterClass.label
+        if customLabel:
+            self.label = customLabel
+        else:
+            self.label = exporterClass.label
         self.url = None
 
 
 PLAN_EXPORTERS = []
 PLAN_EXPORTERS_BY_FORMAT = {}
-for _formatCode, _extension, _exporterClassName in settings.XGDS_PLANNER_PLAN_EXPORTERS:
+for exporterInfo in settings.XGDS_PLANNER_PLAN_EXPORTERS:
+    #_formatCode, _extension, _exporterClassName, _customLabel
+    _formatCode = exporterInfo[0]
+    _extension = exporterInfo[1]
+    _exporterClassName = exporterInfo[2]
+    _customLabel = None
+    if len(exporterInfo) > 3:
+        _customLabel = exporterInfo[3]
     _exporterInfo = ExporterInfo(_formatCode,
                                  _extension,
-                                 loader.getClassByName(_exporterClassName))
+                                 loader.getClassByName(_exporterClassName),
+                                 _customLabel)
     PLAN_EXPORTERS.append(_exporterInfo)
     PLAN_EXPORTERS_BY_FORMAT[_formatCode] = _exporterInfo
