@@ -244,6 +244,28 @@ def planCreate(request):
             meta['creator'] = request.user.username
             importer = planImporter.BlankPlanImporter()
             planSchema = models.getPlanSchema(form.cleaned_data['platform'])
+
+             # set the site
+            siteID = form.cleaned_data['site']
+            if siteID:
+                sites = planSchema.getLibrary().sites
+                for site in sites:
+                    if site.id == siteID:
+                        #TODO FIX this has all sorts of formatting problems /n inserted.
+#                         meta['site'] = xpjson.dumpDocumentToString(site)
+
+                        hackSite = {"type": "Site",
+                                    "name": site.name,
+                                    "id": site.id,
+                                    "notes": site.notes
+                                    }
+                        if site.bbox:
+                            hackSite["bbox"] = site.bbox
+                        if site.alternateCrs:
+                            hackSite["alternateCrs"] = site.alternateCrs
+                        meta['site'] = hackSite
+                        break
+
             dbPlan = importer.importPlan('tempName',
                                          buf=None,
                                          meta=meta,

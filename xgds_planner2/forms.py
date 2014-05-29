@@ -6,20 +6,29 @@
 
 from django import forms
 from django.conf import settings
-
-# SITE_CHOICES = [(x.id, x.name) for x in models.LIBRARY.sites]
-# PLATFORM_CHOICES = [(x.id, x.name) for x in models.LIBRARY.platforms]
+from xgds_planner2.models import getPlanSchema
 
 
 class CreatePlanForm(forms.Form):
     planNumber = forms.IntegerField(label='Plan number')
     planVersion = forms.CharField(label='Plan version', max_length=1, initial='A')
     platform = forms.ChoiceField(choices=[], required=True)
-
-    # site = forms.ChoiceField(choices=SITE_CHOICES, required=False)
-    # platform = forms.ChoiceField(choices=PLATFORM_CHOICES, required=False)
+    site = forms.ChoiceField(choices=[], required=False)
 
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
         self.fields['platform'].choices = [(p, p) for p in platforms]
+
+        #TODO right now this shows an alphabetically sorted list of all the sites together.
+        # really what we want is to change the sites based on the chosen platform.
+        allSites = []
+        for platform in platforms:
+            schema = getPlanSchema(platform)
+            library = schema.getLibrary()
+            sites = library.sites
+            if sites:
+                for site in sites:
+                    allSites.append(site)
+        sites = sorted(allSites, key=lambda site: site.name)
+        self.fields['site'].choices = [(site.id, site.name) for site in sites]
