@@ -245,7 +245,7 @@ def planCreate(request):
             importer = planImporter.BlankPlanImporter()
             planSchema = models.getPlanSchema(form.cleaned_data['platform'])
 
-             # set the site
+            # set the site
             siteID = form.cleaned_data['site']
             if siteID:
                 sites = planSchema.getLibrary().sites
