@@ -148,6 +148,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
+
 #     print planSchema.getJsonSchema();
     return render_to_response(
         'xgds_planner2/planner_app.html',
@@ -167,7 +168,8 @@ def plan_editor_app(request, plan_id=None, editable=True):
             ),
             'placemark_circle_highlighted_url': request.build_absolute_uri(
                 staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
-            )
+            ),
+            'plan_links_json': json.dumps(plan.getLinks())
         }),
         # context_instance=RequestContext
     )

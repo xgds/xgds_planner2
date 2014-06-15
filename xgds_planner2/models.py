@@ -137,6 +137,13 @@ class AbstractPlan(models.Model):
             result.append(info)
         return result
 
+    def getLinks(self):
+        """
+        The links tab wil be populated with the name, value contents of this dictionary as links,
+        name is the string displayed and link is what will be opened
+        """
+        return {}
+
     def __unicode__(self):
         if self.name:
             return self.name

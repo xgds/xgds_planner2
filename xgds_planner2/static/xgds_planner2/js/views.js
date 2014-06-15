@@ -1043,6 +1043,24 @@ app.views.PlanToolsView = Backbone.View.extend({
     }
 });
 
+app.views.PlanLinksView = Backbone.View.extend({
+    template: '#template-plan-links',
+    initialize: function() {
+        var source = $(this.template).html();
+        if (_.isUndefined(source))
+            this.template = function() {
+                return '';
+            };
+        else
+            this.template = Handlebars.compile(source);
+    },
+    render: function() {
+        this.$el.html(this.template({
+            planLinks: app.planLinks
+        }));
+    }
+});
+
 app.views.TabNavView = Backbone.Marionette.Layout.extend({
     template: '#template-tabnav',
     regions: {
@@ -1058,7 +1076,8 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
         'layers': app.views.LayerTreeView,
-        'tools': app.views.PlanToolsView
+        'tools': app.views.PlanToolsView,
+        'links': app.views.PlanLinksView
     },
 
     initialize: function() {
