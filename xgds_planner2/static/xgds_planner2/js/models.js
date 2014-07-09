@@ -62,9 +62,7 @@ app.models = app.models || {};
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';
             if (foundType == 'Select') {
-                var options = _.map(param.choices, function(choice) {
-                    return choice[0];
-                });
+                var options = _.object(param.choices);
                 schema[param.id] = {'type': foundType, 'validators': [], options: options};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
