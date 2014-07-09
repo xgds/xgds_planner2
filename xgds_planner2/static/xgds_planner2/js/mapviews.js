@@ -199,12 +199,15 @@ $(function() {
                 ge.getNavigationControl().setVisibility(ge.VISIBILITY_AUTO);
                 ge.getLayerRoot().enableLayerById(ge.LAYER_BORDERS, true);
                 ge.getLayerRoot().enableLayerById(ge.LAYER_ROADS, true);
+
+                ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, true);
+                ge.getLayerRoot().enableLayerById(ge.LAYER_BUILDINGS, true);
                 ge.getOptions().setScaleLegendVisibility(true);
                 ge.getOptions().setUnitsFeetMiles(false);
                 ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
 
                 // Disable the terrain
-                ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
+                //ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, false);
 
                 // Event to prevent double-clicks on the map (they're confusing)
                 google.earth.addEventListener(ge.getGlobe(), 'dblclick',
