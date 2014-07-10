@@ -144,6 +144,8 @@ class AbstractPlan(models.Model):
         """
         result = {}
         result["KML"] = reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})
+#         for exporter in self.getExporters():
+#             result[exporter.label] = exporter.url
         return result
 
     def __unicode__(self):

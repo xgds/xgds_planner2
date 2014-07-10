@@ -4,36 +4,11 @@
 
 {% block cssExtras %}
 {{ block.super }}
-
-<style type="text/css">
-table.planIndex td, th {
-    text-align: left;
-}
-
-table.planIndex td.exportFormat a {
-    padding-right: 10px;
-}
-
-table.planIndex .right {
-    text-align: right;
-}
-
-table.planIndex td {
-    vertical-align: top;
-    padding-right: 10px;
-}
-
-table.planIndex td.name {
-    font-weight: bold;
-    padding-right: 20px;
-}
-
-table.planIndex td.stats {
-    color: #444;
-    font-style: italic;
-}
+<style type="text/css" title="currentStyle">
+	@import "{{ STATIC_URL }}external/css/jquery/demo_page.css";
+	@import "{{ STATIC_URL }}external/css/jquery/demo_table.css";
+	@import "{{ STATIC_URL }}external/css/jquery/jquery-ui.css";
 </style>
-
 {% endblock cssExtras %}
 
 {% block siteSection %}Planner Index{% endblock siteSection %}
@@ -49,7 +24,8 @@ table.planIndex td.stats {
 <a href="{% url 'planner2_planCreate' %}" class="mybutton">Create Plan</a>
 -->
 
-<table class="planIndex">
+<table id="planTable">
+<thead class="table_header">
   <tr>
     <th>Name</th>
     <th>Export</th>
@@ -57,25 +33,47 @@ table.planIndex td.stats {
     <th class="right">#Stn</th>
     <th class="right">#Cmd</th>
     <th>#Cmd by type</th>
-    <th class="right">Detail Doc</th>
   </tr>
+</thead>
+<tbody>
 {% for plan in plans %}
-  <tr>
+  <tr id={{ plan.id }}>
     <td class="name"><a href="{% url 'planner2_edit' plan.id %}">{{ plan.name }}</a></td>
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
         <a href="{{ exporter.url }}">
-          {{ exporter.label }}
-        </a>
+          {{ exporter.label }} 
+        </a>&nbsp;&nbsp;
       {% endfor %}
     </td>
     <td class="stats right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="stats right">{{ plan.numStations }}</td>
     <td class="stats right">{{ plan.numCommands }}</td>
     <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
-    <td><a href="{% url 'planner2_doc' plan.id %}">Detail Doc</a></td>
   </tr>
 {% endfor %}
+</tbody>
 </table>
 
 {% endblock content %}
+
+{% block scripts %}
+  {{ block.super }}
+<!--  <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.min.js"></script>-->
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+<script type="text/javascript">
+ $(document).ready( function () {
+	 var flightTable = $('#planTable').dataTable( {
+		sScrollY: '28em',
+		bAutoWidth: true,
+        bScrollInfinite: true,
+		bPaginate: false,
+		bSort: true,
+		bJQueryUI: true
+	} );
+	$(window).resize(function(){ planTable.fnAdjustColumnSizing(); });
+
+} );
+ </script>
+{% endblock scripts %}
