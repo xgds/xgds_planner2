@@ -142,7 +142,9 @@ class AbstractPlan(models.Model):
         The links tab wil be populated with the name, value contents of this dictionary as links,
         name is the string displayed and link is what will be opened
         """
-        return {}
+        result = {}
+        result["KML"] = reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})
+        return result
 
     def __unicode__(self):
         if self.name:

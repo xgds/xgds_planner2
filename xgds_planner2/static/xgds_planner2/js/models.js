@@ -251,7 +251,7 @@ app.models = app.models || {};
                 repr = this.get('_sequenceLabel');
                 break;
             case 'Segment':
-                repr = '--';
+                repr = '--' + this.get('_segmentLength');
                 break;
             }
             return repr;
@@ -348,7 +348,6 @@ app.models = app.models || {};
                         item.set('_sequenceLabel', sequenceLabel);
                         stationCounter++;
                     }
-
 
                     // Item ID template formatting
                     var template = {
