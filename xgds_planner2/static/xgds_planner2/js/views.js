@@ -154,6 +154,12 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         };
         var msg = msgMap[eventName];
         this.$el.find('#save-status').text(msg);
+        if (eventName == 'change' || eventName=='error'){
+        	this.$el.find('#save-status').addClass('notify-alert');
+        } else {
+        	this.$el.find('#save-status').removeClass('notify-alert');
+        }
+        
     },
 
     toggleModalUntilt: function() {
