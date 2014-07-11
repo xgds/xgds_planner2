@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load url from future %}
+{% load tz_convert %}
 
 {% block cssExtras %}
 {{ block.super }}
@@ -8,6 +9,12 @@
 	@import "{{ STATIC_URL }}external/css/jquery/demo_page.css";
 	@import "{{ STATIC_URL }}external/css/jquery/demo_table.css";
 	@import "{{ STATIC_URL }}external/css/jquery/jquery-ui.css";
+</style>
+<style type="text/css">
+table.planIndex td.exportFormat a {
+    padding-right: 10px;
+}
+
 </style>
 {% endblock cssExtras %}
 
@@ -24,32 +31,36 @@
 <a href="{% url 'planner2_planCreate' %}" class="mybutton">Create Plan</a>
 -->
 
-<table id="planTable">
+<table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
     <th>Name</th>
+    <th>Author</th>
+    <th>Last Edit</th>
+    <th>Site</th>
+    <th>Dist</th>
+    <th>#Stn</th>
+    <th>#Commands</th>
     <th>Export</th>
-    <th class="right">Dist</th>
-    <th class="right">#Stn</th>
-    <th class="right">#Cmd</th>
-    <th>#Cmd by type</th>
   </tr>
 </thead>
 <tbody>
 {% for plan in plans %}
   <tr id={{ plan.id }}>
-    <td class="name"><a href="{% url 'planner2_edit' plan.id %}">{{ plan.name }}</a></td>
+    <td ><a href="{% url 'planner2_edit' plan.id %}">{{ plan.name }}</a></td>
+    <td>{{ plan.creator }}</td>
+    <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i" }}</td>
+    <td>{{ plan.jsonPlan.site.name }}</td>
+    <td class="right">{{ plan.lengthMeters|floatformat }}</td>
+    <td class="center">{{ plan.numStations }}</td>
+    <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
         <a href="{{ exporter.url }}">
           {{ exporter.label }} 
-        </a>&nbsp;&nbsp;
+        </a>
       {% endfor %}
     </td>
-    <td class="stats right">{{ plan.lengthMeters|floatformat }}</td>
-    <td class="stats right">{{ plan.numStations }}</td>
-    <td class="stats right">{{ plan.numCommands }}</td>
-    <td class="stats">{{ plan.getSummaryOfCommandsByType|safe }}</td>
   </tr>
 {% endfor %}
 </tbody>
@@ -59,20 +70,30 @@
 
 {% block scripts %}
   {{ block.super }}
-<!--  <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.min.js"></script>-->
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
 <script type="text/javascript">
  $(document).ready( function () {
-	 var flightTable = $('#planTable').dataTable( {
-		sScrollY: '28em',
-		bAutoWidth: true,
-        bScrollInfinite: true,
-		bPaginate: false,
-		bSort: true,
-		bJQueryUI: true
+	 var flightTable = $('#dataTable').dataTable( {
+	        bAutoWidth: true,
+			bPaginate: true,
+	        iDisplayLength: 20,
+	        bLengthChange: false,
+			bSort: true,
+	        bJQueryUI: true,
+	        sScrollY: '28em',
+	        aoColumnDefs:[
+	            {
+	                aTargets: ['name'],
+	                sWidth: '285px',
+	            },
+	            {
+	                aTargets: ['Export'],
+	                bSortable: false,
+	            },
+	        ],
 	} );
-	$(window).resize(function(){ planTable.fnAdjustColumnSizing(); });
+	$(window).resize(function(){ dataTable.fnAdjustColumnSizing(); });
 
 } );
  </script>
