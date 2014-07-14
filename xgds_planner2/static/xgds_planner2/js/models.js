@@ -43,6 +43,7 @@ app.models = app.models || {};
         if (modelType == 'Plan') {
             schema.creator = {type: 'Text', readonly: true,
                               editorAttrs: { disabled: true }};
+            schema.planVersion = {type: 'Text', title: 'Plan Version'};
         }
 
         _.each(params, function(param) {
