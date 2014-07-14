@@ -808,6 +808,9 @@ $(function() {
                 this.listenTo(app.vent, 'tab:change', function() {
                     this.redraw();
                 });
+                this.listenTo(app.vent, 'showItem:segment', function() {
+                    this.redraw();
+                });
             },
 
             redrawHandles: function() {
