@@ -26,6 +26,11 @@ div[id^="col"] > li:hover {
     font-size: 12pt;
 }
 
+.notify-alert {
+	font-weight: bold;
+	color: red;
+}
+
 [class*="-sequence-item"] {
     list-style-type: none;
     border-style: none;
