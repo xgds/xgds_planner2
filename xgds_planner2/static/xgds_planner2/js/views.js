@@ -7,6 +7,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); },
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
+        'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-delete': 'deleteSelectedCommands',
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); },
@@ -25,6 +26,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
         this.listenTo(app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
+        this.listenTo(app.currentPlan, 'saveAs', function(model) {this.saveAs('error', options)});
         this.listenTo(app.vent, 'undoEmpty', this.disableUndo);
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
@@ -161,11 +163,61 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         }
         
     },
-
+    
     toggleModalUntilt: function() {
         app.State.untiltModalEnabled = this.$el.find('#gearth-auto-untilt').prop('checked');
         app.map.untiltMap();
+    },
+    
+    showSaveAsDialog: function() {
+    	$("#saveAsName").val(app.currentPlan.attributes['name']);
+    	var version = app.currentPlan.attributes['planVersion'];
+    	if (version != ""){
+    		var newVersion = String.fromCharCode(version.charCodeAt(0) + 1)
+    	} else {
+    		var newVersion = "A";
+    	}
+    	$('#saveAsVersion').val(newVersion);
+    	$('#saveAsNotes').val(app.currentPlan.attributes['notes']);
+    	$("#saveAsDialog").dialog({
+    		dialogClass: "no-close",
+			modal: false,
+			resizable: true,
+			closeOnEscape:true,
+			buttons: {
+				"Cancel": function() {
+					$(this).dialog("close");
+				},
+				"Save": function() {
+			    	var newName = $('#saveAsName').val();
+			    	var newVersion = $('#saveAsVersion').val();
+			    	var newNotes = $('#saveAsNotes').val();
+			    	app.currentPlan.set('planName', newName);
+			    	app.currentPlan.set('name', newName);
+			    	if (newVersion != null){
+			    		app.currentPlan.set('planVersion', newVersion);
+			    		/* todo calculate id based on schema */
+			    		app.currentPlan.set('id', newName + "_" + newVersion + "_PLAN");
+			    	} else {
+			    		app.currentPlan.set('id', newName);
+			    	}
+			    	app.currentPlan.set('notes', newNotes);
+			    	app.currentPlan.get('sequence').resequence();
+			    	app.simulatePlan(); 
+			    	app.currentPlan.set('uuid', null);
+			    	app.currentPlan.save();
+			    	$(this).dialog("close");
+				}
+			},
+			position: {
+				my: "right top",
+				at: "right bottom",
+				of: "#tab-buttons"
+			},
+			dialogClass: "saveAs",
+		});
     }
+    
 });
 
 app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({

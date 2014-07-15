@@ -144,3 +144,7 @@ div.gearth-auto-untilt {
     display: inline-block;
     float: right;
 }
+
+.ui-dialog-titlebar {
+    display:none;
+}

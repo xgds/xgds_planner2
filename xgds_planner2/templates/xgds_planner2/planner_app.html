@@ -7,10 +7,13 @@
 
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 
-{% block content %}
+{% block cssExtras %}
 <style scoped="scoped">
   {% compressed_css 'planner_app' %}
 </style>
+<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css" ></link>
+{% endblock %}
+{% block content %}
 <div id="application" class="container-fluid">
 
     <div id="toolbar" class="row btn-toolbar">
@@ -20,6 +23,25 @@
         <div id="map" class="span5"></div>
         <div id="tabs" class="span7"></div>
     </div>
+    
+    <div id="saveAsDialog" style="display:none">
+		<p>Enter a new name and/or version to save as.</p>
+		<table>
+		<tr>
+			<td>Name</td>
+			<td><input type="text" id="saveAsName"></td>
+		</tr>
+		<tr>
+			<td>Version</td>
+			<td><input type="text" id="saveAsVersion"></td>
+		</tr>
+		<tr>
+			<td>Notes</td>
+			<td><input type="text" id="saveAsNotes"></td>
+		</tr>
+		<tr></tr>
+		</table>
+	</div>
     
 </div>
 {% endblock content %}

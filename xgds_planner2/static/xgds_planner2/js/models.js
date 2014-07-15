@@ -135,7 +135,7 @@ app.models = app.models || {};
              * false forces a PUT. The default implementation is: "return
              * this.id == null"
              */
-            return false;
+            return this.uuid == null;
         },
         relations: [
             {
@@ -165,8 +165,22 @@ app.models = app.models || {};
             this.on('change', function() {
                 app.vent.trigger('change:plan');
             });
+            
+            this.on('sync', function(model, response, options) {
+            	var text = response.responseText;
+            	if (response.data != null) {
+            		var newId = response.data
+                	if (newId != null) {
+                		document.location.href =  newId;
+            		} else {
+            			app.vent.trigger('sync');
+            		}
+            	} else {
+            		app.vent.trigger('sync');
+            	}
+            });
         },
-
+        
         toJSON: toJsonWithFilters
     });
 
@@ -251,7 +265,7 @@ app.models = app.models || {};
                 repr = this.get('_sequenceLabel');
                 break;
             case 'Segment':
-                repr = '--' + this.get('_segmentLength');
+                repr = '--'; /* + this.get('_segmentLength'); */
                 break;
             }
             return repr;

@@ -7,6 +7,7 @@
 import os
 import glob
 import json
+import datetime
 
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
@@ -19,12 +20,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 
 from geocamUtil.loader import getModelByName
+from geocamUtil.dotDict import convertToDotDictRecurse
 
 from xgds_planner2 import (settings,
                            models,
                            choosePlanExporter,
                            forms,
-                           planImporter)
+                           planImporter,
+                           fillIdsPlanExporter)
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -94,6 +97,7 @@ def aggregate_handlebars_templates(request):
     return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
 
 
+@login_required
 def plan_REST(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
@@ -110,6 +114,45 @@ def plan_REST(request, plan_id, jsonPlanId):
 #         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
+    
+    elif request.method == "POST":
+        # we are doing a save as
+        plan.jsonPlan.creator = request.user.username
+        plan.creationDate = datetime.datetime.utcnow()
+        plan.uuid = None
+        plan.id = None
+        data = json.loads(request.raw_post_data)
+        for k, v in data.iteritems():
+            if k == "_simInfo":
+                continue
+            plan.jsonPlan[k] = v
+        plan.extractFromJson(overWriteDateModified=True, overWriteUuid=True)
+        plan.name = plan.jsonPlan['planName']
+        plan.jsonPlan['name'] = plan.jsonPlan['planName']
+        
+        #TODO I don't understand why this did not work above
+        plan.creator = request.user
+        plan.jsonPlan.creator = request.user.username
+        plan.save()
+        
+        newid = plan.id
+        plan.jsonPlan["serverId"] = newid
+        plan.jsonPlan["planNumber"] = newid
+        plan.jsonPlan.url = plan.get_absolute_url()
+        
+        #we still need to renumber the plan
+        schema = models.getPlanSchema(plan.jsonPlan.platform['name'])
+        exporter = fillIdsPlanExporter.FillIdsPlanExporter()    
+        planDict = convertToDotDictRecurse(plan.jsonPlan)
+        plan.jsonPlan = json.dumps(exporter.exportPlan(planDict, schema.schema))
+        plan.jsonPlan['uuid'] = plan.uuid
+
+        plan.save()
+        response={}
+        response["msg"]="New plan created"
+        response["data"]=newid
+        return HttpResponse(json.dumps(response), content_type='application/json')
+    
     return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
 # with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
@@ -136,6 +179,7 @@ def plan_detail_doc(request, plan_id=None):
                         'plan_library': json.loads(planSchema.getJsonLibrary())}))
 
 
+@login_required
 def plan_editor_app(request, plan_id=None, editable=True):
     Plan = get_plan_model()
     templates = get_handlebars_templates()
@@ -287,3 +331,4 @@ def planCreate(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form})
+

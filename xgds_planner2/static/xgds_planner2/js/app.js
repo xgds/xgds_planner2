@@ -179,8 +179,7 @@ var app = (function($, _, Backbone) {
         };
     });
 
-    app
-        .addInitializer(function(options) {
+    app.addInitializer(function(options) {
 
             this.options = options = _.defaults(options || {}, {
                 readonly: false,
