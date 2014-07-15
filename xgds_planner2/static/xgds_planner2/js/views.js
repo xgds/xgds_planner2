@@ -159,7 +159,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         } else {
         	this.$el.find('#save-status').removeClass('notify-alert');
         }
-        
     },
 
     toggleModalUntilt: function() {
@@ -988,15 +987,19 @@ app.views.PlanToolsView = Backbone.View.extend({
         }
         if (app.reversePlanOnAppend)
             data.sequence.reverse();
+        if (app.prependPlanOnAppend && !app.reversePlanOnAppend)
+            data.sequence.reverse(); // plan is pushed in reverse order when prepending
         delete app.reversePlanOnAppend;
         var method = undefined;
         var sequence = app.currentPlan.get('sequence').models.slice();
         console.log('number of items');
         console.log(data.sequence.length);
         if (app.prependPlanOnAppend) {
-            console.log('adding connecting segment');
-            var segment = app.models.segmentFactory();
-            sequence.unshift(segment);
+            if (sequence.length > 0) {
+                console.log('adding connecting segment');
+                var segment = app.models.segmentFactory();
+                sequence.unshift(segment);
+            }
             while (data.sequence.length > 0) {
                 console.log('pushing item');
                 console.log(data.sequence.length);
@@ -1016,9 +1019,11 @@ app.views.PlanToolsView = Backbone.View.extend({
                 console.log(data.sequence.length > 0);
             }
         } else {
-            console.log('adding connecting segment');
-            var segment = app.models.segmentFactory();
-            sequence.push(segment);
+            if (sequence.length > 0) {
+                console.log('adding connecting segment');
+                var segment = app.models.segmentFactory();
+                sequence.push(segment);
+            }
             while (data.sequence.length > 0) {
                 var item = data.sequence.shift();
                 var model = undefined;
