@@ -135,7 +135,7 @@ app.models = app.models || {};
              * false forces a PUT. The default implementation is: "return
              * this.id == null"
              */
-            return this.uuid == null;
+            return _.isNull(app.currentPlan.get('uuid'));
         },
         relations: [
             {
@@ -164,20 +164,6 @@ app.models = app.models || {};
             _.extend(this.data, formsData.data);
             this.on('change', function() {
                 app.vent.trigger('change:plan');
-            });
-            
-            this.on('sync', function(model, response, options) {
-            	var text = response.responseText;
-            	if (response.data != null) {
-            		var newId = response.data
-                	if (newId != null) {
-                		document.location.href =  newId;
-            		} else {
-            			app.vent.trigger('sync');
-            		}
-            	} else {
-            		app.vent.trigger('sync');
-            	}
             });
         },
         

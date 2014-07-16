@@ -26,7 +26,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
         this.listenTo(app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
-        this.listenTo(app.currentPlan, 'saveAs', function(model) {this.saveAs('error', options)});
+        this.listenTo(app.currentPlan,'sync', this.refreshSaveAs);
         this.listenTo(app.vent, 'undoEmpty', this.disableUndo);
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
@@ -169,6 +169,20 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         app.map.untiltMap();
     },
     
+    refreshSaveAs: function(model, response) {
+    	var text = response.responseText;
+    	if (response.data != null) {
+    		var newId = response.data
+        	if (newId != null) {
+        		document.location.href =  newId;
+    		} else {
+    			app.vent.trigger('sync');
+    		}
+    	} else {
+    		app.vent.trigger('sync');
+    	}
+    },
+    
     showSaveAsDialog: function() {
     	$("#saveAsName").val(app.currentPlan.attributes['name']);
     	var version = app.currentPlan.attributes['planVersion'];
@@ -194,16 +208,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 			    	var newNotes = $('#saveAsNotes').val();
 			    	app.currentPlan.set('planName', newName);
 			    	app.currentPlan.set('name', newName);
-			    	if (newVersion != null){
-			    		app.currentPlan.set('planVersion', newVersion);
-			    		/* todo calculate id based on schema */
-			    		app.currentPlan.set('id', newName + "_" + newVersion + "_PLAN");
-			    	} else {
-			    		app.currentPlan.set('id', newName);
-			    	}
 			    	app.currentPlan.set('notes', newNotes);
-			    	app.currentPlan.get('sequence').resequence();
-			    	app.simulatePlan(); 
 			    	app.currentPlan.set('uuid', null);
 			    	app.currentPlan.save();
 			    	$(this).dialog("close");

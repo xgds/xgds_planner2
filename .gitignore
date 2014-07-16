@@ -11,3 +11,5 @@
 /static/css/*.r*.css
 /xgds_planner2/build
 xgds_planner2/static/external/node_modules
+.pydevproject
+.project
