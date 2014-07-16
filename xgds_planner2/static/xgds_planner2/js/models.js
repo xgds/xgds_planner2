@@ -43,6 +43,7 @@ app.models = app.models || {};
         if (modelType == 'Plan') {
             schema.creator = {type: 'Text', readonly: true,
                               editorAttrs: { disabled: true }};
+            schema.planVersion = {type: 'Text', title: 'Plan Version'};
         }
 
         _.each(params, function(param) {
@@ -62,7 +63,13 @@ app.models = app.models || {};
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';
             if (foundType == 'Select') {
-                var options = _.object(param.choices);
+                var options = _.map(param.choices, function(choice) {
+                    var obj = {
+                        val: choice[0],
+                        label: choice[1]
+                    };
+                    return obj;
+                });
                 schema[param.id] = {'type': foundType, 'validators': [], options: options};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
