@@ -7,15 +7,13 @@
 
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 
-{% block cssExtras %}
+{% block content %}
+
 <style scoped="scoped">
   {% compressed_css 'planner_app' %}
 </style>
-<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css" ></link>
-{% endblock %}
-{% block content %}
-<div id="application" class="container-fluid">
 
+<div id="application" class="container-fluid">
     <div id="toolbar" class="row btn-toolbar">
     </div>
 
