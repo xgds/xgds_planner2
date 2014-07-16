@@ -134,11 +134,15 @@ span.entry-error {
 /* having this here tunes the navigation from main.css to work with bootstrap.css */
 #sitemenu-content ul { /* general settings */
 	text-align: left; /* set to left, right or center */
-	margin: 11px 0px 0px 0px; /* set margins as desired */
+	margin: 11px 0px 0px 0px !important; /* set margins as desired */
 	border-bottom: 1px solid black; /*#18456b;  set border COLOR as desired */
 	list-style-type: none;
-	padding: 3px 10px 2px 10px; /*THIRD number must change with respect to padding-top (X) below */
+	padding: 3px 10px 2px 10px !important; /*THIRD number must change with respect to padding-top (X) below */
 } 
+
+#sitemenu-content img {
+	height:1px !important;
+}
 
 div.gearth-auto-untilt {
     display: inline-block;

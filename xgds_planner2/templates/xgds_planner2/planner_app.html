@@ -6,10 +6,8 @@
 {% endblock %}
 
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
-
 {% block content %}
-
-<style scoped="scoped">
+<style>
   {% compressed_css 'planner_app' %}
 </style>
 
@@ -23,7 +21,7 @@
     </div>
     
     <div id="saveAsDialog" style="display:none">
-		<p>Enter a new name and/or version to save as.</p>
+		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
 		<table>
 		<tr>
 			<td>Name</td>
