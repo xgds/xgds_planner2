@@ -963,6 +963,12 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
         } else {
             presets = _.filter(app.planLibrary.commands, function(command) { return _.contains(relevantCommandTypes, command.type)});
         }
+        // add timing info in HMS format
+        _.each(presets, function(command) {
+            if (command.hasOwnProperty('duration')) {
+                command.timing = app.util.minutesToHMS(command.duration);
+            }
+        });
         return presets;
     }
 });
