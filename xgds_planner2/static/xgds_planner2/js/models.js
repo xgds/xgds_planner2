@@ -117,7 +117,7 @@ app.models = app.models || {};
 
     function toJsonWithFilters() {
         var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-        var blacklist = ['_sequenceLabel', '_simInfo', '_id'];
+        var blacklist = ['_sequenceLabel', '_simInfo', '_id', '_segmentLength'];
         _.each(blacklist, function(property) {
             if (_.has(obj, property)) {
                 // exclude this from the serialized version
@@ -258,7 +258,7 @@ app.models = app.models || {};
                 repr = this.get('_sequenceLabel');
                 break;
             case 'Segment':
-                repr = '--'; /* + this.get('_segmentLength'); */
+                repr = Math.round(this.get('_segmentLength')) + " meters";
                 break;
             }
             return repr;
