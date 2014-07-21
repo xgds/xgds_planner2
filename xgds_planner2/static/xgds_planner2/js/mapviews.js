@@ -181,6 +181,12 @@ $(function() {
                         'height' : '800px'
                     });
                 }
+                this.$el.resizable();
+                this.$el.bind('resize', function() {
+                    $("#tabs").width($("#map").parent().innerWidth() -
+                                     $("#map").outerWidth() -
+                                     parseFloat($("#tabs").css("margin-left")));
+                });
             },
 
             render: function() {
