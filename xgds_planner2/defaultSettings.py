@@ -166,3 +166,13 @@ XGDS_PLANNER_SCHEMAS = {
 # XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
 # extra JavaScript callback to call after Google Earth is loaded.
 XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'
+
+# Test skipping variables. Set to true if code somewhere else overrides
+# some functionality in the planner.
+XGDS_PLANNER2_TEST_SKIP_INDEX = False
+XGDS_PLANNER2_TEST_SKIP_EDIT = False
+XGDS_PLANNER2_TEST_SKIP_DOC = False
+XGDS_PLANNER2_TEST_SKIP_PLAN_REST = False
+XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT = False
+XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE = False
+XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False

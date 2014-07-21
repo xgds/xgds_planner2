@@ -7,8 +7,11 @@
 from django.test import TestCase
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
+from django.conf import settings
+from unittest import skipIf
 
 from xgds_planner2 import models
+from xgds_planner2 import settings as xsettings
 
 import logging
 
@@ -25,33 +28,54 @@ class xgds_planner2Test(TestCase):
                                "planVersion": "A",
                                "platform": "test"}
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_INDEX',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_INDEX),
+            "index test set to be skipped")
     def test_index(self):
         response = self.client.get(reverse('planner2_index'))
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_EDIT',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_EDIT),
+            'edit test set to be skipped')
     def test_edit(self):
         response = self.client.get(reverse('planner2_edit', args=['1']))
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_DOC',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_DOC),
+            'doc test set to be skipped')
     def test_doc(self):
         response = self.client.get(reverse('planner2_doc', args=['1']))
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_REST',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_PLAN_REST),
+            'plan rest test set to be skipped')
     def test_plan_REST(self):
         response = self.client.get(reverse('planner2_planREST', args=['1', 'test']))
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT),
+            'plan export test set to be skipped')
     def test_plan_export(self):
         response = self.client.get(reverse('planner2_planExport',
                                            args=['421d0eb5-f04d-4f36-a4f7-503e0ca8ef2e', 'test.kml']),
                                    follow=True)
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE),
+            'plan create page test set to be skipped')
     def test_create_plan_page(self):
         self.client.login(username="vagrant", password="vagrant")
         response = self.client.get(reverse('planner2_planCreate'))
         self.assertEquals(response.status_code, 200)
 
+    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN',
+                    xsettings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN),
+            'create plan test set to be skipped')
     def test_create_plan(self):
         # Note: this test conflicts with plrp, so disabled.
         if 0:
