@@ -20,7 +20,7 @@ class CreatePlanForm(forms.Form):
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
         self.fields['platform'].choices = [(p, p) for p in platforms]
 
-        #TODO right now this shows an alphabetically sorted list of all the sites together.
+        # TODO right now this shows an alphabetically sorted list of all the sites together.
         # really what we want is to change the sites based on the chosen platform.
         allSites = []
         for platform in platforms:

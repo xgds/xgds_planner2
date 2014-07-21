@@ -23,7 +23,7 @@ class ExporterInfo(object):
 PLAN_EXPORTERS = []
 PLAN_EXPORTERS_BY_FORMAT = {}
 for exporterInfo in settings.XGDS_PLANNER_PLAN_EXPORTERS:
-    #_formatCode, _extension, _exporterClassName, _customLabel
+    # _formatCode, _extension, _exporterClassName, _customLabel
     _formatCode = exporterInfo[0]
     _extension = exporterInfo[1]
     _exporterClassName = exporterInfo[2]

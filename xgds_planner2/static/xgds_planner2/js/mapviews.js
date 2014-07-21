@@ -183,9 +183,15 @@ $(function() {
                 }
                 this.$el.resizable();
                 this.$el.bind('resize', function() {
-                    $("#tabs").width($("#map").parent().innerWidth() -
-                                     $("#map").outerWidth() -
-                                     parseFloat($("#tabs").css("margin-left")));
+                    $('#tabs').width($('#map').parent().innerWidth() -
+                                     $('#map').outerWidth() -
+                                     parseFloat($('#tabs').css('margin-left')));
+                });
+                // also bind to window to adjust on window size change
+                $(window).bind('resize', function() {
+                    $('#tabs').width($('#map').parent().innerWidth() -
+                                     $('#map').outerWidth() -
+                                     parseFloat($('#tabs').css('margin-left')));
                 });
             },
 

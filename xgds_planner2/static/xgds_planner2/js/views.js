@@ -26,7 +26,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
         this.listenTo(app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
-        this.listenTo(app.currentPlan,'sync', this.refreshSaveAs);
+        this.listenTo(app.currentPlan, 'sync', this.refreshSaveAs);
         this.listenTo(app.vent, 'undoEmpty', this.disableUndo);
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
@@ -156,72 +156,72 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         };
         var msg = msgMap[eventName];
         this.$el.find('#save-status').text(msg);
-        if (eventName == 'change' || eventName=='error'){
-        	this.$el.find('#save-status').addClass('notify-alert');
+        if (eventName == 'change' || eventName == 'error') {
+            this.$el.find('#save-status').addClass('notify-alert');
         } else {
-        	this.$el.find('#save-status').removeClass('notify-alert');
+            this.$el.find('#save-status').removeClass('notify-alert');
         }
     },
-    
+
     toggleModalUntilt: function() {
         app.State.untiltModalEnabled = this.$el.find('#gearth-auto-untilt').prop('checked');
         app.map.untiltMap();
     },
-    
+
     refreshSaveAs: function(model, response) {
-    	var text = response.responseText;
-    	if (response.data != null) {
-    		var newId = response.data
-        	if (newId != null) {
-        		document.location.href =  newId;
-    		} else {
-    			app.vent.trigger('sync');
-    		}
-    	} else {
-    		app.vent.trigger('sync');
-    	}
+        var text = response.responseText;
+        if (response.data != null) {
+            var newId = response.data;
+            if (newId != null) {
+                document.location.href = newId;
+            } else {
+                app.vent.trigger('sync');
+            }
+        } else {
+            app.vent.trigger('sync');
+        }
     },
-    
+
     showSaveAsDialog: function() {
-    	$("#saveAsName").val(app.currentPlan.attributes['name']);
-    	var version = app.currentPlan.attributes['planVersion'];
-    	if (version != ""){
-    		var newVersion = String.fromCharCode(version.charCodeAt(0) + 1)
-    	} else {
-    		var newVersion = "A";
-    	}
-    	$('#saveAsVersion').val(newVersion);
-    	$('#saveAsNotes').val(app.currentPlan.attributes['notes']);
-    	$("#saveAsDialog").dialog({
-    		dialogClass: "no-close",
-			modal: false,
-			resizable: true,
-			closeOnEscape:true,
-			buttons: {
-				"Cancel": function() {
-					$(this).dialog("close");
-				},
-				"Save": function() {
-			    	var newName = $('#saveAsName').val();
-			    	var newVersion = $('#saveAsVersion').val();
-			    	var newNotes = $('#saveAsNotes').val();
-			    	app.currentPlan.set('planName', newName);
-			    	app.currentPlan.set('name', newName);
-			    	app.currentPlan.set('notes', newNotes);
-			    	app.currentPlan.set('uuid', null);
-			    	app.currentPlan.save();
-			    	$(this).dialog("close");
-				}
-			},
-			position: {
-				my: "right top",
-				at: "right bottom",
-				of: "#tab-buttons"
-			},
-			dialogClass: "saveAs",
-		});
+        $('#saveAsName').val(app.currentPlan.attributes['name']);
+        var version = app.currentPlan.attributes['planVersion'];
+        if (version != '') {
+            var newVersion = String.fromCharCode(version.charCodeAt(0) + 1);
+        } else {
+            var newVersion = 'A';
+        }
+        $('#saveAsVersion').val(newVersion);
+        $('#saveAsNotes').val(app.currentPlan.attributes['notes']);
+        $('#saveAsDialog').dialog({
+            dialogClass: 'no-close',
+            modal: false,
+            resizable: true,
+            closeOnEscape: true,
+            buttons: {
+                'Cancel': function() {
+                    $(this).dialog('close');
+                },
+                'Save': function() {
+                    var newName = $('#saveAsName').val();
+                    var newVersion = $('#saveAsVersion').val();
+                    var newNotes = $('#saveAsNotes').val();
+                    app.currentPlan.set('planName', newName);
+                    app.currentPlan.set('name', newName);
+                    app.currentPlan.set('notes', newNotes);
+                    app.currentPlan.set('uuid', null);
+                    app.currentPlan.save();
+                    $(this).dialog('close');
+                }
+            },
+            position: {
+                my: 'right top',
+                at: 'right bottom',
+                of: '#tab-buttons'
+            },
+            dialogClass: 'saveAs'
+        });
     }
-    
+
 });
 
 app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
@@ -375,7 +375,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('sequence')});
         this.col2.show(view);
 
-       //this.showMeta(itemModel);
+        //this.showMeta(itemModel);
     },
 
     showSegment: function(itemModel) {
@@ -449,7 +449,7 @@ app.views.makeExpandable = function(view, expandClass) {
      * When the view's 'expand' event is triggered, it will display it's chevron and trigger
      * the global 'viewExpanded' event.  On recieving a global 'viewExpoanded' event with an
      * expandClass that matches its own, the view will remove it's chevron.
-    */
+     */
     if (app.currentTab != 'sequence') {
         // memory leak work around
         return;
@@ -468,16 +468,16 @@ app.views.makeExpandable = function(view, expandClass) {
             }
         },
         unexpand: function() {
-//            console.log('(((((((Unexpanding');
+            //            console.log('(((((((Unexpanding');
             this.expanded = false;
             this.$el.find('i').removeClass('icon-chevron-right');
         },
         onExpandOther: function(target, expandClass) {
-//            console.log('Got onExpandOther');
+            //            console.log('Got onExpandOther');
             if (this.options.expandClass === expandClass && this != target && target.isClosed != true) {
                 this.unexpand();
-//                console.log('target:');
-//                console.log(target);
+                //                console.log('target:');
+                //                console.log(target);
             }
         },
         _ensureIcon: function() {
@@ -486,8 +486,8 @@ app.views.makeExpandable = function(view, expandClass) {
             }
         },
         _restoreIcon: function() {
-//            console.log('!!!!!!!!!!!restoring icon');
-//            console.log('Expanded:', this.expanded);
+            //            console.log('!!!!!!!!!!!restoring icon');
+            //            console.log('Expanded:', this.expanded);
             if (this.expanded) {
                 this._addIcon();
             }
@@ -1158,7 +1158,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         this.on('tabSelected', this.setTab);
         // load layer tree ahead of time to load layers into map
         app.tree = null;
-       this.listenTo(app.vent, 'earth:loaded', function() {
+        this.listenTo(app.vent, 'earth:loaded', function() {
             app.tree = kmltree({
                 url: app.options.layerFeedUrl,
                 gex: ge.gex,

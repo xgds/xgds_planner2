@@ -173,7 +173,7 @@ app.models = app.models || {};
                 app.vent.trigger('change:plan');
             });
         },
-        
+
         toJSON: toJsonWithFilters
     });
 
@@ -258,7 +258,7 @@ app.models = app.models || {};
                 repr = this.get('_sequenceLabel');
                 break;
             case 'Segment':
-                repr = Math.round(this.get('_segmentLength')) + " meters";
+                repr = Math.round(this.get('_segmentLength')) + ' meters';
                 break;
             }
             return repr;
