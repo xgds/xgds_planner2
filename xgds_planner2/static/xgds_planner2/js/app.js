@@ -34,6 +34,10 @@ var app = (function($, _, Backbone) {
             this.addStationTime = undefined;
             this.planKMLLoaded = false;
             this.disableAddStation = false;
+            this.pageInnerWidth = undefined;
+            this.tabsLeftMargin = undefined;
+            this.pageContainer = undefined;
+            this.tabsContainer = undefined;
         });
     });
 

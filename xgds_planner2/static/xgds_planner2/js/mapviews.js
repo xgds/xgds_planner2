@@ -182,16 +182,25 @@ $(function() {
                     });
                 }
                 this.$el.resizable();
+                // pre-set certain variables to speed up this code
+                app.State.pageContainer = this.$el.parent();
+                app.State.tabsContainer = $('#tabs');
+                app.State.pageInnerWidth = app.State.pageContainer.innerWidth();
+                app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
                 this.$el.bind('resize', function() {
-                    $('#tabs').width($('#map').parent().innerWidth() -
-                                     $('#map').outerWidth() -
-                                     parseFloat($('#tabs').css('margin-left')));
+                    app.State.tabsContainer.width(app.State.pageInnerWidth -
+                                                  app.map.$el.outerWidth() -
+                                                  app.State.tabsLeftMargin);
                 });
                 // also bind to window to adjust on window size change
                 $(window).bind('resize', function() {
-                    $('#tabs').width($('#map').parent().innerWidth() -
-                                     $('#map').outerWidth() -
-                                     parseFloat($('#tabs').css('margin-left')));
+                    // window size changed, so variables need to be reset
+                    if (_.isUndefined(app.tabs.currentView)) {return;}
+                    app.State.pageInnerWidth = app.State.pageContainer.innerWidth();
+                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
+                    app.State.tabsContainer.width(app.State.pageInnerWidth -
+                                                  app.map.$el.outerWidth() -
+                                                  app.State.tabsLeftMargin);
                 });
             },
 
