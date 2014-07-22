@@ -177,8 +177,7 @@ $(function() {
                     });
                 } else {
                     this.$el.css({
-                        'background-color' : 'blue',
-                        'height' : '800px'
+                        'background-color' : 'blue'
                     });
                 }
                 this.$el.resizable();
@@ -187,7 +186,14 @@ $(function() {
                 app.State.tabsContainer = $('#tabs');
                 app.State.pageInnerWidth = app.State.pageContainer.innerWidth();
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
+                var horizOrigin = this.$el.width();
                 this.$el.bind('resize', function() {
+                    if (app.State.mapResized == false && app.map.$el.width() != horizOrigin) {
+                        app.State.mapResized = true;
+                    } else {
+                        // only change element widths if the horizontal width has changed at least once
+                        return;
+                    }
                     app.State.tabsContainer.width(app.State.pageInnerWidth -
                                                   app.map.$el.outerWidth() -
                                                   app.State.tabsLeftMargin);
@@ -196,6 +202,7 @@ $(function() {
                 $(window).bind('resize', function() {
                     // window size changed, so variables need to be reset
                     if (_.isUndefined(app.tabs.currentView)) {return;}
+                    if (!app.State.mapResized) {return;} // until the element is resized once, resizing happens automatically
                     app.State.pageInnerWidth = app.State.pageContainer.innerWidth();
                     app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
                     app.State.tabsContainer.width(app.State.pageInnerWidth -

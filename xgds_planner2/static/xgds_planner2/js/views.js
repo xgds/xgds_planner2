@@ -38,6 +38,24 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
 
+    onShow: function() {
+        if (!app.State.mapHeightSet) {
+            var offset = this.$el.height() +
+                parseFloat(this.$el.parent().css('margin-top')) +
+                parseFloat(this.$el.parent().css('margin-bottom')) +
+                10; // this exact number is needed because jquery ui uses
+            // elements with absolute positionining for the resize handles
+            var pageContentElement = $('#page-content');
+            var initialHeight = pageContentElement.height() - offset;
+            app.map.$el.height(initialHeight);
+            app.map.$el.css('max-height', initialHeight + 'px');
+            $(window).bind('resize', function() {
+                app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
+            });
+            app.State.mapHeightSet = true;
+        }
+    },
+
     onRender: function() {
         if (app.Actions.undoEmpty()) {
             this.disableUndo();
@@ -886,6 +904,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 ** 2) It can be made read-only
 */
 app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
+    template: '#template-properties-form',
 
     initialize: function() {
         var readonly = this.options.readonly || app.options.readonly;
@@ -895,7 +914,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         this.options.schema = this.options.schema || this.options.model.schema;
         this.options.data = this.options.data || this.options.model.data;
         this.Field = Backbone.Form.UnitField;
-        this.template = Handlebars.compile('<form class="bbf-form"><ul data-fieldsets></ul></form>');
+        this.template = Handlebars.compile($(this.template).html());
         var schema = this.options.schema;
 
         _.each(schema, function(field, key) {

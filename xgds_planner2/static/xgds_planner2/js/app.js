@@ -38,6 +38,8 @@ var app = (function($, _, Backbone) {
             this.tabsLeftMargin = undefined;
             this.pageContainer = undefined;
             this.tabsContainer = undefined;
+            this.mapResized = false;
+            this.mapHeightSet = false;
         });
     });
 
@@ -181,6 +183,16 @@ var app = (function($, _, Backbone) {
             this._exitAction();
             this.enable();
         };
+    });
+
+    app.addInitializer(function(options) {
+        var pageTopHeight = $('#page-top').outerHeight();
+        var pageElement = $('#page');
+        var pageContentElement = $('#page-content');
+        pageContentElement.outerHeight(pageElement.innerHeight() - pageTopHeight);
+        $(window).bind('resize', function() {
+            pageContentElement.outerHeight(pageElement.innerHeight() - pageTopHeight);
+        });
     });
 
     app.addInitializer(function(options) {

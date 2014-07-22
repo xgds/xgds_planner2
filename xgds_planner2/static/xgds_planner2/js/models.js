@@ -36,6 +36,8 @@ app.models = app.models || {};
         };
 
         if (modelType == 'Station') {
+            schema._siteFrame = {type: 'Select', options: ['Lng, Lat', 'Site Frame'],
+                                title: 'Coordinate System'};
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
             schema.geometry = {type: 'Coordinates', help: 'Lon, Lat'};
         }
@@ -117,7 +119,7 @@ app.models = app.models || {};
 
     function toJsonWithFilters() {
         var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-        var blacklist = ['_sequenceLabel', '_simInfo', '_id', '_segmentLength'];
+        var blacklist = ['_sequenceLabel', '_simInfo', '_id', '_segmentLength', '_siteFrame'];
         _.each(blacklist, function(property) {
             if (_.has(obj, property)) {
                 // exclude this from the serialized version
@@ -219,6 +221,8 @@ app.models = app.models || {};
                 // headingToleranceDegrees: 'Number',
             };
             this.data = {
+                name: '',
+                notes: ''
             };
             var params = {
                 'Station': app.planSchema.stationParams,
