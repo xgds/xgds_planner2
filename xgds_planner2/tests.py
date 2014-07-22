@@ -20,13 +20,14 @@ import logging
 class xgds_planner2Test(TestCase):
     fixtures = ['xgds_planner2_testing.json',
                 'xgds_planner2_testing_auth.json']
-    # urls = "xgds_planner2.testing_urls"
+    test_plan_data = {"planNumber": 1,
+                      "planVersion": "A",
+                      "platform": "test"}
+    login_info = {'username': 'vagrant',
+                  'password': 'vagrant'}
 
     def setUp(self):
         logging.disable(logging.WARNING)
-        self.test_plan_data = {"planNumber": 1,
-                               "planVersion": "A",
-                               "platform": "test"}
 
     @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_INDEX',
                     xsettings.XGDS_PLANNER2_TEST_SKIP_INDEX),
@@ -39,6 +40,7 @@ class xgds_planner2Test(TestCase):
                     xsettings.XGDS_PLANNER2_TEST_SKIP_EDIT),
             'edit test set to be skipped')
     def test_edit(self):
+        self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_edit', args=['1']))
         self.assertEquals(response.status_code, 200)
 
@@ -53,6 +55,7 @@ class xgds_planner2Test(TestCase):
                     xsettings.XGDS_PLANNER2_TEST_SKIP_PLAN_REST),
             'plan rest test set to be skipped')
     def test_plan_REST(self):
+        self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_planREST', args=['1', 'test']))
         self.assertEquals(response.status_code, 200)
 
@@ -69,7 +72,7 @@ class xgds_planner2Test(TestCase):
                     xsettings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE),
             'plan create page test set to be skipped')
     def test_create_plan_page(self):
-        self.client.login(username="vagrant", password="vagrant")
+        self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_planCreate'))
         self.assertEquals(response.status_code, 200)
 
@@ -77,9 +80,7 @@ class xgds_planner2Test(TestCase):
                     xsettings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN),
             'create plan test set to be skipped')
     def test_create_plan(self):
-        # Note: this test conflicts with plrp, so disabled.
-        if 0:
-            self.client.login(username="vagrant", password="vagrant")
-            response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
-            self.assertEqual(response.status_code, 302)
-            self.assertEqual(len(models.Plan.objects.all()), 2)
+        self.client.login(**self.login_info)
+        response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(len(models.Plan.objects.all()), 2)

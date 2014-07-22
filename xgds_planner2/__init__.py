@@ -41,10 +41,6 @@ except ImportError:
 if MultiSettings:
     import django.conf
     import defaultSettings
-    if "test" in sys.argv:
-        # preference to defaultSettings when running tests
-        settings = MultiSettings(defaultSettings, django.conf.settings)
-    else:
-        settings = MultiSettings(django.conf.settings, defaultSettings)
+    settings = MultiSettings(django.conf.settings, defaultSettings)
 else:
     from django.conf import settings
