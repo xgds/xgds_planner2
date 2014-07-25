@@ -21,6 +21,14 @@ app.models = app.models || {};
         'textarea': 'TextArea'
     };
 
+    models.paramBlackList = [
+        '_sequenceLabel',
+        '_simInfo',
+        '_id',
+        '_segmentLength',
+        '_siteFrame'
+    ];
+
     function xpjsonToBackboneFormsSchema(params, modelType) {
 
         // name and notes are hard-coded fields from xpjson spec
@@ -119,11 +127,10 @@ app.models = app.models || {};
 
     function toJsonWithFilters() {
         var obj = Backbone.RelationalModel.prototype.toJSON.apply(this);
-        var blacklist = ['_sequenceLabel', '_simInfo', '_id', '_segmentLength', '_siteFrame'];
-        _.each(blacklist, function(property) {
-            if (_.has(obj, property)) {
-                // exclude this from the serialized version
-                delete obj[property];
+        _.each(_.keys(obj), function(key) {
+            if (_.isNull(obj[key]) || _.contains(models.paramBlackList, key) ||
+               (_.isString(obj[key]) && _.isEmpty(obj[key]))) {
+                delete obj[key];
             }
         });
         return obj;
@@ -221,8 +228,6 @@ app.models = app.models || {};
                 // headingToleranceDegrees: 'Number',
             };
             this.data = {
-                name: '',
-                notes: ''
             };
             var params = {
                 'Station': app.planSchema.stationParams,
@@ -242,8 +247,14 @@ app.models = app.models || {};
                 }
             }, this);
             this.on('change', function() {
-                if (this.changedAttributes() &&
-                    ! _.isEmpty(_.omit(this.changedAttributes(), '_sequenceLabel'))) {
+                var jsonObj = this.toJSON();
+                var changed = this.changedAttributes();
+                if (!_.isEmpty(changed) &&
+                    _.reduce(_.map(_.keys(changed), function(item) {
+                        return _.has(jsonObj, item);
+                    }), function(memo, value) {
+                        return (memo || value);
+                    }, false)) {
                     app.vent.trigger('change:plan');
                 }
             });

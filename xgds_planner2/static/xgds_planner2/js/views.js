@@ -906,6 +906,10 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
     template: '#template-properties-form',
 
+    events: {
+        'change': 'commit'
+    },
+
     initialize: function() {
         var readonly = this.options.readonly || app.options.readonly;
 
@@ -941,13 +945,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
             var v = attrs[k];
             formView.setValue(k, v);
         });
-    },
-
-    render: function() {
-        Backbone.Form.prototype.render.apply(this, arguments);
-        this.$el.on('change', _.bind(this.commit, this));
     }
-
 });
 
 app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({

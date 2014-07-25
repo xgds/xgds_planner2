@@ -1,4 +1,9 @@
 (function(Form) {
+    // No, backbone forms, 0 is not a safe default for number fields
+    Form.editors.Number = Form.editors.Number.extend({
+        defaultValue: null
+    });
+
     Form.editors.Coordinates = Form.editors.Text.extend({
         /**
          * Returns the current editor value
