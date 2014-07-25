@@ -247,15 +247,16 @@ app.models = app.models || {};
                 }
             }, this);
             this.on('change', function() {
-                var jsonObj = this.toJSON();
                 var changed = this.changedAttributes();
-                if (!_.isEmpty(changed) &&
-                    _.reduce(_.map(_.keys(changed), function(item) {
-                        return _.has(jsonObj, item);
-                    }), function(memo, value) {
-                        return (memo || value);
-                    }, false)) {
-                    app.vent.trigger('change:plan');
+                var previous = this.previousAttributes();
+                var item;
+                for (item in changed) {
+                    if (!_.contains(models.paramBlackList, item) &&
+                        (_.has(previous, item) || !_.isEmpty(changed[item]))
+                       ) {
+                        app.vent.trigger('change:plan');
+                        break;
+                    }
                 }
             });
             // this model needs an id attribute b/c relational can't find old

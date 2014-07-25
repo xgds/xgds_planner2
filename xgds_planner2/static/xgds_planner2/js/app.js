@@ -132,7 +132,6 @@ var app = (function($, _, Backbone) {
                 app.vent.trigger('undoNotEmpty');
                 app.vent.trigger('redoEmpty');
                 app.vent.trigger('actionOcurred');
-                app.vent.trigger('change:plan');
             }
             this._exitAction();
             this.enable();
