@@ -57,8 +57,8 @@
             return coords;
         },
 
-        toggleSiteFrame: function() {
-            this.siteFrameMode = !this.siteFrameMode;
+        toggleSiteFrame: function(siteFrameMode) {
+            this.siteFrameMode = siteFrameMode;
             this.setValue(this.getValue());
         }
     });

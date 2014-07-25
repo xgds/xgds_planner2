@@ -246,15 +246,14 @@ app.models = app.models || {};
             this.on('change', function() {
                 var changed = this.changedAttributes();
                 var previous = this.previousAttributes();
-                var item;
-                for (item in changed) {
+                _.find(_.keys(changed), function(item) {
                     if (!_.contains(models.paramBlackList, item) &&
                         (_.has(previous, item) || !_.isEmpty(changed[item]))
                        ) {
                         app.vent.trigger('change:plan');
-                        break;
+                        return true;
                     }
-                }
+                });
             });
             // this model needs an id attribute b/c relational can't find old
             // models

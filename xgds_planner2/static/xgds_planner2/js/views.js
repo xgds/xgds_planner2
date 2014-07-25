@@ -925,19 +925,15 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         this.template = Handlebars.compile($(this.template).html());
         var schema = this.options.schema;
 
-        _.each(schema, function(field, key) {
-            // Objectify any fields that are defined only by a type string
-            if (_.isString(field)) { field = {type: field}; }
-
-            if (readonly) {
+        if (readonly) {
+            _.each(schema, function(field, key) {
                 field.editorAttrs = {
                     readonly: true,
                     disabled: true
                 };
-            }
-            schema[key] = field;
-        });
-
+                schema[key] = field;
+            });
+        }
         Backbone.Form.prototype.initialize.call(this, this.options);
     },
 
