@@ -982,7 +982,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
         }
         // add timing info in HMS format
         _.each(presets, function(command) {
-            if (command.hasOwnProperty('duration')) {
+            if (_.has(command, 'duration')) {
                 command.timing = app.util.minutesToHMS(command.duration);
             }
         });

@@ -58,18 +58,18 @@ app.models = app.models || {};
 
         _.each(params, function(param) {
             var foundType;
-            if (param.hasOwnProperty('widget')) {
+            if (_.has(param, 'widget')) {
                 foundType = app.models.widgetTypeHash[param.widget];
             } else {
                 foundType = app.models.paramTypeHash[param.valueType];
             }
 
-            if (foundType == 'Number' && (param.hasOwnProperty('minimum') ||
-                                          param.hasOwnProperty('maximum'))) {
+            if (foundType == 'Number' && (_.has(param, 'minimum') ||
+                                          _.has(param, 'maximum'))) {
                 foundType = 'MinMaxNumber';
             }
 
-            if (param.hasOwnProperty('choices') &&
+            if (_.has(param, 'choices') &&
                 (foundType != 'Select' || foundType != 'Checkbox'))
                 foundType = 'Select';
             if (foundType == 'Select') {
@@ -84,37 +84,37 @@ app.models = app.models || {};
             } else {
                 schema[param.id] = {'type': foundType, 'validators': []};
             }
-            if (param.hasOwnProperty('name')) {
+            if (_.has(param, 'name')) {
                 schema[param.id]['title'] = param.name;
             } else {
                 // default to using parameter id for its name
                 // your parameters shouldn't do this by default
                 schema[param.id]['title'] = param.id;
             }
-            if (param.hasOwnProperty('required') &&
+            if (_.has(param, 'required') &&
                 _.isBoolean(param.required) &&
                 param.required) {
                 schema[param.id]['validators'].push('required');
             }
-            if (param.hasOwnProperty('notes')) {
+            if (_.has(param, 'notes')) {
                 schema[param.id]['help'] = param.notes;
             }
-            if (param.hasOwnProperty('default')) {
+            if (_.has(param, 'default')) {
                 data[param.id] = param.default;
             }
-            if (param.hasOwnProperty('unit')) {
+            if (_.has(param, 'unit')) {
                 schema[param.id]['unit'] = param.unit;
             }
-            if (param.hasOwnProperty('minimum')) {
+            if (_.has(param, 'minimum')) {
                 schema[param.id]['minimum'] = param.minimum;
             }
-            if (param.hasOwnProperty('maximum')) {
+            if (_.has(param, 'maximum')) {
                 schema[param.id]['maximum'] = param.maximum;
             }
-            if (param.hasOwnProperty('strictMinimum')) {
+            if (_.has(param, 'strictMinimum')) {
                 schema[param.id]['strictMinimum'] = param.strictMinimum;
             }
-            if (param.hasOwnProperty('strictMaximum')) {
+            if (_.has(param, 'strictMaximum')) {
                 schema[param.id]['strictMaximum'] = param.strictMaximum;
             }
         });
@@ -503,7 +503,7 @@ app.models = app.models || {};
         });
         if (segmentToClone) {
             proto = segmentToClone.toJSON();
-            if (proto.hasOwnProperty(segmentToClone.idAttribute)) {
+            if (_.has(proto, segmentToClone.idAttribute)) {
                 delete proto[segmentToClone.idAttribute];
             }
         }

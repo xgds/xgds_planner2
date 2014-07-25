@@ -100,9 +100,9 @@
             initialize: function(options) {
                 Form.Field.prototype.initialize.call(this, options);
                 this.subUnits = {};
-                if (this.schema.hasOwnProperty('unit')) {
+                if (_.has(this.schema, 'unit')) {
                     this.unit = this.schema.unit;
-                    if (!app.units.hasOwnProperty(this.schema.unit)) {
+                    if (!_.has(app.units, this.schema.unit)) {
                         console
                             .warn('UnitField initialized with a unit not found in the plan schema: ' +
                                   this.schema.unit);
