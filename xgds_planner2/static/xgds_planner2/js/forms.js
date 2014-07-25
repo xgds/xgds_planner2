@@ -5,15 +5,26 @@
     });
 
     Form.editors.Coordinates = Form.editors.Text.extend({
+        initialize: function(options) {
+            Form.editors.Text.prototype.initialize.apply(this, arguments);
+            this.siteFrameMode = false;
+        },
+
         /**
          * Returns the current editor value
          * @return {String}
          */
         getValue: function() {
             var str = this.$el.val();
-            var coords = str.split(',');
+            // in the background, always deal with lat, lon
+            if (this.siteFrameMode) {
+                var coords = this.toLngLat(str.split(','));
+            } else {
+                var coords = str.split(',');
+            }
             var lng = parseFloat(coords[0]);
             var lat = parseFloat(coords[1]);
+            // alway returns lng/lat
             return {
                 type: 'Point',
                 coordinates: [lng, lat]
@@ -25,12 +36,31 @@
          * @param {String} value
          */
         setValue: function(value) {
-            var lng = value.coordinates[0];
-            var lat = value.coordinates[1];
-            var str = '' + lng + ', ' + lat;
+            // backend always deals with lng/lat
+            // always takes lng/lat
+            if (this.siteFrameMode) {
+                var coords = this.toSiteFrame(value.coordinates);
+            } else {
+                var coords = value.coordinates;
+            }
+            var str = '' + coords[0] + ', ' + coords[1];
             this.$el.val(str);
-        }
+        },
 
+        toLngLat: function(coords) {
+            console.warn('Site frame conversion not yet implemented');
+            return coords;
+        },
+
+        toSiteFrame: function(coords) {
+            console.warn('Site frame conversion not yet implemented');
+            return coords;
+        },
+
+        toggleSiteFrame: function() {
+            this.siteFrameMode = !this.siteFrameMode;
+            this.setValue(this.getValue());
+        }
     });
 
     Form.editors.MinMaxNumber = Form.editors.Number

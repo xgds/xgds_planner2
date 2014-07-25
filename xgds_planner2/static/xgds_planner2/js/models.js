@@ -22,10 +22,7 @@ app.models = app.models || {};
     };
 
     models.paramBlackList = [
-        '_sequenceLabel',
-        '_simInfo',
         '_id',
-        '_segmentLength',
         '_siteFrame'
     ];
 
@@ -44,7 +41,7 @@ app.models = app.models || {};
         };
 
         if (modelType == 'Station') {
-            schema._siteFrame = {type: 'Select', options: ['Lng, Lat', 'Site Frame'],
+            schema._siteFrame = {type: 'Select', options: {false: 'Lng, Lat', true: 'Site Frame'},
                                 title: 'Coordinate System'};
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
             schema.geometry = {type: 'Coordinates', help: 'Lon, Lat'};
@@ -271,10 +268,10 @@ app.models = app.models || {};
             var repr;
             switch (this.get('type')) {
             case 'Station':
-                repr = this.get('_sequenceLabel');
+                repr = this._sequenceLabel;
                 break;
             case 'Segment':
-                repr = Math.round(this.get('_segmentLength')) + ' meters';
+                repr = Math.round(this._segmentLength) + ' meters';
                 break;
             }
             return repr;
@@ -291,9 +288,9 @@ app.models = app.models || {};
              * command.get('duration'); } }); return duration;
              */
             // actually use the simulator
-            if (this.get('_simInfo') == undefined) app.simulatePlan();
-            if (this.get('_simInfo') == undefined) return undefined;
-            return this.get('_simInfo').deltaTimeSeconds / 60;
+            if (this._simInfo == undefined) app.simulatePlan();
+            if (this._simInfo == undefined) return undefined;
+            return this._simInfo.deltaTimeSeconds / 60;
         },
 
         getCumulativeDuration: function(collection) {
@@ -307,9 +304,9 @@ app.models = app.models || {};
              * var duration = 0.0; _.each(_.first(arr, idx + 1), function(model) {
              * duration = duration + model.getDuration(); } ); return duration;
              */
-            if (this.get('_simInfo') == undefined) app.simulatePlan();
-            if (this.get('_simInfo') == undefined) return undefined;
-            return (this.get('_simInfo').elapsedTimeSeconds / 60) + this.getDuration();
+            if (this._simInfo == undefined) app.simulatePlan();
+            if (this._simInfo == undefined) return undefined;
+            return (this._simInfo.elapsedTimeSeconds / 60) + this.getDuration();
         },
 
         appendCommandByPreset: function(preset) {
@@ -368,7 +365,7 @@ app.models = app.models || {};
                         } else {
                             sequenceLabel = '' + stationCounter;
                         }
-                        item.set('_sequenceLabel', sequenceLabel);
+                        item._sequenceLabel = sequenceLabel;
                         stationCounter++;
                     }
 

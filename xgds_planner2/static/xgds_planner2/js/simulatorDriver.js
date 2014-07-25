@@ -18,7 +18,7 @@ $(function() {
     }
 
     function setSimInfo(sim, object, startState) {
-        object.set('_simInfo', getSimInfo(sim, startState));
+        object._simInfo = getSimInfo(sim, startState);
     }
 
     app.simulatePlan = function() {
@@ -104,7 +104,7 @@ $(function() {
     }
 
     function getItemRow(item) {
-        var si = item.get('_simInfo');
+        var si = item._simInfo;
         var infoArr = [item.get('id'), si.deltaTimeSeconds,
                        si.elapsedTimeSeconds, si.deltaDistanceMeters,
                        si.distanceTraveledMeters];

@@ -779,7 +779,7 @@ $(function() {
 
                 var gex = this.options.ge.gex;
                 var pmOptions = {};
-                var name = '' + this.model.get('_sequenceLabel');
+                var name = '' + this.model._sequenceLabel;
                 if (!_.isUndefined(this.model.get('name'))) {
                     name += ' ' + this.model.get('name');
                 }
@@ -869,7 +869,7 @@ $(function() {
                     this.redrawHandles();
                 coords = [coords[1], coords[0]]; // lat, lon
                 kmlPoint.setLatLng.apply(kmlPoint, coords);
-                var name = '' + this.model.get('_sequenceLabel');
+                var name = '' + this.model._sequenceLabel;
                 if (!_.isUndefined(this.model.get('name'))) {
                     name += ' ' + this.model.get('name');
                 }

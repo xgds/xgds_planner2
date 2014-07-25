@@ -276,7 +276,7 @@ app.views.StationSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-station-sequence-header',
     serializeData: function() {
         var data = this.model.toJSON();
-        data.label = this.model.get('_sequenceLabel');
+        data.label = this.model._sequenceLabel;
         return data;
     }
 });
@@ -285,7 +285,7 @@ app.views.SegmentSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-segment-sequence-header',
     serializeData: function() {
         var data = this.model.toJSON();
-        data.label = this.model.get('_sequenceLabel');
+        data.label = this.model._sequenceLabel;
         return data;
     }
 });
@@ -910,6 +910,10 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         'change': 'commit'
     },
 
+    modelEvents: {
+        'change': 'update'
+    },
+
     initialize: function() {
         var readonly = this.options.readonly || app.options.readonly;
 
@@ -935,16 +939,14 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         });
 
         Backbone.Form.prototype.initialize.call(this, this.options);
-        this.model.on('change', this.update, this);
     },
 
     update: function() {
         var attrs = this.model.changedAttributes();
-        var formView = this;
         _.each(_.keys(attrs), function(k) {
             var v = attrs[k];
-            formView.setValue(k, v);
-        });
+            this.setValue(k, v);
+        }, this);
     }
 });
 
