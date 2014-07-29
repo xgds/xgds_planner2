@@ -70,6 +70,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/string-format.js',
             'external/js/kmltree.min.js',
             'external/js/usng.js',
+            'external/js/proj4-2.2.1.js',
 
             'xgds_planner2/js/handlebars-helpers.js',
             'xgds_planner2/js/geo.js',

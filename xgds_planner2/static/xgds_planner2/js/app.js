@@ -40,6 +40,7 @@ var app = (function($, _, Backbone) {
             this.tabsContainer = undefined;
             this.mapResized = false;
             this.mapHeightSet = false;
+            this.siteFrameMode = false;
         });
     });
 

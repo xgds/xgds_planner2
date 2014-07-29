@@ -41,10 +41,16 @@ app.models = app.models || {};
         };
 
         if (modelType == 'Station') {
-            schema._siteFrame = {type: 'Select', options: {false: 'Lng, Lat', true: 'Site Frame'},
-                                title: 'Coordinate System'};
+            if (_.has(app.planJson.site, 'alternateCrs')) {
+                var siteFrameLabel = _.has(app.planJson.site.alternateCrs.properties, 'label') ?
+                    app.planJson.site.alternateCrs.properties.label : 'Site Frame';
+                schema._siteFrame = {type: 'Select', options: [{label: 'Lng, Lat', val: false},
+                                                               {label: siteFrameLabel, val: true}],
+                                     title: 'Coordinate System'};
+            }
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
-            schema.geometry = {type: 'Coordinates', help: 'Lon, Lat'};
+            schema.geometry = {type: 'Coordinates', help: 'Lon, Lat',
+                              title: 'Lon, Lat'};
         }
 
         if (modelType == 'Plan') {
@@ -233,16 +239,6 @@ app.models = app.models || {};
             var formsData = xpjsonToBackboneFormsSchema(params, this.get('type'));
             _.extend(this.schema, formsData.schema);
             _.extend(this.data, formsData.data);
-            // all attributes in the schema need to be defined, else they won't
-            // be in the
-            // json and so won't change when undo/redo is hit
-            _.each(_.keys(this.schema), function(attr) {
-                if (!this.has(attr)) {
-                    if (_.has(this.data, attr)) {
-                        this.set(attr, this.data[attr]);
-                    }
-                }
-            }, this);
             this.on('change', function() {
                 var changed = this.changedAttributes();
                 var previous = this.previousAttributes();

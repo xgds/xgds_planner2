@@ -7,7 +7,12 @@
     Form.editors.Coordinates = Form.editors.Text.extend({
         initialize: function(options) {
             Form.editors.Text.prototype.initialize.apply(this, arguments);
-            this.siteFrameMode = false;
+            this.siteFrameMode = this.model.has('_siteFrame') ?
+                this.model.get('_siteFrame') : false;
+            this.alternateCrs = _.has(app.planJson.site, 'alternateCrs') ?
+                app.planJson.site.alternateCrs : null;
+            this.schema.title = this.getGeometryLabel();
+            this.coordinates = undefined;
         },
 
         /**
@@ -47,19 +52,81 @@
             this.$el.val(str);
         },
 
-        toLngLat: function(coords) {
-            console.warn('Site frame conversion not yet implemented');
-            return coords;
+        toSiteFrame: function(coords) {
+            if (_.isNull(this.alternateCrs)) {
+                console.warn('Alternate CRS not defined');
+                return coords;
+            }
+
+            if (this.alternateCrs.type == 'roversw' &&
+                this.alternateCrs.properties.projection == 'utm') {
+                var utmcoords = [null, null, null];
+                LLtoUTM(coords[1], coords[0], utmcoords,
+                        this.alternateCrs.properties.zone);
+                var x = utmcoords[0] - this.alternateCrs.properties.originNorthing;
+                var y = utmcoords[1] - this.alternateCrs.properties.originEasting;
+                return [x, y];
+            } else if (this.alternateCrs.type == 'proj4') {
+                var proj = proj4(this.alternateCrs.properties.projection);
+                return proj.forward(coords);
+            } else {
+                console.warn('Alternate CRS unknown');
+                return coords;
+            }
         },
 
-        toSiteFrame: function(coords) {
-            console.warn('Site frame conversion not yet implemented');
-            return coords;
+        toLngLat: function(coords) {
+            if (_.isNull(this.alternateCrs)) {
+                console.warn('Alternate CRS not defined');
+                return coords;
+            }
+
+            if (this.alternateCrs.type == 'roversw' &&
+                this.alternateCrs.properties.projection == 'utm') {
+                var utmEasting = coords[0] + this.alternateCrs.properties.originEasting;
+                var utmNorthing = coords[1] + this.alternateCrs.properties.originNorthing;
+                var lonLat = {};
+                UTMtoLL(utmNorthing, utmEasting,
+                        this.alternateCrs.properties.zone,
+                        lonLat);
+                return [lonLat.lon, lonLat.lat];
+            } else if (this.alternateCrs.type == 'proj4') {
+                var proj = proj4(this.alternateCrs.properties.projection);
+                return proj.inverse(coords);
+            } else {
+                console.warn('Alternate CRS unknown');
+                return coords;
+            }
+
+        },
+
+        getGeometryLabel: function() {
+            // returns either Lon, Lat, Geometry, or whatever the schema has defined
+            // as the label for the alternateCrs geometry
+            if (_.isNull(this.alternateCrs)) {
+                throw 'No alternate CRS defined';
+            }
+            if (this.siteFrameMode) {
+                var newTitle = _.has(this.alternateCrs.properties, 'coordinateLabel') ?
+                    this.alternateCrs.properties.coordinateLabel : 'Geometry';
+            } else {
+                var newTitle = 'Lon, Lat';
+            }
+            return newTitle;
         },
 
         toggleSiteFrame: function(siteFrameMode) {
-            this.siteFrameMode = siteFrameMode;
-            this.setValue(this.getValue());
+            if (_.isNull(this.alternateCrs)) {
+                throw 'No alternate CRS defined';
+            }
+            var oldValue = this.getValue();
+            this.siteFrameMode = _.isBoolean(siteFrameMode) ?
+                siteFrameMode : !this.siteFrameMode;
+            var newTitle = this.getGeometryLabel();
+            var field = this.form.fields[this.key];
+            field.schema.title = newTitle;
+            field.$el.find('label').html(newTitle);
+            this.setValue(oldValue);
         }
     });
 

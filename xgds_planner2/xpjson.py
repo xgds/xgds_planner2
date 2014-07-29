@@ -125,7 +125,8 @@ def isValueOfType(val, valueType):
         return len(val) in (4, 6)
     elif valueType == 'crs':
         # could do a better job with this...
-        return val['type'] in ('name', 'proj4')
+        # return val['type'] in ('name', 'proj4')
+        return 'type' in val and 'properties' in val
     else:
         if isinstance(val, (dict, dotDict.DotDict)):
             # for example, 'ParamSpec' -> DotDict with 'type' member equal

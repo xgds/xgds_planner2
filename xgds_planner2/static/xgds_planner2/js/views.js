@@ -907,7 +907,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
     template: '#template-properties-form',
 
     events: {
-        'change': 'commit'
+        'change': 'commitCheck'
     },
 
     modelEvents: {
@@ -935,6 +935,16 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
             });
         }
         Backbone.Form.prototype.initialize.call(this, this.options);
+    },
+
+    commitCheck: function() {
+        Backbone.Form.prototype.commit.apply(this, arguments);
+        if (_.has(this.fields, '_siteFrame')) {
+            if (this.model.changedAttributes(
+                {'_siteFrame': this.fields.geometry.editor.siteFrameMode.toString()})) {
+                this.fields.geometry.editor.toggleSiteFrame();
+            }
+        }
     },
 
     update: function() {
