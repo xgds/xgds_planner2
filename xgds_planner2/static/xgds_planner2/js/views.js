@@ -224,6 +224,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                     var newVersion = $('#saveAsVersion').val();
                     var newNotes = $('#saveAsNotes').val();
                     app.currentPlan.set('planName', newName);
+                    app.currentPlan.set('planVersion', newVersion);
                     app.currentPlan.set('name', newName);
                     app.currentPlan.set('notes', newNotes);
                     app.currentPlan.set('uuid', null);
