@@ -73,9 +73,14 @@ app.models = app.models || {};
             }
 
             if (_.has(param, 'choices') &&
-                (foundType != 'Select' || foundType != 'Checkbox'))
-                foundType = 'Select';
-            if (foundType == 'Select') {
+                (foundType != 'Select' || foundType != 'Checkbox')) {
+                if (foundType == 'Number') {
+                    foundType = 'NumberSelect';
+                } else {
+                    foundType = 'Select';
+                }
+            }
+            if (foundType == 'Select' || foundType == 'NumberSelect') {
                 var options = _.map(param.choices, function(choice) {
                     var obj = {
                         val: choice[0],
