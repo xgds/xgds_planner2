@@ -4,6 +4,31 @@
         defaultValue: null
     });
 
+    // We need a number select, because python isn't loosely typed
+    Form.editors.NumberSelect = Backbone.Form.editors.Select.extend({
+        getValue: function() {
+            var value = this.$el.val();
+
+            return value === '' ? null : parseFloat(value, 10);
+        },
+
+        setValue: function(value) {
+            value = (function() {
+                if (_.isNumber(value)) return value;
+
+                if (_.isString(value) && value != '') return parseFloat(value, 10);
+
+                return null;
+            })();
+
+            if (_.isNaN(value)) {
+                value = null;
+            }
+
+            Form.editors.Select.prototype.setValue.call(this, value);
+        }
+    });
+
     Form.editors.Coordinates = Form.editors.Text.extend({
         initialize: function(options) {
             Form.editors.Text.prototype.initialize.apply(this, arguments);
