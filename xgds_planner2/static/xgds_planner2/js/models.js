@@ -337,6 +337,16 @@ app.models = app.models || {};
         initialize: function() {
             this.on('add remove', this.resequence, this);
         },
+        
+        updateId: function() {
+        	// update the plan id in case the version has changed
+            var planIdTemplate = app.planSchema.planIdFormat;
+            var context = {
+                    plan: app.currentPlan.toJSON()
+            };
+            var planId = planIdTemplate.format(context);
+            app.currentPlan.set('id', planId);
+        },
 
         /*
          * * resequence supplies the stations with easier to read sequential
@@ -386,15 +396,6 @@ app.models = app.models || {};
                 }
             );
             
-            // update the plan id in case the version has changed
-            var planIdTemplate = app.planSchema.planIdFormat;
-            var context = {
-                    plan: app.currentPlan.toJSON()
-            };
-            var planId = planIdTemplate.format(context);
-            app.currentPlan.set('id', planId);
-
-
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
                 app.Actions.enable();
             }

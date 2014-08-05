@@ -34,6 +34,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
+//         the below does not work as there is no collection?
+//        this.collection.on("change:planVersion", this.collection.updateId, this);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
