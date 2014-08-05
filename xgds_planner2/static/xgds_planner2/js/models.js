@@ -351,7 +351,7 @@ app.models = app.models || {};
                 // prevent undo from capturing *every* change we make
                 app.Actions.disable();
             }
-
+            
             // Natural station numbering.
             this.each(
                 function(item, idx, list) {
@@ -385,6 +385,15 @@ app.models = app.models || {};
                     item.set('id', stationId);
                 }
             );
+            
+            // update the plan id in case the version has changed
+            var planIdTemplate = app.planSchema.planIdFormat;
+            var context = {
+                    plan: app.currentPlan.toJSON()
+            };
+            var planId = planIdTemplate.format(context);
+            app.currentPlan.set('id', planId);
+
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
                 app.Actions.enable();
