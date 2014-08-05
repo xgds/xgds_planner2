@@ -122,11 +122,13 @@ class AbstractPlan(models.Model):
         if name == '':
             return 'plan'
         else:
+            if self.jsonPlan and self.jsonPlan.planVersion:
+                return name + "_" + self.jsonPlan.planVersion
             return name
 
     def getExportUrl(self, extension):
         return reverse('planner2_planExport',
-                       args=[self.uuid, self.escapedName() + extension])
+                       kwargs={'uuid': self.uuid, 'name': self.escapedName() + extension})
 
     def getExporters(self):
         import choosePlanExporter  # delayed import avoids import loop
