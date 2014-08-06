@@ -338,16 +338,6 @@ app.models = app.models || {};
             this.on('add remove', this.resequence, this);
         },
         
-        updateId: function() {
-        	// update the plan id in case the version has changed
-            var planIdTemplate = app.planSchema.planIdFormat;
-            var context = {
-                    plan: app.currentPlan.toJSON()
-            };
-            var planId = planIdTemplate.format(context);
-            app.currentPlan.set('id', planId);
-        },
-
         /*
          * * resequence supplies the stations with easier to read sequential
          * numbers * for use in the map view. (Start, 1, 2...End) * It is also

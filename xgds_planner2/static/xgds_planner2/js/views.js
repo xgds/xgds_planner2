@@ -34,8 +34,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
-//         the below does not work as there is no collection?
-//        this.collection.on("change:planVersion", this.collection.updateId, this);
+        this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
@@ -200,6 +199,17 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         } else {
             app.vent.trigger('sync');
         }
+    },
+    
+    handleVersionChange: function(model, response) {
+    	// update the plan id in case the version has changed
+        var planIdTemplate = app.planSchema.planIdFormat;
+        var context = {
+                plan: app.currentPlan.toJSON()
+        };
+        var planId = planIdTemplate.format(context);
+        app.currentPlan.set('id', planId);
+        app.currentPlan.get('sequence').resequence();
     },
 
     showSaveAsDialog: function() {
