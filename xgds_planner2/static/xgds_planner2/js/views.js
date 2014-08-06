@@ -200,9 +200,9 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             app.vent.trigger('sync');
         }
     },
-    
+
     handleVersionChange: function(model, response) {
-    	// update the plan id in case the version has changed
+        // update the plan id in case the version has changed
         var planIdTemplate = app.planSchema.planIdFormat;
         var context = {
                 plan: app.currentPlan.toJSON()

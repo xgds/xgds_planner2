@@ -48,7 +48,9 @@
             var str = this.$el.val();
             // in the background, always deal with lat, lon
             if (this.siteFrameMode) {
-                var coords = this.toLngLat(str.split(','));
+                var coords = !_.isNull(this.alternateCrs) ?
+                    app.util.toLngLat(str.split(','), this.alternateCrs) :
+                    str.split(',');
             } else {
                 var coords = str.split(',');
             }
@@ -69,60 +71,14 @@
             // backend always deals with lng/lat
             // always takes lng/lat
             if (this.siteFrameMode) {
-                var coords = this.toSiteFrame(value.coordinates);
+                var coords = !_.isNull(this.alternateCrs) ?
+                    app.util.toSiteFrame(value.coordinates, this.alternateCrs) :
+                    value.coordinates;
             } else {
                 var coords = value.coordinates;
             }
             var str = '' + coords[0] + ', ' + coords[1];
             this.$el.val(str);
-        },
-
-        toSiteFrame: function(coords) {
-            if (_.isNull(this.alternateCrs)) {
-                console.warn('Alternate CRS not defined');
-                return coords;
-            }
-
-            if (this.alternateCrs.type == 'roversw' &&
-                this.alternateCrs.properties.projection == 'utm') {
-                var utmcoords = [null, null, null];
-                LLtoUTM(coords[1], coords[0], utmcoords,
-                        this.alternateCrs.properties.zone);
-                var x = utmcoords[0] - this.alternateCrs.properties.originNorthing;
-                var y = utmcoords[1] - this.alternateCrs.properties.originEasting;
-                return [x, y];
-            } else if (this.alternateCrs.type == 'proj4') {
-                var proj = proj4(this.alternateCrs.properties.projection);
-                return proj.forward(coords);
-            } else {
-                console.warn('Alternate CRS unknown');
-                return coords;
-            }
-        },
-
-        toLngLat: function(coords) {
-            if (_.isNull(this.alternateCrs)) {
-                console.warn('Alternate CRS not defined');
-                return coords;
-            }
-
-            if (this.alternateCrs.type == 'roversw' &&
-                this.alternateCrs.properties.projection == 'utm') {
-                var utmEasting = coords[0] + this.alternateCrs.properties.originEasting;
-                var utmNorthing = coords[1] + this.alternateCrs.properties.originNorthing;
-                var lonLat = {};
-                UTMtoLL(utmNorthing, utmEasting,
-                        this.alternateCrs.properties.zone,
-                        lonLat);
-                return [lonLat.lon, lonLat.lat];
-            } else if (this.alternateCrs.type == 'proj4') {
-                var proj = proj4(this.alternateCrs.properties.projection);
-                return proj.inverse(coords);
-            } else {
-                console.warn('Alternate CRS unknown');
-                return coords;
-            }
-
         },
 
         getGeometryLabel: function() {

@@ -448,7 +448,45 @@ var app = (function($, _, Backbone) {
                 ('00' + (~~(g * 255)).toString(16)).slice(-2) +
                 ('00' + (~~(b * 255)).toString(16)).slice(-2);
             return (c);
+        },
+
+        toSiteFrame: function(coords, alternateCrs) {
+            if (alternateCrs.type == 'roversw' &&
+                alternateCrs.properties.projection == 'utm') {
+                var utmcoords = [null, null, null];
+                LLtoUTM(coords[1], coords[0], utmcoords,
+                        alternateCrs.properties.zone);
+                var x = utmcoords[0] - alternateCrs.properties.originNorthing;
+                var y = utmcoords[1] - alternateCrs.properties.originEasting;
+                return [x, y];
+            } else if (alternateCrs.type == 'proj4') {
+                var proj = proj4(alternateCrs.properties.projection);
+                return proj.forward(coords);
+            } else {
+                console.warn('Alternate CRS unknown');
+                return coords;
+            }
+        },
+
+        toLngLat: function(coords, alternateCrs) {
+            if (alternateCrs.type == 'roversw' &&
+                alternateCrs.properties.projection == 'utm') {
+                var utmEasting = coords[0] + alternateCrs.properties.originEasting;
+                var utmNorthing = coords[1] + alternateCrs.properties.originNorthing;
+                var lonLat = {};
+                UTMtoLL(utmNorthing, utmEasting,
+                        alternateCrs.properties.zone,
+                        lonLat);
+                return [lonLat.lon, lonLat.lat];
+            } else if (alternateCrs.type == 'proj4') {
+                var proj = proj4(alternateCrs.properties.projection);
+                return proj.inverse(coords);
+            } else {
+                console.warn('Alternate CRS unknown');
+                return coords;
+            }
         }
+
     };
 
     return app;

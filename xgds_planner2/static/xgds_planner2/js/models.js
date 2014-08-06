@@ -337,7 +337,7 @@ app.models = app.models || {};
         initialize: function() {
             this.on('add remove', this.resequence, this);
         },
-        
+
         /*
          * * resequence supplies the stations with easier to read sequential
          * numbers * for use in the map view. (Start, 1, 2...End) * It is also
@@ -351,7 +351,7 @@ app.models = app.models || {};
                 // prevent undo from capturing *every* change we make
                 app.Actions.disable();
             }
-            
+
             // Natural station numbering.
             this.each(
                 function(item, idx, list) {
@@ -385,7 +385,7 @@ app.models = app.models || {};
                     item.set('id', stationId);
                 }
             );
-            
+
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
                 app.Actions.enable();
             }
