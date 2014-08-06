@@ -57,7 +57,7 @@ def plan_help(request):
         })
     )
 
-
+@login_required
 def plan_tests(request, plan_id, editable=True):
     Plan = get_plan_model()
     templates = get_handlebars_templates()
@@ -84,6 +84,13 @@ def plan_tests(request, plan_id, editable=True):
             'editable': editable,
             'simulatorUrl': planSchema.simulatorUrl,
             'simulator': planSchema.simulator,
+            'placemark_circle_url': request.build_absolute_uri(
+                staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
+            ),
+            'placemark_circle_highlighted_url': request.build_absolute_uri(
+                staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
+            ),
+            'plan_links_json': json.dumps(plan.getLinks())
         }),
         # context_instance=RequestContext
     )
