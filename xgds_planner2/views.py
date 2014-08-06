@@ -57,6 +57,7 @@ def plan_help(request):
         })
     )
 
+
 @login_required
 def plan_tests(request, plan_id, editable=True):
     Plan = get_plan_model()
