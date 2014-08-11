@@ -238,7 +238,7 @@ def planIndex(request):
     return render_to_response(
         'xgds_planner2/planIndex.html',
         {
-            'plans': Plan.objects.all(),
+            'plans': Plan.objects.filter(deleted = False),
             'exporters': choosePlanExporter.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
@@ -246,7 +246,7 @@ def planIndex(request):
 
 def plan_index_json():
     Plan = get_plan_model()
-    plan_objs = Plan.objects.all()
+    plan_objs = Plan.objects.filter(deleted = False)
     plans_json = []
     for plan in plan_objs:
         plans_json.append({
@@ -338,3 +338,16 @@ def planCreate(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form})
+
+
+@login_required
+def plan_delete(request):
+    PLAN = get_plan_model()
+    picks = request.POST.getlist('picks')
+    for i in picks:
+        plan = PLAN.objects.get(id=i)
+        if plan:
+            plan.deleted = True
+            plan.save()
+    return HttpResponseRedirect(reverse('planner2_index'))
+    

@@ -27,13 +27,13 @@ table.planIndex td.exportFormat a {
 {% block content %}
 {{ block.super }}
 
-<!-- This functionality is now in the subnav 
-<a href="{% url 'planner2_planCreate' %}" class="mybutton">Create Plan</a>
--->
+<form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
+<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;"></input>
 
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
+  	<th><input type="checkbox" id="pick_master" /></th>
     <th>Name</th>
     <th>Author</th>
     <th>Last Edit</th>
@@ -47,7 +47,8 @@ table.planIndex td.exportFormat a {
 <tbody>
 {% for plan in plans %}
   <tr id={{ plan.id }}>
-    <td ><a href="{% url 'planner2_edit' plan.id %}">{{ plan.name }}</a></td>
+  	<td><input type="checkbox" id="pick_{{plan.id}}" name="picks" value="{{plan.id}}" class="check"/></td>
+    <td ><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></td>
     <td>{{ plan.creator }}</td>
     <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i" }}</td>
     <td>{{ plan.jsonPlan.site.name }}</td>
@@ -65,6 +66,7 @@ table.planIndex td.exportFormat a {
 {% endfor %}
 </tbody>
 </table>
+</form>
 
 {% endblock content %}
 
@@ -73,6 +75,27 @@ table.planIndex td.exportFormat a {
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
 <script type="text/javascript">
+$( "#PlanForm" ).submit(function( event ) {
+	  event.preventDefault();
+	});
+$("#deleteButton").click(function() {
+	var question = []
+	var deathRow = []
+	$('.check').each(function(i, obj) {
+		if($(this).is(":checked")) {
+			deathRow.push($(this).val());
+			var editthingy = $("#edit_" + $(this).val());
+			var ques = editthingy.text();
+			question.push(ques);
+		}
+	});
+	if (deathRow.length > 0){
+		var returnVal = confirm("Are you sure you want to delete these plans ? " + question.toString());
+		if (returnVal) {
+			$("#PlanForm").submit();
+		}
+	}
+});
  var calcDataTableHeight = function() {
 	    var h = Math.floor($(window).height()*65/100);
 	    return h + 'px';

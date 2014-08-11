@@ -20,6 +20,7 @@ urlpatterns = patterns(
     url(r'^plan/export/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {}, name='planner2_planExport'),
     url(r'^plan/create/$', views.planCreate, {}, name='planner2_planCreate'),
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
+    url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

@@ -46,6 +46,9 @@ class AbstractPlan(models.Model):
 
     # a place to put an auto-generated summary of the plan
     summary = models.CharField(max_length=256)
+    
+    # allow users to mark plans as deleted.  remember to use this field!
+    deleted = models.BooleanField(blank=True, default=False)
 
     # cache commonly used stats derived from the plan (relatively expensive to calculate)
     numStations = models.PositiveIntegerField(null=True, blank=True)
