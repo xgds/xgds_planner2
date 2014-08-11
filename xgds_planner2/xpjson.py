@@ -899,14 +899,40 @@ def dumpDocumentToPath(path, doc):
     dumpDictToPath(path, docDict)
 
 
-def getCrsTransform(crs):
+def getCrsTransformRoversw(crs):
     """
     xform = getCrsTransform(crs)
     # x, y in crs coordinates. x, y, lon, lat may be scalars or iterables.
     x, y = xform(lon, lat)
     lon, lat = xform(x, y, inverse=True)
     """
-    assert crs['type'] == 'proj4'
+    projString = crs['properties']['projection']
+
+    proj = pyproj.Proj('+proj=utm +ellps=WGS84 +zone=%(zone)s +north' % crs['properties'])
+    x0 = crs['properties']['originEasting']
+    y0 = crs['properties']['originNorthing']
+
+    def xform(coords, inverse=False):
+        if inverse:
+            x, y = coords
+            outX, outY = proj(x + x0, y + y0, inverse=True)
+        else:
+            x, y = proj(*coords, inverse=False)
+            outX, outY = x - x0, y - y0
+        return outY, outX
+
+    return xform
+
+
+def getCrsTransformProj4(crs):
+    """
+    DEPRECATED. IF WORKING WITH ROVERSW, USE "type": "roversw" and getCrsTransformRoversw().
+
+    xform = getCrsTransform(crs)
+    # x, y in crs coordinates. x, y, lon, lat may be scalars or iterables.
+    x, y = xform(lon, lat)
+    lon, lat = xform(x, y, inverse=True)
+    """
     projString = crs['properties']['projection']
 
     # x_0 and y_0 (false easting, false northing) args to pyproj don't
@@ -939,3 +965,19 @@ def getCrsTransform(crs):
         return outY, outX  # HACK this is kn-specific
 
     return xform
+
+
+def getCrsTransform(crs):
+    """
+    xform = getCrsTransform(crs)
+    # x, y in crs coordinates. x, y, lon, lat may be scalars or iterables.
+    x, y = xform(lon, lat)
+    lon, lat = xform(x, y, inverse=True)
+    """
+    t = crs['type']
+    if t == 'proj4':
+        return getCrsTransformProj4(crs)
+    elif t == 'roversw':
+        return getCrsTransformRoversw(crs)
+    else:
+        assert False, 'crs type should be "proj4" or "roversw"'
