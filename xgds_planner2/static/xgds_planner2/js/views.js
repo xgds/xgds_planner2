@@ -669,7 +669,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data) {
-        var displayName = data.presetCode || data.name || data.presetName;
+        var displayName =  data.name || data.presetName ||  data.presetCode;
         var timing = app.util.minutesToHMS(data.duration);
         return '<input class="select" type="checkbox"/>' + displayName + ' <span class="duration">' + timing + '</span><i/>';
     },
