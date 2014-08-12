@@ -61,6 +61,7 @@ app.models = app.models || {};
 
         _.each(params, function(param) {
             var foundType;
+            
             if (_.has(param, 'widget')) {
                 foundType = app.models.widgetTypeHash[param.widget];
             } else {
@@ -124,6 +125,19 @@ app.models = app.models || {};
             }
             if (_.has(param, 'strictMaximum')) {
                 schema[param.id]['strictMaximum'] = param.strictMaximum;
+            }
+            if (_.has(param, 'visible') &&
+                    _.isBoolean(param.visible) &&
+                    !param.visible) {
+            	schema[param.id]['type'] = 'Hidden';
+            }
+            if (_.has(param, 'editable') &&
+                    _.isBoolean(param.editable) &&
+                    !param.editable) {
+            	schema[param.id]['editorAttrs'] = {
+                        readonly: true,
+                        disabled: true
+                    };
             }
         });
 

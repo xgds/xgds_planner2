@@ -929,6 +929,8 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
     initialize: function() {
         var readonly = this.options.readonly || app.options.readonly;
+        
+        var visible = this.options.visible;
 
         // Construct a schema compatible with backbone-forms
         // https://github.com/powmedia/backbone-forms#schema-definition
