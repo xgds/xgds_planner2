@@ -49,7 +49,7 @@ app.models = app.models || {};
                                      title: 'Coordinate System'};
             }
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
-            schema.geometry = {type: 'Coordinates', help: 'Lon, Lat',
+            schema.geometry = {type: 'Coordinates', 
                               title: 'Lon, Lat'};
         }
 
