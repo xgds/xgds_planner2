@@ -77,7 +77,7 @@
             } else {
                 var coords = value.coordinates;
             }
-            var str = '' + coords[0] + ', ' + coords[1];
+            var str = '' + coords[1] + ', ' + coords[0];
             this.$el.val(str);
         },
 
