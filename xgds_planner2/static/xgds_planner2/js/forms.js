@@ -70,7 +70,7 @@
         setValue: function(value) {
             // backend always deals with lng/lat
             // always takes lng/lat
-        	var decimalPlaces = 6;
+        	var decimalPlaces = 7;
             if (this.siteFrameMode) {
             	var coords = !_.isNull(this.alternateCrs) ?
                     app.util.toSiteFrame(value.coordinates, this.alternateCrs) :
