@@ -456,9 +456,9 @@ var app = (function($, _, Backbone) {
                 var utmcoords = [null, null, null];
                 LLtoUTM(parseFloat(coords[1]), parseFloat(coords[0]), utmcoords,
                         alternateCrs.properties.zone);
-                var x = utmcoords[1] - alternateCrs.properties.originNorthing;
-                var y = utmcoords[0] - alternateCrs.properties.originEasting;
-                return [x, y];
+                var x = utmcoords[0] - alternateCrs.properties.originEasting;
+                var y = utmcoords[1] - alternateCrs.properties.originNorthing;
+                return [x, y]; // always easting, northing OR long, lat
             } else if (alternateCrs.type == 'proj4') {
                 var proj = proj4(alternateCrs.properties.projection);
                 return proj.forward(coords);
