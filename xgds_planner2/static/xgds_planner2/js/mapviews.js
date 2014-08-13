@@ -348,9 +348,13 @@ $(function() {
                 this.fovWedgesFolder = ge.gex.dom.buildFolder({
                     name: 'fovWedges'
                 });
+                this.commandFolder = ge.gex.dom.buildFolder({
+                    name: 'commands'
+                });
                 this.kmlFolders = [this.stationsFolder,
                                    this.segmentsFolder, this.dragHandlesFolder,
-                                   this.fovWedgesFolder];
+                                   this.fovWedgesFolder,
+                                   this.commandFolder];
                 _.each(this.kmlFolders, function(folder) {
                     doc.getFeatures().appendChild(folder);
                 });
@@ -1008,9 +1012,12 @@ $(function() {
 
             addPanoWedges: function() {
                 var station = this.model;
+                var commandViews = this.commandViews = [];
+                var commandFeatures = this.planKmlView.commandFolder.getFeatures();
+                
                 var wedgeViews = this.wedgeViews = [];
-                var wedgeFeatures = this.planKmlView.fovWedgesFolder
-                    .getFeatures();
+                var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
+                
                 this.model.get('sequence').each(function(command) {
                     if (command.hasParam('showWedge')) {
                         var wedgeView = new PanoWedgeView({
@@ -1019,6 +1026,13 @@ $(function() {
                         });
                         wedgeViews.push(wedgeView);
                         wedgeFeatures.appendChild(wedgeView.placemark);
+                    } else if (command.get('type') == 'TraversePattern'){
+                    	var commandView = new CommandView({
+                            station: station,
+                            command: command
+                        });
+                        commandViews.push(commandView);
+                        commandFeatures.appendChild(commandView.placemark);
                     }
                 });
             },
@@ -1026,14 +1040,25 @@ $(function() {
             destroyPanoWedges: function() {
                 var wedgeFeatures = this.planKmlView.fovWedgesFolder
                     .getFeatures();
-                if (_.isUndefined(this.wedgeViews)) {
-                    return;
+                
+                if (!_.isUndefined(this.wedgeViews)) {
+                	while (this.wedgeViews.length > 0) {
+                        wedgeView = this.wedgeViews.pop();
+                        wedgeFeatures.removeChild(wedgeView.placemark);
+                        wedgeView.close();
+                    }
                 }
-                while (this.wedgeViews.length > 0) {
-                    wedgeView = this.wedgeViews.pop();
-                    wedgeFeatures.removeChild(wedgeView.placemark);
-                    wedgeView.close();
+                
+                var commandFeatures = this.planKmlView.commandFolder.getFeatures();
+                
+                if (!_.isUndefined(this.commandViews)) {
+                	while (this.commandViews.length > 0) {
+                		commandViews = this.commandViews.pop();
+                        commandFeatures.removeChild(commandViews.placemark);
+                        commandView.close();
+                    }
                 }
+                
             },
 
             redrawPanoWedges: function() {
@@ -1334,6 +1359,101 @@ $(function() {
             if (visibility) {
                 var wedgeCoords = this.computeWedgeCoords();
                 var polygon = ge.gex.dom.buildPolygon(_.map(wedgeCoords,
+                                                            function(coord) {
+                                                                return [coord.lat, coord.lng];
+                                                            }));
+                this.placemark.setGeometry(polygon);
+            }
+        },
+
+        close: function() {
+            this.stopListening();
+        }
+    });
+    
+    var CommandView = Backbone.View.extend({
+        initialize: function() {
+            this.station = this.options.station;
+            this.command = this.options.command;
+
+            this.lineColor = 'ffffffff';
+            var rgbFillColor = app
+                .request('getColor', this.command.get('type'));
+            this.fillColor = kmlColor(rgbFillColor, '80');
+            this.placemark = this.createPlacemark(this.computeCoords());
+
+            this.listenTo(this.command, 'change', this.update);
+            this.listenTo(this.station, 'change:geometry', this.update);
+            this.listenTo(this.station, 'change:headingDegrees', this.update);
+        },
+
+        /*
+         * Calculate the polygon's coordinates and output them
+         * as an array of objects with lat & lng properties.
+         */
+        computeCoords: function() {
+            var station = this.station;
+            var command = this.command;
+
+            var stationLL = _.object(['lng', 'lat'],
+                                     station.get('geometry').coordinates);
+            var extens_x = command.get('extens_x') / 2.0;
+            var extens_y = _.has(command.extens_y) ?
+            		command.get('extens_y') : command.get('extens_x');
+            extens_y = extens_y / 2.0;
+            var orientationRadians = command.get('orientation') * DEG2RAD;
+            
+            coords = [];
+
+            // for now ignore orientation
+            
+            var startEnd = geo.addMeters(stationLL, {x: -extens_x, y: -extens_y});
+            coords.push(startEnd);
+            coords.push(geo.addMeters(stationLL, {x: -extens_x, y: extens_y}));
+            coords.push(geo.addMeters(stationLL, {x: extens_x, y: extens_y}));
+            coords.push(geo.addMeters(stationLL, {x: extens_x, y: -extens_y}));
+            coords.push(startEnd);
+
+            return coords;
+        },
+
+        createPlacemark: function(coords) {
+            var gex = ge.gex;
+            var visibility = true;
+//            var visibility = this.command.get('showWedge');
+//            if (visibility === undefined)
+//                visibility = false;
+
+            var polygon = gex.dom.buildPolygon(_.map(coords, function(
+                coord) {
+                return [coord.lat, coord.lng];
+            }));
+
+            var style = gex.dom.buildStyle({
+                line: {
+                    color: this.lineColor
+                },
+                poly: {
+                    fill: true,
+                    outline: true,
+                    color: this.fillColor
+                }
+            });
+
+            var placemark = gex.dom.buildPolygonPlacemark(polygon, {
+                style: style
+            });
+            placemark.setVisibility(visibility);
+            return placemark;
+        },
+
+        update: function() {
+        	var visibility = true;
+//            var visibility = this.command.get('showWedge');
+//            this.placemark.setVisibility(visibility);
+            if (visibility) {
+                var coords = this.computeCoords();
+                var polygon = ge.gex.dom.buildPolygon(_.map(coords,
                                                             function(coord) {
                                                                 return [coord.lat, coord.lng];
                                                             }));
