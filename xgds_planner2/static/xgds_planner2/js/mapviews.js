@@ -1380,11 +1380,22 @@ $(function() {
             var rgbFillColor = app
                 .request('getColor', this.command.get('type'));
             this.fillColor = kmlColor(rgbFillColor, '80');
+            this.alternateCrs = _.has(app.planJson.site, 'alternateCrs') ?
+                    app.planJson.site.alternateCrs : null;
             this.placemark = this.createPlacemark(this.computeCoords());
 
             this.listenTo(this.command, 'change', this.update);
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
+            
+            
+        },
+        
+        rotate: function(orientationRadians, extens_x, extens_y, stationUTM) {
+        	var x = Math.cos(orientationRadians) * (-extens_x) - Math.sin(orientationRadians) * (-extens_y) + stationUTM[0];
+            var y = Math.sin(orientationRadians) * (-extens_x) + Math.cos(orientationRadians) * (-extens_y) + stationUTM[1];
+            var theLL = app.util.toLngLat([x, y], this.alternateCrs);
+            return {lng: theLL[0], lat: theLL[1]};
         },
 
         /*
@@ -1395,23 +1406,25 @@ $(function() {
             var station = this.station;
             var command = this.command;
 
-            var stationLL = _.object(['lng', 'lat'],
-                                     station.get('geometry').coordinates);
+            var stationUTM = app.util.toSiteFrame(station.get('geometry').coordinates, this.alternateCrs);
             var extens_x = command.get('extens_x') / 2.0;
-            var extens_y = _.has(command.extens_y) ?
-            		command.get('extens_y') : command.get('extens_x');
+            var extens_y = command.hasParam('extens_y') ? 
+            		command.get('extens_y') : 
+            		command.get('extens_x');
             extens_y = extens_y / 2.0;
             var orientationRadians = command.get('orientation') * DEG2RAD;
             
             coords = [];
 
-            // for now ignore orientation
+            var startEnd = this.rotate(-orientationRadians, -extens_x, -extens_y, stationUTM);
+            var topleft = this.rotate(-orientationRadians, -extens_x, extens_y, stationUTM);
+            var topright = this.rotate(-orientationRadians, extens_x, extens_y, stationUTM);
+            var bottomright = this.rotate(-orientationRadians, extens_x, -extens_y, stationUTM);
             
-            var startEnd = geo.addMeters(stationLL, {x: -extens_x, y: -extens_y});
             coords.push(startEnd);
-            coords.push(geo.addMeters(stationLL, {x: -extens_x, y: extens_y}));
-            coords.push(geo.addMeters(stationLL, {x: extens_x, y: extens_y}));
-            coords.push(geo.addMeters(stationLL, {x: extens_x, y: -extens_y}));
+            coords.push(topleft);
+            coords.push(topright);
+            coords.push(bottomright);
             coords.push(startEnd);
 
             return coords;
@@ -1419,10 +1432,9 @@ $(function() {
 
         createPlacemark: function(coords) {
             var gex = ge.gex;
-            var visibility = true;
-//            var visibility = this.command.get('showWedge');
-//            if (visibility === undefined)
-//                visibility = false;
+            var visibility = this.command.get('showPolygon');
+            if (visibility === undefined)
+                visibility = false;
 
             var polygon = gex.dom.buildPolygon(_.map(coords, function(
                 coord) {
@@ -1448,9 +1460,8 @@ $(function() {
         },
 
         update: function() {
-        	var visibility = true;
-//            var visibility = this.command.get('showWedge');
-//            this.placemark.setVisibility(visibility);
+            var visibility = this.command.get('showPolygon');
+            this.placemark.setVisibility(visibility);
             if (visibility) {
                 var coords = this.computeCoords();
                 var polygon = ge.gex.dom.buildPolygon(_.map(coords,
