@@ -37,6 +37,7 @@
             this.alternateCrs = _.has(app.planJson.site, 'alternateCrs') ?
                 app.planJson.site.alternateCrs : null;
             this.schema.title = this.getGeometryLabel();
+            this.schema.help = this.getGeometryHelp();
             this.coordinates = undefined;
         },
 
@@ -99,6 +100,21 @@
             }
             return newTitle;
         },
+        getGeometryHelp: function() {
+            // returns either Lon, Lat, Geometry, or whatever the schema has defined
+            // as the label for the alternateCrs geometry
+            if (_.isNull(this.alternateCrs)) {
+                throw 'No alternate CRS defined';
+            }
+            var newHelp = '';
+            if (this.siteFrameMode) {
+            	newHelp = _.has(this.alternateCrs.properties, 'coordinateNotes') ?
+                    this.alternateCrs.properties.coordinateNotes : this.getGeometryLabel();
+            } else {
+            	newHelp = 'Long, Lat';
+            }
+            return newHelp;
+        },
 
         toggleSiteFrame: function(siteFrameMode) {
             if (_.isNull(this.alternateCrs)) {
@@ -111,6 +127,9 @@
             var field = this.form.fields[this.key];
             field.schema.title = newTitle;
             field.$el.find('label').html(newTitle);
+            var newHelp = this.getGeometryHelp();
+            field.schema.help = newHelp;
+            field.$el.find('.bbf-help').last().html(newHelp);
             this.setValue(oldValue);
         }
     });

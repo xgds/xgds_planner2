@@ -1026,7 +1026,7 @@ $(function() {
                         });
                         wedgeViews.push(wedgeView);
                         wedgeFeatures.appendChild(wedgeView.placemark);
-                    } else if (command.get('type') == 'TraversePattern'){
+                    } else if (command.get('type').indexOf('Pattern') > 0){
                     	var commandView = new CommandView({
                             station: station,
                             command: command
@@ -1387,7 +1387,7 @@ $(function() {
             this.listenTo(this.command, 'change', this.update);
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
-            
+//            this.listenTo(this.station, 'delete', this.update);
             
         },
         
@@ -1407,19 +1407,30 @@ $(function() {
             var command = this.command;
 
             var stationUTM = app.util.toSiteFrame(station.get('geometry').coordinates, this.alternateCrs);
-            var extens_x = command.get('extens_x') / 2.0;
-            var extens_y = command.hasParam('extens_y') ? 
-            		command.get('extens_y') : 
-            		command.get('extens_x');
-            extens_y = extens_y / 2.0;
             var orientationRadians = command.get('orientation') * DEG2RAD;
-            
             coords = [];
-
-            var startEnd = this.rotate(-orientationRadians, -extens_x, -extens_y, stationUTM);
-            var topleft = this.rotate(-orientationRadians, -extens_x, extens_y, stationUTM);
-            var topright = this.rotate(-orientationRadians, extens_x, extens_y, stationUTM);
-            var bottomright = this.rotate(-orientationRadians, extens_x, -extens_y, stationUTM);
+            var startEnd = null;
+            var topleft = null;
+            var topright = null;
+            var bottomright = null;
+            
+            if (command.get('type') == 'SpiralPattern') {
+		    	 var size = command.get('size') / 2.0;
+		         startEnd = this.rotate(-orientationRadians, -size, -size, stationUTM);
+		         topleft = this.rotate(-orientationRadians, -size, size, stationUTM);
+		         topright = this.rotate(-orientationRadians, size, size, stationUTM);
+		         bottomright = this.rotate(-orientationRadians, size, -size, stationUTM);
+    		} else if (command.get('type') == 'LawnmowerPattern') {
+				var width = command.get('width') / 2.0;
+				var length = command.get('length');
+			    
+			    startEnd = this.rotate(-orientationRadians, -width, 0, stationUTM);
+			    topleft = this.rotate(-orientationRadians, -width, -length, stationUTM);
+			    topright = this.rotate(-orientationRadians, width, -length, stationUTM);
+			    bottomright = this.rotate(-orientationRadians, width, 0, stationUTM);
+			} else {
+				return coords;
+			}
             
             coords.push(startEnd);
             coords.push(topleft);
