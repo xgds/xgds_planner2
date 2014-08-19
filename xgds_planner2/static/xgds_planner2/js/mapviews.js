@@ -435,7 +435,7 @@ $(function() {
                       );
 
                 _.each(this.stationViews, function(stationView) {
-                    stationView.addPanoWedges();
+                    stationView.addPolygons();
                 });
             },
 
@@ -826,9 +826,11 @@ $(function() {
                 //this.model.on('change', this.redraw, this);
                 this.listenTo(this.model, 'change', this.redraw);
                 this.listenTo(this.model, 'add:sequence remove:sequence',
-                              function(command, collection) {
+                              function(command, collection, event) {
                                   if (command.hasParam('showWedge')) {
-                                      this.redrawPanoWedges();
+                                      this.redrawPolygons();
+                                  } else if (command.get('type').indexOf('Pattern') > 0){
+                                      this.redrawPolygons();
                                   }
                               });
 
@@ -889,6 +891,11 @@ $(function() {
                 if (this.wedgeViews) {
                     _.each(this.wedgeViews, function(wedgeView) {
                         wedgeView.update();
+                    });
+                }
+                if (this.commandViews) {
+                    _.each(this.commandViews, function(commandView) {
+                        commandView.update();
                     });
                 }
                 app.Actions.enable();
@@ -1010,7 +1017,7 @@ $(function() {
                 return this.dragHandlePm;
             },
 
-            addPanoWedges: function() {
+            addPolygons: function() {
                 var station = this.model;
                 var commandViews = this.commandViews = [];
                 var commandFeatures = this.planKmlView.commandFolder.getFeatures();
@@ -1037,7 +1044,7 @@ $(function() {
                 });
             },
 
-            destroyPanoWedges: function() {
+            destroyPolygons: function() {
                 var wedgeFeatures = this.planKmlView.fovWedgesFolder
                     .getFeatures();
                 
@@ -1053,21 +1060,21 @@ $(function() {
                 
                 if (!_.isUndefined(this.commandViews)) {
                 	while (this.commandViews.length > 0) {
-                		commandViews = this.commandViews.pop();
-                        commandFeatures.removeChild(commandViews.placemark);
+                		commandView = this.commandViews.pop();
+                        commandFeatures.removeChild(commandView.placemark);
                         commandView.close();
                     }
                 }
                 
             },
 
-            redrawPanoWedges: function() {
-                this.destroyPanoWedges();
-                this.addPanoWedges();
+            redrawPolygons: function() {
+                this.destroyPolygons();
+                this.addPolygons();
             },
 
             close: function() {
-                this.destroyPanoWedges();
+                this.destroyPolygons();
                 this.stopListening();
             }
 
@@ -1260,8 +1267,11 @@ $(function() {
                                                        .computeWedgeCoords());
 
             this.listenTo(this.command, 'change', this.update);
+            this.listenTo(this.station, 'change', this.update);
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
+//            this.listenTo(this.command, 'remove', this.erase);
+//            this.listenTo(this.station, 'remove', this.erase);
         },
 
         /*
@@ -1365,6 +1375,11 @@ $(function() {
                 this.placemark.setGeometry(polygon);
             }
         },
+        
+        erase: function() {
+//            ge.gex.dom.removeChild(this.placemark.getGeometry());
+//            this.close();
+        }, 
 
         close: function() {
             this.stopListening();
@@ -1385,9 +1400,12 @@ $(function() {
             this.placemark = this.createPlacemark(this.computeCoords());
 
             this.listenTo(this.command, 'change', this.update);
+            this.listenTo(this.station, 'change', this.update);
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
-//            this.listenTo(this.station, 'delete', this.update);
+
+//            this.listenTo(this.command, 'remove', this.erase);
+//            this.listenTo(this.station, 'remove', this.erase);
             
         },
         
@@ -1481,6 +1499,24 @@ $(function() {
                                                             }));
                 this.placemark.setGeometry(polygon);
             }
+        },
+        
+        erase: function() {
+//            if (!_.isUndefined(this.placemark)) {
+//                var geometry = this.placemark.getGeometry();
+//                var station = this.options.station;
+//                //TODO figure out how to get the commandFeatures list or command folder list.
+//                var earthView = app.views.EarthView;
+//                var planView = earthView.planView;
+//                var commandFolder = planView.commandFolder;
+//                var commandFeatures = commandFolder.getFeatures();
+//                commandFeatures.removeChild(this.placemark);
+//                var index = commandViews.indexOf(this);
+//                if (index > -1) {
+//                    array.splice(index, 1);
+//                }
+//                this.close();
+//            }
         },
 
         close: function() {
