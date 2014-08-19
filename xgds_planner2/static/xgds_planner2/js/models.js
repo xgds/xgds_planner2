@@ -541,6 +541,9 @@ app.models = app.models || {};
             this.data = {
                 // put static data elements here
             };
+            if (this.get('type') == 'LawnmowerPattern') {
+                this.set('type', 'RasterPattern');
+            }
             var params = app.commandSpecs[this.get('type')].params;
             var formsData = xpjsonToBackboneFormsSchema(params, 'Command');
             _.extend(this.schema, formsData.schema);

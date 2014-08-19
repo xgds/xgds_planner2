@@ -1438,7 +1438,7 @@ $(function() {
 		         topleft = this.rotate(-orientationRadians, -size, size, stationUTM);
 		         topright = this.rotate(-orientationRadians, size, size, stationUTM);
 		         bottomright = this.rotate(-orientationRadians, size, -size, stationUTM);
-    		} else if (command.get('type') == 'RasterPattern') {
+    		} else if (command.get('type') == 'RasterPattern' || command.get('type') == 'LawnmowerPattern') {
 				var width = command.get('width') / 2.0;
 				var length = command.get('length');
 			    
