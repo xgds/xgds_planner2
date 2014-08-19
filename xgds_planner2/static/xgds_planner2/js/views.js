@@ -3,9 +3,9 @@ app.views = app.views || {};
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
     events: {
-        'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); },
-        'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); },
-        'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); },
+        'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); this.updateTip('clear');},
+        'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
+        'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-delete': 'deleteSelectedCommands',
@@ -180,6 +180,16 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         } else {
             this.$el.find('#save-status').removeClass('notify-alert');
         }
+    },
+    
+    updateTip: function(eventName) {
+        var msgMap = {
+            'edit': 'Double click to delete stations, click and drag to move.',
+            'add': 'Click to add stations to end.',
+            'clear': ''
+        };
+        var msg = msgMap[eventName];
+        this.$el.find('#tip-status').text(msg);
     },
 
     toggleModalUntilt: function() {

@@ -57,7 +57,7 @@ table.planIndex td.exportFormat a {
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
-        <a href="{{ exporter.url }}">
+        <a href="{{ exporter.url }}" style="text-decoration:none">
           {{ exporter.label }} 
         </a>
       {% endfor %}

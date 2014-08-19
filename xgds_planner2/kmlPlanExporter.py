@@ -8,14 +8,14 @@ from geocamUtil import KmlUtil
 
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2 import xpjson
-
+import settings
 
 class KmlPlanExporter(TreeWalkPlanExporter):
     """
     Exports plan as KML string.
     """
 
-    label = 'KML'
+    label = 'kml'
     content_type = 'application/vnd.google-earth.kml+xml'
 
     def transformStation(self, station, tsequence, context):
@@ -26,6 +26,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return ('''
 <Placemark>
   <name>%(name)s</name>
+  <styleUrl>#station</styleUrl>
   <Point>
     <coordinates>%(lon)s,%(lat)s</coordinates>
   </Point>
@@ -43,6 +44,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return ('''
 <Placemark>
   <name>%(name)s</name>
+  <styleUrl>#segment</styleUrl>
   <MultiGeometry>
     <LineString>
       <tessellate>1</tessellate>
@@ -60,8 +62,14 @@ class KmlPlanExporter(TreeWalkPlanExporter):
                  'nlon': nlon,
                  'nlat': nlat})
 
+    def makeStyles(self):
+        waypointStyle = KmlUtil.makeStyle("station", "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
+        directionStyle = KmlUtil.makeStyle("direction", "http://maps.google.com/mapfiles/kml/pal3/icon28.png", 0.85)
+        segmentStyle = KmlUtil.makeStyle("segment", lineWidth=2)
+        return waypointStyle + directionStyle + segmentStyle
+
     def transformPlan(self, plan, tsequence, context):
-        return KmlUtil.wrapKmlDocument('\n'.join(tsequence), plan.get("id", ""))
+        return KmlUtil.wrapKmlDocument(self.makeStyles() + '\n'.join(tsequence), plan.get("id", ""))
 
 
 def test():

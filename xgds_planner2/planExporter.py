@@ -193,7 +193,7 @@ class XpjsonPlanExporter(JsonPlanExporter):
     Just export the plan as-is.
     """
 
-    label = 'XPJSON'
+    label = 'xpJson'
 
     def exportDbPlan(self, dbPlan):
         return dbPlan.jsonPlan
