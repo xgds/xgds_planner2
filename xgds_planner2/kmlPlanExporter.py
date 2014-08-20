@@ -8,7 +8,6 @@ from geocamUtil import KmlUtil
 
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2 import xpjson
-import settings
 
 class KmlPlanExporter(TreeWalkPlanExporter):
     """
