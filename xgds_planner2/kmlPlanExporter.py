@@ -22,18 +22,24 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         name = station.name
         if not name:
             name = station.id
-        return ('''
+        directionStyle = None
+        result = ""
+        if station.isDirectional and station.headingDegrees:
+            headingDegrees = int(station.headingDegrees)
+            directionStyle = KmlUtil.makeStyle("heading" + str(station.headingDegrees), iconUrl="http://earth.google.com/images/kml-icons/track-directional/track-0.png", iconHeading=headingDegrees)
+        result = result + ('''
 <Placemark>
-  <name>%(name)s</name>
-  <styleUrl>#station</styleUrl>
+  <name>%s</name>''' % name)
+        if directionStyle:
+            result = result + directionStyle
+        else:
+            result = result + '<styleUrl>station</styleUrl>'
+        result = result + ('''
   <Point>
     <coordinates>%(lon)s,%(lat)s</coordinates>
   </Point>
-</Placemark>
-''' %
-                {'name': name,
-                 'lon': lon,
-                 'lat': lat})
+</Placemark>''' % {'lon': lon,'lat': lat})
+        return result
 
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
@@ -43,7 +49,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return ('''
 <Placemark>
   <name>%(name)s</name>
-  <styleUrl>#segment</styleUrl>
+  <styleUrl>segment</styleUrl>
   <MultiGeometry>
     <LineString>
       <tessellate>1</tessellate>
@@ -63,12 +69,14 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 
     def makeStyles(self):
         waypointStyle = KmlUtil.makeStyle("station", "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
-        directionStyle = KmlUtil.makeStyle("direction", "http://maps.google.com/mapfiles/kml/pal3/icon28.png", 0.85)
         segmentStyle = KmlUtil.makeStyle("segment", lineWidth=2)
-        return waypointStyle + directionStyle + segmentStyle
+        return waypointStyle + segmentStyle
 
     def transformPlan(self, plan, tsequence, context):
-        return KmlUtil.wrapKmlDocument(self.makeStyles() + '\n'.join(tsequence), plan.get("id", ""))
+        name = plan.get("name")
+        if not name:
+            name = plan.get("id", "")
+        return KmlUtil.wrapKmlDocument(self.makeStyles() + '\n'.join(tsequence), name)
 
 
 def test():
