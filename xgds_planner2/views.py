@@ -363,6 +363,7 @@ def getPlanIndexKml(request):
         fname = '%s.kml' % plan.escapedName()
         relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
         url = request.build_absolute_uri(relUrl)
+        print(url)
         out.write("""
 <NetworkLink>
   <name>%(name)s</name>
