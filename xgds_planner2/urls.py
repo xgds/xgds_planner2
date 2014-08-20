@@ -12,6 +12,7 @@ urlpatterns = patterns(
     '',
 
     # url(r'^$', direct_to_template, {'template': 'planner_app.html'}, name='planner2'),
+    url(r'^planIndex\.kml$', views.getPlanIndexKml,{'readOnly': True, 'loginRequired': False}, name='planner2_planIndexKml'),
     url(r'^index/$', views.planIndex, {}, name='planner2_index'),
     url(r'^edit/(?P<plan_id>[^/]+)$', views.plan_editor_app, {}, name='planner2_edit'),
     url(r'^test/(?P<plan_id>[^/]+)$', views.plan_tests, {}, name='planner2_tests'),

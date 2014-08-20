@@ -351,3 +351,6 @@ def plan_delete(request):
             plan.save()
     return HttpResponseRedirect(reverse('planner2_index'))
     
+    
+def getPlanIndexKml(request):
+    return HttpResponseRedirect(reverse('planner2_index'))

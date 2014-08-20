@@ -23,17 +23,18 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         if not name:
             name = station.id
         directionStyle = None
+        styleUrl = 'station'
         result = ""
         if station.isDirectional and station.headingDegrees:
-            headingDegrees = int(station.headingDegrees)
-            directionStyle = KmlUtil.makeStyle("heading" + str(station.headingDegrees), iconUrl="http://earth.google.com/images/kml-icons/track-directional/track-0.png", iconHeading=headingDegrees)
+            headingDegrees = float(station.headingDegrees)
+            styleUrl = 'heading'
+            directionStyle = KmlUtil.makeStyle(iconHeading=headingDegrees)
         result = result + ('''
 <Placemark>
-  <name>%s</name>''' % name)
+  <name>%s</name>
+  <styleUrl>%s</styleUrl>''' % (name, styleUrl))
         if directionStyle:
             result = result + directionStyle
-        else:
-            result = result + '<styleUrl>station</styleUrl>'
         result = result + ('''
   <Point>
     <coordinates>%(lon)s,%(lat)s</coordinates>
@@ -69,8 +70,9 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 
     def makeStyles(self):
         waypointStyle = KmlUtil.makeStyle("station", "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
+        directionStyle = KmlUtil.makeStyle("heading", iconUrl="http://earth.google.com/images/kml-icons/track-directional/track-0.png")
         segmentStyle = KmlUtil.makeStyle("segment", lineWidth=2)
-        return waypointStyle + segmentStyle
+        return waypointStyle + directionStyle + segmentStyle
 
     def transformPlan(self, plan, tsequence, context):
         name = plan.get("name")
