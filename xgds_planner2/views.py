@@ -9,6 +9,8 @@ import glob
 import json
 import datetime
 
+from cStringIO import StringIO
+
 from django.shortcuts import render, render_to_response, get_object_or_404
 from django.http import (HttpResponseRedirect,
                          HttpResponse,
@@ -21,6 +23,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 
 from geocamUtil.loader import getModelByName
 from geocamUtil.dotDict import convertToDotDictRecurse
+from geocamUtil.KmlUtil import wrapKmlDjango
 
 from xgds_planner2 import (settings,
                            models,
@@ -353,4 +356,22 @@ def plan_delete(request):
     
     
 def getPlanIndexKml(request):
-    return HttpResponseRedirect(reverse('planner2_index'))
+    out = StringIO()
+    out.write('<Document>\n')
+    PLAN = get_plan_model()
+    for plan in PLAN.objects.filter(deleted=False).order_by('name'):
+        fname = '%s.kml' % plan.escapedName()
+        relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
+        url = request.build_absolute_uri(relUrl)
+        out.write("""
+<NetworkLink>
+  <name>%(name)s</name>
+  <visibility>0</visibility>
+  <Link>
+    <href>%(url)s</href>
+  </Link>
+</NetworkLink>
+"""
+                  % dict(name=plan.name, url=url))
+    out.write('</Document>')
+    return wrapKmlDjango(out.getvalue())
