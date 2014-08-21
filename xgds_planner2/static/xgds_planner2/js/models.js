@@ -325,10 +325,12 @@ app.models = app.models || {};
 
         appendCommandByPreset: function(preset) {
             var command = new models.Command(preset);
+            command.parent = this;
             this.get('sequence').add(command);
         },
 
         appendCommandModel: function(model) {
+            model.parent = this;
             this.get('sequence').add(model);
         },
         /*
@@ -541,6 +543,7 @@ app.models = app.models || {};
             this.data = {
                 // put static data elements here
             };
+            // this is to fix old/bad plans with lawnmowers. total hack.
             if (this.get('type') == 'LawnmowerPattern') {
                 this.set('type', 'RasterPattern');
             }
@@ -580,7 +583,63 @@ app.models = app.models || {};
     });
 
     models.CommandCollection = Backbone.Collection.extend({
-        model: models.Command
+        model: models.Command,
+        
+        initialize: function() {
+            this.on('add remove change', this.updateCommandIds, this);
+        },
+        
+        /*
+         * * resequence computes command ids from the templates
+         * in planSchema.
+         */
+        updateCommandIds: function() {
+            if (_.isUndefined(app.currentPlan)) {
+                return;
+            }
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
+                // prevent undo from capturing *every* change we make
+                app.Actions.disable();
+            }
+
+            var defaultParent = null;
+            var template = app.planSchema.commandIdFormat;
+            // TODO the backbone model does not use the dot interpretation to get attributes
+//          "commandIdFormat": "{parent.id}_{commandIndex:01d}_{command.presetCode}",
+            var template = "{parentid}_{commandIndex:01d}_{commandpresetCode}"
+            this.each(
+                function(item, idx, list) {
+                    var myparent = item.get('pathElement');
+                    if (myparent == null){
+                        myparent = item.parent;
+                    }
+                    if (myparent != null){
+                        defaultParent = myparent;
+                    } else {
+                        myparent = defaultParent;
+                    }
+                    var context = {
+                        parent: myparent,
+                        commandIndex: idx,
+                        commandpresetCode: item.get('presetCode')
+                    };
+                    context['command'] = item;
+                    if (myparent != null){
+                        context['parentid'] = myparent.get('id')
+                    }
+                    var commandId = template.format(context);
+                    item.set('id', commandId);
+                }
+            );
+            
+            if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
+                app.Actions.enable();
+            }
+
+            app.vent.trigger('change:plan');
+        }
+
+
     });
 
 })(app.models);
