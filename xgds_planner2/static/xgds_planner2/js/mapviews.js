@@ -1029,14 +1029,16 @@ $(function() {
                     if (command.hasParam('showWedge')) {
                         var wedgeView = new PanoWedgeView({
                             station: station,
-                            command: command
+                            command: command,
+                            wedgeFeatures: wedgeFeatures
                         });
                         wedgeViews.push(wedgeView);
                         wedgeFeatures.appendChild(wedgeView.placemark);
                     } else if (command.get('type').indexOf('Pattern') > 0){
                     	var commandView = new CommandView({
                             station: station,
-                            command: command
+                            command: command,
+                            commandFeatures: commandFeatures
                         });
                         commandViews.push(commandView);
                         commandFeatures.appendChild(commandView.placemark);
@@ -1258,6 +1260,7 @@ $(function() {
             //console.log('PanoWedgeView init: ' + this.cid);
             this.station = this.options.station;
             this.command = this.options.command;
+            this.wedgeFeatures = this.options.wedgeFeatures;
 
             this.lineColor = 'ffffffff';
             var rgbFillColor = app
@@ -1270,8 +1273,8 @@ $(function() {
             this.listenTo(this.station, 'change', this.update);
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
-//            this.listenTo(this.command, 'remove', this.erase);
-//            this.listenTo(this.station, 'remove', this.erase);
+            this.listenTo(this.command, 'remove', this.erase);
+            this.listenTo(this.station, 'remove', this.erase);
         },
 
         /*
@@ -1377,8 +1380,12 @@ $(function() {
         },
         
         erase: function() {
-//            ge.gex.dom.removeChild(this.placemark.getGeometry());
-//            this.close();
+            if (!_.isUndefined(this.placemark)) {
+                var geometry = this.placemark.getGeometry();
+                var station = this.options.station;
+                this.wedgeFeatures.removeChild(this.placemark);
+                this.close();
+            }
         }, 
 
         close: function() {
@@ -1390,6 +1397,7 @@ $(function() {
         initialize: function() {
             this.station = this.options.station;
             this.command = this.options.command;
+            this.commandFeatures = this.options.commandFeatures;
 
             this.lineColor = 'ffffffff';
             var rgbFillColor = app
@@ -1404,8 +1412,8 @@ $(function() {
             this.listenTo(this.station, 'change:geometry', this.update);
             this.listenTo(this.station, 'change:headingDegrees', this.update);
 
-//            this.listenTo(this.command, 'remove', this.erase);
-//            this.listenTo(this.station, 'remove', this.erase);
+            this.listenTo(this.command, 'remove', this.erase);
+            this.listenTo(this.station, 'remove', this.erase);
             
         },
         
@@ -1502,21 +1510,12 @@ $(function() {
         },
         
         erase: function() {
-//            if (!_.isUndefined(this.placemark)) {
-//                var geometry = this.placemark.getGeometry();
-//                var station = this.options.station;
-//                //TODO figure out how to get the commandFeatures list or command folder list.
-//                var earthView = app.views.EarthView;
-//                var planView = earthView.planView;
-//                var commandFolder = planView.commandFolder;
-//                var commandFeatures = commandFolder.getFeatures();
-//                commandFeatures.removeChild(this.placemark);
-//                var index = commandViews.indexOf(this);
-//                if (index > -1) {
-//                    array.splice(index, 1);
-//                }
-//                this.close();
-//            }
+            if (!_.isUndefined(this.placemark)) {
+                var geometry = this.placemark.getGeometry();
+                var station = this.options.station;
+                this.commandFeatures.removeChild(this.placemark);
+                this.close();
+            }
         },
 
         close: function() {
