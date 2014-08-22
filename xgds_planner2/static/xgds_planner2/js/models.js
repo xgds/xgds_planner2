@@ -606,7 +606,6 @@ app.models = app.models || {};
             var template = app.planSchema.commandIdFormat;
             // TODO the backbone model does not use the dot interpretation to get attributes
 //          "commandIdFormat": "{parent.id}_{commandIndex:01d}_{command.presetCode}",
-            var template = "{parentid}_{commandIndex:01d}_{commandpresetCode}"
             this.each(
                 function(item, idx, list) {
                     var myparent = item.get('pathElement');
@@ -618,15 +617,18 @@ app.models = app.models || {};
                     } else {
                         myparent = defaultParent;
                     }
-                    var context = {
-                        parent: myparent,
-                        commandIndex: idx,
-                        commandpresetCode: item.get('presetCode')
-                    };
-                    context['command'] = item;
+                    var parentId = '';
                     if (myparent != null){
-                        context['parentid'] = myparent.get('id')
+                        parentId = myparent.get('id')
                     }
+                    parentDict = {'id': parentId };
+                    commandDict = {'presetCode': item.get('presetCode')};
+                    var context = {
+                        parent: parentDict,
+                        commandIndex: idx,
+                        command: commandDict
+                    };
+                    
                     var commandId = template.format(context);
                     item.set('id', commandId);
                 }

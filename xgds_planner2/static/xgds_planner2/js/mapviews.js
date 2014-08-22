@@ -1034,14 +1034,20 @@ $(function() {
                         });
                         wedgeViews.push(wedgeView);
                         wedgeFeatures.appendChild(wedgeView.placemark);
-                    } else if (command.get('type').indexOf('Pattern') > 0){
-                    	var commandView = new CommandView({
-                            station: station,
-                            command: command,
-                            commandFeatures: commandFeatures
-                        });
-                        commandViews.push(commandView);
-                        commandFeatures.appendChild(commandView.placemark);
+                    } else {
+                        if (command.get('type') in app.commandRenderers){
+                            var typeKey = command.get('type');
+                            var foundClass = app.commandRenderers[typeKey];
+                            var theClass = window[foundClass];
+                             
+                            var commandView = new theClass({
+                                station: station,
+                                command: command,
+                                commandFeatures: commandFeatures
+                            });
+                            commandViews.push(commandView);
+                            commandFeatures.appendChild(commandView.placemark);
+                        }
                     }
                 });
             },
@@ -1393,7 +1399,7 @@ $(function() {
         }
     });
     
-    var CommandView = Backbone.View.extend({
+    /*var CommandView = Backbone.View.extend({
         initialize: function() {
             this.station = this.options.station;
             this.command = this.options.command;
@@ -1424,10 +1430,9 @@ $(function() {
             return {lng: theLL[0], lat: theLL[1]};
         },
 
-        /*
-         * Calculate the polygon's coordinates and output them
-         * as an array of objects with lat & lng properties.
-         */
+        
+         //Calculate the polygon's coordinates and output them
+         //as an array of objects with lat & lng properties.
         computeCoords: function() {
             var station = this.station;
             var command = this.command;
@@ -1521,6 +1526,6 @@ $(function() {
         close: function() {
             this.stopListening();
         }
-    });
+    }); */
 
 });

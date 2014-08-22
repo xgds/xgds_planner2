@@ -64,6 +64,7 @@
 {% endblock scripts %}
 
 {% block jsInit %}
+
     plannerAppOptions = {
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
@@ -74,7 +75,8 @@
         mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }},
         placemarkCircleUrl: "{{ placemark_circle_url }}",
         placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
-        XGDS_PLANNER_EARTH_LOADED_CALLBACK: {{ settings.XGDS_PLANNER_EARTH_LOADED_CALLBACK }}
+        XGDS_PLANNER_EARTH_LOADED_CALLBACK: {{ settings.XGDS_PLANNER_EARTH_LOADED_CALLBACK }},
+        commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }}
     };
 $(function(){
     app.start(plannerAppOptions);

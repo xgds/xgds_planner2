@@ -211,6 +211,7 @@ var app = (function($, _, Backbone) {
             }
 
             this.Simulator = this.options.simulator;
+            this.commandRenderers = this.options.commandRenderers;
 
             // rotation handles option
             this.mapRotationHandles = (_.isBoolean(this.options.mapRotationHandles)) ?

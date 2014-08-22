@@ -164,6 +164,17 @@ XGDS_PLANNER_SCHEMAS = {
     }
 }
 
+
+# XGDS_PLANNER_COMMAND_RENDERER_SCRIPTS javascript files to be included by the  mapviews.js
+# to support custom command rendering
+XGDS_PLANNER_COMMAND_RENDERER_SCRIPTS = ()
+
+# XGDS_PLANNER_COMMAND_RENDERERS - A dict of Command type to javascript file to be used in the mapviews.js
+# to render a command in a custom way. 
+# see xgds_kn for example
+XGDS_PLANNER_COMMAND_RENDERERS = {}
+
+
 # XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
 # extra JavaScript callback to call after Google Earth is loaded.
 XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'
