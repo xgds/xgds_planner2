@@ -25,6 +25,13 @@ class PmlPlanExporter(TreeWalkPlanExporter):
 
     
     def wrapDocument(self, text):
+        content = ""
+        for entry in text:
+            if isinstance(entry, basestring):
+                content = content + entry
+            elif isinstance(entry, list):
+                for a in entry:
+                    content = content + a
         return ("""<?xml version="1.0" encoding="UTF-8"?>
 <PML>
     <Plan>
@@ -33,7 +40,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         </Children>
     </Plan>
 </PML>
-""" % text)
+""" % content)
         
     def getDurationString(self, seconds):
         mins, secs = divmod(seconds, 60)
@@ -43,8 +50,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         return durationString
         
     def makeActivity(self, activityType, id, name, durationSeconds, notes):
-        return ("""
-            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(id)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
+        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(id)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
                 <SharedProperties>
                     <Property name="location">
                         <String></String>
@@ -72,7 +78,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         """
         duration for station is 0, as we are treating it as arrival at station. 
         """
-        return(self.makeActivity("Station", station.id, station.name, 0, station.notes))
+        return self.makeActivity("Station", station.id, station.name, 0, station.notes)
         
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
@@ -107,3 +113,31 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         
     def transformPlan(self, plan, tsequence, context):
         return self.wrapDocument(tsequence)
+    
+    
+    def exportStation(self, station, context):
+        """
+        Because we are adding up the timing we have to change the order here and build the station first before the children
+        """
+        tsequence = []
+        tsequence.append(self.transformStation(station, tsequence, context))
+        for i, cmd in enumerate(station.sequence):
+            ctx = context.copy()
+            ctx.command = cmd
+            ctx.commandIndex = i
+            tsequence.append(self.transformStationCommand(cmd, ctx))
+        return tsequence
+        
+
+    def exportSegment(self, segment, context):
+        """
+        Because we are adding up the timing we have to change the order here and build the station first before the children
+        """
+        tsequence = []
+        tsequence.append(self.transformSegment(segment, tsequence, context))
+        for i, cmd in enumerate(segment.sequence):
+            ctx = context.copy()
+            ctx.command = cmd
+            ctx.commandIndex = i
+            tsequence.append(self.transformSegmentCommand(cmd, ctx))
+        return tsequence
