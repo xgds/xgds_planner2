@@ -19,6 +19,7 @@ from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
+# from geocamUtil.loader import getModelByName
 
 # pylint: disable=C1001,E1101
 
@@ -35,6 +36,90 @@ from xgds_planner2 import xpjson, settings, statsPlanExporter
 PLAN_SCHEMA_CACHE = {}
 
 
+class AbstractVehicle(models.Model):
+    name = models.CharField(max_length=192, blank=True)
+    notes = models.TextField(blank=True)
+    type = models.CharField(max_length=16)
+
+    class Meta:
+        db_table = u'vehicle'
+        abstract = True
+
+    def __unicode__(self):
+        return self.name 
+
+
+class Vehicle(AbstractVehicle):
+    pass
+
+
+class AbstractFlight(models.Model):
+    uuid = UuidField(primary_key=True)
+    name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
+    locked = models.BooleanField(blank=True)
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
+    notes = models.TextField(blank=True)
+    group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
+    plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan', symmetrical=False)
+
+    def __unicode__(self):
+        return self.name
+
+    class Meta:
+        abstract = True
+        ordering = ['-name']
+
+
+class Flight(AbstractFlight):
+    pass
+
+
+class FlightToPlan(models.Model):
+    """
+    Relationship table for managing
+    flight to plan's many to many relationship.
+    """
+    start_time = models.DateTimeField(null=True, blank=True)
+    planned_start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    planned_end_time = models.DateTimeField(null=True, blank=True)
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, null=True, blank=True)
+    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, null=True, blank=True)
+
+    def __unicode__(self):
+        return self.id
+
+
+class ActiveFlight(models.Model):
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+
+    def __unicode__(self):
+        return (u'ActiveFlight(%s, %s)' %
+                (self.id, repr(self.flight.name)))
+
+
+class AbstractGroupFlight(models.Model):
+    """
+    This GroupFlight model represents the overall coordinated
+    operation.  
+    """
+    name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
+    notes = models.TextField(blank=True)
+
+    class Meta:
+        db_table = u'groupflight'
+        abstract = True
+
+    def __unicode__(self):
+        return self.name
+
+
+class GroupFlight(AbstractGroupFlight):
+    pass
+
+
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=256)
@@ -46,7 +131,7 @@ class AbstractPlan(models.Model):
 
     # a place to put an auto-generated summary of the plan
     summary = models.CharField(max_length=256)
-    
+
     # allow users to mark plans as deleted.  remember to use this field!
     deleted = models.BooleanField(blank=True, default=False)
 
@@ -57,6 +142,7 @@ class AbstractPlan(models.Model):
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
     stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
+    flights = models.ManyToManyField(settings.XGDS_PLANNER2_FLIGHT_MODEL, through='FlightToPlan', symmetrical=False)
 
     class Meta:
         ordering = ['-dateModified']

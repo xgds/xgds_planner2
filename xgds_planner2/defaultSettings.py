@@ -133,6 +133,9 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/?logo=0"
 
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
+XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
+XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
+XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
 
 # Schema used to be set in the settings, now they are set in the PlanSchema database table.
 XGDS_PLANNER_SCHEMAS = [
