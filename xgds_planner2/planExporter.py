@@ -26,6 +26,8 @@ class PlanExporter(object):
     for exportDbPlan() to return a structured object -- then you must
     define how the object should be serialized into response text using
     the serializeExportedObject() method.
+    
+    You can use opts to pass in a dictonary for extra options.
     """
 
     label = 'Describe the type of file the class exports. Set in subclasses.'

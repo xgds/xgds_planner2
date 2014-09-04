@@ -20,8 +20,12 @@ class PmlPlanExporter(TreeWalkPlanExporter):
     
     startTime = None
     
-    def initPlan(self, plan, context, startTime = datetime.datetime.now()):
-        self.startTime = startTime
+    def initPlan(self, plan, context):
+#         if plan.flight:
+#             self.startTime = plan.flight.plannedStartTime
+#         else:
+#             self.startTime = datetime.datetime.now()
+        self.startTime = datetime.datetime.now()
 
     
     def wrapDocument(self, text):
@@ -131,13 +135,13 @@ class PmlPlanExporter(TreeWalkPlanExporter):
 
     def exportSegment(self, segment, context):
         """
-        Because we are adding up the timing we have to change the order here and build the station first before the children
+        For a segment, the activities come first and then the timing for the drive.
         """
         tsequence = []
-        tsequence.append(self.transformSegment(segment, tsequence, context))
         for i, cmd in enumerate(segment.sequence):
             ctx = context.copy()
             ctx.command = cmd
             ctx.commandIndex = i
             tsequence.append(self.transformSegmentCommand(cmd, ctx))
+        tsequence.append(self.transformSegment(segment, tsequence, context))
         return tsequence

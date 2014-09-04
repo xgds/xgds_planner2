@@ -42,7 +42,6 @@ class AbstractVehicle(models.Model):
     type = models.CharField(max_length=16)
 
     class Meta:
-        db_table = u'vehicle'
         abstract = True
 
     def __unicode__(self):
