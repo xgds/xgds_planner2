@@ -121,6 +121,7 @@ XGDS_PLANNER_PLAN_EXPORTERS = (
     ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
     ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
     ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
+    ('pml', '.pml', 'xgds_planner2.pmlPlanExporter.PmlPlanExporter'),
 )
 
 # list of (formatCode, extension, importerClass)
