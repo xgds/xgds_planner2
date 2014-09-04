@@ -32,3 +32,26 @@ class CreatePlanForm(forms.Form):
                     allSites.append(site)
         sites = sorted(allSites, key=lambda site: site.name)
         self.fields['site'].choices = [(site.id, site.name) for site in sites]
+
+# form for creating a flight group, flights, and all sorts of other stuff needed for our overly complex system.
+class GroupFlightForm(forms.Form):
+    date = forms.DateField(required=True)
+    prefix = forms.CharField(widget=forms.TextInput(attrs={'size': 4}),
+                             label="Prefix",
+                             required=True,
+                             initial='A')
+
+    CHOICES = []
+    for vehicle in Vehicle.objects.all().order_by('shortName'):
+        CHOICES.append((vehicle.shortName, vehicle.shortName))
+    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
+
+    notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
+
+    def initialize(self, timeinfo):
+        self.year = timeinfo['year']
+        self.month = timeinfo['month']
+        self.day = timeinfo['day']
+        self.date = datetime.date(int(self.year), int(self.month), int(self.day))
+        self.month = int(timeinfo['month']) - 1  # apparently 0 is january ...
+

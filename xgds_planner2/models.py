@@ -61,8 +61,12 @@ class AbstractFlight(models.Model):
     vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
     notes = models.TextField(blank=True)
     group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
-    plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan', symmetrical=False)
+    plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan')
+#     plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL)
 
+    def startFlightExtras(self):
+        pass
+    
     def __unicode__(self):
         return self.name
 
@@ -83,9 +87,8 @@ class FlightToPlan(models.Model):
     start_time = models.DateTimeField(null=True, blank=True)
     planned_start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    planned_end_time = models.DateTimeField(null=True, blank=True)
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, null=True, blank=True)
-    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, null=True, blank=True)
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL)
 
     def __unicode__(self):
         return self.id

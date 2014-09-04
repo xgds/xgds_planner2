@@ -8,6 +8,11 @@ import os
 import glob
 import json
 import datetime
+import KeyError
+import ObjectDoesNotExist
+import IntegrityError
+
+from uuid import uuid4
 
 from cStringIO import StringIO
 
@@ -31,6 +36,7 @@ from xgds_planner2 import (settings,
                            forms,
                            planImporter,
                            fillIdsPlanExporter)
+from xgds_planner2.forms import GroupFlightForm
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -376,3 +382,164 @@ def getPlanIndexKml(request):
                   % dict(name=plan.name, url=url))
     out.write('</Document>')
     return wrapKmlDjango(out.getvalue())
+
+
+def processNameToDate(flight):
+    result = {}
+    if (len(flight.name) >= 8):
+        year = flight.name[0:4].encode()
+        month = flight.name[4:6].encode()
+        day = flight.name[6:8].encode()
+        result = {"year": year, "month": month, "day": day}
+    return result
+
+def getActiveFlights():
+    return models.ActiveFlight.objects.all()
+
+
+def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
+    orderby='name'
+    if reverse:
+        orderby='-name'
+    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    FlightList = FlightModel.objects.exclude(name="").select_related('plan').filter(name__isnull=False).order_by(orderby)
+    FlightNames = []
+    for Flight in FlightList:
+        if (Flight.name):
+            FlightNames.append(Flight.name)
+    return FlightNames
+
+
+def manageFlight(request):
+    return render_to_response("xgds_planner2/ManageFlight.html",
+                              {"active_Flights": getActiveFlights(), 
+                               "Flight_names": getAllFlightNames()},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def startFlight(request):
+    errorString = None
+    try: 
+        flightName = request.REQUEST['Flight']
+    except KeyError:
+        errorString = 'Flight NAME IS REQUIRED'
+    if not errorString:
+        startTime = datetime.datetime.utcnow()
+        FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+        flight = FlightModel.objects.get(name=flightName)
+        flight.startTime = startTime
+        flight.endTime = None
+        flight.save()
+
+        flight.startFlightExtras(request)
+
+        if flight:
+            activeFlight = models.ActiveFlight.objects.filter(flight_id=flight.id)
+            if not activeFlight:
+                newlyActive = models.ActiveFlight(flight=flight)
+                newlyActive.save()
+        else:
+            errorString = 'NO Flight FOUND'
+    return render_to_response("xgds_planner2/ManageFlight.html",
+                              {"active_Flights": getActiveFlights(),
+                               "Flight_names": getAllFlightNames(),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def stopFlight(request):
+    errorString = None
+    try:
+        FlightName = request.REQUEST['Flight']
+    except KeyError: 
+        errorString = 'Flight NAME IS REQUIRED'
+    if not errorString:
+        endTime = datetime.datetime.utcnow()
+        FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+        flight = FlightModel.objects.get(name=FlightName)
+        if flight:
+            try: 
+                flight.episode.endTime = endTime
+                flight.episode.save()
+            except:
+                print "Flight's episode does not exist"
+            flight.endTime = endTime
+            flight.save()
+            try:
+                active = models.ActiveFlight.objects.get(Flight_id = flight.id)
+                if active:
+                    active.delete()
+            except ObjectDoesNotExist:
+                errorString = 'Flight IS NOT ACTIVE'
+        else:
+            errorString = 'NO Flight FOUND'
+    return render_to_response("mvpApp/ManageFlight.html",
+                              {"active_Flights": getActiveFlights(),
+                               "Flight_names": getAllFlightNames(),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def addGroupFlight(request):
+    errorString = None
+    if request.method != 'POST':
+        groupFlightForm = GroupFlightForm()
+
+        today = datetime.datetime.utcnow()
+        groupFlightForm.year = today.year
+        groupFlightForm.month = today.month - 1
+        groupFlightForm.day = today.day
+        return render_to_response("AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
+                                                          'errorstring': errorString},
+                                  context_instance=RequestContext(request))
+    if request.method == 'POST':
+        form = GroupFlightForm(request.POST)
+        if form.is_valid():
+            GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+            groupFlight = GroupFlightModel()
+            groupFlight.name = form.cleaned_data['date'].strftime('%Y%m%d') + form.cleaned_data['prefix']
+            groupFlight.notes = form.cleaned_data['notes']
+
+            try:
+                groupFlight.save()
+            except IntegrityError, strerror:
+                errorString = "Problem Creating Group Flight: {%s}" % strerror
+                return render_to_response("AddGroupFlight.html",
+                                          {'groupFlightForm': form,
+                                           'errorstring': errorString},
+                                          context_instance=RequestContext(request))
+
+            for vehicle in form.cleaned_data['vehicles']:
+                FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+                newFlight = FlightModel()
+                newFlight.group = groupFlight
+                
+                VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+                newFlight.vehicle = VehicleModel.objects.get(name=vehicle)
+
+                newFlight.name = groupFlight.name + "_" + vehicle
+
+                newFlight.locked = False
+                newFlight.uuid = uuid4()
+
+                try:
+                    newFlight.save(force_insert=True)
+                except IntegrityError, strerror:
+                    errorString = "Problem Creating Flight: {%s}" % strerror
+                    return render_to_response("AddFlight.html",
+                                              {'groupFlightForm': form,
+                                               'errorstring': errorString},
+                                              context_instance=RequestContext(request))
+        else:
+            errorString = form.errors
+            return render_to_response("AddFlight.html", {'groupFlightForm': form,
+                                                         'errorstring': errorString},
+                                      context_instance=RequestContext(request))
+
+    # unusued variable?
+    #errorstring = "flight added successfully"
+    return HttpResponseRedirect(reverse('schedule', args=[]))
+

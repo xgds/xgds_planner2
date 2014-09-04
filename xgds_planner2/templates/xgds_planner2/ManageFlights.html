@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load nav %}
+
+{% block siteSection %} Manage Flight {% endblock %}
+
+{% block nav %}
+    {% nav "planner2.manageFlight" %}
+    {{ block.super }}
+{% endblock %}
+
+{% block sitemenu-content-secondary %}
+    {% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
+{% block contents %}
+    <h3> Active Flights </h3>
+    {% if active_flights %}
+        {% for active in active_flights %}
+            Flight: {{active.flight.name }} </br>
+        {% endfor %}
+    {% endif %}
+
+    Start a Flight: <br/>
+    <form enctype = "multipart/form-data"
+        action="{% url 'startFlight' %}" method="post">
+        Flight: &nbsp; <select name="flight"> {% for flight in flight_names %} 
+        <option value="{{ flight }}">{{ flight }} </option>
+        {% endfor %}
+        </select>
+
+        <input class="mybutton" type="submit" value="Start Flight" />
+    </form>
+
+    <p>
+    Stop a Flight: <br/>
+    <form enctype="multipart/form-data"
+        action="{% url 'stopFlight' %}" method="post">
+        Flight: &nbsp; <select name="flight"> {% for active in active_flights %}
+        <option value="{{ active.flight.name }}">{{ active.flight.name }} </option>
+        {% endfor %}
+        </select>
+        <input class="mybutton" type="submit" value="Stop Flight" />
+    </form>
+    </p>
+{% endblock contents %}

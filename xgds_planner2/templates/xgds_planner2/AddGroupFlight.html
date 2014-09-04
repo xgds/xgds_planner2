@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load url from future %}
+{% load nav %}
+{% block siteSection %}Add Group Flight{% endblock %}
+
+	{% block headExtras %}
+	<link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css">
+	{% endblock %}
+		
+		
+    {% block nav %}
+    {% nav "schedule.addFlightGroup" %}
+    {{ block.super }}
+    {% endblock %}
+    
+    {% block sitemenu-content-secondary %}
+	{% include "schedule_subnav.html" %}
+	{% endblock %}
+						
+{% block contents %}
+   
+  <form action="{% url 'addGroupFlight' %}" method="post">
+<br><br>
+	<table>
+		<tr>
+			<td align="right"><label for="id_date">Date:</label></td>
+			<td>{{ groupFlightForm.date }}</td>
+		</tr>
+		<tr>
+			<td align="right"><label for="id_prefix">Prefix:</label></td>
+			<td>{{ groupFlightForm.prefix }}</td>
+		</tr>
+    	<tr>
+			<td align="right" valign="top">Vehicles:</td>
+			<td>{{ groupFlightForm.sources }}</td>
+		</tr>
+		<tr><td></td><td>Optional:</td>
+		</tr>
+		<tr>
+			<td align="right"><label for="id_notes">Notes:</label></td>
+			<td>{{ groupFlightForm.notes }}</td>
+		</tr>
+		<tr>
+			<td align="right"></td>
+			<td><input type="submit" value="Add" /></td>
+		</tr>
+	</table>
+  	 
+</p>	
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+   {{ block.super }}
+		<script src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+		
+		<script>
+		$(function() {
+			$( "#id_date" ).datepicker();
+			$( "#id_date" ).datepicker( "option", "dateFormat", "yy-mm-dd" );
+			$( "#id_date" ).datepicker("setDate",new Date({{ groupFlightForm.year }}, {{ groupFlightForm.month }},{{ groupFlightForm.day }}));
+		});
+		</script>
+{% endblock %}
