@@ -22,6 +22,10 @@ urlpatterns = patterns(
     url(r'^plan/create/$', views.planCreate, {}, name='planner2_planCreate'),
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
     url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
+    url(r'^manageFlight/$', views.manageFlight, {}, "planner2_manageFlight"),
+    url(r'startFlight/$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
+    url(r'stopFlight/$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
+
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

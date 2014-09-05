@@ -6,7 +6,7 @@
 
 from django import forms
 from django.conf import settings
-from xgds_planner2.models import getPlanSchema
+from xgds_planner2.models import getPlanSchema, Vehicle
 
 
 class CreatePlanForm(forms.Form):
@@ -42,8 +42,8 @@ class GroupFlightForm(forms.Form):
                              initial='A')
 
     CHOICES = []
-    for vehicle in Vehicle.objects.all().order_by('shortName'):
-        CHOICES.append((vehicle.shortName, vehicle.shortName))
+    for vehicle in Vehicle.objects.all().order_by('name'):
+        CHOICES.append((vehicle.name, vehicle.name))
     vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
 
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)

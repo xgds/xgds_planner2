@@ -8,9 +8,9 @@ import os
 import glob
 import json
 import datetime
-import KeyError
-import ObjectDoesNotExist
-import IntegrityError
+# import KeyError
+# import ObjectDoesNotExist
+# import IntegrityError
 
 from uuid import uuid4
 
