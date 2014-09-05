@@ -8,9 +8,6 @@ import os
 import glob
 import json
 import datetime
-import KeyError
-import ObjectDoesNotExist
-import IntegrityError
 
 from uuid import uuid4
 
@@ -411,7 +408,7 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
 
 
 def manageFlight(request):
-    return render_to_response("xgds_planner2/ManageFlight.html",
+    return render_to_response("xgds_planner2/ManageFlights.html",
                               {"active_Flights": getActiveFlights(), 
                                "Flight_names": getAllFlightNames()},
                               context_instance=RequestContext(request))
@@ -441,7 +438,7 @@ def startFlight(request):
                 newlyActive.save()
         else:
             errorString = 'NO Flight FOUND'
-    return render_to_response("xgds_planner2/ManageFlight.html",
+    return render_to_response("xgds_planner2/ManageFlights.html",
                               {"active_Flights": getActiveFlights(),
                                "Flight_names": getAllFlightNames(),
                                "errorstring": errorString},
@@ -475,7 +472,7 @@ def stopFlight(request):
                 errorString = 'Flight IS NOT ACTIVE'
         else:
             errorString = 'NO Flight FOUND'
-    return render_to_response("mvpApp/ManageFlight.html",
+    return render_to_response("mvpApp/ManageFlights.html",
                               {"active_Flights": getActiveFlights(),
                                "Flight_names": getAllFlightNames(),
                                "errorstring": errorString},
@@ -492,7 +489,7 @@ def addGroupFlight(request):
         groupFlightForm.year = today.year
         groupFlightForm.month = today.month - 1
         groupFlightForm.day = today.day
-        return render_to_response("AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
+        return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
                                                           'errorstring': errorString},
                                   context_instance=RequestContext(request))
     if request.method == 'POST':
@@ -507,7 +504,7 @@ def addGroupFlight(request):
                 groupFlight.save()
             except IntegrityError, strerror:
                 errorString = "Problem Creating Group Flight: {%s}" % strerror
-                return render_to_response("AddGroupFlight.html",
+                return render_to_response("xgds_planner2/AddGroupFlight.html",
                                           {'groupFlightForm': form,
                                            'errorstring': errorString},
                                           context_instance=RequestContext(request))
@@ -529,17 +526,15 @@ def addGroupFlight(request):
                     newFlight.save(force_insert=True)
                 except IntegrityError, strerror:
                     errorString = "Problem Creating Flight: {%s}" % strerror
-                    return render_to_response("AddFlight.html",
+                    return render_to_response("xgds_planner2/AddGroupFlight.html",
                                               {'groupFlightForm': form,
                                                'errorstring': errorString},
                                               context_instance=RequestContext(request))
         else:
             errorString = form.errors
-            return render_to_response("AddFlight.html", {'groupFlightForm': form,
+            return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': form,
                                                          'errorstring': errorString},
                                       context_instance=RequestContext(request))
 
-    # unusued variable?
-    #errorstring = "flight added successfully"
-    return HttpResponseRedirect(reverse('schedule', args=[]))
+    return HttpResponseRedirect(reverse('planner2_manageFlight', args=[]))
 

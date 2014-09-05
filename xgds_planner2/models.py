@@ -14,6 +14,9 @@ import iso8601
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
+
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
@@ -52,6 +55,31 @@ class Vehicle(AbstractVehicle):
     pass
 
 
+class PlanExecution(models.Model):
+    """
+    Relationship table for managing
+    flight to plan's many to many relationship.
+    """
+    start_time = models.DateTimeField(null=True, blank=True)
+    planned_start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+
+#     flightType = models.ForeignKey(ContentType, null=True, blank=True, related_name="flightType")
+#     flightId = models.PositiveIntegerField(null=True, blank=True)
+#     flight = generic.GenericForeignKey('flightType', 'flightId')
+    
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+
+#     planType = models.ForeignKey(ContentType, null=True, blank=True, related_name="planType")
+#     planId = models.PositiveIntegerField(null=True, blank=True)
+#     plan = generic.GenericForeignKey('planType', 'planId')
+    
+    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL)
+
+    def __unicode__(self):
+        return self.id
+
+
 class AbstractFlight(models.Model):
     uuid = UuidField(primary_key=True)
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
@@ -61,6 +89,12 @@ class AbstractFlight(models.Model):
     vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
     notes = models.TextField(blank=True)
     group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
+#     plans = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan')
+#     planExecutions = models.ForeignKey(PlanExecution, null=True, blank=True, related_name="flight_planExecutions")
+#     plans = generic.GenericRelation('Plans',
+#         content_type_field='sender_content_type',
+#         object_id_field='sender_id'
+#     )
 
     def startFlightExtras(self):
         pass
@@ -74,24 +108,9 @@ class AbstractFlight(models.Model):
 
 
 class Flight(AbstractFlight):
+    pass
     # when you define your own nonabstract class you need to have this
 #     plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='xgds_planner2.FlightToPlan')
-    pass
-
-
-class FlightToPlan(models.Model):
-    """
-    Relationship table for managing
-    flight to plan's many to many relationship.
-    """
-    start_time = models.DateTimeField(null=True, blank=True)
-    planned_start_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL)
-
-    def __unicode__(self):
-        return self.id
 
 
 class ActiveFlight(models.Model):
@@ -144,7 +163,7 @@ class AbstractPlan(models.Model):
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
     stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
-    flights = models.ManyToManyField(settings.XGDS_PLANNER2_FLIGHT_MODEL, through='FlightToPlan', symmetrical=False)
+#     flights = models.ManyToManyField(settings.XGDS_PLANNER2_FLIGHT_MODEL, through='FlightToPlan', symmetrical=False)
 
     class Meta:
         ordering = ['-dateModified']
