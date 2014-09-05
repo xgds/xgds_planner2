@@ -113,7 +113,6 @@ class AbstractGroupFlight(models.Model):
     notes = models.TextField(blank=True)
 
     class Meta:
-        db_table = u'groupflight'
         abstract = True
 
     def __unicode__(self):

@@ -20,7 +20,6 @@
 {% block contents %}
    <h3>Create Flight</h3>
   <form action="{% url 'planner2_addGroupFlight' %}" method="post">
-<br><br>
 	<table>
 		<tr>
 			<td align="right"><label for="id_date">Date:</label></td>
@@ -45,6 +44,10 @@
 			<td><input type="submit" value="Add" /></td>
 		</tr>
 	</table>
+	<h3>Existing Flights</h3>
+	{% for group in groupFlights %}
+	<li>{{ group.name }}</li>
+	{% endfor %}
   	 
 </p>	
 </form>

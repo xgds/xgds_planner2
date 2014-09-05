@@ -3,7 +3,6 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
-
 import os
 import glob
 import json
@@ -22,6 +21,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.db.utils import IntegrityError
 
 from geocamUtil.loader import getModelByName
 from geocamUtil.dotDict import convertToDotDictRecurse
@@ -399,7 +399,7 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
     if reverse:
         orderby='-name'
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    FlightList = FlightModel.objects.exclude(name="").select_related('plan').filter(name__isnull=False).order_by(orderby)
+    FlightList = FlightModel.objects.exclude(name="").order_by(orderby)
     FlightNames = []
     for Flight in FlightList:
         if (Flight.name):
@@ -407,10 +407,16 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
     return FlightNames
 
 
+def getGroupFlights():
+    GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+    return GroupFlightModel.objects.exclude(name="").order_by('name')
+
+
 def manageFlight(request):
     return render_to_response("xgds_planner2/ManageFlights.html",
-                              {"active_Flights": getActiveFlights(), 
-                               "Flight_names": getAllFlightNames()},
+                              {"active_flights": getActiveFlights(), 
+                               "flight_names": getAllFlightNames(),
+                               'groupFlights': getGroupFlights()},
                               context_instance=RequestContext(request))
 
 
@@ -418,9 +424,9 @@ def manageFlight(request):
 def startFlight(request):
     errorString = None
     try: 
-        flightName = request.REQUEST['Flight']
+        flightName = request.REQUEST['flight']
     except KeyError:
-        errorString = 'Flight NAME IS REQUIRED'
+        errorString = 'Select a flight from the dropdown to start it.'
     if not errorString:
         startTime = datetime.datetime.utcnow()
         FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
@@ -439,8 +445,8 @@ def startFlight(request):
         else:
             errorString = 'NO Flight FOUND'
     return render_to_response("xgds_planner2/ManageFlights.html",
-                              {"active_Flights": getActiveFlights(),
-                               "Flight_names": getAllFlightNames(),
+                              {"active_flights": getActiveFlights(),
+                               "flight_names": getAllFlightNames(),
                                "errorstring": errorString},
                               context_instance=RequestContext(request))
 
@@ -449,9 +455,9 @@ def startFlight(request):
 def stopFlight(request):
     errorString = None
     try:
-        FlightName = request.REQUEST['Flight']
+        FlightName = request.REQUEST['flight']
     except KeyError: 
-        errorString = 'Flight NAME IS REQUIRED'
+        errorString = 'Select a flight from the dropdown to stop it.'
     if not errorString:
         endTime = datetime.datetime.utcnow()
         FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
@@ -473,8 +479,8 @@ def stopFlight(request):
         else:
             errorString = 'NO Flight FOUND'
     return render_to_response("mvpApp/ManageFlights.html",
-                              {"active_Flights": getActiveFlights(),
-                               "Flight_names": getAllFlightNames(),
+                              {"active_flights": getActiveFlights(),
+                               "flight_names": getAllFlightNames(),
                                "errorstring": errorString},
                               context_instance=RequestContext(request))
 
@@ -482,7 +488,6 @@ def stopFlight(request):
 @login_required
 def addGroupFlight(request):
     errorString = None
-#     vehicles = VehicleModel.objects.all()
     
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
@@ -492,7 +497,7 @@ def addGroupFlight(request):
         groupFlightForm.month = today.month - 1
         groupFlightForm.day = today.day
         return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
-#                                                                         'vehicles': vehicles,
+                                                                        'groupFlights': getGroupFlights(),
                                                                         'errorstring': errorString},
                                   context_instance=RequestContext(request))
     if request.method == 'POST':
@@ -509,7 +514,7 @@ def addGroupFlight(request):
                 errorString = "Problem Creating Group Flight: {%s}" % strerror
                 return render_to_response("xgds_planner2/AddGroupFlight.html",
                                           {'groupFlightForm': form,
-#                                            'vehicles': vehicles,
+                                           'groupFlights': getGroupFlights(),
                                            'errorstring': errorString},
                                           context_instance=RequestContext(request))
 
@@ -532,13 +537,14 @@ def addGroupFlight(request):
                     errorString = "Problem Creating Flight: {%s}" % strerror
                     return render_to_response("xgds_planner2/AddGroupFlight.html",
                                               {'groupFlightForm': form,
-                                               'vehicles': vehicles,
+                                               'groupFlights': getGroupFlights(),
                                                'errorstring': errorString},
                                               context_instance=RequestContext(request))
         else:
             errorString = form.errors
             return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': form,
-                                                         'errorstring': errorString},
+                                                                            'groupFlights': getGroupFlights(),
+                                                                            'errorstring': errorString},
                                       context_instance=RequestContext(request))
 
     return HttpResponseRedirect(reverse('planner2_manageFlight', args=[]))

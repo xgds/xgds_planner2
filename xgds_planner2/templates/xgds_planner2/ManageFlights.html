@@ -23,10 +23,9 @@
         {% endfor %}
     {% endif %}
 
-    Start a Flight: <br/>
     <form enctype = "multipart/form-data"
         action="{% url 'planner2_startFlight' %}" method="post">
-        Flight: &nbsp; <select name="flight"> {% for flight in flight_names %} 
+        Start Flight: &nbsp; <select name="flight"> {% for flight in flight_names %} 
         <option value="{{ flight }}">{{ flight }} </option>
         {% endfor %}
         </select>
@@ -35,10 +34,9 @@
     </form>
 
     <p>
-    Stop a Flight: <br/>
     <form enctype="multipart/form-data"
         action="{% url 'planner2_stopFlight' %}" method="post">
-        Flight: &nbsp; <select name="flight"> {% for active in active_flights %}
+        Stop Flight: &nbsp; <select name="flight"> {% for active in active_flights %}
         <option value="{{ active.flight.name }}">{{ active.flight.name }} </option>
         {% endfor %}
         </select>
