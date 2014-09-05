@@ -6,13 +6,10 @@
 
 from django import forms
 from django.conf import settings
-<<<<<<< HEAD
 from xgds_planner2.models import getPlanSchema
 from geocamUtil.loader import getModelByName
 from xgds_planner2 import settings
-=======
 from xgds_planner2.models import getPlanSchema, Vehicle
->>>>>>> bad45b3052abaac5626775ad1b4ee0409d7bb1bf
 
 
 class CreatePlanForm(forms.Form):
@@ -51,7 +48,12 @@ class GroupFlightForm(forms.Form):
     VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
     for vehicle in VehicleModel.objects.all().order_by('name'):
         CHOICES.append((vehicle.name, vehicle.name))
-    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False)
+    
+    if len(CHOICES) == 1:
+        initial = [c[0] for c in CHOICES]
+    else:
+        initial = None
+    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial = initial)
 
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
 

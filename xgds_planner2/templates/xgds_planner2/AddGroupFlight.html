@@ -18,7 +18,7 @@
 {% endblock %}
 						
 {% block contents %}
-   
+   <h3>Create Flight</h3>
   <form action="{% url 'planner2_addGroupFlight' %}" method="post">
 <br><br>
 	<table>
@@ -32,7 +32,7 @@
 		</tr>
     	<tr>
 			<td align="right" valign="top">Vehicles:</td>
-			<td>{{ groupFlightForm.sources }}</td>
+			<td>{{ groupFlightForm.vehicles }}</td>
 		</tr>
 		<tr><td></td><td>Optional:</td>
 		</tr>

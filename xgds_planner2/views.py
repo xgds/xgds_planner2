@@ -482,6 +482,8 @@ def stopFlight(request):
 @login_required
 def addGroupFlight(request):
     errorString = None
+#     vehicles = VehicleModel.objects.all()
+    
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
 
@@ -490,7 +492,8 @@ def addGroupFlight(request):
         groupFlightForm.month = today.month - 1
         groupFlightForm.day = today.day
         return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
-                                                          'errorstring': errorString},
+#                                                                         'vehicles': vehicles,
+                                                                        'errorstring': errorString},
                                   context_instance=RequestContext(request))
     if request.method == 'POST':
         form = GroupFlightForm(request.POST)
@@ -506,6 +509,7 @@ def addGroupFlight(request):
                 errorString = "Problem Creating Group Flight: {%s}" % strerror
                 return render_to_response("xgds_planner2/AddGroupFlight.html",
                                           {'groupFlightForm': form,
+#                                            'vehicles': vehicles,
                                            'errorstring': errorString},
                                           context_instance=RequestContext(request))
 
@@ -528,6 +532,7 @@ def addGroupFlight(request):
                     errorString = "Problem Creating Flight: {%s}" % strerror
                     return render_to_response("xgds_planner2/AddGroupFlight.html",
                                               {'groupFlightForm': form,
+                                               'vehicles': vehicles,
                                                'errorstring': errorString},
                                               context_instance=RequestContext(request))
         else:
