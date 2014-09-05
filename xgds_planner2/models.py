@@ -64,16 +64,7 @@ class PlanExecution(models.Model):
     planned_start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-#     flightType = models.ForeignKey(ContentType, null=True, blank=True, related_name="flightType")
-#     flightId = models.PositiveIntegerField(null=True, blank=True)
-#     flight = generic.GenericForeignKey('flightType', 'flightId')
-    
     flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-
-#     planType = models.ForeignKey(ContentType, null=True, blank=True, related_name="planType")
-#     planId = models.PositiveIntegerField(null=True, blank=True)
-#     plan = generic.GenericForeignKey('planType', 'planId')
-    
     plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL)
 
     def __unicode__(self):
@@ -89,12 +80,6 @@ class AbstractFlight(models.Model):
     vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
     notes = models.TextField(blank=True)
     group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
-#     plans = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan')
-#     planExecutions = models.ForeignKey(PlanExecution, null=True, blank=True, related_name="flight_planExecutions")
-#     plans = generic.GenericRelation('Plans',
-#         content_type_field='sender_content_type',
-#         object_id_field='sender_id'
-#     )
 
     def startFlightExtras(self):
         pass
@@ -109,8 +94,6 @@ class AbstractFlight(models.Model):
 
 class Flight(AbstractFlight):
     pass
-    # when you define your own nonabstract class you need to have this
-#     plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='xgds_planner2.FlightToPlan')
 
 
 class ActiveFlight(models.Model):
