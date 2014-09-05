@@ -6,9 +6,13 @@
 
 from django import forms
 from django.conf import settings
+<<<<<<< HEAD
 from xgds_planner2.models import getPlanSchema
 from geocamUtil.loader import getModelByName
 from xgds_planner2 import settings
+=======
+from xgds_planner2.models import getPlanSchema, Vehicle
+>>>>>>> bad45b3052abaac5626775ad1b4ee0409d7bb1bf
 
 
 class CreatePlanForm(forms.Form):
