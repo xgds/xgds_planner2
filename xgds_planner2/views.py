@@ -488,7 +488,7 @@ def stopFlight(request):
 @login_required
 def addGroupFlight(request):
     errorString = None
-    
+#     vehicles = VehicleModel.objects.all()
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
 
@@ -522,7 +522,7 @@ def addGroupFlight(request):
                 FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
                 newFlight = FlightModel()
                 newFlight.group = groupFlight
-                
+
                 VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
                 newFlight.vehicle = VehicleModel.objects.get(name=vehicle)
 
