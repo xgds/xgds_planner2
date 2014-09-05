@@ -1026,8 +1026,13 @@ $(function() {
                 }
                 if (app.options.directionalStations &&
                     this.model.get('isDirectional')) {
-                    style.getIconStyle().setHeading(
-                        this.model.get('headingDegrees'));
+                    var iconStyle = style.getIconStyle();
+                    if (iconStyle != null){
+                        var degrees = this.model.get('headingDegrees');
+                        if (degrees != null){
+                            iconStyle.setHeading(degrees);
+                        }
+                    }
                 }
                 return style;
             },
