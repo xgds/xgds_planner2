@@ -61,8 +61,6 @@ class AbstractFlight(models.Model):
     vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
     notes = models.TextField(blank=True)
     group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
-    plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='FlightToPlan')
-#     plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL)
 
     def startFlightExtras(self):
         pass
@@ -76,6 +74,8 @@ class AbstractFlight(models.Model):
 
 
 class Flight(AbstractFlight):
+    # when you define your own nonabstract class you need to have this
+#     plans = models.ManyToManyField(settings.XGDS_PLANNER2_PLAN_MODEL, through='xgds_planner2.FlightToPlan')
     pass
 
 
