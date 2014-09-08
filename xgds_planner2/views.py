@@ -438,7 +438,7 @@ def startFlight(request):
         flight.startFlightExtras(request)
 
         if flight:
-            activeFlight = models.ActiveFlight.objects.filter(flight_id=flight.id)
+            activeFlight = models.ActiveFlight.objects.filter(flight=flight)
             if not activeFlight:
                 newlyActive = models.ActiveFlight(flight=flight)
                 newlyActive.save()
@@ -488,7 +488,7 @@ def stopFlight(request):
 @login_required
 def addGroupFlight(request):
     errorString = None
-#     vehicles = VehicleModel.objects.all()
+    
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
 
@@ -507,7 +507,6 @@ def addGroupFlight(request):
             groupFlight = GroupFlightModel()
             groupFlight.name = form.cleaned_data['date'].strftime('%Y%m%d') + form.cleaned_data['prefix']
             groupFlight.notes = form.cleaned_data['notes']
-
             try:
                 groupFlight.save()
             except IntegrityError, strerror:
@@ -522,7 +521,7 @@ def addGroupFlight(request):
                 FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
                 newFlight = FlightModel()
                 newFlight.group = groupFlight
-
+                
                 VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
                 newFlight.vehicle = VehicleModel.objects.get(name=vehicle)
 
