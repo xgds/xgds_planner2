@@ -3,10 +3,12 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
+import pydevd
 import os
 import glob
 import json
 import datetime
+import pytz
 
 from uuid import uuid4
 
@@ -245,6 +247,7 @@ def planIndex(request):
         'xgds_planner2/planIndex.html',
         {
             'plans': Plan.objects.filter(deleted = False),
+            'flight_names' : getAllFlightNames(),
             'exporters': choosePlanExporter.PLAN_EXPORTERS
         },
         context_instance=RequestContext(request))
@@ -485,6 +488,46 @@ def stopFlight(request):
                               context_instance=RequestContext(request))
 
 
+#login_required
+def schedulePlans(request):
+    pydevd.settrace('192.168.1.64')
+    if request.method == 'POST':
+        try:
+            pids = request.POST['planIds']
+            planIds = []
+            for item in pids.split(","):
+                planIds.append(int(item))
+                
+            schedule_date_string = request.POST['schedule_date']
+            if schedule_date_string:
+                # convert to utc
+                schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
+                tz = pytz.timezone(settings.GEOCAM_TRACK_OPS_TIME_ZONE)
+                schedule_date = tz.localize(schedule_date)
+                schedule_date = schedule_date.astimezone(pytz.utc)
+                schedule_date = schedule_date.replace(tzinfo=None)
+        
+            flight_name = request.POST['flight']
+            FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+            flight = FlightModel.objects.get(name=flight_name)
+            
+            PlanModel = get_plan_model()
+            plans = PlanModel.objects.filter(id__in=planIds)
+            
+            for plan in plans:
+                pe = models.PlanExecution()
+                pe.planned_start_time = schedule_date
+                pe.flight = flight
+                pe.plan = plan
+                pe.save()
+        except Exception as e:
+            print e
+            # should publish the error
+            pass
+        
+    return HttpResponseRedirect(reverse('planner2_index'))
+
+    
 @login_required
 def addGroupFlight(request):
     errorString = None

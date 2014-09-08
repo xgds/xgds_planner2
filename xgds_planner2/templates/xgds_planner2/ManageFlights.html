@@ -14,12 +14,15 @@
 {% endblock %}
 
 {% block contents %}
-	<h3> Create Flights</h3>
-		<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}">Create</a>
+	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}">Create Flights</a>
     <h3> Active Flights </h3>
     {% if active_flights %}
         {% for active in active_flights %}
-            Flight: {{active.flight.name }} </br>
+            {{active.flight.name }}<br/> 
+            {% for planExecution in active.flight.plans.all %}
+            &nbsp;&nbsp;{{ planExecution.plan.name }} Planned: {{planExecution.planned_start_time}} {% if planExecution.start_time %} {{planExecution.start_time}} {% else %} <a class="mybutton" />Start</a> {% endif %}
+            {% if planExecution.end_time %} {{planExecution.end_time}} {% else %} <a class="mybutton" />Stop</a> {% endif %}<br/>
+            {% endfor %}
         {% endfor %}
     {% endif %}
 

@@ -26,6 +26,7 @@ urlpatterns = patterns(
     url(r'startFlight/$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
     url(r'stopFlight/$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),
+    url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

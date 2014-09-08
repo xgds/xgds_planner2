@@ -64,8 +64,8 @@ class PlanExecution(models.Model):
     planned_start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL)
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="plans")
+    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, related_name="executions")
 
     def __unicode__(self):
         return self.id
