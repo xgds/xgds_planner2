@@ -72,7 +72,7 @@ class PlanExecution(models.Model):
 
 
 class AbstractFlight(models.Model):
-    uuid = UuidField(primary_key=True)
+    uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
     locked = models.BooleanField(blank=True)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -83,7 +83,7 @@ class AbstractFlight(models.Model):
 
     def startFlightExtras(self):
         pass
-    
+
     def __unicode__(self):
         return self.name
 
