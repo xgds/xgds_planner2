@@ -100,7 +100,8 @@ app.models = app.models || {};
                 // your parameters shouldn't do this by default
                 schema[param.id]['title'] = param.id;
             }
-            if (_.has(param, 'required') &&
+            if (param.valueType != "boolean" &&
+                _.has(param, 'required') &&
                 _.isBoolean(param.required) &&
                 param.required) {
                 schema[param.id]['validators'].push('required');
