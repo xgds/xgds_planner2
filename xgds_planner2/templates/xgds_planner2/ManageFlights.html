@@ -23,7 +23,11 @@
 {% endblock %}
 
 {% block contents %}
+	{% if errorString %}
+	<span class="error">{{ errorString }}</span>
+	{% endif %}
 	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}">Create Flights</a>
+	<br/>
 	
 	<table id="dataTable" class="planIndex">
 	<thead class="table_header">
@@ -32,59 +36,32 @@
 		<th>Planned</th>
 		<th>Started</th>
 		<th>Ended</th>
-		<th>Vehicle</th>
+		<th>Extras</th>
+		<th></th>
 		</tr>
 	</thead>
 	{% for flight in flights %}
-	<tr>
-		<td>Flight:{{ flight.name }}</td>
+	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
+		<td >Flight: {{ flight.name }}</td>
 		<td></td>
-		<td>{% if flight.startTime %} {{flight.startTime}} {% else %} Start{% endif %}</td>
-		<td>{% if flight.endTime %} {{flight.endTime}} {% elif flight.startTime %} Stop{% endif %}</td>
-		<td>{{ flight.vehicle }}</td>
+		<td>{% if flight.start_time %} {{flight.start_time}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
+		<td>{% if flight.end_time %} {{flight.end_time}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
+		<td></td>
+		<td></td>
 	</tr>
 	{% for pe in flight.plans.all %}
-	<tr>
-		<td>&nbsp;&nbsp;{{ pe.name }} {{pe.version}}</td>
+	<tr {% if not pe.end_time and pe.start_time %} style="background:lightgreen;" {% endif %}>
+		<td>&nbsp;&nbsp;<a href="{% url 'planner2_edit' pe.plan.id %}">{{ pe.plan.name }}</a></td>
 		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time}} {% endif %}</td>
-		<td>{% if pe.start_time %} {{pe.start_time}}{% else %} Start  {% endif %}</td>
-		<td>{% if pe.end_time %} {{pe.end_time}}{% elif pe.start_time %} Stop {% endif %}</td>
-		<td></td>
+		<td>{% if pe.start_time %} {{pe.start_time}}{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
+		<td>{% if pe.end_time %} {{pe.end_time}}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
+		<td>TODO pml</td>
+		<td>{% if not pe.start_time %}<a href="{% url 'planner2_deletePlanExecution' pe.id %}">Delete</a>{% endif %}</td>
 	</tr> 
 	{% endfor %}
 	{% endfor %}
 	</table>
-    <h3> Active Flights </h3>
-    {% if active_flights %}
-        {% for active in active_flights %}
-            {{active.flight.name }}<br/> 
-            {% for planExecution in active.flight.plans.all %}
-            &nbsp;&nbsp;{{ planExecution.plan.name }} Planned: {{planExecution.planned_start_time}} {% if planExecution.start_time %} {{planExecution.start_time}} {% else %} <a class="mybutton" />Start</a> {% endif %}
-            {% if planExecution.end_time %} {{planExecution.end_time}} {% else %} <a class="mybutton" />Stop</a> {% endif %}<br/>
-            {% endfor %}
-        {% endfor %}
-    {% endif %}
 
-    <form enctype = "multipart/form-data"
-        action="{% url 'planner2_startFlight' %}" method="post">
-        Start Flight: &nbsp; <select name="flight"> {% for flight in flight_names %} 
-        <option value="{{ flight }}">{{ flight }} </option>
-        {% endfor %}
-        </select>
-
-        <input class="mybutton" type="submit" value="Start Flight" />
-    </form>
-
-    <p>
-    <form enctype="multipart/form-data"
-        action="{% url 'planner2_stopFlight' %}" method="post">
-        Stop Flight: &nbsp; <select name="flight"> {% for active in active_flights %}
-        <option value="{{ active.flight.name }}">{{ active.flight.name }} </option>
-        {% endfor %}
-        </select>
-        <input class="mybutton" type="submit" value="Stop Flight" />
-    </form>
-    </p>
 {% endblock contents %}
 
 {% block scripts %}
@@ -103,23 +80,13 @@ var defaultOptions = {
 		bPaginate: true,
         iDisplayLength: 20, 
         bLengthChange: true,
-		bSort: true,
+		bSort: false,
         bJQueryUI: true,
         sScrollY:  calcDataTableHeight(), /* '28em', */
         "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
         "oLanguage": {
-            "sLengthMenu": "Display _MENU_ plans"
-          },
-        aoColumnDefs:[
-            {
-                aTargets: ['name'],
-                sWidth: '285px',
-            },
-            {
-                aTargets: ['Export'],
-                bSortable: false,
-            },
-        ]
+            "sLengthMenu": "Display _MENU_ flights & plans"
+          }
 }
 
 

@@ -84,6 +84,9 @@ class AbstractFlight(models.Model):
     def startFlightExtras(self):
         pass
 
+    def stopFlightExtras(self):
+        pass
+
     def __unicode__(self):
         return self.name
 

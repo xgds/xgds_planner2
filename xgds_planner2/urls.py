@@ -22,11 +22,14 @@ urlpatterns = patterns(
     url(r'^plan/create/$', views.planCreate, {}, name='planner2_planCreate'),
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
     url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
-    url(r'^manageFlight/$', views.manageFlight, {}, "planner2_manageFlight"),
-    url(r'startFlight/$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
-    url(r'stopFlight/$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
+    url(r'^manage/$', views.manageFlights, {}, "planner2_manage"),
+    url(r'startFlight/(?P<uuid>[\w-]+)$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
+    url(r'stopFlight/(?P<uuid>[\w-]+)$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
+    url(r'startPlan/(?P<pe_id>[\w-]+)$', views.startPlan, {'loginRequired': True}, 'planner2_startPlan'),
+    url(r'stopPlan/(?P<pe_id>[\w-]+)$', views.stopPlan, {'loginRequired': True}, 'planner2_stopPlan'),
+    url(r'deletePlanExecution/(?P<pe_id>[\w-]+)$', views.deletePlanExecution, {'loginRequired': True}, 'planner2_deletePlanExecution'),
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
 
 )

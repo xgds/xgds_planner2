@@ -358,8 +358,8 @@ def plan_delete(request):
             plan.deleted = True
             plan.save()
     return HttpResponseRedirect(reverse('planner2_index'))
-    
-    
+
+
 def getPlanIndexKml(request):
     out = StringIO()
     out.write('<Document>\n')
@@ -392,8 +392,18 @@ def processNameToDate(flight):
         result = {"year": year, "month": month, "day": day}
     return result
 
-def getActiveFlights():
-    return models.ActiveFlight.objects.all()
+
+def getGroupFlights():
+    GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+    return GroupFlightModel.objects.exclude(name="").order_by('name')
+
+
+def getAllFlights(reverse=False):
+    orderby='name'
+    if reverse:
+        orderby='-name'
+    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    return FlightModel.objects.all().order_by(orderby)
 
 
 def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
@@ -402,139 +412,204 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
         orderby='-name'
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     flightList = FlightModel.objects.exclude(name="").order_by(orderby)
-    flightNames = []
+    flightNames = ["-----"]
     for flight in flightList:
         if (flight.name):
             flightNames.append(flight.name)
     return flightNames
 
 
-def getGroupFlights():
-    GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
-    return GroupFlightModel.objects.exclude(name="").order_by('name')
-
-
-def getAllFlights():
-    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    return FlightModel.objects.all().select_related("plans")
-
-def manageFlight(request):
+@login_required
+def manageFlights(request):
     return render_to_response("xgds_planner2/ManageFlights.html",
-                              {"active_flights": getActiveFlights(), 
-                               'flights' : getAllFlights(),
-                               "flight_names": getAllFlightNames(),
-                               'groupFlights': getGroupFlights()},
+                              {'flights' : getAllFlights(),
+                               "errorstring": ""},
                               context_instance=RequestContext(request))
 
 
 @login_required
-def startFlight(request):
-    errorString = None
-    try: 
-        flightName = request.REQUEST['flight']
-    except KeyError:
-        errorString = 'Select a flight from the dropdown to start it.'
-    if not errorString:
-        startTime = datetime.datetime.utcnow()
-        FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-        flight = FlightModel.objects.get(name=flightName)
-        flight.startTime = startTime
-        flight.endTime = None
+def startFlight(request, uuid):
+    errorString = ""
+    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    try :
+        flight = FlightModel.objects.get(uuid=uuid)
+        flight.start_time = datetime.datetime.utcnow()
+        flight.end_time = None
         flight.save()
 
         flight.startFlightExtras(request)
+    except:
+        errorString = "Flight not found"
 
-        if flight:
+    if flight:
+        try:
             activeFlight = models.ActiveFlight.objects.filter(flight=flight)
-            if not activeFlight:
-                newlyActive = models.ActiveFlight(flight=flight)
-                newlyActive.save()
-        else:
-            errorString = 'NO Flight FOUND'
+        except:
+            newlyActive = models.ActiveFlight(flight=flight)
+            newlyActive.save()
+
     return render_to_response("xgds_planner2/ManageFlights.html",
-                              {"active_flights": getActiveFlights(),
-                               "flight_names": getAllFlightNames(),
-                               "errorstring": errorString},
-                              context_instance=RequestContext(request))
+                          {'flights' : getAllFlights(),
+                           "errorstring": errorString},
+                          context_instance=RequestContext(request))
 
 
 @login_required
-def stopFlight(request):
-    errorString = None
-    try:
-        FlightName = request.REQUEST['flight']
-    except KeyError: 
-        errorString = 'Select a flight from the dropdown to stop it.'
-    if not errorString:
-        endTime = datetime.datetime.utcnow()
-        FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-        flight = FlightModel.objects.get(name=FlightName)
-        if flight:
-            try: 
-                flight.episode.endTime = endTime
-                flight.episode.save()
-            except:
-                print "Flight's episode does not exist"
-            flight.endTime = endTime
+def stopFlight(request, uuid):
+    errorString = ""
+    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    try :
+        flight = FlightModel.objects.get(uuid=uuid)
+        if not flight.start_time:
+            errorString = "Flight has not been started"
+        else :
+            flight.end_time = datetime.datetime.utcnow()
             flight.save()
+            flight.stopFlightExtras(request)
+
+            # kill the plans
+            for pe in flight.plans.all():
+                if pe.start_time:
+                    pe.end_time = flight.end_time
+                    pe.save()
             try:
-                active = models.ActiveFlight.objects.get(Flight_id = flight.id)
-                if active:
-                    active.delete()
-            except ObjectDoesNotExist:
+                active = models.ActiveFlight.objects.get(flight_id = flight.id)
+                active.delete()
+            except:
                 errorString = 'Flight IS NOT ACTIVE'
-        else:
-            errorString = 'NO Flight FOUND'
-    return render_to_response("mvpApp/ManageFlights.html",
-                              {"active_flights": getActiveFlights(),
-                               "flight_names": getAllFlightNames(),
+
+    except:
+        errorString = "Flight not found"
+    return render_to_response("xgds_planner2/ManageFlights.html",
+                              {'flights' : getAllFlights(),
                                "errorstring": errorString},
                               context_instance=RequestContext(request))
 
 
 #login_required
 def schedulePlans(request):
+    flight = None
     if request.method == 'POST':
         try:
             pids = request.POST['planIds']
             planIds = []
             for item in pids.split(","):
                 planIds.append(int(item))
-                
+
             schedule_date_string = request.POST['schedule_date']
+            original_schedule_date = None
             if schedule_date_string:
                 # convert to utc
-                schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
+                original_schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
                 tz = pytz.timezone(settings.GEOCAM_TRACK_OPS_TIME_ZONE)
-                schedule_date = tz.localize(schedule_date)
+                schedule_date = tz.localize(original_schedule_date)
                 schedule_date = schedule_date.astimezone(pytz.utc)
                 schedule_date = schedule_date.replace(tzinfo=None)
-        
+
             flight_name = request.POST['flight']
             FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-            flight = FlightModel.objects.get(name=flight_name)
-            
-            PlanModel = get_plan_model()
-            plans = PlanModel.objects.filter(id__in=planIds)
-            
-            for plan in plans:
-                pe = models.PlanExecution()
-                pe.planned_start_time = schedule_date
-                pe.flight = flight
-                pe.plan = plan
-                pe.save()
+            try:
+                flight = FlightModel.objects.get(name=flight_name)
+            except:
+                # see if we can look it up by date
+                if original_schedule_date:
+                    prefix = "%04d%02d%02d" % (original_schedule_date.year,original_schedule_date.month,original_schedule_date.day)
+                    flights = FlightModel.objects.filter(name__startswith=prefix)
+                    if flights:
+                        # pick the first one
+                        flight = flights[0]
+                    else:
+                        # it does not exist we better make one
+                        GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+                        groupFlight = GroupFlightModel()
+                        prefix = prefix + "A"
+                        groupFlight.name = prefix
+                        groupFlight.save()
+                        VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+                        for vehicle in VehicleModel.objects.all():
+                            newFlight = FlightModel()
+                            newFlight.group = groupFlight
+                            newFlight.vehicle = vehicle
+                            newFlight.name = prefix + "_" + vehicle.name
+                            newFlight.locked = False
+                            newFlight.uuid = uuid4()
+                            newFlight.save(force_insert=True)
+                            if not flight:
+                                flight = newFlight
+
+            if flight:
+                PlanModel = get_plan_model()
+                plans = PlanModel.objects.filter(id__in=planIds)
+
+                for plan in plans:
+                    pe = models.PlanExecution()
+                    pe.planned_start_time = schedule_date
+                    pe.flight = flight
+                    pe.plan = plan
+                    pe.save()
         except Exception as e:
             print e
             # should publish the error
             pass
-        
+
     return HttpResponseRedirect(reverse('planner2_index'))
 
-    
+
+@login_required
+def startPlan(request, pe_id):
+    errorString = ""
+    try :
+        pe = models.PlanExecution.objects.get(id=pe_id)
+        pe.start_time = datetime.datetime.utcnow()
+        pe.end_time = None
+        pe.save()
+    except:
+        errorString = "Plan Execution not found"
+
+    return render_to_response("xgds_planner2/ManageFlights.html",
+                              {'flights' : getAllFlights(),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def stopPlan(request, pe_id):
+    errorString = ""
+    try :
+        pe = models.PlanExecution.objects.get(id=pe_id)
+        if pe.start_time:
+            pe.end_time = datetime.datetime.utcnow()
+            pe.save()
+        else:
+            errorString = "Plan has not been started."
+    except:
+        errorString = "Plan Execution not found"
+
+    return render_to_response("xgds_planner2/ManageFlights.html",
+                              {'flights' : getAllFlights(),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
+@login_required
+def deletePlanExecution(request, pe_id):
+    errorString = ""
+    try :
+        pe = models.PlanExecution.objects.get(id=pe_id)
+        pe.delete()
+    except:
+        errorString = "Plan Execution not found"
+
+    return render_to_response("xgds_planner2/ManageFlights.html",
+                              {'flights' : getAllFlights(),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
 @login_required
 def addGroupFlight(request):
     errorString = None
-    
+
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
 
@@ -567,10 +642,9 @@ def addGroupFlight(request):
                 FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
                 newFlight = FlightModel()
                 newFlight.group = groupFlight
-                
+
                 VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
                 newFlight.vehicle = VehicleModel.objects.get(name=vehicle)
-
                 newFlight.name = groupFlight.name + "_" + vehicle
 
                 newFlight.locked = False
@@ -592,5 +666,5 @@ def addGroupFlight(request):
                                                                             'errorstring': errorString},
                                       context_instance=RequestContext(request))
 
-    return HttpResponseRedirect(reverse('planner2_manageFlight', args=[]))
+    return HttpResponseRedirect(reverse('planner2_manage', args=[]))
 
