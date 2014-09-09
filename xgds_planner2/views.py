@@ -3,7 +3,6 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
-import pydevd
 import os
 import glob
 import json
@@ -402,12 +401,12 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverse=False):
     if reverse:
         orderby='-name'
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    FlightList = FlightModel.objects.exclude(name="").order_by(orderby)
-    FlightNames = []
-    for Flight in FlightList:
-        if (Flight.name):
-            FlightNames.append(Flight.name)
-    return FlightNames
+    flightList = FlightModel.objects.exclude(name="").order_by(orderby)
+    flightNames = []
+    for flight in flightList:
+        if (flight.name):
+            flightNames.append(flight.name)
+    return flightNames
 
 
 def getGroupFlights():
@@ -415,9 +414,14 @@ def getGroupFlights():
     return GroupFlightModel.objects.exclude(name="").order_by('name')
 
 
+def getAllFlights():
+    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    return FlightModel.objects.all().select_related("plans")
+
 def manageFlight(request):
     return render_to_response("xgds_planner2/ManageFlights.html",
                               {"active_flights": getActiveFlights(), 
+                               'flights' : getAllFlights(),
                                "flight_names": getAllFlightNames(),
                                'groupFlights': getGroupFlights()},
                               context_instance=RequestContext(request))
@@ -490,7 +494,6 @@ def stopFlight(request):
 
 #login_required
 def schedulePlans(request):
-    pydevd.settrace('192.168.1.64')
     if request.method == 'POST':
         try:
             pids = request.POST['planIds']

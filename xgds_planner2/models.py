@@ -97,7 +97,7 @@ class Flight(AbstractFlight):
 
 
 class ActiveFlight(models.Model):
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, unique=True, related_name="active")
 
     def __unicode__(self):
         return (u'ActiveFlight(%s, %s)' %

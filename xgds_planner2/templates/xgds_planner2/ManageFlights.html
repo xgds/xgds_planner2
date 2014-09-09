@@ -9,12 +9,51 @@
     {{ block.super }}
 {% endblock %}
 
+{% block cssExtras %}
+{{ block.super }}
+<style type="text/css" title="currentStyle">
+	@import "{{ STATIC_URL }}external/css/jquery/demo_page.css";
+	@import "{{ STATIC_URL }}external/css/jquery/demo_table.css";
+	@import "{{ STATIC_URL }}external/css/jquery/jquery-ui.css";
+</style>
+{% endblock cssExtras %}
+
 {% block sitemenu-content-secondary %}
     {% include "xgds_planner2/planner2_subnav.html" %}
 {% endblock %}
 
 {% block contents %}
 	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}">Create Flights</a>
+	
+	<table id="dataTable" class="planIndex">
+	<thead class="table_header">
+		<tr>
+		<th>Name</th>
+		<th>Planned</th>
+		<th>Started</th>
+		<th>Ended</th>
+		<th>Vehicle</th>
+		</tr>
+	</thead>
+	{% for flight in flights %}
+	<tr>
+		<td>Flight:{{ flight.name }}</td>
+		<td></td>
+		<td>{% if flight.startTime %} {{flight.startTime}} {% else %} Start{% endif %}</td>
+		<td>{% if flight.endTime %} {{flight.endTime}} {% elif flight.startTime %} Stop{% endif %}</td>
+		<td>{{ flight.vehicle }}</td>
+	</tr>
+	{% for pe in flight.plans.all %}
+	<tr>
+		<td>&nbsp;&nbsp;{{ pe.name }} {{pe.version}}</td>
+		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time}} {% endif %}</td>
+		<td>{% if pe.start_time %} {{pe.start_time}}{% else %} Start  {% endif %}</td>
+		<td>{% if pe.end_time %} {{pe.end_time}}{% elif pe.start_time %} Stop {% endif %}</td>
+		<td></td>
+	</tr> 
+	{% endfor %}
+	{% endfor %}
+	</table>
     <h3> Active Flights </h3>
     {% if active_flights %}
         {% for active in active_flights %}
@@ -47,3 +86,49 @@
     </form>
     </p>
 {% endblock contents %}
+
+{% block scripts %}
+  {{ block.super }}
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript">
+var calcDataTableHeight = function() {
+    var h = Math.floor($(window).height()*65/100);
+    return h + 'px';
+};
+
+var defaultOptions = {
+		bAutoWidth: true,
+		bPaginate: true,
+        iDisplayLength: 20, 
+        bLengthChange: true,
+		bSort: true,
+        bJQueryUI: true,
+        sScrollY:  calcDataTableHeight(), /* '28em', */
+        "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
+        "oLanguage": {
+            "sLengthMenu": "Display _MENU_ plans"
+          },
+        aoColumnDefs:[
+            {
+                aTargets: ['name'],
+                sWidth: '285px',
+            },
+            {
+                aTargets: ['Export'],
+                bSortable: false,
+            },
+        ]
+}
+
+
+$(document).ready( function () {
+	var pTable = $('#dataTable').dataTable( defaultOptions);
+	$(window).resize(function(){ 
+		$('div.dataTables_scrollBody').css('height',calcDataTableHeight());
+		pTable.fnAdjustColumnSizing();
+	});
+} );
+ </script>
+{% endblock scripts %}
