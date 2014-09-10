@@ -3,7 +3,6 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
-
 import datetime
 
 from xgds_planner2.planExporter import TreeWalkPlanExporter
@@ -17,6 +16,8 @@ class PmlPlanExporter(TreeWalkPlanExporter):
     """
     label = 'pml'
     content_type = 'application/xml'
+    stationCounter = 0
+    segmentCounter = 0
 
     startTime = None
 
@@ -81,7 +82,17 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         """
         duration for station is 0, as we are treating it as arrival at station. 
         """
-        return self.makeActivity("Station", station.id, station.name, 0, station.notes)
+        if self.stationCounter == 0:
+            name = "Start"
+        elif not context.nextStation:
+            name = "End"
+        else:
+            name = "%02d" % self.stationCounter
+
+        name = "Station %s%s" % (name,'' if station.name is None else ' ' + station.name)
+        result =  self.makeActivity("Station", station.id, name, 0, station.notes)
+        self.stationCounter = self.stationCounter + 1
+        return result
 
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
@@ -95,19 +106,27 @@ class PmlPlanExporter(TreeWalkPlanExporter):
 
         segmentDuration = meters / speed
 
-        activity = self.makeActivity("Segment", segment.id, segment.name, segmentDuration, segment.notes)
+        name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name) 
+        activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=segmentDuration)
+        self.segmentCounter = self.segmentCounter + 1
         return activity
 
     def transformStationCommand(self, command, context):
         duration = 60 * command.duration
-        activity = self.makeActivity(command.type, command.id, command.name, duration, command.notes)
+        name = command.name
+        if not name:
+            name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
+        activity = self.makeActivity(command.type, command.id, name, duration, command.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
 
     def transformSegmentCommand(self, command, context):
         duration = 60 * command.duration
-        activity = self.makeActivity(command.type, command.id, command.name, duration, command.notes)
+        name = command.name
+        if not name:
+            name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
+        activity = self.makeActivity(command.type, command.id, name, duration, command.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
 

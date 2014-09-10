@@ -103,9 +103,25 @@ class TreeWalkPlanExporter(PlanExporter):
     def transformPlan(self, plan, tsequence, context):
         return plan
 
-    def getBracketingStations(self, plan, segmentIndex):
+    def getBracketingStations(self, plan, segmentIndex, isStation=False):
         stations = [s for s in plan.sequence if s.type == 'Station']
-        return stations[segmentIndex - 1], stations[segmentIndex]
+        prevStation = None
+        if segmentIndex > 0:
+            try: 
+                prevStation = stations[segmentIndex - 1]
+            except:
+                pass
+        nextStation = None
+        if isStation:
+            nextIndex = segmentIndex + 1
+        else:
+            nextIndex = segmentIndex
+        try:
+            nextStation = stations[nextIndex]
+        except:
+            pass
+        return prevStation, nextStation
+#         return stations[segmentIndex - 1], stations[segmentIndex]
 
     def exportStation(self, station, context):
         tsequence = []
@@ -142,6 +158,7 @@ class TreeWalkPlanExporter(PlanExporter):
             ctx.stationIndex = index
             if elt.type == 'Station':
                 ctx.parent = ctx.station = elt
+                ctx.prevStation, ctx.nextStation = self.getBracketingStations(plan, index, True)
                 tsequence.append(self.exportStation(elt, ctx))
             elif elt.type == 'Segment':
                 ctx.parent = ctx.segment = elt
