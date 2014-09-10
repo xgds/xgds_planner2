@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load url from future %}
 {% load nav %}
+{% load tz_convert %}
 
 {% block siteSection %} Manage Flight {% endblock %}
 
@@ -44,17 +45,17 @@
 	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
 		<td >Flight: {{ flight.name }}</td>
 		<td></td>
-		<td>{% if flight.start_time %} {{flight.start_time}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
-		<td>{% if flight.end_time %} {{flight.end_time}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
+		<td>{% if flight.start_time %} {{flight.start_time|utc_to_django|date:"Y-m-d H:i"}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
+		<td>{% if flight.end_time %} {{flight.end_time|utc_to_django|date:"Y-m-d H:i"}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
 		<td></td>
 		<td></td>
 	</tr>
 	{% for pe in flight.plans.all %}
 	<tr {% if not pe.end_time and pe.start_time %} style="background:lightgreen;" {% endif %}>
 		<td>&nbsp;&nbsp;<a href="{% url 'planner2_edit' pe.plan.id %}">{{ pe.plan.name }}</a></td>
-		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time}} {% endif %}</td>
-		<td>{% if pe.start_time %} {{pe.start_time}}{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
-		<td>{% if pe.end_time %} {{pe.end_time}}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
+		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} {% endif %}</td>
+		<td>{% if pe.start_time %} {{pe.start_time|utc_to_django|date:"Y-m-d H:i"}}{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
+		<td>{% if pe.end_time %} {{pe.end_time|utc_to_django|date:"Y-m-d H:i"}}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
 		<td>TODO pml</td>
 		<td>{% if not pe.start_time %}<a href="{% url 'planner2_deletePlanExecution' pe.id %}">Delete</a>{% endif %}</td>
 	</tr> 

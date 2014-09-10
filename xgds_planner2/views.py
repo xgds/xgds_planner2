@@ -27,6 +27,7 @@ from django.db.utils import IntegrityError
 from geocamUtil.loader import getModelByName
 from geocamUtil.dotDict import convertToDotDictRecurse
 from geocamUtil.KmlUtil import wrapKmlDjango
+from geocamUtil import timezone
 
 from xgds_planner2 import (settings,
                            models,
@@ -501,10 +502,7 @@ def schedulePlans(request):
             if schedule_date_string:
                 # convert to utc
                 original_schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
-                tz = pytz.timezone(settings.GEOCAM_TRACK_OPS_TIME_ZONE)
-                schedule_date = tz.localize(original_schedule_date)
-                schedule_date = schedule_date.astimezone(pytz.utc)
-                schedule_date = schedule_date.replace(tzinfo=None)
+                schedule_date = timezone.convertToUtc(original_schedule_date)
 
             flight_name = request.POST['flight']
             FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
