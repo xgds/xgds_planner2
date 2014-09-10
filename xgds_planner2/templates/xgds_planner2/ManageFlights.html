@@ -37,7 +37,6 @@
 		<th>Planned</th>
 		<th>Started</th>
 		<th>Ended</th>
-		<th>Extras</th>
 		<th></th>
 		</tr>
 	</thead>
@@ -48,17 +47,17 @@
 		<td>{% if flight.start_time %} {{flight.start_time|utc_to_django|date:"Y-m-d H:i"}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
 		<td>{% if flight.end_time %} {{flight.end_time|utc_to_django|date:"Y-m-d H:i"}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
 		<td></td>
-		<td></td>
 	</tr>
 	{% for pe in flight.plans.all %}
+	{% with pe.plan.escapedName|add:".pml" as filename %} 
 	<tr {% if not pe.end_time and pe.start_time %} style="background:lightgreen;" {% endif %}>
-		<td>&nbsp;&nbsp;<a href="{% url 'planner2_edit' pe.plan.id %}">{{ pe.plan.name }}</a></td>
-		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} {% endif %}</td>
-		<td>{% if pe.start_time %} {{pe.start_time|utc_to_django|date:"Y-m-d H:i"}}{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
+		<td>&nbsp;&nbsp;<a href="{% url 'planner2_edit' pe.plan.id %}">{{ pe.plan.escapedName }}</a></td>
+		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.planned_start_time|date:'Y-m-d-H-i' %}">PML</a>{% endif %}</td>
+		<td>{% if pe.start_time %} {{pe.start_time|utc_to_django|date:"Y-m-d H:i"}} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.start_time|date:'Y-m-d-H-i' %}">PML</a>{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
 		<td>{% if pe.end_time %} {{pe.end_time|utc_to_django|date:"Y-m-d H:i"}}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
-		<td>TODO pml</td>
 		<td>{% if not pe.start_time %}<a href="{% url 'planner2_deletePlanExecution' pe.id %}">Delete</a>{% endif %}</td>
 	</tr> 
+	{% endwith %}
 	{% endfor %}
 	{% endfor %}
 	</table>

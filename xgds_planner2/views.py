@@ -7,7 +7,6 @@ import os
 import glob
 import json
 import datetime
-import pytz
 
 from uuid import uuid4
 
@@ -25,7 +24,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db.utils import IntegrityError
 
 from geocamUtil.loader import getModelByName
-from geocamUtil.dotDict import convertToDotDictRecurse
+from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
 from geocamUtil.KmlUtil import wrapKmlDjango
 from geocamUtil import timezone
 
@@ -272,7 +271,11 @@ def getDbPlan(uuid):
     return get_object_or_404(Plan, uuid=uuid)
 
 
-def planExport(request, uuid, name):
+def planExport(request, uuid, name, time=None):
+    """
+    Normally plan export urls are built up by the planExporter.url
+    but some exporters (pml) can take a time.
+    """
     dbPlan = getDbPlan(uuid)
 
     formatCode = request.GET.get('format')
@@ -291,6 +294,13 @@ def planExport(request, uuid, name):
             return HttpResponseBadRequest('could not infer export format to use: "format" query parameter not set and extension not recognized for filename "%s"' % name)
 
     exporter = exporterClass()
+    if time:
+        try:
+            context = DotDict({'startTime': datetime.datetime.strptime(time, '%Y-%m-%d-%H-%M')})
+            exporter.initPlan(dbPlan, context)
+        except Exception as e:
+            print e
+            pass
     return exporter.getHttpResponse(dbPlan)
 
 

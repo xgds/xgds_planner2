@@ -48,6 +48,13 @@ class PlanExporter(object):
     def exportDbPlanToPath(self, dbPlan, path):
         open(path, 'wb').write(self.exportDbPlan(dbPlan))
 
+    def initPlan(self, plan, context):
+        """
+        This hook is a place for derived classes to construct some
+        initial context before transform*() methods are called.
+        """
+        pass
+
 
 class JsonPlanExporter(PlanExporter):
     """
@@ -80,13 +87,6 @@ class TreeWalkPlanExporter(PlanExporter):
     The 'context' argument gives you access to other attributes like the
     stationIndex.
     """
-
-    def initPlan(self, plan, context):
-        """
-        This hook is a place for derived classes to construct some
-        initial context before transform*() methods are called.
-        """
-        pass
 
     def transformStationCommand(self, command, context):
         return command

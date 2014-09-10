@@ -17,17 +17,17 @@ class PmlPlanExporter(TreeWalkPlanExporter):
     """
     label = 'pml'
     content_type = 'application/xml'
-    
-    startTime = None
-    
-    def initPlan(self, plan, context):
-#         if plan.flight:
-#             self.startTime = plan.flight.plannedStartTime
-#         else:
-#             self.startTime = datetime.datetime.now()
-        self.startTime = datetime.datetime.now()
 
-    
+    startTime = None
+
+    def initPlan(self, plan, context):
+        if not self.startTime:
+            if context.startTime:
+                self.startTime = context.startTime
+            else:
+                self.startTime = datetime.datetime.now()
+
+
     def wrapDocument(self, text):
         content = ""
         for entry in text:
@@ -45,16 +45,16 @@ class PmlPlanExporter(TreeWalkPlanExporter):
     </Plan>
 </PML>
 """ % content)
-        
+
     def getDurationString(self, seconds):
         mins, secs = divmod(seconds, 60)
         hrs, mins = divmod(mins, 60)
         days, extra = divmod(seconds, 86400)
-        durationString = "P%dDT%dH%dM%.3fS" % (days, hrs, mins, secs)
+        durationString = "P%dDT%dH%dM%.0fS" % (days, hrs, mins, secs)
         return durationString
-        
-    def makeActivity(self, activityType, id, name, durationSeconds, notes):
-        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(id)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
+
+    def makeActivity(self, activityType, activityId, name, durationSeconds, notes):
+        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
                 <SharedProperties>
                     <Property name="location">
                         <String></String>
@@ -71,19 +71,18 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 </SharedProperties>
             </Activity>
 """ % {'activityType': activityType,
-       'id': '' if id is None else id,
+       'activityId': '' if activityId is None else activityId,
        'name': '' if name is None else name,
        'duration': self.getDurationString(durationSeconds),
-       'startTime': self.startTime.isoformat(),
+       'startTime': self.startTime.replace(microsecond=0).isoformat(),
        'notes': '' if notes is None else notes})
 
-        
     def transformStation(self, station, tsequence, context):
         """
         duration for station is 0, as we are treating it as arrival at station. 
         """
         return self.makeActivity("Station", station.id, station.name, 0, station.notes)
-        
+
     def transformSegment(self, segment, tsequence, context):
         plon, plat = context.prevStation.geometry['coordinates']
         nlon, nlat = context.nextStation.geometry['coordinates']
@@ -93,32 +92,28 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             speed = segment._objDict['hintedSpeed']
         except:
             pass
-            
+
         segmentDuration = meters / speed
-        
+
         activity = self.makeActivity("Segment", segment.id, segment.name, segmentDuration, segment.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=segmentDuration)
         return activity
-        
-        
+
     def transformStationCommand(self, command, context):
         duration = 60 * command.duration
         activity = self.makeActivity(command.type, command.id, command.name, duration, command.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
-        
 
     def transformSegmentCommand(self, command, context):
         duration = 60 * command.duration
         activity = self.makeActivity(command.type, command.id, command.name, duration, command.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
-        
-        
+
     def transformPlan(self, plan, tsequence, context):
         return self.wrapDocument(tsequence)
-    
-    
+
     def exportStation(self, station, context):
         """
         Because we are adding up the timing we have to change the order here and build the station first before the children
@@ -131,7 +126,6 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             ctx.commandIndex = i
             tsequence.append(self.transformStationCommand(cmd, ctx))
         return tsequence
-        
 
     def exportSegment(self, segment, context):
         """
