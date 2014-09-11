@@ -61,7 +61,7 @@ table.planIndex td.exportFormat a {
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
     {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-    <td>{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} {% endfor %}</td>
+    <td style="width: 50%;">{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}}<br/>{% endfor %}</td>
     {% endif %}
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
