@@ -71,16 +71,16 @@
         setValue: function(value) {
             // backend always deals with lng/lat
             // always takes lng/lat
-        	var decimalPlaces = 7;
+            var decimalPlaces = 7;
             if (this.siteFrameMode) {
-            	var coords = !_.isNull(this.alternateCrs) ?
+                var coords = !_.isNull(this.alternateCrs) ?
                     app.util.toSiteFrame(value.coordinates, this.alternateCrs) :
                     value.coordinates;
                     decimalPlaces = 2;
             } else {
                 var coords = value.coordinates;
             }
-            
+
             var str = '' + coords[0].toFixed(decimalPlaces) + ', ' + coords[1].toFixed(decimalPlaces);
             this.$el.val(str);
         },
@@ -108,10 +108,10 @@
             }
             var newHelp = '';
             if (this.siteFrameMode) {
-            	newHelp = _.has(this.alternateCrs.properties, 'coordinateNotes') ?
+                newHelp = _.has(this.alternateCrs.properties, 'coordinateNotes') ?
                     this.alternateCrs.properties.coordinateNotes : this.getGeometryLabel();
             } else {
-            	newHelp = 'Long, Lat';
+                newHelp = 'Long, Lat';
             }
             return newHelp;
         },

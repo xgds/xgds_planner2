@@ -49,7 +49,7 @@ app.models = app.models || {};
                                      title: 'Coordinate System'};
             }
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
-            schema.geometry = {type: 'Coordinates', 
+            schema.geometry = {type: 'Coordinates',
                               title: 'Lon, Lat'};
         }
 
@@ -61,7 +61,7 @@ app.models = app.models || {};
 
         _.each(params, function(param) {
             var foundType;
-            
+
             if (_.has(param, 'widget')) {
                 foundType = app.models.widgetTypeHash[param.widget];
             } else {
@@ -100,7 +100,7 @@ app.models = app.models || {};
                 // your parameters shouldn't do this by default
                 schema[param.id]['title'] = param.id;
             }
-            if (param.valueType != "boolean" &&
+            if (param.valueType != 'boolean' &&
                 _.has(param, 'required') &&
                 _.isBoolean(param.required) &&
                 param.required) {
@@ -130,12 +130,12 @@ app.models = app.models || {};
             if (_.has(param, 'visible') &&
                     _.isBoolean(param.visible) &&
                     !param.visible) {
-            	schema[param.id]['type'] = 'Hidden';
+                schema[param.id]['type'] = 'Hidden';
             }
             if (_.has(param, 'editable') &&
                     _.isBoolean(param.editable) &&
                     !param.editable) {
-            	schema[param.id]['editorAttrs'] = {
+                schema[param.id]['editorAttrs'] = {
                         readonly: true,
                         disabled: true
                     };
@@ -296,7 +296,7 @@ app.models = app.models || {};
 
         getDuration: function() {
             /*
-             * var duration = 0.0; if ( this.get('speed') ){ // TODO: calculate
+             * var duration = 0.0; if ( this.get('speed') ) { // TODO: calculate
              * distance and traverse time }
              * this.get('sequence').each(function(command) { if
              * (command.get('duration') != undefined) { duration = duration +
@@ -585,11 +585,11 @@ app.models = app.models || {};
 
     models.CommandCollection = Backbone.Collection.extend({
         model: models.Command,
-        
+
         initialize: function() {
             this.on('add remove change', this.updateCommandIds, this);
         },
-        
+
         /*
          * * resequence computes command ids from the templates
          * in planSchema.
@@ -610,17 +610,17 @@ app.models = app.models || {};
             this.each(
                 function(item, idx, list) {
                     var myparent = item.get('pathElement');
-                    if (myparent == null){
+                    if (myparent == null) {
                         myparent = item.parent;
                     }
-                    if (myparent != null){
+                    if (myparent != null) {
                         defaultParent = myparent;
                     } else {
                         myparent = defaultParent;
                     }
                     var parentId = '';
-                    if (myparent != null){
-                        parentId = myparent.get('id')
+                    if (myparent != null) {
+                        parentId = myparent.get('id');
                     }
                     parentDict = {'id': parentId };
                     commandDict = {'presetCode': item.get('presetCode')};
@@ -629,12 +629,12 @@ app.models = app.models || {};
                         commandIndex: idx,
                         command: commandDict
                     };
-                    
+
                     var commandId = template.format(context);
                     item.set('id', commandId);
                 }
             );
-            
+
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
                 app.Actions.enable();
             }

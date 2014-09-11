@@ -5,7 +5,7 @@
 	<ul>
 		<li {% currentnav planner2_index %}><a href="{% url 'planner2_index' %}"> List Plans </a></li>
 		<li {% currentnav planner2_planCreate %}><a href="{% url 'planner2_planCreate' %}"> Create Plan</a></li>
-		{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+		{% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 		<li {% currentnav planner2_manage planner2_startFlight planner2_stopFlight planner2_startPlan planner2_stopPlan %}><a href="{% url 'planner2_manage' %}">Manage</a></li>
 		{% endif %}
 	    <li {% currentnav planner2_help %}><a href="{% url 'planner2_help' %}"> Help</a></li>

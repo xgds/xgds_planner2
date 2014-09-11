@@ -9,6 +9,7 @@ from geocamUtil import KmlUtil
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2 import xpjson
 
+
 class KmlPlanExporter(TreeWalkPlanExporter):
     """
     Exports plan as KML string.
@@ -39,7 +40,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
   <Point>
     <coordinates>%(lon)s,%(lat)s</coordinates>
   </Point>
-</Placemark>''' % {'lon': lon,'lat': lat})
+</Placemark>''' % {'lon': lon, 'lat': lat})
         return result
 
     def transformSegment(self, segment, tsequence, context):

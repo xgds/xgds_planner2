@@ -138,8 +138,8 @@ XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
 
 # Schema used to be set in the settings, now they are set in the PlanSchema database table.
-XGDS_PLANNER_SCHEMAS = [
-]
+# XGDS_PLANNER_SCHEMAS = [
+# ]
 
 # XGDS_PLANNER_SCHEMAS: A list of XPJSON schemas available in the
 # planner. Notes:
@@ -174,10 +174,9 @@ XGDS_PLANNER_SCHEMAS = {
 XGDS_PLANNER_COMMAND_RENDERER_SCRIPTS = ()
 
 # XGDS_PLANNER_COMMAND_RENDERERS - A dict of Command type to javascript file to be used in the mapviews.js
-# to render a command in a custom way. 
+# to render a command in a custom way.
 # see xgds_kn for example
 XGDS_PLANNER_COMMAND_RENDERERS = {}
-
 
 # XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
 # extra JavaScript callback to call after Google Earth is loaded.

@@ -14,9 +14,6 @@ import iso8601
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes import generic
-
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
@@ -48,7 +45,7 @@ class AbstractVehicle(models.Model):
         abstract = True
 
     def __unicode__(self):
-        return self.name 
+        return self.name
 
 
 class Vehicle(AbstractVehicle):
@@ -110,7 +107,7 @@ class ActiveFlight(models.Model):
 class AbstractGroupFlight(models.Model):
     """
     This GroupFlight model represents the overall coordinated
-    operation.  
+    operation.
     """
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
     notes = models.TextField(blank=True)
@@ -323,7 +320,7 @@ class PlanSchema:
 
 
 def loadSchema(platform):
-    schemaDict = settings.XGDS_PLANNER_SCHEMAS[platform]
+    schemaDict = settings.XGDS_PLANNER_SCHEMAS[str(platform)]
     schema = PlanSchema(platform, schemaDict)
     schema.getSchema()
     schema.getJsonSchema()

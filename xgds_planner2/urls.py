@@ -12,7 +12,7 @@ urlpatterns = patterns(
     '',
 
     # url(r'^$', direct_to_template, {'template': 'planner_app.html'}, name='planner2'),
-    url(r'^planIndex\.kml$', views.getPlanIndexKml,{'readOnly': True, 'loginRequired': False}, name='planner2_planIndexKml'),
+    url(r'^planIndex\.kml$', views.getPlanIndexKml, {'readOnly': True, 'loginRequired': False}, name='planner2_planIndexKml'),
     url(r'^index/$', views.planIndex, {}, name='planner2_index'),
     url(r'^edit/(?P<plan_id>[^/]+)$', views.plan_editor_app, {}, name='planner2_edit'),
     url(r'^test/(?P<plan_id>[^/]+)$', views.plan_tests, {}, name='planner2_tests'),
@@ -24,6 +24,7 @@ urlpatterns = patterns(
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
     url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
     url(r'^manage/$', views.manageFlights, {}, "planner2_manage"),
+    url(r'^updateToday/$', views.updateTodaySession, {}, "planner2_updateToday"),
     url(r'startFlight/(?P<uuid>[\w-]+)$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
     url(r'stopFlight/(?P<uuid>[\w-]+)$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),

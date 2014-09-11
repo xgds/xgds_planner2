@@ -12,8 +12,8 @@ function kmlColor(rgbColor, alpha) {
     var gg = rgbColor.substr(2, 2);
     var bb = rgbColor.substr(4, 2);
     return '' + alpha + bb + gg + rr;
-};
-    
+}
+
 //The below view can be used to generate polygons.  See xgds_kn.
 var PolygonView = Backbone.View.extend({
     initialize: function() {
@@ -36,7 +36,7 @@ var PolygonView = Backbone.View.extend({
 
         this.listenTo(this.command, 'remove', this.erase);
         this.listenTo(this.station, 'remove', this.erase);
-        
+
     },
 
     /*
@@ -48,18 +48,18 @@ var PolygonView = Backbone.View.extend({
         var command = this.command;
 
         coords = [];
-        
+
         //TODO calculate and return some coords
         return coords;
     },
 
     createPlacemark: function(coords) {
-        if (coords.length == 0){
+        if (coords.length == 0) {
             return;
         }
         var gex = ge.gex;
         var visibility = this.command.get('showPolygon');
-        if (visibility === undefined){
+        if (visibility === undefined) {
             visibility = true;
         }
 
@@ -88,14 +88,14 @@ var PolygonView = Backbone.View.extend({
 
     update: function() {
         var visibility = this.command.get('showPolygon');
-        if (visibility === undefined){
+        if (visibility === undefined) {
             visibility = true;
         }
 
         this.placemark.setVisibility(visibility);
         if (visibility) {
             var coords = this.computeCoords();
-            if (coords.length > 0){
+            if (coords.length > 0) {
                 var polygon = ge.gex.dom.buildPolygon(_.map(coords,
                                                         function(coord) {
                                                             return [coord.lat, coord.lng];
@@ -104,7 +104,7 @@ var PolygonView = Backbone.View.extend({
             }
         }
     },
-    
+
     erase: function() {
         if (!_.isUndefined(this.placemark)) {
             var geometry = this.placemark.getGeometry();
@@ -933,7 +933,7 @@ $(function() {
                               function(command, collection, event) {
                                   if (command.hasParam('showWedge')) {
                                       this.redrawPolygons();
-                                  } else if (command.get('type').indexOf('Pattern') > 0){
+                                  } else if (command.get('type').indexOf('Pattern') > 0) {
                                       this.redrawPolygons();
                                   }
                               });
@@ -1027,9 +1027,9 @@ $(function() {
                 if (app.options.directionalStations &&
                     this.model.get('isDirectional')) {
                     var iconStyle = style.getIconStyle();
-                    if (iconStyle != null){
+                    if (iconStyle != null) {
                         var degrees = this.model.get('headingDegrees');
-                        if (degrees != null){
+                        if (degrees != null) {
                             iconStyle.setHeading(degrees);
                         }
                     }
@@ -1102,7 +1102,7 @@ $(function() {
                 var station = this.model;
 
                 makeDraggable(this.dragHandlePm, {
-                    //getPosition: function(placemark){ var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
+                    //getPosition: function(placemark) { var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
                     startCallback: function(placemark, data) {
                         //console.log('mousedown');
                         var coords = station.get('geometry').coordinates;
@@ -1130,10 +1130,10 @@ $(function() {
                 var station = this.model;
                 var commandViews = this.commandViews = [];
                 var commandFeatures = this.planKmlView.commandFolder.getFeatures();
-                
+
                 var wedgeViews = this.wedgeViews = [];
                 var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
-                
+
                 this.model.get('sequence').each(function(command) {
                     if (command.hasParam('showWedge')) {
                         var wedgeView = new PanoWedgeView({
@@ -1144,11 +1144,11 @@ $(function() {
                         wedgeViews.push(wedgeView);
                         wedgeFeatures.appendChild(wedgeView.placemark);
                     } else {
-                        if (command.get('type') in app.commandRenderers){
+                        if (command.get('type') in app.commandRenderers) {
                             var typeKey = command.get('type');
                             var foundClass = app.commandRenderers[typeKey];
                             var theClass = window[foundClass];
-                             
+
                             var commandView = new theClass({
                                 station: station,
                                 command: command,
@@ -1164,25 +1164,25 @@ $(function() {
             destroyPolygons: function() {
                 var wedgeFeatures = this.planKmlView.fovWedgesFolder
                     .getFeatures();
-                
+
                 if (!_.isUndefined(this.wedgeViews)) {
-                	while (this.wedgeViews.length > 0) {
+                    while (this.wedgeViews.length > 0) {
                         wedgeView = this.wedgeViews.pop();
                         wedgeFeatures.removeChild(wedgeView.placemark);
                         wedgeView.close();
                     }
                 }
-                
+
                 var commandFeatures = this.planKmlView.commandFolder.getFeatures();
-                
+
                 if (!_.isUndefined(this.commandViews)) {
-                	while (this.commandViews.length > 0) {
-                		commandView = this.commandViews.pop();
+                    while (this.commandViews.length > 0) {
+                        commandView = this.commandViews.pop();
                         commandFeatures.removeChild(commandView.placemark);
                         commandView.close();
                     }
                 }
-                
+
             },
 
             redrawPolygons: function() {
@@ -1493,7 +1493,7 @@ $(function() {
                 this.placemark.setGeometry(polygon);
             }
         },
-        
+
         erase: function() {
             if (!_.isUndefined(this.placemark)) {
                 var geometry = this.placemark.getGeometry();
@@ -1501,12 +1501,11 @@ $(function() {
                 this.wedgeFeatures.removeChild(this.placemark);
                 this.close();
             }
-        }, 
+        },
 
         close: function() {
             this.stopListening();
         }
     });
-    
 
 });

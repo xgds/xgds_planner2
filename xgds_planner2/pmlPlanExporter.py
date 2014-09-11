@@ -3,16 +3,18 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
+
+# pylint: disable=W0612, W0702
 import datetime
 
 from xgds_planner2.planExporter import TreeWalkPlanExporter
-from xgds_planner2 import xpjson
 
 from geocamUtil.geomath import calculateDiffMeters, getLength
 
+
 class PmlPlanExporter(TreeWalkPlanExporter):
     """
-    PML is the XML format that SCORE uses.  
+    PML is the XML format that SCORE uses.
     """
     label = 'pml'
     content_type = 'application/xml'
@@ -27,7 +29,6 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 self.startTime = context.startTime
             else:
                 self.startTime = datetime.datetime.now()
-
 
     def wrapDocument(self, text):
         content = ""
@@ -71,16 +72,17 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                     </Property>
                 </SharedProperties>
             </Activity>
-""" % {'activityType': activityType,
-       'activityId': '' if activityId is None else activityId,
-       'name': '' if name is None else name,
-       'duration': self.getDurationString(durationSeconds),
-       'startTime': self.startTime.replace(microsecond=0).isoformat(),
-       'notes': '' if notes is None else notes})
+""" % {
+                'activityType': activityType,
+                'activityId': '' if activityId is None else activityId,
+                'name': '' if name is None else name,
+                'duration': self.getDurationString(durationSeconds),
+                'startTime': self.startTime.replace(microsecond=0).isoformat(),
+                'notes': '' if notes is None else notes})
 
     def transformStation(self, station, tsequence, context):
         """
-        duration for station is 0, as we are treating it as arrival at station. 
+        duration for station is 0, as we are treating it as arrival at station.
         """
         if self.stationCounter == 0:
             name = "Start"
@@ -89,8 +91,8 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         else:
             name = "%02d" % self.stationCounter
 
-        name = "Station %s%s" % (name,'' if station.name is None else ' ' + station.name)
-        result =  self.makeActivity("Station", station.id, name, 0, station.notes)
+        name = "Station %s%s" % (name, '' if station.name is None else ' ' + station.name)
+        result = self.makeActivity("Station", station.id, name, 0, station.notes)
         self.stationCounter = self.stationCounter + 1
         return result
 
@@ -106,7 +108,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
 
         segmentDuration = meters / speed
 
-        name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name) 
+        name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name)
         activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes)
         self.startTime = self.startTime + datetime.timedelta(seconds=segmentDuration)
         self.segmentCounter = self.segmentCounter + 1

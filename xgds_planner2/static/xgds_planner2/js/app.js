@@ -472,8 +472,8 @@ var app = (function($, _, Backbone) {
         toLngLat: function(coords, alternateCrs) {
             if (alternateCrs.type == 'roversw' &&
                 alternateCrs.properties.projection == 'utm') {
-            	var oeasting = alternateCrs.properties.originEasting;
-            	var onorthing = alternateCrs.properties.originNorthing;
+                var oeasting = alternateCrs.properties.originEasting;
+                var onorthing = alternateCrs.properties.originNorthing;
                 var utmEasting = parseFloat(coords[0]) + alternateCrs.properties.originEasting;
                 var utmNorthing = parseFloat(coords[1]) + alternateCrs.properties.originNorthing;
                 var lonLat = {};

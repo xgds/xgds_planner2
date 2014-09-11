@@ -906,7 +906,7 @@ def getCrsTransformRoversw(crs):
     x, y = xform(lon, lat)
     lon, lat = xform(x, y, inverse=True)
     """
-    projString = crs['properties']['projection']
+#     projString = crs['properties']['projection']
 
     proj = pyproj.Proj('+proj=utm +ellps=WGS84 +zone=%(zone)s +north' % crs['properties'])
     x0 = crs['properties']['originEasting']

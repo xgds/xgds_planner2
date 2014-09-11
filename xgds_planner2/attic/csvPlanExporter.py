@@ -46,7 +46,7 @@ class CsvPlanExporter(TreeWalkPlanExporter):
 
     def writeRecCsv(self, out, rec, doWriteHeader):
         csvWriter = self.getCsvWriter(out)
-        csvRec = getCsvRecord(rec)
+        csvRec = self.getCsvRecord(rec)
         if doWriteHeader:
             csvWriter.writerow([f[1] for f in csvRec])
         csvWriter.writerow([f[2] for f in csvRec])

@@ -4,12 +4,12 @@
 # All Rights Reserved.
 # __END_LICENSE__
 
+import datetime
 from django import forms
 from django.conf import settings
-from xgds_planner2.models import getPlanSchema
 from geocamUtil.loader import getModelByName
 from xgds_planner2 import settings
-from xgds_planner2.models import getPlanSchema, Vehicle
+from xgds_planner2.models import getPlanSchema
 
 
 class CreatePlanForm(forms.Form):
@@ -36,8 +36,12 @@ class CreatePlanForm(forms.Form):
         sites = sorted(allSites, key=lambda site: site.name)
         self.fields['site'].choices = [(site.id, site.name) for site in sites]
 
+
 # form for creating a flight group, flights, and all sorts of other stuff needed for our overly complex system.
 class GroupFlightForm(forms.Form):
+    year = None
+    month = None
+    day = None
     date = forms.DateField(required=True)
     prefix = forms.CharField(widget=forms.TextInput(attrs={'size': 4}),
                              label="Prefix",
@@ -48,12 +52,12 @@ class GroupFlightForm(forms.Form):
     VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
     for vehicle in VehicleModel.objects.all().order_by('name'):
         CHOICES.append((vehicle.name, vehicle.name))
-    
+
     if len(CHOICES) == 1:
         initial = [c[0] for c in CHOICES]
     else:
         initial = None
-    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial = initial)
+    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial=initial)
 
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
 
@@ -62,5 +66,4 @@ class GroupFlightForm(forms.Form):
         self.month = timeinfo['month']
         self.day = timeinfo['day']
         self.date = datetime.date(int(self.year), int(self.month), int(self.day))
-        self.month = int(timeinfo['month']) - 1  # apparently 0 is january ...
-
+        self.month = int(timeinfo['month']) - 1  # apparently 0 is january

@@ -26,7 +26,7 @@ class PlanExporter(object):
     for exportDbPlan() to return a structured object -- then you must
     define how the object should be serialized into response text using
     the serializeExportedObject() method.
-    
+
     You can use opts to pass in a dictonary for extra options.
     """
 
@@ -107,9 +107,9 @@ class TreeWalkPlanExporter(PlanExporter):
         stations = [s for s in plan.sequence if s.type == 'Station']
         prevStation = None
         if segmentIndex > 0:
-            try: 
+            try:
                 prevStation = stations[segmentIndex - 1]
-            except:
+            except IndexError:
                 pass
         nextStation = None
         if isStation:
@@ -118,7 +118,7 @@ class TreeWalkPlanExporter(PlanExporter):
             nextIndex = segmentIndex
         try:
             nextStation = stations[nextIndex]
-        except:
+        except IndexError:
             pass
         return prevStation, nextStation
 #         return stations[segmentIndex - 1], stations[segmentIndex]

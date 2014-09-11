@@ -181,7 +181,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             this.$el.find('#save-status').removeClass('notify-alert');
         }
     },
-    
+
     updateTip: function(eventName) {
         var msgMap = {
             'edit': 'Double click to delete stations, click and drag to move.',
@@ -679,7 +679,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data) {
-        var displayName =  data.name || data.presetName ||  data.presetCode;
+        var displayName = data.name || data.presetName || data.presetCode;
         var timing = app.util.minutesToHMS(data.duration);
         return '<input class="select" type="checkbox"/>' + displayName + ' <span class="duration">' + timing + '</span><i/>';
     },
@@ -939,7 +939,6 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
 
     initialize: function() {
         var readonly = this.options.readonly || app.options.readonly;
-        
         var visible = this.options.visible;
 
         // Construct a schema compatible with backbone-forms

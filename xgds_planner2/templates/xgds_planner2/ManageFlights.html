@@ -27,6 +27,9 @@
 	{% if errorString %}
 	<span class="error">{{ errorString }}</span>
 	{% endif %}
+	<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
+	<input type="checkbox" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} style="margin-bottom:3px;">Today Only</input>
+	</form>
 	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}" style="float:right;margin-bottom:3px;">Create Flights</a>
 	<br/>
 	
@@ -88,6 +91,21 @@ var defaultOptions = {
             "sLengthMenu": "Display _MENU_ flights & plans"
           }
 }
+
+/*$.post('{# url planner2_updateToday #}', function(data) {
+    alert(data);
+}); */
+
+$('#id_today').change(function(e){
+    var ischecked = $('#id_today').is(":checked");
+    $.ajax({
+        type: "POST",
+        url: "{% url 'planner2_updateToday' %}",
+        data: { today: ischecked}
+    }).done(function (response) {
+        location.reload(true);
+    })
+});
 
 
 $(document).ready( function () {
