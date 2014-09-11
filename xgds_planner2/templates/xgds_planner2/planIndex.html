@@ -28,8 +28,10 @@ table.planIndex td.exportFormat a {
 {{ block.super }}
 
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
-<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;"></input>
-
+<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;margin-bottom:3px;"></input>
+{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+<input class="mybutton" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" style="float:right;margin-bottom:3px;"></input>
+{% endif %}
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
@@ -41,6 +43,9 @@ table.planIndex td.exportFormat a {
     <th>Dist</th>
     <th>#Stn</th>
     <th>#Commands</th>
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    <th>Scheduled</th>
+    {% endif %}
     <th>Export</th>
   </tr>
 </thead>
@@ -55,6 +60,9 @@ table.planIndex td.exportFormat a {
     <td class="right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    <td>{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} {% endfor %}</td>
+    {% endif %}
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
         <a href="{{ exporter.url }}" style="text-decoration:none">
@@ -68,12 +76,39 @@ table.planIndex td.exportFormat a {
 </table>
 </form>
 
+{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+<div id="scheduleDialog" style="display:none">
+	<form name='ScheduleForm' id="scheduleForm" action="{% url 'planner2_schedulePlans' %}" method="post">
+		<input type="hidden" name="planIds" id="id_planIds"></input>
+		<p>Schedule selected plans</p>
+		<table>
+		<tr>
+			<td>Plans</td>
+			<td><span class="planlist"></span></td>
+		</tr>
+		<tr>
+			<td><label for="id_flight">Flight</label></td>
+			<td><select name="flight" id="id_flight"> {% for flight in flight_names %} 
+		        <option value="{{ flight }}">{{ flight }} </option>
+		        {% endfor %}
+		        </select></td>
+		</tr>
+		<tr>
+			<td><label for="id_schedule_date">When</label></td>
+			<td><input type="text" name="schedule_date" id="id_schedule_date"></input></td>
+		</tr>
+		</table>
+	</form>
+	</div>
+{% endif %}
 {% endblock content %}
 
 {% block scripts %}
   {{ block.super }}
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui-timepicker-addon.js"></script>
+
 <script type="text/javascript">
 $( "#PlanForm" ).submit(function( event ) {
 	  event.preventDefault();
@@ -124,8 +159,48 @@ $("#deleteButton").click(function() {
 	            },
 	        ]
 	}
+	
+	function showScheduleDialog() {
+	    var planlist = ""
+		var planIds = []
+	    $('.check').each(function(i, obj) {
+			if($(this).is(":checked")) {
+			    planIds.push($(this).val());
+				var editthingy = $("#edit_" + $(this).val());
+				planlist = planlist + editthingy.text() + "<br/>";
+			}
+		});
+	    $('.planlist').html(planlist);
+	    $('#scheduleDialog').dialog({
+	        dialogClass: 'no-close',
+	        modal: false,
+	        resizable: true,
+	        closeOnEscape: true,
+	        buttons: {
+	            'Cancel': function() {
+	                $(this).dialog('close');
+	            },
+	            'Schedule': function() {
+	                var date = $('#id_schedule_date').val();
+	                var flight = $('#id_flight').val();
+	                $("#id_planIds").val(planIds);
+	                //TODO validate
+	                $( "#scheduleForm" ).submit();
+	            }
+	        },
+	        position: {
+	            my: 'right top',
+	            at: 'right bottom',
+	            of: '#schedule_button'
+	        },
+	        dialogClass: 'saveAs'
+	    });
+	};
 
 	 $(document).ready( function () {
+	     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+	    $( "#id_schedule_date" ).datetimepicker();
+	    {% endif %}
 		var pTable = $('#dataTable').dataTable( defaultOptions);
 		$(window).resize(function(){ 
 			$('div.dataTables_scrollBody').css('height',calcDataTableHeight());

@@ -183,6 +183,13 @@ XGDS_PLANNER_COMMAND_RENDERERS = {}
 # extra JavaScript callback to call after Google Earth is loaded.
 XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'
 
+# If this is defined (true) then include the scheduling & flight management features in display
+# IMPORTANT YOU MUST INCLUDE THIS IN SITE SETTINGS
+# TEMPLATE_CONTEXT_PROCESSORS = (global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
+#     ...
+#     'geocamUtil.context_processors.settings'
+XGDS_PLANNER2_SCHEDULE_INCLUDED = None
+
 # Test skipping variables. Set to true if code somewhere else overrides
 # some functionality in the planner.
 XGDS_PLANNER2_TEST_SKIP_INDEX = False
