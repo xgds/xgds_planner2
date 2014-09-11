@@ -320,7 +320,7 @@ class PlanSchema:
 
 
 def loadSchema(platform):
-    schemaDict = settings.XGDS_PLANNER_SCHEMAS[str(platform)]
+    schemaDict = settings.XGDS_PLANNER_SCHEMAS[platform]
     schema = PlanSchema(platform, schemaDict)
     schema.getSchema()
     schema.getJsonSchema()

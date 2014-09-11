@@ -3,7 +3,6 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
-
 import datetime
 from django import forms
 from django.conf import settings
@@ -21,6 +20,7 @@ class CreatePlanForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
+        del platforms["test"]
         self.fields['platform'].choices = [(p, p) for p in platforms]
 
         # TODO right now this shows an alphabetically sorted list of all the sites together.

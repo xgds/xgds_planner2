@@ -18,6 +18,10 @@ import logging
 
 @override_settings(PIPELINE_ENABLED=False)
 class xgds_planner2Test(TestCase):
+    """
+    Right now for this to work it REQUIRES the test schema to exist in the siteSettings, and it to have been prepped.
+    TODO: make this not a requirement, and instead have setup and teardown methods here in this test that will do what we need, including prep and destroy.
+    """
     fixtures = ['xgds_planner2_testing.json',
                 'xgds_planner2_testing_auth.json']
     test_plan_data = {"planNumber": 1,
