@@ -64,6 +64,9 @@ class PlanExecution(models.Model):
     flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="plans")
     plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, related_name="executions")
 
+    class Meta:
+        ordering = ['planned_start_time']
+
     def __unicode__(self):
         return self.id
 

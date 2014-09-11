@@ -5,7 +5,6 @@
 # __END_LICENSE__
 
 # pylint: disable=W0702
-
 import os
 import glob
 import json
