@@ -32,6 +32,7 @@ table.planIndex td.exportFormat a {
 {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <input class="mybutton" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" style="float:right;margin-bottom:3px;"></input>
 {% endif %}
+<a href={% if siteSettings.XGDS_PLANNER2_CREATE_URL %} "{{ siteSettings.XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin:3px;"> Create Plan</a>
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>

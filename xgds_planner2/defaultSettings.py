@@ -137,6 +137,9 @@ XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
 XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
 
+# OVERRIDE this in your sitesettings to have a custom plan create, note that since it's in site settings you can't have a reverse lookup.
+XGDS_PLANNER2_CREATE_URL = "/xgds_planner2/plan/create"
+
 # Schema used to be set in the settings, now they are set in the PlanSchema database table.
 # XGDS_PLANNER_SCHEMAS = [
 # ]

@@ -20,7 +20,10 @@ class CreatePlanForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
-        del platforms["test"]
+        try:
+            platforms.remove("test")
+        except ValueError:
+            pass
         self.fields['platform'].choices = [(p, p) for p in platforms]
 
         # TODO right now this shows an alphabetically sorted list of all the sites together.
