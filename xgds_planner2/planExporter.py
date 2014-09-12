@@ -39,11 +39,14 @@ class PlanExporter(object):
     def serializeExportedObject(self, obj):
         return obj
 
-    def getHttpResponse(self, dbPlan):
+    def getHttpResponse(self, dbPlan, attachmentName=None):
         obj = self.exportDbPlan(dbPlan)
         text = self.serializeExportedObject(obj)
-        return HttpResponse(text,
-                            content_type=self.content_type)
+        response = HttpResponse(text,
+                                content_type=self.content_type)
+        if attachmentName is not None:
+            response['Content-disposition'] = 'attachment; filename=%s' % attachmentName
+        return response
 
     def exportDbPlanToPath(self, dbPlan, path):
         open(path, 'wb').write(self.exportDbPlan(dbPlan))

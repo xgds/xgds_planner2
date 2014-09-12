@@ -303,7 +303,7 @@ def planExport(request, uuid, name, time=None):
             exporter.initPlan(dbPlan, context)
         except:
             pass
-    return exporter.getHttpResponse(dbPlan)
+    return exporter.getHttpResponse(dbPlan, attachmentName=name)
 
 
 @login_required
