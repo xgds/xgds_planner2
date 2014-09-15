@@ -514,6 +514,7 @@ $(function() {
             },
 
             drawStation: function(station) {
+//                console.log("making station point view " + station.id)
                 var stationPointView = new StationPointView({
                     ge: this.ge,
                     model: station,
@@ -938,6 +939,11 @@ $(function() {
                                   }
                               });
 
+                //rerender the first time to get the icons always drawing in placemarks, there's a bug in google earth plugin so if it doesn't have focus the placemarks may not draw
+                this.listenTo(app.vent, 'plan:fixPlacemarks', function() {
+                    this.redraw();
+                });
+
                 // redraw when we're selected
                 this.listenTo(app.vent, 'showItem:station', function() {
                     this.redraw();
@@ -968,7 +974,9 @@ $(function() {
             },
 
             redraw: function() {
-                //console.log('redrawing point');
+                if (this.placemark === undefined){
+                    return;
+                }
                 // redraw code. To be invoked when relevant model attributes change.
                 app.Actions.disable();
                 var kmlPoint = this.placemark.getGeometry();
@@ -984,8 +992,10 @@ $(function() {
                     name += ' ' + this.model.get('name');
                 }
                 this.placemark.setName(name || this.model.toString());
+//                console.log('redrawing point ' + name);
+
                 var style = this.buildStyle();
-                this.placemark.setStyleSelector(this.buildStyle());
+                this.placemark.setStyleSelector(style);
                 //this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
                 //this.placemark.getStyleSelector().getIconStyle().getIcon()
                 //    .setHref(this.model.get('isDirectional') ?
@@ -1018,15 +1028,16 @@ $(function() {
                 var icon = ge.createIcon('');
                 icon.setHref(iconUrl);
                 var style = ge.createStyle('');
-                style.getIconStyle().setIcon(icon);
+                var iconStyle = style.getIconStyle();
+                iconStyle.setIcon(icon);
+                iconStyle.setHeading(0);
                 if (app.State.stationSelected === this.model &&
                     app.currentTab == 'sequence') {
                     // grow icon when we're selected
-                    style.getIconStyle().setScale(1.5);
+                    iconStyle.setScale(1.5);
                 }
                 if (app.options.directionalStations &&
                     this.model.get('isDirectional')) {
-                    var iconStyle = style.getIconStyle();
                     if (iconStyle != null) {
                         var degrees = this.model.get('headingDegrees');
                         if (degrees != null) {

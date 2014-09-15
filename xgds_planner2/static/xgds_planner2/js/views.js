@@ -35,6 +35,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
+        this.listenTo(app.vent, 'earth:loaded', this.fixPlacemarks);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
@@ -220,6 +221,14 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         var planId = planIdTemplate.format(context);
         app.currentPlan.set('id', planId);
         app.currentPlan.get('sequence').resequence();
+    },
+
+    fixPlacemarks: function() {
+        var $this = this;
+        _.defer(function(){
+            $this.$('ge').focus();
+            app.vent.trigger('plan:fixPlacemarks');
+          });
     },
 
     showSaveAsDialog: function() {
