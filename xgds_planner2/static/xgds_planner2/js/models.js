@@ -400,6 +400,7 @@ app.models = app.models || {};
 
                     var stationId = template.format(context);
                     item.set('id', stationId);
+                    item.trigger('change')
                 }
             );
 
