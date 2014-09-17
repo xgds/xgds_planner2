@@ -47,6 +47,9 @@ class AbstractVehicle(models.Model):
     def __unicode__(self):
         return self.name
 
+    def getDict(self):
+        return {"name": self.name, "notes": self.notes, "type": self.type}
+
 
 class Vehicle(AbstractVehicle):
     pass
