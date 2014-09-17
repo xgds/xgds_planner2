@@ -25,6 +25,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.db.utils import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.cache import never_cache
 
 from geocamUtil.loader import getModelByName
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
@@ -373,6 +374,7 @@ def plan_delete(request):
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
+@never_cache
 def getPlanIndexKml(request):
     out = StringIO()
     out.write('<Document>\n')
