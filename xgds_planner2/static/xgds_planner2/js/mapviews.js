@@ -941,6 +941,18 @@ $(function() {
 
                 //rerender the first time to get the icons always drawing in placemarks, there's a bug in google earth plugin so if it doesn't have focus the placemarks may not draw
                 this.listenTo(app.vent, 'plan:fixPlacemarks', function() {
+                    var styleSelector = this.placemark.getStyleSelector();
+                    if(styleSelector == null){
+                        this.placemark.setStyleSelector(ge.createStyle(""));
+                        styleSelector = this.placemark.getStyleSelector();
+                    }
+                    // IconStyle
+                    var style = this.buildStyle();
+                    var iconStyle = styleSelector.getIconStyle();
+                    iconStyle.setScale(style.getIconStyle().getScale());
+                    iconStyle.setHeading(style.getIconStyle().getHeading());
+                    iconStyle.setIcon(style.getIconStyle().getIcon());
+
                     this.redraw();
                 });
 
@@ -994,13 +1006,27 @@ $(function() {
                 this.placemark.setName(name || this.model.toString());
 //                console.log('redrawing point ' + name);
 
-                var style = this.buildStyle();
-                this.placemark.setStyleSelector(style);
-                //this.placemark.getStyleSelector().getIconStyle().setHeading(this.model.get('headingDegrees'));
-                //this.placemark.getStyleSelector().getIconStyle().getIcon()
-                //    .setHref(this.model.get('isDirectional') ?
-                //             'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
-                //             'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
+                var styleSelector = this.placemark.getStyleSelector();
+                if (styleSelector === null || styleSelector.getIconStyle() === null){
+                    styleSelector = this.buildStyle();
+                    this.placemark.setStyleSelector(styleSelector);
+                } else {
+                    var heading = 0.0;
+                    try {
+                        heading = this.model.get('headingDegrees');
+                    } catch(err) {
+                        // nothing
+                    }
+                    if (_.isUndefined(heading)){
+                        heading = 0.0;
+                    }
+                    var iconStyle = styleSelector.getIconStyle();
+                    iconStyle.setHeading(heading);
+                    iconStyle.getIcon()
+                        .setHref(this.model.get('isDirectional') ?
+                                 'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
+                                 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
+                }
 
                 if (this.wedgeViews) {
                     _.each(this.wedgeViews, function(wedgeView) {
@@ -1030,7 +1056,8 @@ $(function() {
                 var style = ge.createStyle('');
                 var iconStyle = style.getIconStyle();
                 iconStyle.setIcon(icon);
-                iconStyle.setHeading(0);
+                iconStyle.setScale(1.0);
+                iconStyle.setHeading(0.0);
                 if (app.State.stationSelected === this.model &&
                     app.currentTab == 'sequence') {
                     // grow icon when we're selected

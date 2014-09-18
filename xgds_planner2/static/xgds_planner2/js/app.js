@@ -41,6 +41,8 @@ var app = (function($, _, Backbone) {
             this.mapResized = false;
             this.mapHeightSet = false;
             this.siteFrameMode = false;
+            this.tree = undefined;
+            this.initialTree = null;
         });
     });
 
