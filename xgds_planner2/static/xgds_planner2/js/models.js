@@ -383,7 +383,6 @@ app.models = app.models || {};
                             sequenceLabel = '' + stationCounter;
                         }
                         item._sequenceLabel = sequenceLabel;
-                        stationCounter++;
                     }
 
                     // Item ID template formatting
@@ -394,13 +393,16 @@ app.models = app.models || {};
 
                     var context = {
                         plan: app.currentPlan.toJSON(),
-                        stationIndex: idx
+                        stationIndex: stationCounter
                     };
                     context[itemType.toLowerCase()] = item;
 
                     var stationId = template.format(context);
                     item.set('id', stationId);
                     item.trigger('change')
+                    if (itemType == 'Station') {
+                        stationCounter++;
+                    }
                 }
             );
 

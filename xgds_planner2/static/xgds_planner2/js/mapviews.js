@@ -1017,15 +1017,17 @@ $(function() {
                     } catch(err) {
                         // nothing
                     }
-                    if (_.isUndefined(heading)){
+                    if (_.isUndefined(heading) || _.isNull(heading)){
                         heading = 0.0;
                     }
                     var iconStyle = styleSelector.getIconStyle();
-                    iconStyle.setHeading(heading);
-                    iconStyle.getIcon()
-                        .setHref(this.model.get('isDirectional') ?
-                                 'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
-                                 'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
+                    if (!_.isUndefined(iconStyle)){
+                        iconStyle.setHeading(heading);
+                        iconStyle.getIcon()
+                            .setHref(this.model.get('isDirectional') ?
+                                     'http://earth.google.com/images/kml-icons/track-directional/track-0.png' :
+                                     'http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png');
+                    }
                 }
 
                 if (this.wedgeViews) {
