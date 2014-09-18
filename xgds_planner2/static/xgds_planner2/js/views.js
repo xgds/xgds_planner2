@@ -35,7 +35,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
-//        this.listenTo(app.vent, 'earth:loaded', this.fixPlacemarks);
 
         app.reqres.addHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
@@ -232,15 +231,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         app.currentPlan.get('sequence').resequence();
     },
 
-    fixPlacemarks: function() {
-        var $this = this;
-//        console.log("fix placemarks in views");
-        _.defer(function(){
-            $this.$('ge').focus();
-            app.vent.trigger('plan:fixPlacemarks');
-          });
-    },
-
     showSaveAsDialog: function() {
         $('#saveAsName').val(app.currentPlan.attributes['name']);
         var version = app.currentPlan.attributes['planVersion'];
@@ -341,7 +331,12 @@ app.views.SegmentPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
 });
 
 app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
-    template: '#template-command-properties-header'
+    template: '#template-command-properties-header',
+    serializeData: function() {
+        var data = this.model.toJSON();
+        data.label = this.model._commandLabel;
+        return data;
+    }
 });
 
 app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
@@ -455,7 +450,9 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
 
     showCommand: function(itemModel) {
         this.colhead3.close();
-        var headerView = new app.views.CommandPropertiesHeaderView();
+        var headerView = new app.views.CommandPropertiesHeaderView({
+            model: itemModel
+        });
         this.colhead3.show(headerView);
         this.col3.close();
         var view = new app.views.PropertiesForm({model: itemModel, readonly: app.options.readonly});

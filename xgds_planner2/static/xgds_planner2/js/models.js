@@ -569,6 +569,11 @@ app.models = app.models || {};
             // attribute)
             // and so creates a new one, which is bad
             this.set(this.idAttribute, this.cid);
+            var commandLabel = this.get('name');
+            if (_.isUndefined(commandLabel)){
+                commandLabel = "";
+            }
+            this._commandLabel = commandLabel;
         },
 
         hasParam: function(paramName) {

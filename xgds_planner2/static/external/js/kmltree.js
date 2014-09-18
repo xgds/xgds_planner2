@@ -1672,6 +1672,7 @@ var kmltree = (function(){
             $('#'+id+' li > span.name').die();
             $('#'+id+' li').die();
             $('#'+id+' li > .expander').die();
+            $('#'+id+' li > .toggler').die();
             $(that).die();
             $(that).unbind();
             $('#kmltree-balloon-iframe').remove();

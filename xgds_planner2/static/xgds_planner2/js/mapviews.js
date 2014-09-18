@@ -894,11 +894,11 @@ $(function() {
                 }
                 pmOptions.name = name || this.model.toString();
                 pmOptions.altitudeMode = app.options.plannerClampMode ||
-                    this.options.ge.ALTITUDE_CLAMP_TO_GROUND;
+                    this.options.ge.ALTITUDE_RELATIVE_TO_GROUND; // ALTITUDE_CLAMP_TO_GROUND;
                 pmOptions.style = this.buildStyle();
                 var point = this.model.get('geometry').coordinates; // lon, lat
 
-                var pointGeom = gex.dom.buildPoint([point[1], point[0]]); // lat, lon
+                var pointGeom = gex.dom.buildPoint([point[1], point[0], 1.0]); // lat, lon  //FIX for drawing polygons on top
 
                 pmOptions.point = pointGeom;
                 this.placemark = gex.dom.buildPlacemark(pmOptions);
