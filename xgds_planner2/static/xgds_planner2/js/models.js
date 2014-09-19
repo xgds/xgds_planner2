@@ -326,6 +326,7 @@ app.models = app.models || {};
 
         appendCommandByPreset: function(preset) {
             var command = new models.Command(preset);
+            command.set('name', preset.presetName);
             command.parent = this;
             this.get('sequence').add(command);
         },
