@@ -379,7 +379,9 @@ def getPlanIndexKml(request):
     out = StringIO()
     out.write('<Document>\n')
     PLAN = get_plan_model()
-    for plan in PLAN.objects.filter(deleted=False).order_by('name'):
+    plans = PLAN.objects.filter(deleted=False)
+    plans = list(reversed(sorted(plans, key=lambda plan: (plan.getEscapedId(), plan.escapedName()))))
+    for plan in plans:
         fname = '%s.kml' % plan.escapedName()
         relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
         url = request.build_absolute_uri(relUrl)
