@@ -248,6 +248,14 @@ class AbstractPlan(models.Model):
 #             result[exporter.label] = exporter.url
         return result
 
+    def getEscapedId(self):
+        if self.jsonPlan and self.jsonPlan.id:
+            result = re.sub(r'[^\w]', '', self.jsonPlan.id)
+            result = re.sub('_PLAN$', '', result)
+            return result
+        else:
+            return None
+
     def __unicode__(self):
         if self.name:
             return self.name

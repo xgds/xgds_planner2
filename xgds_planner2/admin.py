@@ -14,3 +14,4 @@ from django.contrib import admin
 from xgds_planner2.models import *  # pylint: disable=W0401
 
 admin.site.register(ActiveFlight)
+admin.site.register(Plan)

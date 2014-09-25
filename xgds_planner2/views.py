@@ -393,7 +393,7 @@ def getPlanIndexKml(request):
   </Link>
 </NetworkLink>
 """
-                  % dict(name=plan.escapedName(), url=url))
+                  % dict(name=plan.getEscapedId() + ' - ' + plan.escapedName(), url=url))
     out.write('</Document>')
     return wrapKmlDjango(out.getvalue())
 
