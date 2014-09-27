@@ -6,8 +6,12 @@
 
 # pylint: disable=W0612, W0702
 import datetime
+import os
+import re
 
+from xgds_planner2 import settings
 from xgds_planner2.planExporter import TreeWalkPlanExporter
+from xgds_planner2.models import getPlanSchema
 
 from geocamUtil.geomath import calculateDiffMeters, getLength
 
@@ -29,6 +33,23 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 self.startTime = context.startTime
             else:
                 self.startTime = datetime.datetime.now()
+        try:
+            fullPlanSchema = getPlanSchema(plan.platform.name)
+            simulatorPath = fullPlanSchema.simulatorUrl
+            if simulatorPath.startswith('/static/'):
+                simulatorPath = simulatorPath[8:]
+            fullpath = os.path.join(settings.STATIC_ROOT, simulatorPath)
+            simulator_file = open(fullpath) # urlopen
+            simulator_contents = simulator_file.read()
+            regex = re.compile('.*DRIVE_TIME_MULTIPLIER\s*=\s*(\d+\.*\d*);')
+            searchResults = regex.search(simulator_contents)
+            result = regex.findall(searchResults.group(0))
+            if result:
+                self.DRIVE_TIME_MULTIPLIER = float(result[0])
+        except:
+            simulator_file.close()
+            self.DRIVE_TIME_MULTIPLIER = 1.0
+
 
     def wrapDocument(self, text):
         content = ""
@@ -106,7 +127,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         except:
             pass
 
-        segmentDuration = meters / speed
+        segmentDuration = self.DRIVE_TIME_MULTIPLIER * (meters / speed)
 
         name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name)
         activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes)
