@@ -9,7 +9,8 @@ app.models = app.models || {};
         'number': 'Number',
         'boolean': 'Checkbox',
         'date-time': 'DateTime',
-        'targetId': 'Select'
+        'targetId': 'Select',
+        'h:m:s': 'HMS'
     };
 
     models.widgetTypeHash = {
@@ -18,7 +19,8 @@ app.models = app.models || {};
         'checkbox': 'Checkbox',
         'datetime': 'DateTime',
         'select': 'Select',
-        'textarea': 'TextArea'
+        'textarea': 'TextArea',
+        'h:m:s': 'HMS'
     };
 
     models.paramBlackList = [

@@ -4,6 +4,28 @@
         defaultValue: null
     });
 
+    Form.editors.HMS = Form.editors.Text.extend({
+        defaultValue: 0,
+        getValue: function() {
+            var value = this.$el.val();
+            return value === '' ? null : app.util.HMSToMinutes(value);
+        },
+
+        setValue: function(value) {
+            value = (function() {
+                if (_.isNumber(value)) return  value;
+                if (_.isString(value) && value != '') return  parseFloat(value, 10);
+                return 0;
+            })();
+
+            if (_.isNaN(value)) {
+                value = 0;
+            }
+
+            Form.editors.Text.prototype.setValue.call(this, app.util.minutesToHMS(value));
+        }
+    });
+
     // We need a number select, because python isn't loosely typed
     Form.editors.NumberSelect = Backbone.Form.editors.Select.extend({
         getValue: function() {
