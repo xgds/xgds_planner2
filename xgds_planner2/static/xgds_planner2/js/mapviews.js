@@ -65,7 +65,7 @@ var PolygonView = Backbone.View.extend({
 
         var polygon = gex.dom.buildPolygon(_.map(coords, function(
             coord) {
-            return [coord.lat, coord.lng];
+            return [coord.lat, coord.lng, coord.alt];
         }));
 
         var style = gex.dom.buildStyle({
