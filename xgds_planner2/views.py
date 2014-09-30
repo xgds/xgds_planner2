@@ -232,6 +232,9 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'placemark_circle_highlighted_url': request.build_absolute_uri(
                 staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
             ),
+            'placemark_directional_url': request.build_absolute_uri(
+                staticfiles_storage.url('xgds_planner2/images/placemark_directional.png')
+            ),
             'plan_links_json': json.dumps(plan.getLinks())
         }),
         # context_instance=RequestContext
