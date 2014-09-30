@@ -1010,10 +1010,17 @@ $(function() {
                                 app.currentTab == 'sequence') {
                                 // grow icon when we're selected
                                 iconStyle.setScale(1.5);
-                                iconStyle.getIcon().setHref( app.options.placemarkCircleHighlightedUrl);
+                                if (this.model.get('isDirectional')) {
+                                    iconStyle.getIcon().setHref(app.options.placemarkDirectionalUrl);
+                                } else {
+                                    iconStyle.getIcon().setHref(app.options.placemarkCircleHighlightedUrl);
+                                }
                             } else {
-                                iconStyle.getIcon().setHref(this.model.get('isDirectional') ?
-                                        app.options.placemarkDirectionalUrl : app.options.placemarkCircleUrl);
+                                if (this.model.get('isDirectional')) {
+                                    iconStyle.getIcon().setHref(app.options.placemarkDirectionalUrl);
+                                } else {
+                                    iconStyle.getIcon().setHref(app.options.placemarkCircleUrl);
+                                }
                                 iconStyle.setScale(1.0);
                             }
                     }
