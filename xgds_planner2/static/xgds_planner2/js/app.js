@@ -396,7 +396,7 @@ var app = (function($, _, Backbone) {
         },
         HMSToMinutes: function(hms) {
             // given a time in hh:mm:ss return the decimal minutes
-            splits = hms.split(":");
+            var splits = hms.split(":");
             if (splits.length == 1) {
                 return parseFloat(hms);
             } else if (splits.length == 3) {
@@ -405,8 +405,8 @@ var app = (function($, _, Backbone) {
                 var seconds = parseInt(splits[2]);
             } else if (splits.length == 2){
                 var hours = 0
-                var minutes = parseInt(splits[1]);
-                var seconds = parseInt(splits[2]);
+                var minutes = parseInt(splits[0]);
+                var seconds = parseInt(splits[1]);
             }
             minutes = minutes + 60*hours + seconds/60;
             return minutes;
