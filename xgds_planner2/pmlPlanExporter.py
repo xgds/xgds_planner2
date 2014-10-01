@@ -46,9 +46,16 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             result = regex.findall(searchResults.group(0))
             if result:
                 self.DRIVE_TIME_MULTIPLIER = float(result[0])
+
+            regex = re.compile('.*ROTATION_ADDITION\s*=\s*(\d+\.*\d*);')
+            searchResults = regex.search(simulator_contents)
+            rotation_result = regex.findall(searchResults.group(0))
+            if rotation_result:
+                self.ROTATION_ADDITION = float(rotation_result[0])
         except:
             simulator_file.close()
             self.DRIVE_TIME_MULTIPLIER = 1.0
+            self.ROTATION_ADDITION = 0.0
 
 
     def wrapDocument(self, text):
@@ -127,7 +134,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         except:
             pass
 
-        segmentDuration = self.DRIVE_TIME_MULTIPLIER * (meters / speed)
+        segmentDuration = self.DRIVE_TIME_MULTIPLIER * (meters / speed) + self.ROTATION_ADDITION
 
         name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name)
         activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes)
