@@ -63,10 +63,11 @@ var PolygonView = Backbone.View.extend({
             visibility = true;
         }
 
-        var polygon = gex.dom.buildPolygon(_.map(coords, function(
-            coord) {
+        var polygonOptions = {};
+        polygonOptions.altitudeMode = app.options.plannerClampMode || ge.ALTITUDE_RELATIVE_TO_GROUND;
+        var polygon = gex.dom.buildPolygon(_.map(coords, function(coord) {
             return [coord.lat, coord.lng, coord.alt];
-        }));
+        }), polygonOptions);
 
         var style = gex.dom.buildStyle({
             line: {
@@ -79,9 +80,10 @@ var PolygonView = Backbone.View.extend({
             }
         });
 
-        var placemark = gex.dom.buildPolygonPlacemark(polygon, {
-            style: style
-        });
+        var pmOptions = {};
+        pmOptions.style = style;
+//        pmOptions.altitudeMode = app.options.plannerClampMode || ge.ALTITUDE_RELATIVE_TO_GROUND; 
+        var placemark = gex.dom.buildPolygonPlacemark(polygon, pmOptions);
         placemark.setVisibility(visibility);
         return placemark;
     },
@@ -96,10 +98,15 @@ var PolygonView = Backbone.View.extend({
         if (visibility) {
             var coords = this.computeCoords();
             if (coords.length > 0) {
-                var polygon = ge.gex.dom.buildPolygon(_.map(coords,
-                                                        function(coord) {
-                                                            return [coord.lat, coord.lng];
-                                                        }));
+                var polygonOptions = {};
+                polygonOptions.altitudeMode =  ge.ALTITUDE_RELATIVE_TO_GROUND; 
+                var polygon = ge.gex.dom.buildPolygon(_.map(coords, function(coord) {
+                    return [coord.lat, coord.lng, coord.alt];
+                }), polygonOptions);
+//                var polygon = ge.gex.dom.buildPolygon(_.map(coords,
+//                                                        function(coord) {
+//                                                            return [coord.lat, coord.lng, coord.alt];
+//                                                        }));
                 this.placemark.setGeometry(polygon);
             }
         }
