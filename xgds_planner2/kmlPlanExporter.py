@@ -26,10 +26,14 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         directionStyle = None
         styleUrl = 'station'
         result = ""
-        if station.isDirectional and station.headingDegrees:
-            headingDegrees = float(station.headingDegrees)
-            styleUrl = 'heading'
-            directionStyle = KmlUtil.makeStyle(iconHeading=headingDegrees)
+        try:
+            if station.isDirectional:
+                if station.headingDegrees:
+                    headingDegrees = float(station.headingDegrees)
+                    styleUrl = 'heading'
+                    directionStyle = KmlUtil.makeStyle(iconHeading=headingDegrees)
+        except AttributeError:
+            pass
         result = result + ('''
 <Placemark>
   <name>%s</name>

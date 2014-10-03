@@ -82,7 +82,6 @@ var PolygonView = Backbone.View.extend({
 
         var pmOptions = {};
         pmOptions.style = style;
-//        pmOptions.altitudeMode = app.options.plannerClampMode || ge.ALTITUDE_RELATIVE_TO_GROUND; 
         var placemark = gex.dom.buildPolygonPlacemark(polygon, pmOptions);
         placemark.setVisibility(visibility);
         return placemark;
@@ -1066,7 +1065,6 @@ $(function() {
                     app.currentTab == 'sequence') {
                     // grow icon when we're selected
                     iconStyle.setScale(1.5);
-                    style.setColor("FFFFFFFF");
                 }
                 if (app.options.directionalStations &&
                     this.model.get('isDirectional')) {
