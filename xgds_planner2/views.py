@@ -5,33 +5,32 @@
 # __END_LICENSE__
 
 # pylint: disable=W0702
-import os
+from cStringIO import StringIO
+import datetime
 import glob
 import json
-import datetime
-
+import os
 from uuid import uuid4
 
-from cStringIO import StringIO
-
-from django.shortcuts import render_to_response, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.exceptions import ObjectDoesNotExist
+from django.core.urlresolvers import reverse
+from django.db.utils import IntegrityError
 from django.http import (HttpResponseRedirect,
                          HttpResponse,
                          HttpResponseNotAllowed,
                          HttpResponseBadRequest)
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
-from django.core.urlresolvers import reverse
-from django.contrib.auth.decorators import login_required
-from django.contrib.staticfiles.storage import staticfiles_storage
-from django.db.utils import IntegrityError
-from django.core.exceptions import ObjectDoesNotExist
 from django.views.decorators.cache import never_cache
 
-from geocamUtil.loader import getModelByName
-from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
-from geocamUtil.KmlUtil import wrapKmlDjango
 from geocamUtil import timezone
-
+from geocamUtil.KmlUtil import wrapKmlDjango
+from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
+from geocamUtil.loader import getModelByName
+from geocamUtil.usng.usng import LLtoUTM
+from geocamUtil.geomath import calculateUTMDiffMeters
 from xgds_planner2 import (settings,
                            models,
                            choosePlanExporter,
@@ -39,6 +38,8 @@ from xgds_planner2 import (settings,
                            planImporter,
                            fillIdsPlanExporter)
 from xgds_planner2.forms import GroupFlightForm
+from xgds_planner2.models import getPlanSchema
+
 
 HANDLEBARS_TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), 'templates/handlebars')
 _template_cache = None
@@ -679,3 +680,63 @@ def addGroupFlight(request):
                                       context_instance=RequestContext(request))
 
     return HttpResponseRedirect(reverse('planner2_manage', args=[]))
+
+
+def getSiteFrames():
+    if not settings.XGDS_PLANNER2_SITE_FRAMES:
+        platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
+        try:
+            platforms.remove("test")
+        except ValueError:
+            pass
+
+        for platform in platforms:
+            schema = getPlanSchema(platform)
+            library = schema.getLibrary()
+            sites = library.sites
+            if sites:
+                for site in sites:
+                    try:
+                        if site.alternateCrs:
+                            settings.XGDS_PLANNER2_SITE_FRAMES.append(site)
+                    except:
+                        pass
+    return settings.XGDS_PLANNER2_SITE_FRAMES
+
+
+def getClosestSiteFrame(lat, lon):
+    """ Return the site frame with centroid closest to the given location"""
+    if getSiteFrames():
+        if len(getSiteFrames()) == 1:
+            return getSiteFrames()[0]
+
+        # first convert point to UTM
+        UTM_location = LLtoUTM(lat, lon)
+        myUTM = (UTM_location[0], UTM_location[1])
+        # return (UTMEasting, UTMNorthing, zoneNumber, zoneLetter)
+
+#  "alternateCrs": {
+#                 "type": "roversw",
+#                 "properties": {
+#                     "originNorthing": 4141835,
+#                     "originEasting": 582724,
+#                     "projection": "utm",
+#                     "zone": 10,
+#                     "zoneLetter": "N",
+        closestSite = None
+        smallestDiff = None
+        for site in getSiteFrames():
+            properties = site.alternateCrs['properties']
+            oEasting = properties[unicode('originEasting')]
+            oNorthing = properties[unicode('originNorthing')]
+            diff = calculateUTMDiffMeters(myUTM, (oEasting, oNorthing))
+            if smallestDiff:
+                if diff < smallestDiff:
+                    smallestDiff = diff
+                    closestSite = site
+            else:
+                smallestDiff = diff
+                closestSite = site
+        return closestSite
+
+    return None

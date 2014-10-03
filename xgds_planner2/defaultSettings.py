@@ -201,3 +201,7 @@ XGDS_PLANNER2_TEST_SKIP_PLAN_REST = False
 XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT = False
 XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE = False
 XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
+
+# This is used to hold a map of site frames, so we can convert lat/long to the closest site frame.
+# It is initialized by calling views.getSiteFrames().
+XGDS_PLANNER2_SITE_FRAMES = []
