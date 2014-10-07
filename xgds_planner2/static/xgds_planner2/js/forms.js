@@ -133,7 +133,7 @@
                 newHelp = _.has(this.alternateCrs.properties, 'coordinateNotes') ?
                     this.alternateCrs.properties.coordinateNotes : this.getGeometryLabel();
             } else {
-                newHelp = 'Long, Lat';
+                newHelp = 'Lon, Lat';
             }
             return newHelp;
         },

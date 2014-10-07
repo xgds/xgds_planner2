@@ -102,10 +102,6 @@ var PolygonView = Backbone.View.extend({
                 var polygon = ge.gex.dom.buildPolygon(_.map(coords, function(coord) {
                     return [coord.lat, coord.lng, coord.alt];
                 }), polygonOptions);
-//                var polygon = ge.gex.dom.buildPolygon(_.map(coords,
-//                                                        function(coord) {
-//                                                            return [coord.lat, coord.lng, coord.alt];
-//                                                        }));
                 this.placemark.setGeometry(polygon);
             }
         }
@@ -339,6 +335,7 @@ $(function() {
                 ge.getLayerRoot().enableLayerById(ge.LAYER_ROADS, true);
 
                 ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, true);
+                //TODO turn the below to false for mojave
                 ge.getLayerRoot().enableLayerById(ge.LAYER_BUILDINGS, true);
                 ge.getOptions().setScaleLegendVisibility(true);
                 ge.getOptions().setUnitsFeetMiles(false);

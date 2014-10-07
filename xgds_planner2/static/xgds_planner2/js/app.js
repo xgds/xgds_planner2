@@ -476,9 +476,9 @@ var app = (function($, _, Backbone) {
                 var utmcoords = [null, null, null];
                 LLtoUTM(parseFloat(coords[1]), parseFloat(coords[0]), utmcoords,
                         alternateCrs.properties.zone);
-                var x = utmcoords[0] - alternateCrs.properties.originEasting;
-                var y = utmcoords[1] - alternateCrs.properties.originNorthing;
-                return [x, y]; // always easting, northing OR long, lat
+                var x = utmcoords[1] - alternateCrs.properties.originNorthing;
+                var y = utmcoords[0] - alternateCrs.properties.originEasting;
+                return [x, y]; // northing, easting for roversw
             } else if (alternateCrs.type == 'proj4') {
                 var proj = proj4(alternateCrs.properties.projection);
                 return proj.forward(coords);
@@ -493,8 +493,8 @@ var app = (function($, _, Backbone) {
                 alternateCrs.properties.projection == 'utm') {
                 var oeasting = alternateCrs.properties.originEasting;
                 var onorthing = alternateCrs.properties.originNorthing;
-                var utmEasting = parseFloat(coords[0]) + alternateCrs.properties.originEasting;
-                var utmNorthing = parseFloat(coords[1]) + alternateCrs.properties.originNorthing;
+                var utmEasting = parseFloat(coords[1]) + alternateCrs.properties.originEasting;
+                var utmNorthing = parseFloat(coords[0]) + alternateCrs.properties.originNorthing;
                 var lonLat = {};
                 UTMtoLL(utmNorthing, utmEasting,
                         alternateCrs.properties.zone,
