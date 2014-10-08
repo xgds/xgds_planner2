@@ -980,9 +980,11 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
     commitCheck: function() {
         Backbone.Form.prototype.commit.apply(this, arguments);
         if (_.has(this.fields, '_siteFrame')) {
-            if (this.model.changedAttributes(
-                {'_siteFrame': this.fields.geometry.editor.siteFrameMode.toString()})) {
-                this.fields.geometry.editor.toggleSiteFrame();
+            if (this.model.get('_siteFrame')) {
+                if (this.model.changedAttributes(
+                    {'_siteFrame': this.fields.geometry.editor.siteFrameMode.toString()})) {
+                    this.fields.geometry.editor.toggleSiteFrame();
+                }
             }
         }
     },
