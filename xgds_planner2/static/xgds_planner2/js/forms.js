@@ -61,6 +61,7 @@
             this.schema.title = this.getGeometryLabel();
             this.schema.help = this.getGeometryHelp();
             this.coordinates = undefined;
+            this.listenTo(this.model, 'change:_siteFrame', this.toggleSiteFrame);
         },
 
         /**
@@ -143,8 +144,12 @@
                 throw 'No alternate CRS defined';
             }
             var oldValue = this.getValue();
+            var newsetting = false;
+            if (this.model.has('_siteFrame')) {
+                newsetting = this.model.get('_siteFrame');
+            }
             this.siteFrameMode = _.isBoolean(siteFrameMode) ?
-                siteFrameMode : !this.siteFrameMode;
+                siteFrameMode : newsetting; //!this.siteFrameMode;
             var newTitle = this.getGeometryLabel();
             var field = this.form.fields[this.key];
             field.schema.title = newTitle;
@@ -244,8 +249,7 @@
                 } else {
                     this.unit = undefined;
                 }
-                this.template = Handlebars
-                    .compile($('#template-unit-field').html());
+                this.template = Handlebars.compile($('#template-unit-field').html());
                 this.listenTo(this.editor, 'change', this.updateUnits);
             },
 

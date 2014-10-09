@@ -84,7 +84,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         return durationString
 
     def makeActivity(self, activityType, activityId, name, durationSeconds, notes):
-        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
+        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)sZ">
                 <SharedProperties>
                     <Property name="location">
                         <String></String>

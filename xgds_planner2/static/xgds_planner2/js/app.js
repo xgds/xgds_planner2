@@ -474,8 +474,7 @@ var app = (function($, _, Backbone) {
             if (alternateCrs.type == 'roversw' &&
                 alternateCrs.properties.projection == 'utm') {
                 var utmcoords = [null, null, null];
-                LLtoUTM(parseFloat(coords[1]), parseFloat(coords[0]), utmcoords,
-                        alternateCrs.properties.zone);
+                LLtoUTM(coords[1], coords[0], utmcoords, alternateCrs.properties.zone);
                 var x = utmcoords[1] - alternateCrs.properties.originNorthing;
                 var y = utmcoords[0] - alternateCrs.properties.originEasting;
                 return [x, y]; // northing, easting for roversw
