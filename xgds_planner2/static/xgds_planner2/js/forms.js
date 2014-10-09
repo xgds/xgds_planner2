@@ -70,13 +70,11 @@
          */
         getValue: function() {
             var str = this.$el.val();
+            var coords = str.split(/[,\s]\s*/);
             // in the background, always deal with lat, lon
             if (this.siteFrameMode) {
                 var coords = !_.isNull(this.alternateCrs) ?
-                    app.util.toLngLat(str.split(','), this.alternateCrs) :
-                    str.split(',');
-            } else {
-                var coords = str.split(',');
+                    app.util.toLngLat(coords, this.alternateCrs) : coords;
             }
             var lng = parseFloat(coords[0]);
             var lat = parseFloat(coords[1]);
