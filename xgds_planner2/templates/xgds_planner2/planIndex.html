@@ -56,7 +56,7 @@ table.planIndex td.exportFormat a {
   	<td><input type="checkbox" id="pick_{{plan.id}}" name="picks" value="{{plan.id}}" class="check"/></td>
     <td ><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></td>
     <td>{{ plan.creator }}</td>
-    <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i" }}</td>
+    <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i e" }}</td>
     <td>{{ plan.jsonPlan.site.name }}</td>
     <td class="right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="center">{{ plan.numStations }}</td>
