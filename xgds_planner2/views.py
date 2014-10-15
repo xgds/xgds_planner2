@@ -464,6 +464,10 @@ def manageFlights(request, errorString=""):
                               context_instance=RequestContext(request))
 
 
+def manageHelp(request):
+    return render_to_response("xgds_planner2/ManageFlightHelp.html", {},
+                              context_instance=RequestContext(request))
+
 @login_required
 def startFlight(request, uuid):
     errorString = ""
