@@ -5,6 +5,7 @@
 # __END_LICENSE__
 
 # pylint: disable=W0702
+import pydevd
 from cStringIO import StringIO
 import datetime
 import glob
@@ -470,6 +471,7 @@ def manageHelp(request):
 
 @login_required
 def startFlight(request, uuid):
+    pydevd.settrace('10.10.80.197')
     errorString = ""
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     try:
@@ -477,17 +479,16 @@ def startFlight(request, uuid):
         flight.start_time = datetime.datetime.utcnow()
         flight.end_time = None
         flight.save()
-
-        flight.startFlightExtras(request)
     except FlightModel.DoesNotExist:
         errorString = "Flight not found"
 
     if flight:
-        try:
-            models.ActiveFlight.objects.filter(flight=flight)
-        except ObjectDoesNotExist:
+        foundFlight = models.ActiveFlight.objects.filter(flight=flight)
+        if not foundFlight:
             newlyActive = models.ActiveFlight(flight=flight)
             newlyActive.save()
+
+        flight.startFlightExtras(request)
     return manageFlights(request, errorString)
 
 
