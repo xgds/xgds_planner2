@@ -481,7 +481,7 @@ def startFlight(request, uuid):
         errorString = "Flight not found"
 
     if flight:
-        foundFlight = models.ActiveFlight.objects.filter(flight=flight)
+        foundFlight = models.ActiveFlight.objects.filter(flight__id=flight.id)
         if not foundFlight:
             newlyActive = models.ActiveFlight(flight=flight)
             newlyActive.save()
@@ -509,7 +509,7 @@ def stopFlight(request, uuid):
                     pe.end_time = flight.end_time
                     pe.save()
             try:
-                active = models.ActiveFlight.objects.get(flight_id=flight.id)
+                active = models.ActiveFlight.objects.get(flight__id=flight.id)
                 active.delete()
             except ObjectDoesNotExist:
                 errorString = 'Flight IS NOT ACTIVE'
