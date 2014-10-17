@@ -5,7 +5,6 @@
 # __END_LICENSE__
 
 # pylint: disable=W0702
-import pydevd
 from cStringIO import StringIO
 import datetime
 import glob
@@ -471,7 +470,6 @@ def manageHelp(request):
 
 @login_required
 def startFlight(request, uuid):
-    pydevd.settrace('10.10.80.197')
     errorString = ""
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     try:
