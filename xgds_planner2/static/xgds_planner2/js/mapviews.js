@@ -336,7 +336,7 @@ $(function() {
 
                 ge.getLayerRoot().enableLayerById(ge.LAYER_TERRAIN, true);
                 //TODO turn the below to false for mojave
-                ge.getLayerRoot().enableLayerById(ge.LAYER_BUILDINGS, true);
+                ge.getLayerRoot().enableLayerById(ge.LAYER_BUILDINGS, false);
                 ge.getOptions().setScaleLegendVisibility(true);
                 ge.getOptions().setUnitsFeetMiles(false);
                 ge.getOptions().setFlyToSpeed(ge.SPEED_TELEPORT);
