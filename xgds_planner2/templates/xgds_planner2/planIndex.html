@@ -28,15 +28,17 @@ table.planIndex td.exportFormat a {
 {{ block.super }}
 
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
-<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;margin-bottom:3px;"></input>
+<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
+<input class="mybutton" type="button" id="toggle_button" value="Toggle Lock" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
 {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-<input class="mybutton" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" style="float:right;margin-bottom:3px;"></input>
+<input class="mybutton" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
 {% endif %}
-<a href={% if siteSettings.XGDS_PLANNER2_CREATE_URL %} "{{ siteSettings.XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin:3px;"> Create Plan</a>
+<a href={% if siteSettings.XGDS_PLANNER2_CREATE_URL %} "{{ siteSettings.XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
   	<th><input type="checkbox" id="pick_master" /></th>
+    <th></th>
     <th>Name</th>
     <th>Author</th>
     <th>Last Edit</th>
@@ -54,6 +56,7 @@ table.planIndex td.exportFormat a {
 {% for plan in plans %}
   <tr id={{ plan.id }}>
   	<td><input type="checkbox" id="pick_{{plan.id}}" name="picks" value="{{plan.id}}" class="check"/></td>
+  	<td>{% if plan.readOnly %}<img src="{{ STATIC_URL }}xgds_planner2/images/lock.png" alt="Read Only">{% endif %}</td>
     <td ><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></td>
     <td>{{ plan.creator }}</td>
     <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i e" }}</td>
@@ -207,6 +210,28 @@ $("#deleteButton").click(function() {
 			$('div.dataTables_scrollBody').css('height',calcDataTableHeight());
 			pTable.fnAdjustColumnSizing();
 		});
+		
+		// handle the toggle button
+		$('#toggle_button').click(function()
+		        {
+				    var planIds = []
+				    $('.check').each(function(i, obj) {
+						if($(this).is(":checked")) {
+						    planIds.push($(this).val());
+						}
+					});
+		            $.ajax(
+		            {
+		                url: "{% url 'planner2_toggleReadOnly' %}",
+		                type: "POST",
+		                data: {'pids':planIds},
+		                dataType: "html",
+		                success: function(data)
+		                {
+		                    window.location = '{% url 'planner2_index' %}';
+		                }
+		            });
+		        });
 
 	} );
  </script>

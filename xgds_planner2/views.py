@@ -153,6 +153,9 @@ def plan_REST(request, plan_id, jsonPlanId):
         # TODO I don't understand why this did not work above
         plan.creator = request.user
         plan.jsonPlan.creator = request.user.username
+        
+        #make sure it is not read only
+        plan.readOnly = False
         plan.save()
 
         newid = plan.id
@@ -224,7 +227,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_json': json.dumps(plan_json),
             'plan_name': plan.name,
             'plan_index_json': json.dumps(plan_index_json()),
-            'editable': editable,
+            'editable': editable and not plan.readOnly,
             'simulatorUrl': planSchema.simulatorUrl,
             'simulator': planSchema.simulator,
             'placemark_circle_url': request.build_absolute_uri(
@@ -743,3 +746,20 @@ def getClosestSiteFrame(lat, lon):
         return closestSite
 
     return None
+
+
+@login_required
+def toggleReadOnly(request):
+    """ Toggle the read only state of plans"""
+    if request.method == 'POST':
+        pids = request.POST.getlist('pids[]')
+        Plan = get_plan_model()
+        for item in pids:
+            try:
+                id = int(item)
+                plan = Plan.objects.get(id=id)
+                plan.readOnly = not plan.readOnly
+                plan.save()
+            except:
+                pass
+    return HttpResponseRedirect(reverse('planner2_index'))

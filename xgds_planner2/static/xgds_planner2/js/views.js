@@ -26,6 +26,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
         this.listenTo(app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
+        this.listenTo(app.vent, 'readOnly', function(model) {this.updateSaveStatus('readOnly')});
+        this.listenTo(app.vent, 'readOnly', this.disableForReadOnly);
         this.listenTo(app.currentPlan, 'sync', this.refreshSaveAs);
         this.listenTo(app.vent, 'undoEmpty', this.disableUndo);
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
@@ -84,6 +86,13 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         return false;
     },
 
+    disableForReadOnly: function() {
+        this.$('#btn-addStations').attr('disabled', 'disabled');
+        this.$('#btn-reposition').attr('disabled', 'disabled');
+        this.$('#btn-reverse').attr('disabled', 'disabled');
+        this.$('#btn-save').attr('disabled', 'disabled');
+    },
+
     reverseStations: function() {
         app.vent.trigger('plan:reversing');
         app.currentPlan.get('sequence').models.reverse();
@@ -128,6 +137,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     deleteSelectedCommands: function() {
         var commands = app.request('selectedCommands');
+        var selectParent = null;
+        if (commands.length > 0){
+            selectParent = commands[0].get('pathElement');
+        }
         _.each(commands, function(command) {
             if (!_.isUndefined(command.collection)){
                 command.collection.remove(command);
@@ -135,6 +148,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             command.destroy();
         });
         app.vent.trigger('change:plan');
+        if (selectParent != null){
+            var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
+            app.vent.trigger(showParent, selectParent);
+        }
     },
 
     copySelectedCommands: function() {
@@ -173,11 +190,16 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             'change': 'Unsaved changes.',
             'sync': 'Plan saved.',
             'error': 'Save error.',
-            'clear': ''
+            'clear': '',
+            'readOnly': 'Plan is LOCKED.'
         };
+        if (app.options.readOnly) {
+            eventName = 'readOnly';
+        }
+
         var msg = msgMap[eventName];
         this.$el.find('#save-status').text(msg);
-        if (eventName == 'change' || eventName == 'error') {
+        if (eventName == 'change' || eventName == 'error' || eventName == 'readOnly') {
             this.$el.find('#save-status').addClass('notify-alert');
         } else {
             this.$el.find('#save-status').removeClass('notify-alert');
@@ -455,7 +477,7 @@ app.views.PlanSequenceView = Backbone.Marionette.Layout.extend({
         });
         this.colhead3.show(headerView);
         this.col3.close();
-        var view = new app.views.PropertiesForm({model: itemModel, readonly: app.options.readonly});
+        var view = new app.views.PropertiesForm({model: itemModel, readonly: app.options.readOnly});
         this.col3.show(view);
     },
 
@@ -954,7 +976,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
     },
 
     initialize: function() {
-        var readonly = this.options.readonly || app.options.readonly;
+        var readOnly = this.options.readOnly || app.options.readOnly;
         var visible = this.options.visible;
 
         // Construct a schema compatible with backbone-forms
@@ -965,7 +987,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
         this.template = Handlebars.compile($(this.template).html());
         var schema = this.options.schema;
 
-        if (readonly) {
+        if (readOnly) {
             _.each(schema, function(field, key) {
                 field.editorAttrs = {
                     readonly: true,

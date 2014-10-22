@@ -3,7 +3,6 @@
 # the Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 # __END_LICENSE__
-
 import os
 import time
 import datetime
@@ -52,6 +51,7 @@ class PlanImporter(object):
         meta.setdefault('xpjson', '0.1')
         meta.setdefault('type', 'Plan')
         meta.setdefault('sequence', [])
+        meta.setdefault('readOnly', False)
 
         if path:
             stats = os.stat(path)

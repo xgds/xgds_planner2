@@ -144,6 +144,9 @@ class AbstractPlan(models.Model):
     # allow users to mark plans as deleted.  remember to use this field!
     deleted = models.BooleanField(blank=True, default=False)
 
+    # allow users to mark plans as read only, so when they are opened they cannot be edited
+    readOnly = models.BooleanField(blank=True, default=False)
+
     # cache commonly used stats derived from the plan (relatively expensive to calculate)
     numStations = models.PositiveIntegerField(null=True, blank=True)
     numSegments = models.PositiveIntegerField(null=True, blank=True)

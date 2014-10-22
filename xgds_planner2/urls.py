@@ -23,6 +23,7 @@ urlpatterns = patterns(
     url(r'^plan/create/$', views.planCreate, {}, name='planner2_planCreate'),
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
     url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
+    url(r'^toggleReadOnly/$', views.toggleReadOnly, {}, name="planner2_toggleReadOnly"),
     url(r'^manage/$', views.manageFlights, {}, "planner2_manage"),
     url(r'^updateToday/$', views.updateTodaySession, {}, "planner2_updateToday"),
     url(r'startFlight/(?P<uuid>[\w-]+)$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),

@@ -19,7 +19,7 @@ var app = (function($, _, Backbone) {
         'tabs' : '#tabs'
     });
 
-    app.module('State', function(optoins) {
+    app.module('State', function(options) {
         this.addInitializer(function(options) {
             this.commandSelected = undefined;
             this.stationSelected = undefined;
@@ -186,6 +186,7 @@ var app = (function($, _, Backbone) {
             this._exitAction();
             this.enable();
         };
+
     });
 
     app.addInitializer(function(options) {
@@ -201,7 +202,7 @@ var app = (function($, _, Backbone) {
     app.addInitializer(function(options) {
 
             this.options = options = _.defaults(options || {}, {
-                readonly: false,
+                readOnly: false,
                 planLineWidth: 2,
                 plannerClampMode: undefined
                 // This enum value has to be sniffed out of the Plugin once it's loaded.
@@ -298,6 +299,9 @@ var app = (function($, _, Backbone) {
             app.toolbar.show(new app.views.ToolbarView());
             app.tabs.show(new app.views.TabNavView());
             app.vent.trigger('clearSaveStatus');
+            if (this.options.readOnly){
+                app.vent.trigger('readOnly');
+            }
         });
 
     app.router = new Backbone.Router({
