@@ -836,12 +836,48 @@ $(function() {
                             station._geHandle = newHandle;
                             view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
                         }
-                        view.destroyMidpoints();
-                        view.drawMidpoints();
+                        view.updateStationMidpoints(station.model);
                         app.Actions.enable();
                         app.Actions.action();
                     }
                 });
+            },
+
+            updateMidpointPlacemark: function(midpointPlacemark, station1, station2){
+                var points = [];
+                _.each([station1, station2], function(station) {
+                    var coords = station.get('geometry').coordinates;
+                    points.push([coords[1], coords[0]]);
+                });
+                var midpoint = calcMidpoint(points);
+                var kmlPoint = midpointPlacemark.getGeometry();
+                kmlPoint.setLatLng.apply(kmlPoint, midpoint);
+            },
+
+            updateStationMidpoints: function(station) {
+                if (!this.midpointsFolder) {
+                    this.drawMidpoints();
+                    return;
+                }
+                var fldrFeatures = this.midpointsFolder.getFeatures();
+
+                this.collection.each(function(item, idx, list) {
+                    var station1, station2;
+                    if (item.get('type') == 'Segment') {
+                        if (list[idx + 1] == station) {
+                            // first segment, next point is station
+                            var midpointIndex = Math.floor(idx / 2);
+                            var midpointPlacemark = fldrFeatures.getChildNodes().item(midpointIndex);
+                            app.currentPlan.kmlView.updateMidpointPlacemark(midpointPlacemark, list[idx - 1], list[idx + 1]);
+                        } else if (list[idx -1 ] == station) {
+                            // last segment
+                            var midpointIndex = Math.floor(idx / 2);
+                            var midpointPlacemark = fldrFeatures.getChildNodes().item(midpointIndex);
+                            app.currentPlan.kmlView.updateMidpointPlacemark(midpointPlacemark, list[idx - 1], list[idx + 1]);
+                            return;
+                        }
+                    }
+                }, this);
             },
 
             drawMidpoints: function() {
