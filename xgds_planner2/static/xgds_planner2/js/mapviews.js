@@ -14,6 +14,8 @@ function kmlColor(rgbColor, alpha) {
     return '' + alpha + bb + gg + rr;
 }
 
+var styleMap = {};
+
 //The below view can be used to generate polygons.  See xgds_kn.
 var PolygonView = Backbone.View.extend({
     initialize: function() {
@@ -828,16 +830,11 @@ $(function() {
                             lng: point.getLongitude(),
                             lat: point.getLatitude()
                         });
-                        var sequence = app.currentPlan.get('sequence');
-                        var index = sequence.indexOf(model);
                         if (app.mapRotationHandles) {
-                            var newHandle = station
-                                .createDragRotateHandle();
-                            view.dragHandlesFolder.getFeatures()
-                                .removeChild(station._geHandle);
+                            var newHandle = station.createDragRotateHandle();
+                            view.dragHandlesFolder.getFeatures().removeChild(station._geHandle);
                             station._geHandle = newHandle;
-                            view.dragHandlesFolder.getFeatures()
-                                .appendChild(station._geHandle);
+                            view.dragHandlesFolder.getFeatures().appendChild(station._geHandle);
                         }
                         view.destroyMidpoints();
                         view.drawMidpoints();
@@ -897,13 +894,13 @@ $(function() {
                 pmOptions.name = name || this.model.toString();
                 pmOptions.altitudeMode = app.options.plannerClampMode ||
                     this.options.ge.ALTITUDE_RELATIVE_TO_GROUND; // ALTITUDE_CLAMP_TO_GROUND;
-                pmOptions.style = this.buildStyle();
                 var point = this.model.get('geometry').coordinates; // lon, lat
 
                 var pointGeom = gex.dom.buildPoint([point[1], point[0], 1.0]); // lat, lon  //FIX for drawing polygons on top
 
                 pmOptions.point = pointGeom;
                 this.placemark = gex.dom.buildPlacemark(pmOptions);
+                this.updateStyle();
 
                 // Change click event for station points
                 google.earth.addEventListener(this.placemark, 'click', _
@@ -930,7 +927,6 @@ $(function() {
                                               });
 
                 this.placemark.view = this; // 2-way link for GE event handlers to use
-                //this.model.on('change', this.redraw, this);
                 this.listenTo(this.model, 'change', this.redraw);
                 this.listenTo(this.model, 'add:sequence remove:sequence',
                               function(command, collection, event) {
@@ -989,44 +985,8 @@ $(function() {
                     name += ' ' + this.model.get('name');
                 }
                 this.placemark.setName(name || this.model.toString());
-//                console.log('redrawing point ' + name);
-
-                var styleSelector = this.placemark.getStyleSelector();
-                if (styleSelector === null || styleSelector.getIconStyle() === null){
-                    styleSelector = this.buildStyle();
-                    this.placemark.setStyleSelector(styleSelector);
-                } else {
-                    var heading = 0.0;
-                    try {
-                        heading = this.model.get('headingDegrees');
-                    } catch(err) {
-                        // nothing
-                    }
-                    if (_.isUndefined(heading) || _.isNull(heading)){
-                        heading = 0.0;
-                    }
-                    var iconStyle = styleSelector.getIconStyle();
-                    if (!_.isUndefined(iconStyle)){
-                        iconStyle.setHeading(heading);
-                        if (app.State.stationSelected === this.model &&
-                                app.currentTab == 'sequence') {
-                                // grow icon when we're selected
-                                iconStyle.setScale(1.5);
-                                if (this.model.get('isDirectional')) {
-                                    iconStyle.getIcon().setHref(app.options.placemarkDirectionalUrl);
-                                } else {
-                                    iconStyle.getIcon().setHref(app.options.placemarkCircleHighlightedUrl);
-                                }
-                            } else {
-                                if (this.model.get('isDirectional')) {
-                                    iconStyle.getIcon().setHref(app.options.placemarkDirectionalUrl);
-                                } else {
-                                    iconStyle.getIcon().setHref(app.options.placemarkCircleUrl);
-                                }
-                                iconStyle.setScale(1.0);
-                            }
-                    }
-                }
+                this.updateStyle();
+                console.log('redrawing point ' + name);
 
                 if (this.wedgeViews) {
                     _.each(this.wedgeViews, function(wedgeView) {
@@ -1042,37 +1002,45 @@ $(function() {
                 app.Actions.action();
             },
 
-            buildStyle: function() {
-                var gex = this.options.ge.gex;
-                var ge = this.options.ge;
-
-                var iconUrl = app.State.stationSelected === this.model &&
-                    app.currentTab == 'sequence' ? app.options.placemarkCircleHighlightedUrl :
-                    (this.model.get('isDirectional') && app.options.directionalStations) ?
-                    app.options.placemarkDirectionalUrl : app.options.placemarkCircleUrl;
-                var icon = ge.createIcon('');
-                icon.setHref(iconUrl);
-                var style = ge.createStyle('');
-                var iconStyle = style.getIconStyle();
-                iconStyle.setIcon(icon);
-                iconStyle.setScale(1.0);
-                iconStyle.setHeading(0.0);
-                if (app.State.stationSelected === this.model &&
-                    app.currentTab == 'sequence') {
-                    // grow icon when we're selected
-                    iconStyle.setScale(1.5);
+            updateHeadingStyle: function() {
+                var heading = 0.0;
+                try {
+                    heading = this.model.get('headingDegrees');
+                } catch(err) {
+                    // nothing
                 }
-                if (app.options.directionalStations &&
-                    this.model.get('isDirectional')) {
-                    if (iconStyle != null) {
-                        var degrees = this.model.get('headingDegrees');
-                        if (degrees != null) {
-                            iconStyle.setHeading(degrees);
-                        }
+                if (_.isUndefined(heading) || _.isNull(heading)){
+                    heading = 0.0;
+                }  
+                var style = this.placemark.getStyleSelector();
+                if (_.isUndefined(style) || _.isNull(style)){
+                    style = ge.createStyle('');
+                    this.placemark.setStyleSelector(style);
+                }
+                var iconStyle = style.getIconStyle();
+                if (!_.isUndefined(iconStyle)){
+                    iconStyle.setHeading(heading);
+                }
+            },
+
+            updateStyle: function() {
+                if (app.State.stationSelected === this.model) {
+                    if (this.model.get('isDirectional')) {
+                        this.placemark.setStyleUrl("#selectedDirection");
+                        this.updateHeadingStyle();
+                    } else {
+                        this.placemark.setStyleUrl("#selectedStation");
+                    }
+                } else {
+                    if (this.model.get('isDirectional')) {
+                        this.placemark.setStyleUrl("#direction");
+                        this.updateHeadingStyle();
+                    } else {
+                        this.placemark.setStyleUrl("#station");
                     }
                 }
-                return style;
             },
+
 
             dragRotateHandleCoords: function() {
 
