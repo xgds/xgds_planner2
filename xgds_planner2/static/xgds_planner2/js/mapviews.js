@@ -1022,7 +1022,7 @@ $(function() {
                 }
                 this.placemark.setName(name || this.model.toString());
                 this.updateStyle();
-                console.log('redrawing point ' + name);
+//                console.log('redrawing point ' + name);
 
                 if (this.wedgeViews) {
                     _.each(this.wedgeViews, function(wedgeView) {

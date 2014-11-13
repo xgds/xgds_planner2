@@ -110,7 +110,7 @@
             // returns either Lon, Lat, Geometry, or whatever the schema has defined
             // as the label for the alternateCrs geometry
             if (_.isNull(this.alternateCrs)) {
-                throw 'No alternate CRS defined';
+                return 'Lon, Lat';
             }
             var newTitle = '';
             if (this.siteFrameMode) {
@@ -125,7 +125,7 @@
             // returns either Lon, Lat, Geometry, or whatever the schema has defined
             // as the label for the alternateCrs geometry
             if (_.isNull(this.alternateCrs)) {
-                throw 'No alternate CRS defined';
+                return 'Lon, Lat';
             }
             var newHelp = '';
             if (this.siteFrameMode) {
