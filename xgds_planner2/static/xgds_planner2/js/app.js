@@ -254,7 +254,7 @@ var app = (function($, _, Backbone) {
             _.each(_.keys(this.unitSpecs), function(unitSpec) {
                 _.each(_.keys(this.unitSpecs[unitSpec].units), function(
                     unit) {
-                    if (this._.has(units, unit)) {
+                    if (_.has(this.units, unit)) {
                         throw 'Unit conflict: ' + unit +
                             ' is defined in multiple unitSpecs';
                     }

@@ -43,7 +43,7 @@ app.models = app.models || {};
         };
 
         if (modelType == 'Station') {
-            if (_.has(app.planJson.site, 'alternateCrs')) {
+            if (_.has(app.planJson.site, 'alternateCrs') && !_.isNull(app.planJson.site.alternateCrs)) {
                 var siteFrameLabel = _.has(app.planJson.site.alternateCrs.properties, 'label') ?
                     app.planJson.site.alternateCrs.properties.label : 'Site Frame';
                 schema._siteFrame = {type: 'Select', options: [{label: 'Lng, Lat', val: false},
