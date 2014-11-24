@@ -13,8 +13,6 @@
 {% block cssExtras %}
 {{ block.super }}
 <style type="text/css" title="currentStyle">
-	@import "{{ STATIC_URL }}external/css/jquery/demo_page.css";
-	@import "{{ STATIC_URL }}external/css/jquery/demo_table.css";
 	@import "{{ STATIC_URL }}external/css/jquery/jquery-ui.css";
 </style>
 {% endblock cssExtras %}
@@ -85,7 +83,7 @@ var defaultOptions = {
         iDisplayLength: -1, 
         bLengthChange: true,
 		bSort: false,
-        bJQueryUI: true,
+        bJQueryUI: false,
         sScrollY:  calcDataTableHeight(), /* '28em', */
         "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
         "oLanguage": {

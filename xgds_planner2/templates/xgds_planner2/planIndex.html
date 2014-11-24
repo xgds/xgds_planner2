@@ -28,10 +28,10 @@ table.planIndex td.exportFormat a {
 {{ block.super }}
 
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
-<input type="submit" class="mybutton" id="deleteButton" value="Delete Selected" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
-<input class="mybutton" type="button" id="toggle_button" value="Toggle Lock" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
+<input type="submit" class="mybutton right" id="deleteButton" value="Delete Selected" ></input>
+<input class="mybutton right" type="button" id="toggle_button" value="Toggle Lock" ></input>
 {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-<input class="mybutton" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" style="float:right;margin-bottom:3px;margin-left:3px;"></input>
+<input class="mybutton right" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 {% endif %}
 <a href={% if siteSettings.XGDS_PLANNER2_CREATE_URL %} "{{ siteSettings.XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
 <table id="dataTable" class="planIndex">
@@ -146,11 +146,11 @@ $("#deleteButton").click(function() {
 	        iDisplayLength: -1, 
 	        bLengthChange: true,
 			bSort: true,
-	        bJQueryUI: true,
+	        bJQueryUI: false,
 	        sScrollY:  calcDataTableHeight(), /* '28em', */
 	        "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
 	        "oLanguage": {
-	            "sLengthMenu": "Display _MENU_ plans"
+	            "sLengthMenu": "Display _MENU_ plans of _LENGTH_"
 	          },
 	        aoColumnDefs:[
 	            {
