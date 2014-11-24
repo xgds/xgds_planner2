@@ -33,7 +33,7 @@ merge the XGDS_PLANNER_PIPELINE_JS and XGDS_PLANNER_PIPELINE_CSS settings
 into global PIPELINE_{JS|CSS} settings dicts.
 
 If no other django-pipeline includes are defined,
-the relevant siteSettings.py secion might look like this:
+the relevant siteSettings.py section might look like this:
 
 PIPELINE_JS = {}
 PIPELINE_JS.update(plannerSettings.XGDS_PLANNER_PIPELINE_JS)
