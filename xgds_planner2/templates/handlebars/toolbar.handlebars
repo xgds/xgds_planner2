@@ -1,10 +1,10 @@
-<div class="row-fluid">
-    <div id="map-buttons" data-toggle="buttons-radio" class="span5">
-        <div class="btn-group">
-            <button class="btn" id="btn-navigate">Navigate</button>
-            <button class="btn" id="btn-reposition">Edit Stations</button>
-            <button class="btn" id="btn-addStations">Add Stations</button>
-            <!-- <button class="btn" id="btn-add-targets">Add Targets</button> -->
+<div class="row">
+    <div id="map-buttons" data-toggle="buttons-radio" class="five columns">
+        <div>
+            <button class="pill-left" id="btn-navigate">Navigate</button>
+            <button class="metro" id="btn-reposition" style="width:120px;">Edit Stations</button>
+            <button  class="pill-right" style="width:120px;" id="btn-addStations">Add Stations</button>
+            <!-- <button  id="btn-add-targets">Add Targets</button> -->
         </div>
         <div class="gearth-auto-untilt">
           <label class="checkbox">
@@ -12,31 +12,31 @@
           </label>
         </div>
     </div>
-    <!-- <button class="btn" id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
-    <div id="tab-buttons" class="span7">
+    <!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
+    <div id="tab-buttons" class="seven columns" style="background:pink;">
         <div class="btn-group">
-            <button class="btn" id="btn-cut">Cut</button>
-            <button class="btn" id="btn-copy">Copy</button>
-            <button class="btn" id="btn-paste">Paste</button>
-	</div><div class="btn-group">
-	    <button class="btn" id="btn-delete">Delete</button>
-	    <button class="btn" id="btn-reverse">Reverse</button>
+            <button  id="btn-cut" class="pill-left">Cut</button>
+            <button  id="btn-copy">Copy</button>
+            <button  id="btn-paste" class=">Paste</button>
+		</div>
+		<div class="btn-group">
+	    <button  id="btn-delete">Delete</button>
+	    <button  id="btn-reverse">Reverse</button>
         </div>
 
-        <!-- <button class="btn" id="btn-edit" style="float:right">Stop Editing</button> -->
-        <div class="btn-group" style="float:right">
-            <button class="btn" id="btn-undo">Undo</button>
-            <button class="btn" id="btn-redo">Redo</button>
-            <button class="btn" id="btn-saveas">Save As</button>
-            <button class="btn" id="btn-save">Save</button>
+        <div class="btn-group right" >
+            <button  id="btn-undo">Undo</button>
+            <button  id="btn-redo">Redo</button>
+            <button  id="btn-saveas">Save As</button>
+            <button  id="btn-save">Save</button>
         </div>
     </div>
 </div>
-<div class="row-fluid">
-    <div class="span5">
+<div class="row">
+    <div class="five columns">
      <p style="float:left" class="notify" id="tip-status"></p>
     </div>
-    <div class="span7">
+    <div class="seven columns">
         <p style="float:right" class="notify" id="save-status"></p>
     </div>
 </div>

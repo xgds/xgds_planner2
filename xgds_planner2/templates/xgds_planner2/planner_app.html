@@ -7,17 +7,22 @@
 
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 {% block content %}
+
 <style scoped>
-  {% compressed_css 'planner_app' %}
+  {# compressed_css 'planner_app' #}
+  <link rel="stylesheet" href="{{ STATIC_URL }}external/css/backbone.forms.default.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/kmltree.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}xgds_planner2/css/planner.css">
 </style>
 
-<div id="application" class="container-fluid">
-    <div id="toolbar" class="row btn-toolbar">
+<div id="application" >
+    <div id="toolbar" class="row">
     </div>
 
-    <div class="row-fluid">
-        <div id="map" class="span5"></div>
-        <div id="tabs" class="span7"></div>
+    <div class="row">
+        <div id="map" class="five columns"></div>
+        <div id="tabs" class="seven columns"></div>
     </div>
     
     <div id="saveAsDialog" style="display:none">
