@@ -14,6 +14,17 @@ function kmlColor(rgbColor, alpha) {
     return '' + alpha + bb + gg + rr;
 }
 
+var GE_CACHE = {};
+
+function getGeCache(geObject) {
+    var objCache = GE_CACHE[geObject.getId()];
+    if (objCache == undefined) {
+	objCache = {};
+        GE_CACHE[geObject.getId()] = objCache;
+    }
+    return objCache;
+}
+
 var styleMap = {};
 
 //The below view can be used to generate polygons.  See xgds_kn.
@@ -428,7 +439,7 @@ $(function() {
                 });
                 this.planView.render();
                 this.ge.getFeatures().appendChild(this.planView.doc);
-                this.ge_gex.util.flyToObject(this.planView.doc);
+                window.ge_gex.util.flyToObject(this.planView.doc);
             }
 
         });
@@ -641,7 +652,7 @@ $(function() {
                     var l = stations.getLength();
                     for (var i = 0; i < l; i++) {
                         var placemark = stations.item(i);
-                        var station = placemark.view;
+                        var station = getGeCache(placemark).view;
                         this.addGeEvent(placemark, 'dblclick',
                                         function(evt) {
                                             evt.preventDefault();
@@ -665,7 +676,7 @@ $(function() {
                         station = stations.item(i);
                         //point = station.getGeometry().getGeometries().getFirstChild();
                         if (app.options.mapRotationHandles) {
-                            var handle = station.view
+                            var handle = getGeCache(station).view
                                 .createDragRotateHandle();
                         }
                         this.processStation(station, handle);
@@ -680,9 +691,9 @@ $(function() {
                     var l = stations.getLength();
                     for (var station, i = 0; i < l; i++) {
                         station = stations.item(i);
-                        this.ge_gex.edit.endDraggable(station);
+                        window.ge_gex.edit.endDraggable(station);
 
-                        station.view.model.off('change:headingDegrees'); // kill drag handle update binding
+                        getGeCache(station).view.model.off('change:headingDegrees'); // kill drag handle update binding
                     }
 
                     this.clearKmlFolder(this.dragHandlesFolder);
@@ -765,7 +776,7 @@ $(function() {
             processStation: function(stationPoint, handle) {
                 // do all the other things related to drawing a station on the map
                 var view = app.currentPlan.kmlView;
-                var station = stationPoint.view;
+                var station = getGeCache(stationPoint).view;
                 if (app.mapRotationHandles) {
                     station._geHandle = handle;
                     view.dragHandlesFolder.getFeatures().appendChild(
@@ -782,13 +793,13 @@ $(function() {
                             var sequence = app.currentPlan
                                 .get('sequence');
                             var index = sequence
-                                .indexOf(pm.view.model);
+			        .indexOf(getGeCache(pm).view.model);
                             var segmentBefore = sequence
                                 .at(index - 1);
                             var segmentAfter = sequence
                                 .at(index + 1);
-                            sequence.removeStation(pm.view.model);
-                            pm.view.remove();
+                            sequence.removeStation(getGeCache(pm).view.model);
+                            getGeCache(pm).view.remove();
                             var newSegment = sequence.at(index - 1);
                             view.stationsFolder.getFeatures()
                                 .removeChild(pm);
@@ -818,7 +829,7 @@ $(function() {
                             app.Actions.enable();
                             app.Actions.action();
                         });
-                view.ge_gex.edit.makeDraggable(stationPoint, {
+                window.ge_gex.edit.makeDraggable(stationPoint, {
                     bounce: false,
                     dragCallback: function() {
                         //nothing
@@ -884,7 +895,7 @@ $(function() {
 
             drawMidpoints: function() {
                 if (!this.midpointsFolder) {
-                    this.midpointsFolder = this.ge_gex.dom.buildFolder({
+                    this.midpointsFolder = window.ge_gex.dom.buildFolder({
                         name: 'midpoints'
                     });
                 }
@@ -923,7 +934,8 @@ $(function() {
             initialize: function() {
                 this.planKmlView = this.options.planKmlView;
 
-                var gex = this.options.ge_gex;
+                // var gex = this.options.ge_gex;
+                var gex = window.ge_gex;
                 var pmOptions = {};
                 var name = '' + this.model._sequenceLabel;
                 if (!_.isUndefined(this.model.get('name'))) {
@@ -964,7 +976,7 @@ $(function() {
                                                   app.State.disableAddStation = true;
                                               });
 
-                this.placemark.view = this; // 2-way link for GE event handlers to use
+                getGeCache(this.placemark).view = this; // 2-way link for GE event handlers to use
                 this.listenTo(this.model, 'change', this.redraw);
                 this.listenTo(this.model, 'add:sequence remove:sequence',
                               function(command, collection, event) {
@@ -1279,7 +1291,7 @@ $(function() {
                                         };
                                         this
                                             .update(
-                                                this.otherStation[placemark.view.model.cid],
+						this.otherStation[getGeCache(placemark.view).model.cid],
                                                 coords);
                                     }, this);
                         }, this);
@@ -1299,12 +1311,12 @@ $(function() {
                                        return [geom[1], geom[0]]; // Lon, Lat
                                    });
 
-                var linestring = this.gex.dom.buildLineString(coords, {
+                var linestring = window.ge_gex.dom.buildLineString(coords, {
                     tessellate: true
                 });
                 var style = this.model.get('sequence').isEmpty() ?
                     '#segment' : '#segment_with_commands';
-                this.placemark = this.gex.dom.buildPlacemark({
+                this.placemark = window.ge_gex.dom.buildPlacemark({
                     lineString: linestring,
                     style: style,
                     altitudeMode: app.options.plannerClampMode ||
@@ -1338,7 +1350,7 @@ $(function() {
                         }
                     });
 
-                    var linestring = this.gex.dom.buildLineString(coords, {
+                    var linestring = window.ge_gex.dom.buildLineString(coords, {
                         tessellate: true
                     });
                     this.placemark.setGeometry(linestring); // ???
@@ -1378,12 +1390,12 @@ $(function() {
             points.push([coords[1], coords[0]]);
         });
         var midpoint = calcMidpoint(points);
-        var placemark = this.ge_gex.dom.buildPlacemark({
+        var placemark = window.ge_gex.dom.buildPlacemark({
             point: midpoint,
             style: '#midpoint'
         });
 
-        options.ge_gex.edit.makeDraggable(placemark, {
+        window.ge_gex.edit.makeDraggable(placemark, {
             bounce: false,
             dropCallback: function() {
                 app.Actions.disable();
