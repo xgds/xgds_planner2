@@ -8,12 +8,16 @@
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 {% block content %}
 
-<style scoped>
-  {# compressed_css 'planner_app' #}
-  <link rel="stylesheet" href="{{ STATIC_URL }}external/css/backbone.forms.default.css">
+{% block cssExtras %}
+	<link rel="stylesheet" href="{{ STATIC_URL }}external/css/backbone.forms.default.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}external/css/kmltree.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css">
+    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery.ui.resizable.css">
     <link rel="stylesheet" href="{{ STATIC_URL }}xgds_planner2/css/planner.css">
+{% endblock cssExtras %}
+
+<style scoped>
+  {# compressed_css 'planner_app' #}
 </style>
 
 <div id="application" >
@@ -52,6 +56,7 @@
     {% if not settings.XGDS_PLANNER_OFFLINE %}<script type="text/javascript" src="https://www.google.com/jsapi"></script>{% endif %}
     {% compressed_js 'planner_app' %}
     {% compressed_js 'simulator' %}
+    <script type="text/javascript" src="{{STATIC_URL}}/external/js/extensions-0.2.1.js"></script>
     <!-- 
     <script type="text/javascript" src="{{ planner_appUrl }}"></script>
     <script type="text/javascript" src="{{ simulatorUrl}}"></script>

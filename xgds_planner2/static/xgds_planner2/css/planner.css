@@ -107,8 +107,9 @@ div#application {
 }
 
 a#tab-nav-link {
-    text-decoration: underline;
+    /* text-decoration: none;
     color: black;
+    */
 }
 
 div.tool-title {

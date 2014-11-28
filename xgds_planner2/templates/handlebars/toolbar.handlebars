@@ -1,42 +1,44 @@
 <div class="row">
-    <div id="map-buttons" data-toggle="buttons-radio" class="five columns">
-        <div>
+    <div id="map-buttons" data-toggle="buttons-radio" class="four columns">
+        <div class="pill">
             <button class="pill-left" id="btn-navigate">Navigate</button>
-            <button class="metro" id="btn-reposition" style="width:120px;">Edit Stations</button>
+            <button id="btn-reposition" style="width:120px;">Edit Stations</button>
             <button  class="pill-right" style="width:120px;" id="btn-addStations">Add Stations</button>
             <!-- <button  id="btn-add-targets">Add Targets</button> -->
         </div>
-        <div class="gearth-auto-untilt">
-          <label class="checkbox">
-            <input type="checkbox" id="gearth-auto-untilt" checked> Auto untilt Google Earth
-          </label>
-        </div>
     </div>
-    <!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
-    <div id="tab-buttons" class="seven columns" style="background:pink;">
-        <div class="btn-group">
-            <button  id="btn-cut" class="pill-left">Cut</button>
-            <button  id="btn-copy">Copy</button>
-            <button  id="btn-paste" class=">Paste</button>
-		</div>
-		<div class="btn-group">
-	    <button  id="btn-delete">Delete</button>
-	    <button  id="btn-reverse">Reverse</button>
-        </div>
-
-        <div class="btn-group right" >
-            <button  id="btn-undo">Undo</button>
-            <button  id="btn-redo">Redo</button>
-            <button  id="btn-saveas">Save As</button>
-            <button  id="btn-save">Save</button>
-        </div>
+    
+    <div id="tab-buttons" class="eight columns" >
+    	<div class="row">
+	        <div class="pill four columns">
+	            <button  id="btn-cut" class="pill-left">Cut</button>
+	            <button  id="btn-copy">Copy</button>
+	            <button  id="btn-paste" class="pill-right">Paste</button>
+			</div>
+			<div class="pill three columns">
+		    	<button  id="btn-delete" class="pill-left">Delete</button>
+		    	<!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
+		    	<button  id="btn-reverse" class="pill-right">Reverse</button>
+	        </div>
+	        <div class="pill five columns" >
+	            <button  id="btn-undo" class="pill-left">Undo</button>
+	            <button  id="btn-redo" >Redo</button>
+	            <button  id="btn-saveas" >Save As</button>
+	            <button  id="btn-save" class="pill-right">Save</button>
+	        </div>
+	     </div>
     </div>
 </div>
 <div class="row">
-    <div class="five columns">
+    <div class="four columns">
      <p style="float:left" class="notify" id="tip-status"></p>
     </div>
-    <div class="seven columns">
-        <p style="float:right" class="notify" id="save-status"></p>
+    <div class="three columns">
+    <label class="checkbox">
+        <input type="checkbox" id="gearth-auto-untilt" checked> Auto untilt
+      </label>
+    </div>
+    <div class="five columns">
+        <span class="notify" id="save-status"></span>
     </div>
 </div>

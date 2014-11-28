@@ -1271,7 +1271,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         tabContent: '#tab-content'
     },
     events: {
-        'click ul.nav-tabs li': 'clickSelectTab'
+        'click ul.tab-nav li': 'clickSelectTab'
     },
 
     viewMap: {
@@ -1329,7 +1329,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
     setTab: function(tabId) {
         var oldTab = app.currentTab;
         app.currentTab = tabId;
-        var $tabList = this.$el.find('ul.nav-tabs li');
+        var $tabList = this.$el.find('ul.tab-nav li');
         $tabList.each(function() {
             li = $(this);
             if (li.data('target') === tabId) {

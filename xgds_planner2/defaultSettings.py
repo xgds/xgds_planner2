@@ -66,7 +66,7 @@ XGDS_PLANNER_PIPELINE_JS = {
             'external/js/backbone-relational.js',
             'external/js/backbone-forms.0.13.0.js',
             'external/js/bootstrap.min.js',
-            'external/js/extensions-0.2.1.pack.js',
+#            'external/js/extensions-0.2.1.pack.js',
             'external/js/string-format.js',
             'external/js/kmltree.min.js',
             'external/js/usng.js',
