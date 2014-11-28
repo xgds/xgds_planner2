@@ -1095,7 +1095,7 @@ app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
             }
             app.tree = kmltree({
                 url: app.options.layerFeedUrl,
-                gex: ge.gex,
+                gex: ge_gex,
                 mapElement: $('#map'),
                 element: this.$el.find('#layertree'),
                 restoreState: true,
@@ -1107,7 +1107,7 @@ app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
 //            if (_.isUndefined(app.tree)) {
 //                app.tree = kmltree({
 //                    url: app.options.layerFeedUrl,
-//                    gex: ge.gex,
+//                    gex: ge_gex,
 //                    mapElement: $('#map'),
 //                    element: this.$el.find('#layertree'),
 //                    restoreState: true,
@@ -1290,7 +1290,7 @@ app.views.TabNavView = Backbone.Marionette.Layout.extend({
         this.listenTo(app.vent, 'earth:loaded', function() {
             app.initialTree = kmltree({
                 url: app.options.layerFeedUrl,
-                gex: ge.gex,
+                gex: ge_gex,
                 mapElement: [],
                 element: [],
                 restoreState: true,
