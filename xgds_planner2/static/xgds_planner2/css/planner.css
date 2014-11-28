@@ -6,10 +6,6 @@ input[type="checkbox"].select {
     height: 600px;
 }
 
-#tab-content{
-    padding-left: 20px;
-}
-
 .nav-tabs li:hover{
     cursor: pointer;
 }
@@ -64,11 +60,15 @@ div[id^="col"] > li:hover {
 
 .scrolling_column {
     border-style: solid;
-    border-color: green;
+    border-color: #005c8e;
     border-width: 1px;
     padding: 0px;
     margin: 0px;
     overflow-y: scroll;
+}
+
+#col1, #col2 {
+	margin-right: 5px;
 }
 
 #col1 ul, #col2 ul, #col3  ul {

@@ -328,6 +328,7 @@ $(function() {
                                                   app.map.$el.outerWidth() -
                                                   app.State.tabsLeftMargin);
                 });
+
             },
 
             render: function() {
