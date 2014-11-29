@@ -837,8 +837,10 @@ $(function() {
                     dropCallback: function() {
                         // 'this' is the placemark GE object
                         app.Actions.disable();
-                        var model = this.view.model;
+                        var theView = getGeCache(stationPoint).view;
+                        var model = theView.model;
                         var point = this.getGeometry();
+                        
                         model.setPoint({
                             lng: point.getLongitude(),
                             lat: point.getLatitude()
