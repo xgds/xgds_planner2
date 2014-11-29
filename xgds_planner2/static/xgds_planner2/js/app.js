@@ -298,8 +298,9 @@ var app = (function($, _, Backbone) {
             });
             app.toolbar.show(new app.views.ToolbarView());
             app.tabs.show(new app.views.TabNavView());
+            
             app.vent.trigger('clearSaveStatus');
-            if (this.options.readOnly){
+            if (this.options.readOnly == true){
                 app.vent.trigger('readOnly');
             }
         });
