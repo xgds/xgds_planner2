@@ -16,12 +16,12 @@
 
   .bbf-field label {
     float: left;
-    width: 25%;
+    width: 15%;
   }
   
   .bbf-field .bbf-editor {
-    margin-left: 25%;
-    width: 74%;
+    margin-left: 15%;
+    width: 84%;
   }
       
     .bbf-field input, .bbf-field textarea, .bbf-field select {
@@ -30,14 +30,14 @@
     }
   
   .bbf-field .bbf-help {
-    margin-left: 25%;
-    width: 74%;
+    margin-left: 15%;
+    width: 84%;
     color: #999;
   }
 
   .bbf-field .bbf-error {
-    margin-left: 25%;
-    width: 74%;
+    margin-left: 15%;
+    width: 84%;
     color: red;
   }
 
