@@ -19,7 +19,7 @@ div[id^="col"] > li:hover {
 }
 
 .notify {
-    font-size: 12pt;
+/*    font-size: 12pt; */
 }
 
 .notify-alert {
