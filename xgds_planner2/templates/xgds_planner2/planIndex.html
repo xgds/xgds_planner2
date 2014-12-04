@@ -111,6 +111,7 @@ table.planIndex td.exportFormat a {
   {{ block.super }}
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui-timepicker-addon.js"></script>
 
 <script type="text/javascript">
@@ -135,24 +136,11 @@ $("#deleteButton").click(function() {
 		}
 	}
 });
- var calcDataTableHeight = function() {
-	    var h = Math.floor($(window).height()*65/100);
-	    return h + 'px';
-	};
 
-	var defaultOptions = {
-			bAutoWidth: true,
-			bPaginate: true,
-	        iDisplayLength: -1, 
-	        bLengthChange: true,
-			bSort: true,
-	        bJQueryUI: false,
-	        sScrollY:  calcDataTableHeight(), /* '28em', */
-	        "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
-	        "oLanguage": {
+	defaultOptions['oLanguage'] = {
 	            "sLengthMenu": "Display _MENU_ plans of _LENGTH_"
-	          },
-	        aoColumnDefs:[
+	          };
+	defaultOptions['aoColumnDefs'] =[
 	            {
 	                aTargets: ['name'],
 	                sWidth: '285px',
@@ -161,8 +149,7 @@ $("#deleteButton").click(function() {
 	                aTargets: ['Export'],
 	                bSortable: false,
 	            },
-	        ]
-	}
+	        ];
 	
 	function showScheduleDialog() {
 	    var planlist = ""
@@ -205,10 +192,11 @@ $("#deleteButton").click(function() {
 	     {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 	    $( "#id_schedule_date" ).datetimepicker();
 	    {% endif %}
-		var pTable = $('#dataTable').dataTable( defaultOptions);
+	   
+		var dataTable = $('#dataTable').dataTable( defaultOptions);
 		$(window).resize(function(){ 
 			$('div.dataTables_scrollBody').css('height',calcDataTableHeight());
-			pTable.fnAdjustColumnSizing();
+			dataTable.fnAdjustColumnSizing();
 		});
 		
 		// handle the toggle button

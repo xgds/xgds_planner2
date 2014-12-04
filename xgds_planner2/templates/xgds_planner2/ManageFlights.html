@@ -70,26 +70,9 @@
   {{ block.super }}
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
+<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
 <script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript">
-var calcDataTableHeight = function() {
-    var h = Math.floor($(window).height()*65/100);
-    return h + 'px';
-};
-
-var defaultOptions = {
-		bAutoWidth: true,
-		bPaginate: true,
-        iDisplayLength: -1, 
-        bLengthChange: true,
-		bSort: false,
-        bJQueryUI: false,
-        sScrollY:  calcDataTableHeight(), /* '28em', */
-        "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
-        "oLanguage": {
-            "sLengthMenu": "Display _MENU_ flights & plans"
-          }
-}
 
 /*$.post('{# url planner2_updateToday #}', function(data) {
     alert(data);
@@ -108,11 +91,14 @@ $('#id_today').change(function(e){
 
 
 $(document).ready( function () {
-	var pTable = $('#dataTable').dataTable( defaultOptions);
-	$(window).resize(function(){ 
-		$('div.dataTables_scrollBody').css('height',calcDataTableHeight());
-		pTable.fnAdjustColumnSizing();
-	});
+    defaultOptions['oLanguage'] = {
+        "sLengthMenu": "Display _MENU_ flights & plans"
+      };
+	var dataTable = $('#dataTable').dataTable(defaultOptions);
+    $(window).resize(function(){ 
+        $('div.dataTables_scrollBody').css('height',calcDataTableHeight());
+        dataTable.fnAdjustColumnSizing(); 
+    });
 } );
  </script>
 {% endblock scripts %}
