@@ -77,7 +77,7 @@ class PlanExecution(models.Model):
 class AbstractFlight(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
-    locked = models.BooleanField(blank=True)
+    locked = models.BooleanField(blank=True, default=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
     vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
