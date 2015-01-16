@@ -29,7 +29,8 @@ var styleMap = {};
 
 //The below view can be used to generate polygons.  See xgds_kn.
 var PolygonView = Backbone.View.extend({
-    initialize: function() {
+    initialize: function(options) {
+        this.options = options || {};
         this.station = this.options.station;
         this.command = this.options.command;
         this.commandFeatures = this.options.commandFeatures;
@@ -287,7 +288,8 @@ $(function() {
     app.views.EarthView = Backbone.View.extend({
             el: 'div',
 
-            initialize: function() {
+            initialize: function(options) {
+                this.options = options || {};
                 _.bindAll(this);
                 if (!app.options.offline) {
                     this.on('earth:loaded', this.render);
@@ -453,7 +455,8 @@ $(function() {
             template: Handlebars.compile($('#template-plan-kml').html()),
             geEvents: [], // container holds GE events for later removal
 
-            initialize: function() {
+            initialize: function(options) {
+                this.options = options || {};
                 var ge = this.ge = this.options.ge;
                 var doc = this.doc = ge.parseKml(this.template({
                     options: app.options
@@ -485,7 +488,7 @@ $(function() {
                 //this.collection.on('add', this.render, this);
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
-
+                
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
@@ -934,7 +937,8 @@ $(function() {
     // This view class manages the map point for a single Station model
     var StationPointView = Backbone.View
         .extend({
-            initialize: function() {
+            initialize: function(options) {
+                this.options = options || {};
                 this.planKmlView = this.options.planKmlView;
 
                 // var gex = this.options.ge_gex;
@@ -1257,7 +1261,8 @@ $(function() {
 
     var SegmentLineView = Backbone.View
         .extend({
-            initialize: function() {
+            initialize: function(options) {
+                this.options = options || {};
                 var options = this.options;
                 if (!options.ge && options.toStation && options.fromStation) {
                     throw 'Missing a required option!';
@@ -1429,7 +1434,8 @@ $(function() {
     };
 
     var PanoWedgeView = Backbone.View.extend({
-        initialize: function() {
+        initialize: function(options) {
+            this.options = options || {};
             //console.log('PanoWedgeView init: ' + this.cid);
             this.station = this.options.station;
             this.command = this.options.command;

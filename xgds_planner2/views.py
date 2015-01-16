@@ -126,7 +126,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     Plan = get_plan_model()
     plan = Plan.objects.get(pk=plan_id)
     if request.method == "PUT":
-        data = json.loads(request.raw_post_data)
+        data = json.loads(request.body)
         for k, v in data.iteritems():
             if k == "_simInfo":
                 continue
@@ -141,7 +141,7 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.creationDate = datetime.datetime.utcnow()
         plan.uuid = None
         plan.id = None
-        data = json.loads(request.raw_post_data)
+        data = json.loads(request.body)
         for k, v in data.iteritems():
             if k == "_simInfo":
                 continue

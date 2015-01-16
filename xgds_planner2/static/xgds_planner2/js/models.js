@@ -209,6 +209,7 @@ app.models = app.models || {};
         },
 
         toJSON: toJsonWithFilters
+        
     });
 
     /*
@@ -395,7 +396,7 @@ app.models = app.models || {};
                     }[itemType];
 
                     var context = {
-                        plan: app.currentPlan.toJSON(),
+                        plan: app.planJson, //.currentPlan.toJSON(),
                         stationIndex: stationCounter
                     };
                     context[itemType.toLowerCase()] = item;

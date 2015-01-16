@@ -69,8 +69,6 @@ var app = (function($, _, Backbone) {
         this.disable = function() {
             if (this._inAction)
                 return;
-            //console.log('Disable called');
-            //console.log(new Error().stack);
             this._enterAction();
             this._disableCount += 1;
             this.enabled = false;
@@ -80,8 +78,6 @@ var app = (function($, _, Backbone) {
         this.enable = function() {
             if (this._inAction)
                 return;
-            //console.log('Enable called');
-            //console.log(new Error().stack);
             this._enterAction();
             this._disableCount -= 1;
             if (this._disableCount <= 0) {
@@ -353,12 +349,12 @@ var app = (function($, _, Backbone) {
      */
 
     app.hasHandler = function(name) {
-        return !!this.reqres._handlers[name];
+        return !!this.reqres._wreqrHandlers[name];
     };
 
     // Return the color mapped to a given key.
     // If no color has been assigned to that key, allocate one to be forever associated with it.
-    app.reqres.addHandler('getColor', function(key) {
+    app.reqres.setHandler('getColor', function(key) {
         var color;
         function allocateColor() {
             return app.util.randomColor();
