@@ -181,7 +181,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             /*
             if (cut) {
                 sequence.add(command.clone());
-                //command.collection.remove(command);
             } else if (command.get('pathElement').get('type') == type) {
                 sequence.add(command.clone());
             } */
@@ -742,12 +741,12 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         this.listenTo(app.currentPlan, 'sync', this.render);
         this.listenTo(app.vent, 'station:change', this.render);
         this.listenTo(app.vent, 'plan:reverse', this.render);
-        this.on('childView:expand', this.onItemExpand, this);
-        //this.on('childView:render', this.restoreExpanded, this);
+        this.on('childview:expand', this.onItemExpand, this);
+        //this.on('childview:render', this.restoreExpanded, this);
     },
 
-    onItemExpand: function(itemView) {
-        app.State.stationSelected = itemView.model;
+    onItemExpand: function(childView) {
+        app.State.stationSelected = childView.model;
     },
 
     restoreExpanded: function() {
@@ -972,8 +971,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         }
     },
 
-    onItemExpand: function(itemView) {
-        app.State.commandSelected = itemView.model;
+    onItemExpand: function(childView) {
+        app.State.commandSelected = childView.model;
         app.State.metaExpanded = false;
         app.State.addCommandsExpanded = false;
     },
