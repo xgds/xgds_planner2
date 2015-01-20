@@ -176,22 +176,43 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         var type = model.get('type');
         var cut = app.request('cutAfterPaste');
         _.each(app.copiedCommands, function(command) {
-            if (command.get('pathElement').get('type') == type) {
-                sequence.add(command.clone());
-            }
+            sequence.add(command.clone());
+            //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
+            /*
             if (cut) {
-                command.collection.remove(command);
-            }
+                sequence.add(command.clone());
+                //command.collection.remove(command);
+            } else if (command.get('pathElement').get('type') == type) {
+                sequence.add(command.clone());
+            } */
+            
         });
         app.vent.trigger('change:plan');
     },
 
     cutSelectedCommands: function() {
         var commands = app.request('selectedCommands');
-        app.copiedCommands = new Array();
-        app.copiedCommands.push.apply(app.copiedCommands, commands);
-        app.request('unselectAllCommands');
-        app.vent.trigger('cutAfterPaste');
+        if (commands.length > 0){
+            app.copiedCommands = new Array();
+            app.copiedCommands.push.apply(app.copiedCommands, commands);
+            
+            // remove them from the collection
+            var selectParent = null;
+            selectParent = commands[0].get('pathElement');
+            _.each(commands, function(command) {
+                if (!_.isUndefined(command.collection)){
+                    command.collection.remove(command);
+                }
+            });
+            app.vent.trigger('change:plan');
+            if (selectParent != null){
+                var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
+                app.vent.trigger(showParent, selectParent);
+            }
+            
+            app.request('unselectAllCommands');
+            app.vent.trigger('cutAfterPaste');
+        }
     },
 
     updateSaveStatus: function(eventName) {
@@ -942,9 +963,13 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     },
 
     unselectAll: function() {
-        this.children.each(function(view) {
-            view.setUnselected();
-        });
+        if (!_.isEmpty(this.children)) {
+            this.children.each(function(view) {
+                if (!_.isUndefined(view)){
+                    view.setUnselected();
+                }
+            });
+        }
     },
 
     onItemExpand: function(itemView) {
