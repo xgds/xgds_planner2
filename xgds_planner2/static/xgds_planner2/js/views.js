@@ -88,10 +88,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     },
 
     disableForReadOnly: function() {
-        this.$('#btn-addStations').attr('disabled', 'disabled');
-        this.$('#btn-reposition').attr('disabled', 'disabled');
-        this.$('#btn-reverse').attr('disabled', 'disabled');
-        this.$('#btn-save').attr('disabled', 'disabled');
+        this.$('#btn-addStations').attr('disabled', 'true');
+        this.$('#btn-reposition').attr('disabled', 'true');
+        this.$('#btn-reverse').attr('disabled', 'true');
+        this.$('#btn-save').attr('disabled', 'true');
     },
 
     reverseStations: function() {
@@ -102,18 +102,18 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     },
 
     disableUndo: function() {
-        this.$('#btn-undo').attr('disabled', 'disabled');
+        this.$('#btn-undo').attr('disabled', 'true');
     },
 
     disableRedo: function() {
-        this.$('#btn-redo').attr('disabled', 'disabled');
+        this.$('#btn-redo').attr('disabled', 'true');
     },
 
     disableCommandActions: function() {
-        this.$('#btn-copy').attr('disabled', 'disabled');
-        this.$('#btn-paste').attr('disabled', 'disabled');
-        this.$('#btn-cut').attr('disabled', 'disabled');
-        this.$('#btn-delete').attr('disabled', 'disabled');
+        this.$('#btn-copy').attr('disabled', 'true');
+        this.$('#btn-paste').attr('disabled', 'true');
+        this.$('#btn-cut').attr('disabled', 'true');
+        this.$('#btn-delete').attr('disabled', 'true');
     },
 
     enableCommandActions: function() {
@@ -721,8 +721,8 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         this.listenTo(app.currentPlan, 'sync', this.render);
         this.listenTo(app.vent, 'station:change', this.render);
         this.listenTo(app.vent, 'plan:reverse', this.render);
-        this.on('itemview:expand', this.onItemExpand, this);
-        //this.on('itemview:render', this.restoreExpanded, this);
+        this.on('childView:expand', this.onItemExpand, this);
+        //this.on('childView:render', this.restoreExpanded, this);
     },
 
     onItemExpand: function(itemView) {
@@ -843,7 +843,6 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     childView: app.views.CommandItemView,
     childViewContainer: '.command-list',
     childViewOptions: {
-        selectable: true,
         expandClass: 'col2'
     },
     emptyView: app.views.NoCommandsView,
@@ -896,11 +895,11 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             app.State.metaExpanded = true;
         if (_.isUndefined(app.State.addCommandsExpanded))
             app.State.addCommandsExpanded = false;
-        this.on('itemview:expand', this.onItemExpand, this);
-        this.on('itemview:selected', this.onItemSelected, this);
-        this.on('itemview:unselected', this.onItemUnSelected, this);
+        this.on('childview:expand', this.onItemExpand, this);
+        this.on('childview:selected', this.onItemSelected, this);
+        this.on('childview:unselected', this.onItemUnSelected, this);
         this.itemsSelected = false;
-        //this.on('itemview:render', this.restoreExpanded, this);
+        //this.on('childView:render', this.restoreExpanded, this);
         this.listenTo(app.vent, 'showMeta', function() {
             this.head.expand();
         });
@@ -913,7 +912,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //var stack = new Error().stack;
         //console.log(stack);
     },
-
+    
     onItemSelected: function() {
         if (this.itemsSelected) return;
         if (!_.isEmpty(this.getSelectedCommands())) {
@@ -1212,7 +1211,7 @@ app.views.PlanToolsView = Backbone.View.extend({
         if (_.isUndefined(planUrl))
             // no plan selected
             return;
-        this.$('#ok-button').attr('disabled', 'disabled');
+        this.$('#ok-button').attr('disabled', 'true');
         this.$('#append-error').empty();
         app.reversePlanOnAppend = this.$('#reverse-plan').is(':checked');
         app.prependPlanOnAppend = this.$('#prepend-plan').is(':checked');
@@ -1226,7 +1225,7 @@ app.views.PlanToolsView = Backbone.View.extend({
         this.$('#append-error').empty().append(message);
     },
     clearAppendTool: function() {
-        this.$('#ok-button').removeAttr('disabled');
+        this.$('#ok-button').removeAttr('disabled'); //('disabled','false');
         this.$('#append-error').empty();
         delete app.reversePlanOnAppend;
         delete app.prependPlanOnAppend;
