@@ -17,10 +17,11 @@ function kmlColor(rgbColor, alpha) {
 var GE_CACHE = {};
 
 function getGeCache(geObject) {
-    var objCache = GE_CACHE[geObject.getId()];
+    var objId = geObject.getName(); 
+    var objCache = GE_CACHE[objId];
     if (objCache == undefined) {
-	objCache = {};
-        GE_CACHE[geObject.getId()] = objCache;
+        objCache = {};
+        GE_CACHE[objId] = objCache;
     }
     return objCache;
 }
@@ -274,10 +275,8 @@ $(function() {
             evt.preventDefault();
             dragEngaged = false;
             //data.dragOffset = undefined;
-            google.earth
-                .removeEventListener(ge.getWindow(), 'mouseup', dragEnd);
-            google.earth.removeEventListener(ge.getWindow(), 'mousemove',
-                                             dragMove);
+            google.earth.removeEventListener(ge.getWindow(), 'mouseup', dragEnd);
+            google.earth.removeEventListener(ge.getWindow(), 'mousemove', dragMove);
             options.dropCallback(placemark, data);
         }
 
