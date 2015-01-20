@@ -54,16 +54,17 @@ XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
-        'source_filenames': ('external/js/underscore-min.js',
-                             'external/js/jquery/jquery-2.1.3.min.js',
+        'source_filenames': ('external/js/jquery/jquery-2.1.3.min.js',
                              'external/js/jquery/jquery.migrate.min.js',
                              'external/js/jquery/jquery-ui.min.js',
                              'external/js/lodash.js',
                              'external/js/handlebars.js',
                              'external/js/backbone.js',
-                             'external/js/backbone.marionette.js',
+                             'external/js/backbone.wreqr.js',
+                             'external/js/backbone.babysitter.js',
                              'external/js/backbone-relational.js',
                              'external/js/backbone-forms.js',
+                             'external/js/backbone.marionette.js',
                              'external/js/string-format.js',
                              'external/js/kmltree.js',
                              'external/js/usng.js',
@@ -75,8 +76,7 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'xgds_planner2/js/models.js',
                              'xgds_planner2/js/views.js',
                              'xgds_planner2/js/mapviews.js',
-                             'xgds_planner2/js/router.js',
-                             'xgds_planner2/js/simulatorDriver.js',
+                             'xgds_planner2/js/simulatorDriver.js'
                              ),
         'output_filename': 'js/planner_app.js'
     },
