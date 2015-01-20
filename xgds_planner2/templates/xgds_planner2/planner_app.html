@@ -55,32 +55,9 @@
     {% if not settings.XGDS_PLANNER_OFFLINE %}
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {% endif %}
-    {# javascript 'planner_app' #}
-    <!-- <script type="text/javascript" src='{{STATIC_URL}}external/js/underscore-min.js'></script> -->
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery-2.1.3.min.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery.migrate.min.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery-ui.min.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/lodash.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/handlebars.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone.wreqr.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone.babysitter.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone-relational.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone-forms.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/backbone.marionette.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/string-format.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/kmltree.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/usng.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}external/js/proj4-2.2.1.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/handlebars-helpers.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/geo.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/forms.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/app.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/models.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/views.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/mapviews.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
+    {% javascript 'planner_app' %}
     {% javascript 'simulator' %}
+    <!--  google earth extensions -->
     <script type="text/javascript" src="{{STATIC_URL}}external/js/extensions-0.2.1.js"></script>
     <!-- 
     <script type="text/javascript" src="{{ planner_appUrl }}"></script>
