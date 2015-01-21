@@ -796,7 +796,7 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data) {
         var displayName = data.name || data.presetName || data.presetCode;
         var timing = app.util.minutesToHMS(data.duration);
-        return '<input class="select" type="checkbox" id="id_' + displayName + '"/></i><label for="id_' + displayName + '">' + displayName + '</label><span class="duration">' + timing + '</span><i/>';
+        return '<input class="select" type="checkbox" id="id_' + displayName + '"/></i>&nbsp;<label style="display:inline-block;" for="id_' + displayName + '">' + displayName + '</label><span class="duration">' + timing + '</span><i/>';
     },
     events: function() {
         return _.extend(app.views.SequenceListItemView.prototype.events, {

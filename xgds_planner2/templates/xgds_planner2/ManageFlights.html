@@ -26,7 +26,7 @@
 	<span class="error">{{ errorString }}</span>
 	{% endif %}
 	<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
-	<input type="checkbox" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} style="margin-bottom:3px;">Today Only</input>
+	<input type="checkbox" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} style="margin-bottom:3px;"></input><label for="id_today">Today Only</label>
 	</form>
 	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}" style="float:right;margin-bottom:3px;">Create Flights</a>
 	<a class="mybutton" href="{% url 'planner2_manageFlightHelp' %}" style="float:right;margin-bottom:3px;" target="help">Help</a>

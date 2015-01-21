@@ -8,16 +8,16 @@
       {{/each}}
     </select>
   </div><div class="tool-entry">
-    <span id="select-title">Plan Placement</span>
     <fieldset>
-    <input type="radio" name="plan-placement" id="prepend-plan" checked="checked">
-    <label for="prepend-plan">Before</label>
+    <span id="select-title">Plan Placement:</span>
+    <input type="radio" name="plan-placement" id="prepend-plan" class="tool-input" checked="checked">
+    <label for="prepend-plan" style="display:inline-block;">Before</label>&nbsp;&nbsp;
     <input type="radio" name="plan-placement" id="append-plan" class="tool-input">
-    <label for="append-plan">After</label>
+    <label for="append-plan" style="display:inline-block;">After</label>
     </fieldset>
   </div><div class="tool-entry">
     <input type="checkbox" id="reverse-plan" class="tool-input">
-    <label for="reverse-plan">Reverse Plan</label>
+    <label for="reverse-plan" style="display:inline-block;">Reverse Plan</label>
   </div><div class="tool-submit">
     <button id="ok-button" class="tool-input">OK</button>
     <span class="entry-error" id="append-error"><!-- error message space --></span>
