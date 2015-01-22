@@ -329,7 +329,11 @@ app.models = app.models || {};
 
         appendCommandByPreset: function(preset) {
             var command = new models.Command(preset);
-            command.set('name', preset.presetName);
+            if (!_.isUndefined(preset.presetName)){
+                command.set('name', preset.presetName);
+            } else {
+                command.set('name', preset.name);
+            }
             command.parent = this;
             this.get('sequence').add(command);
         },
@@ -599,7 +603,9 @@ app.models = app.models || {};
         model: models.Command,
 
         initialize: function() {
-            this.on('add remove change', this.updateCommandIds, this);
+            this.on('add', this.updateCommandIds, this);
+            this.on('remove', this.updateCommandIds, this);
+            this.on('change', this.updateCommandIds, this);
         },
 
         /*
@@ -635,7 +641,11 @@ app.models = app.models || {};
                         parentId = myparent.get('id');
                     }
                     parentDict = {'id': parentId };
-                    commandDict = {'presetCode': item.get('presetCode')};
+                    var commandPreset = item.get('presetCode');
+                    if (_.isUndefined(commandPreset)){
+                        commandPreset = item.get('type');
+                    }
+                    commandDict = {'presetCode': commandPreset};
                     var context = {
                         parent: parentDict,
                         commandIndex: idx,
