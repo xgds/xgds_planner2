@@ -152,5 +152,14 @@ div.gearth-auto-untilt {
 
 .ui-dialog-titlebar {
     display:none;
+    background: gray !important;
+}
+
+.saveAs .div{
+	background: white !important;
+}
+
+.ui-dialog {
+	background: white !important;
 }
 

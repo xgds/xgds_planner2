@@ -108,6 +108,11 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         if (app.options.readOnly) {
             eventName = 'readOnly';
         }
+        if (eventName == 'change') {
+            app.dirty = true;
+        } else if (eventName == 'sync') {
+            app.dirty = false;
+        }
 
         var msg = msgMap[eventName];
         this.$el.find('#save-status').text(msg);

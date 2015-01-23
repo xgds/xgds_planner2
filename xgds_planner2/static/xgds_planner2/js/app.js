@@ -13,6 +13,7 @@ Backbone.Marionette.TemplateCache.prototype.compileTemplate = function(
 var app = (function($, _, Backbone) {
     app = new Backbone.Marionette.Application();
 
+    app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
         //map: '#map',
