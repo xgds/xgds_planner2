@@ -8,20 +8,13 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
-        'click #btn-delete': 'deleteSelectedCommands',
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); },
-        'click #btn-reverse': 'reverseStations',
-        'click #btn-copy': 'copySelectedCommands',
-        'click #btn-paste': 'pasteCommands',
-        'click #btn-cut': 'cutSelectedCommands',
         'change #gearth-auto-untilt': 'toggleModalUntilt'
     },
 
     initialize: function() {
-        this.cutAfterPaste = false;
         this.listenTo(app.vent, 'mapmode', this.ensureToggle);
-
         this.listenTo(app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
         this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
         this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
@@ -33,12 +26,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
-        this.listenTo(app.vent, 'cutAfterPaste', function() { this.cutAfterPaste = true; });
-        this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
-        this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
 
-        app.reqres.setHandler('cutAfterPaste', this.getCutAfterPaste, this);
     },
 
     onShow: function() {
@@ -71,34 +60,12 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         } else {
             this.enableRedo();
         }
-        if (app.hasHandler('selectedCommands') &&
-            !_.isEmpty(app.request('selectedCommands'))) {
-            this.enableCommandActions();
-        } else {
-            this.disableCommandActions();
-        }
-    },
-
-    getCutAfterPaste: function() {
-        if (this.cutAfterPaste) {
-            this.cutAfterPaste = false;
-            return true;
-        }
-        return false;
     },
 
     disableForReadOnly: function() {
         this.$('#btn-addStations').attr('disabled', 'true');
         this.$('#btn-reposition').attr('disabled', 'true');
-        this.$('#btn-reverse').attr('disabled', 'true');
         this.$('#btn-save').attr('disabled', 'true');
-    },
-
-    reverseStations: function() {
-        app.vent.trigger('plan:reversing');
-        app.currentPlan.get('sequence').models.reverse();
-        app.currentPlan.get('sequence').resequence();
-        app.vent.trigger('plan:reverse');
     },
 
     disableUndo: function() {
@@ -107,20 +74,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     disableRedo: function() {
         this.$('#btn-redo').attr('disabled', 'true');
-    },
-
-    disableCommandActions: function() {
-        this.$('#btn-copy').attr('disabled', 'true');
-        this.$('#btn-paste').attr('disabled', 'true');
-        this.$('#btn-cut').attr('disabled', 'true');
-        this.$('#btn-delete').attr('disabled', 'true');
-    },
-
-    enableCommandActions: function() {
-        this.$('#btn-copy').removeAttr('disabled');
-        this.$('#btn-paste').removeAttr('disabled');
-        this.$('#btn-cut').removeAttr('disabled');
-        this.$('#btn-delete').removeAttr('disabled');
     },
 
     enableUndo: function() {
@@ -142,76 +95,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             $(this).prop("checked", false);
             $(this).removeClass("active");
         });
-    },
-
-    deleteSelectedCommands: function() {
-        var commands = app.request('selectedCommands');
-        var selectParent = null;
-        if (commands.length > 0){
-            selectParent = commands[0].get('pathElement');
-        }
-        _.each(commands, function(command) {
-            if (!_.isUndefined(command.collection)){
-                command.collection.remove(command);
-            }
-            command.destroy();
-        });
-        app.vent.trigger('change:plan');
-        if (selectParent != null){
-            var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
-            app.vent.trigger(showParent, selectParent);
-        }
-    },
-
-    copySelectedCommands: function() {
-        var commands = app.request('selectedCommands');
-        app.copiedCommands = new Array();
-        app.copiedCommands.push.apply(app.copiedCommands, commands);
-        app.request('unselectAllCommands');
-    },
-
-    pasteCommands: function() {
-        var model = app.request('currentPathElement');
-        var sequence = model.get('sequence');
-        var type = model.get('type');
-        var cut = app.request('cutAfterPaste');
-        _.each(app.copiedCommands, function(command) {
-            sequence.add(command.clone());
-            //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
-            /*
-            if (cut) {
-                sequence.add(command.clone());
-            } else if (command.get('pathElement').get('type') == type) {
-                sequence.add(command.clone());
-            } */
-            
-        });
-        app.vent.trigger('change:plan');
-    },
-
-    cutSelectedCommands: function() {
-        var commands = app.request('selectedCommands');
-        if (commands.length > 0){
-            app.copiedCommands = new Array();
-            app.copiedCommands.push.apply(app.copiedCommands, commands);
-            
-            // remove them from the collection
-            var selectParent = null;
-            selectParent = commands[0].get('pathElement');
-            _.each(commands, function(command) {
-                if (!_.isUndefined(command.collection)){
-                    command.collection.remove(command);
-                }
-            });
-            app.vent.trigger('change:plan');
-            if (selectParent != null){
-                var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
-                app.vent.trigger(showParent, selectParent);
-            }
-            
-            app.request('unselectAllCommands');
-            app.vent.trigger('cutAfterPaste');
-        }
     },
 
     updateSaveStatus: function(eventName) {
@@ -732,7 +615,6 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         expandClass: 'col1'
     },
     emptyView: app.views.NoStationsView,
-
     initialize: function(options) {
         this.options = options || {};
         // re-render on plan save because for some reason, the collection
@@ -867,6 +749,10 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
     },
     emptyView: app.views.NoCommandsView,
     events: {
+        'click #btn-copy': 'copySelectedCommands',
+        'click #btn-paste': 'pasteCommands',
+        'click #btn-cut': 'cutSelectedCommands',
+        'click #btn-delete': 'deleteSelectedCommands',
         'click .edit-meta': function(evt) {
             app.vent.trigger('showMeta', this.model);
         },
@@ -931,6 +817,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //            app.State.metaExpanded, app.State.commandSelected);
         //var stack = new Error().stack;
         //console.log(stack);
+        this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
+        this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
     },
     
     onItemSelected: function() {
@@ -951,8 +839,13 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 
     getSelectedCommands: function() {
         var commands = [];
-        this.children.each(function(view) {
-            if (view.isSelected()) { commands.push(view.model); }
+        this.children.each(function(childView) {
+            try {
+                if (childView.isSelected()) { commands.push(childView.model); }
+            } catch(ex) {
+                //pass
+            }
+            
         });
         return commands;
     },
@@ -1023,6 +916,12 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         this.foot.render();
         this.$el.find('.command-list').sortable();
         this.restoreExpanded();
+        if (app.hasHandler('selectedCommands') &&
+                !_.isEmpty(app.request('selectedCommands'))) {
+                this.enableCommandActions();
+            } else {
+                this.disableCommandActions();
+            }
     },
 
     onClose: function() {
@@ -1035,6 +934,92 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             view.close();
         });
         this.stopListening();
+    },
+    disableCommandActions: function() {
+        this.$('#btn-copy').attr('disabled', 'true');
+        if (!_.isEmpty(app.copiedCommands)){
+            this.$('#btn-paste').removeAttr('disabled');
+        } else {
+            this.$('#btn-paste').attr('disabled', 'true');
+        }
+        this.$('#btn-cut').attr('disabled', 'true');
+        this.$('#btn-delete').attr('disabled', 'true');
+    },
+
+    enableCommandActions: function() {
+        this.$('#btn-copy').removeAttr('disabled');
+        this.$('#btn-paste').removeAttr('disabled');
+        this.$('#btn-cut').removeAttr('disabled');
+        this.$('#btn-delete').removeAttr('disabled');
+    },
+    deleteSelectedCommands: function() {
+        var commands = app.request('selectedCommands');
+        var selectParent = null;
+        if (commands.length > 0){
+            selectParent = commands[0].get('pathElement');
+        }
+        _.each(commands, function(command) {
+            if (!_.isUndefined(command.collection)){
+                command.collection.remove(command);
+            }
+            command.destroy();
+        });
+        app.vent.trigger('change:plan');
+        if (selectParent != null){
+            var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
+            app.vent.trigger(showParent, selectParent);
+        }
+    },
+
+    copySelectedCommands: function() {
+        var commands = app.request('selectedCommands');
+        app.copiedCommands = new Array();
+        app.copiedCommands.push.apply(app.copiedCommands, commands);
+        app.request('unselectAllCommands');
+    },
+
+    pasteCommands: function() {
+        var model = app.request('currentPathElement');
+        var sequence = model.get('sequence');
+        var type = model.get('type');
+        var cut = app.request('cutAfterPaste');
+        _.each(app.copiedCommands, function(command) {
+            sequence.add(command.clone());
+            //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
+            /*
+            if (cut) {
+                sequence.add(command.clone());
+            } else if (command.get('pathElement').get('type') == type) {
+                sequence.add(command.clone());
+            } */
+            
+        });
+        app.vent.trigger('change:plan');
+    },
+
+    cutSelectedCommands: function() {
+        var commands = app.request('selectedCommands');
+        if (commands.length > 0){
+            app.copiedCommands = new Array();
+            app.copiedCommands.push.apply(app.copiedCommands, commands);
+            
+            // remove them from the collection
+            var selectParent = null;
+            selectParent = commands[0].get('pathElement');
+            _.each(commands, function(command) {
+                if (!_.isUndefined(command.collection)){
+                    command.collection.remove(command);
+                }
+            });
+            app.vent.trigger('change:plan');
+            if (selectParent != null){
+                var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
+                app.vent.trigger(showParent, selectParent);
+            }
+            
+            app.request('unselectAllCommands');
+            app.vent.trigger('cutAfterPaste');
+        }
     }
 });
 
@@ -1205,7 +1190,8 @@ app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
 app.views.PlanToolsView = Backbone.View.extend({
     template: '#template-plan-tools',
     events: {
-        'click #ok-button': 'okClicked'
+        'click #ok-button': 'okClicked',
+        'click #btn-reverse': 'reverseStations',
     },
     initialize: function() {
         var source = $(this.template).html();
@@ -1218,11 +1204,23 @@ app.views.PlanToolsView = Backbone.View.extend({
         }
         this.listenTo(app.vent, 'clearAppendTool', this.clearAppendTool);
         this.listenTo(app.vent, 'setAppendError', this.setAppendError);
+        _.bindAll(this, 'render', 'afterRender'); 
+        var _this = this; 
+        this.render = _.wrap(this.render, function(render) { 
+            render(); 
+            _this.afterRender(); 
+            return _this; 
+        }); 
     },
     render: function() {
         this.$el.html(this.template({
             planIndex: app.planIndex
         }));
+    },
+    afterRender: function() {
+        if (app.options.readOnly) {
+            this.disableForReadOnly();
+        }
     },
     okClicked: function() {
         var selectPlan = parseInt(this.$('#plan-select').val());
@@ -1327,6 +1325,16 @@ app.views.PlanToolsView = Backbone.View.extend({
         app.updatePlan(undefined);
         app.Actions.enable();
         app.vent.trigger('change:plan');
+    },
+    reverseStations: function() {
+        app.vent.trigger('plan:reversing');
+        app.currentPlan.get('sequence').models.reverse();
+        app.currentPlan.get('sequence').resequence();
+        app.vent.trigger('plan:reverse');
+    },
+    disableForReadOnly: function() {
+        this.$('#btn-reverse').attr('disabled', 'true');
+        this.$('#ok-button').attr('disabled', 'true');
     }
 });
 

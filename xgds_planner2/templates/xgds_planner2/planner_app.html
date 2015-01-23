@@ -8,13 +8,6 @@
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 {% block content %}
 
-{% block cssExtras %}
-	<!-- <link rel="stylesheet" href="{{ STATIC_URL }}external/css/backbone.forms.default.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/kmltree.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css">
-    <link rel="stylesheet" href="{{ STATIC_URL }}xgds_planner2/css/planner.css"> -->
-{% endblock cssExtras %}
-
 <style scoped>
   {% stylesheet 'planner_app' %}
 </style>
@@ -56,7 +49,7 @@
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {% endif %}
     {% javascript 'planner_app' %}
-    <!-- 
+    <!--  
     <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery-2.1.3.min.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery.migrate.min.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}external/js/jquery/jquery-ui.min.js'></script>
@@ -80,7 +73,7 @@
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/views.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/mapviews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
-     -->
+    -->
     {% javascript 'simulator' %}
     <!--  google earth extensions -->
     <script type="text/javascript" src="{{STATIC_URL}}external/js/extensions-0.2.1.js"></script>

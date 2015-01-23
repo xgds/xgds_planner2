@@ -1,3 +1,10 @@
+<br/>
+<div class="plan-tool" id="reverse-plan">
+<button  id="btn-reverse">Reverse Current Plan</button>
+</div>
+<br/>
+
+
 <div class="plan-tool" id="append-plan">
   <div class="tool-title">Append Plan</div>
   <div class="tool-entry">
@@ -7,7 +14,8 @@
         <option value="{{id}}">{{name}}</option>
       {{/each}}
     </select>
-  </div><div class="tool-entry">
+  </div>
+  <div class="tool-entry">
     <fieldset>
     <span id="select-title">Plan Placement:</span>
     <input type="radio" name="plan-placement" id="prepend-plan" class="tool-input" checked="checked">
@@ -17,7 +25,7 @@
     </fieldset>
   </div><div class="tool-entry">
     <input type="checkbox" id="reverse-plan" class="tool-input">
-    <label for="reverse-plan" style="display:inline-block;">Reverse Plan</label>
+    <label for="reverse-plan" style="display:inline-block;">Reverse Appended Plan</label>
   </div><div class="tool-submit">
     <button id="ok-button" class="tool-input">OK</button>
     <span class="entry-error" id="append-error"><!-- error message space --></span>
