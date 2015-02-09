@@ -65,6 +65,7 @@ div[id^="col"] > li:hover {
     padding: 0px;
     margin: 0px;
     overflow-y: scroll;
+    max-height: 450px;
 }
 
 #col1, #col2 {
