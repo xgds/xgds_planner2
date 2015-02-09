@@ -26,7 +26,7 @@
       
     .bbf-field input, .bbf-field textarea, .bbf-field select {
       width: 100%;
-      height: 2em;
+      /*height: 2em; */
     }
   
   .bbf-field .bbf-help {
