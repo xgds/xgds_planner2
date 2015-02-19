@@ -199,3 +199,19 @@ XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 # This is used to hold a map of site frames, so we can convert lat/long to the closest site frame.
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []
+
+# include this in your siteSettings.py BOWER_INSTALLED_APPS
+XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
+    'jquery-migrate-official',
+    'lodash',
+    'backbone',
+    'marionette',
+    'backbone-relational',
+    'backbone-forms',
+    'handlebars.js',
+    'string-format',
+    'proj4',
+    'position-analysis=https://github.com/Esri/position-analysis-js.git',
+    'qunit',
+    'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz'
+)

@@ -13,7 +13,7 @@
 {% block cssExtras %}
 {{ block.super }}
 <style type="text/css" title="currentStyle">
-	@import "{{ STATIC_URL }}external/css/jquery/jquery-ui.css";
+	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css";
 </style>
 {% endblock cssExtras %}
 
@@ -68,10 +68,10 @@
 
 {% block scripts %}
   {{ block.super }}
-<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
-<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery.dataTables.js"></script>
-<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
-<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}external/js/jquery/jquery-ui-timepicker-addon.js"></script>
+  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
+  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
+	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jQuery-Timepicker-Addon/dist/jquery-ui-timepicker-addon.min.js"></script>
 <script type="text/javascript">
 
 /*$.post('{# url planner2_updateToday #}', function(data) {

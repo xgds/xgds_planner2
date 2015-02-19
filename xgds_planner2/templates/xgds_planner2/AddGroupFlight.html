@@ -4,7 +4,7 @@
 {% block siteSection %}Add Group Flight{% endblock %}
 
 	{% block headExtras %}
-	<link rel="stylesheet" href="{{ STATIC_URL }}external/css/jquery/jquery-ui.css">
+	<link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
 	{% endblock %}
 		
 		
@@ -56,7 +56,7 @@
 
 {% block scripts %}
    {{ block.super }}
-		<script src="{{ STATIC_URL }}external/js/jquery/jquery-ui.js"></script>
+   		<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
 		
 		<script>
 		$(function() {
