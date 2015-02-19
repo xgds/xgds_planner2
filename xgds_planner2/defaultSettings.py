@@ -57,7 +57,7 @@ XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': ('bower_components/jquery/dist/jquery.min.js',
-                             'external/js/jquery/jquery.migrate.min.js',
+                             'bower_components/jquery-migrate-official/src/migrate.js',
                              'bower_components/jquery-ui/jquery-ui.min.js',
                              'bower_components/lodash/lodash.min.js',
                              'bower_components/handlebars/handlebars.min.js',
@@ -94,17 +94,19 @@ XGDS_PLANNER_PIPELINE_JS = {
 
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
-        'source_filenames': ('external/css/backbone.forms.default.css',
-                             'external/css/kmltree.css',
-                             'external/css/jquery/jquery-ui.css',
+        'source_filenames': ('bower_components/kmltree/kmltree.css',
+                             'bower_components/jquery-ui/themes/base/jquery-ui.css',
+                             # for some reason compressing this in the css does not work so it's separate in the planner_app
+                             #'bower_components/backbone-forms/distribution/templates/old.css',
                              'xgds_planner2/css/planner.css',
+                             #'xgds_planner2/css/forms_adjust.css',
                              ),
         'output_filename': 'css/planner_app.css',
         'template_name': 'xgds_planner2/pipelineCSS.css',
     },
     'xgds_planner2_testing': {
         'source_filenames': (
-            'external/css/qunit-1.12.0.css',
+            'bower_components/qunit/qunit/qunit.css',
         ),
         'output_filename': 'css/planner_tests.css',
     },
@@ -211,7 +213,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'backbone-relational',
     'backbone-forms',
     'handlebars=https://github.com/components/handlebars.js.git',
-    'string-format',
+    'string-format=https://github.com/deleted/string-format.git',
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',

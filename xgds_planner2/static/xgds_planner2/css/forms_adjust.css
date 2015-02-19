@@ -1,0 +1,21 @@
+.bbf-field label {
+	width: 15%;
+}
+
+.bbf-field .bbf-editor {
+    margin-left: 15%;
+    width: 84%;
+    display: inherit !important;
+  }
+  
+ .bbf-field .bbf-help {
+    margin-left: 15%;
+    width: 84%;
+    display: inherit !important;
+  }
+
+.bbf-field .bbf-error {
+    margin-left: 15%;
+    width: 84%;
+    display: inherit !important;
+  }
