@@ -52,23 +52,25 @@ XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will
 XGDS_PLANNER_MAP_ROTATION_HANDLES = True
 XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 
+#                              'external/js/jquery/jquery.migrate.min.js',
+
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
-        'source_filenames': ('external/js/jquery/jquery-2.1.3.min.js',
+        'source_filenames': ('bower_components/jquery/dist/jquery.min.js',
                              'external/js/jquery/jquery.migrate.min.js',
-                             'external/js/jquery/jquery-ui.min.js',
-                             'external/js/lodash.js',
-                             'external/js/handlebars.js',
-                             'external/js/backbone.js',
-                             'external/js/backbone.wreqr.js',
-                             'external/js/backbone.babysitter.js',
-                             'external/js/backbone-relational.js',
-                             'external/js/backbone-forms.js',
-                             'external/js/backbone.marionette.js',
-                             'external/js/string-format.js',
-                             'external/js/kmltree.js',
-                             'external/js/usng.js',
-                             'external/js/proj4-2.2.1.js',
+                             'bower_components/jquery-ui/jquery-ui.min.js',
+                             'bower_components/lodash/lodash.min.js',
+                             'bower_components/handlebars/handlebars.min.js',
+                             'bower_components/backbone/backbone.js',
+                             'bower_components/backbone.wreqr/lib/backbone.wreqr.min.js',
+                             'bower_components/backbone.babysitter/lib/backbone.babysitter.min.js',
+                             'bower_components/backbone-relational/backbone-relational.js',
+                             'bower_components/backbone-forms/distribution/backbone-forms.min.js',
+                             'bower_components/marionette/lib/backbone.marionette.min.js',
+                             'bower_components/string-format/string-format.js',
+                             'bower_components/kmltree/kmltree.min.js',
+                             'bower_components/usng/usng.js',
+                             'bower_components/proj4/dist/proj4.js',
                              'xgds_planner2/js/handlebars-helpers.js',
                              'xgds_planner2/js/geo.js',
                              'xgds_planner2/js/forms.js',
@@ -208,10 +210,10 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'marionette',
     'backbone-relational',
     'backbone-forms',
-    'handlebars.js',
+    'handlebars=https://github.com/components/handlebars.js.git',
     'string-format',
     'proj4',
-    'position-analysis=https://github.com/Esri/position-analysis-js.git',
+    'usng=https://github.com/codice/usng.js.git',
     'qunit',
     'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz'
 )

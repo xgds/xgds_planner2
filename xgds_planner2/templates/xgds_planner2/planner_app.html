@@ -48,22 +48,23 @@
     {% if not settings.XGDS_PLANNER_OFFLINE %}
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     {% endif %}
-    {% javascript 'planner_app' %}
-    <!--  
+    {# javascript 'planner_app' #}
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery/dist/jquery.min.js'></script>
-    <script type="text/javascript" src='{{ STATIC_URL }}external/js/jquery/jquery.migrate.min.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate-official/src/migrate.js'></script>
+    <!-- <script type="text/javascript" src='{{ STATIC_URL }}external/js/jquery/jquery.migrate.min.js'></script>
+     -->
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}lodash/lodash.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}handlebars.js/lib/handlebars.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}handlebars/handlebars.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone/backbone.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.minjs'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.babysitter/lib/backbone.babysitter.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}marionette/lib/backbone.marionette.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/string-format.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}kmltree/kmltree.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}position-analysis/site/js/usng.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}proj4/dist/proj4.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/handlebars-helpers.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/geo.js'></script>
@@ -73,7 +74,6 @@
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/views.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/mapviews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
-    -->
     {% javascript 'simulator' %}
     <!--  google earth extensions -->
     <script type="text/javascript" src="{{STATIC_URL}}external/js/extensions-0.2.1.js"></script>
