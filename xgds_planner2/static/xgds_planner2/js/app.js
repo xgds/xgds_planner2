@@ -410,24 +410,39 @@ var app = (function($, _, Backbone) {
                 var minutes = parseInt(splits[0]);
                 var seconds = parseInt(splits[1]);
             }
-            minutes = minutes + 60*hours + seconds/60;
+            minutes = minutes + 60*hours;
+            if (seconds > 0) {
+                minutes = minutes + seconds/60;
+            }
             return minutes;
         },
         minutesToHMS: function(minutes) {
             // given a floating point time duration in minutes, output 'hh:mm:ss'
-            var hh = Math.floor(minutes / 60);
+            var hh = 0;
+            if (minutes > 0) {
+                hh = Math.floor(minutes / 60);
+            }
             minutes = minutes - (hh * 60.0);
             var mm = Math.floor(minutes);
             var ss = Math.floor(60.0 * (minutes % 1));
             var output = '';
             if (hh > 0) {
-                output = output + '{hh:02d}:'.format({
-                    hh: hh
+                if (hh < 10){
+                    hh = "0" + hh;
+                }
+                output = output + '{hour}:'.format({
+                    hour: hh
                 });
             }
-            output = output + '{mm:02d}:{ss:02d}'.format({
-                mm: mm,
-                ss: ss
+            if (mm < 10){
+                mm = "0" + mm;
+            }
+            if (ss < 10){
+                ss = "0" + ss;
+            }
+            output = output + '{minute}:{second}'.format({
+                minute: mm,
+                second: ss
             });
             return output;
         },

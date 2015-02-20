@@ -324,7 +324,11 @@ app.models = app.models || {};
              */
             if (this._simInfo == undefined) app.simulatePlan();
             if (this._simInfo == undefined) return undefined;
-            return (this._simInfo.elapsedTimeSeconds / 60) + this.getDuration();
+            var addme = 0;
+            if (this._simInfo.elapsedTimeSeconds > 0){
+                addme = this._simInfo.elapsedTimeSeconds / 60;
+            }
+            return addme + this.getDuration();
         },
 
         appendCommandByPreset: function(preset) {
