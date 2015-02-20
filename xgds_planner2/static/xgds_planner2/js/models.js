@@ -43,12 +43,14 @@ app.models = app.models || {};
         };
 
         if (modelType == 'Station') {
-            if (_.has(app.planJson.site, 'alternateCrs') && !_.isNull(app.planJson.site.alternateCrs)) {
-                var siteFrameLabel = _.has(app.planJson.site.alternateCrs.properties, 'label') ?
-                    app.planJson.site.alternateCrs.properties.label : 'Site Frame';
-                schema._siteFrame = {type: 'Select', options: [{label: 'Lng, Lat', val: false},
-                                                               {label: siteFrameLabel, val: true}],
-                                     title: 'Coordinate System'};
+            if (!_.isUndefined(app.planJson)){
+                if (_.has(app.planJson.site, 'alternateCrs') && !_.isNull(app.planJson.site.alternateCrs)) {
+                    var siteFrameLabel = _.has(app.planJson.site.alternateCrs.properties, 'label') ?
+                        app.planJson.site.alternateCrs.properties.label : 'Site Frame';
+                    schema._siteFrame = {type: 'Select', options: [{label: 'Lng, Lat', val: false},
+                                                                   {label: siteFrameLabel, val: true}],
+                                         title: 'Coordinate System'};
+                }
             }
             // TODO: Create a "Coordinates" editor that's geometry-schema-aware
             schema.geometry = {type: 'Coordinates',
@@ -409,9 +411,12 @@ app.models = app.models || {};
                     };
                     context[itemType.toLowerCase()] = item;
 
-                    var stationId = template.format(context);
-                    item.set('id', stationId);
-                    item.trigger('change')
+                    if (app.planJson){
+                        var stationId = template.format(context);
+                        item.set('id', stationId);
+                        item.trigger('change')
+                        
+                    }
                     if (itemType == 'Station') {
                         stationCounter++;
                     }

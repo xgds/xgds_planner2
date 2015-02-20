@@ -56,21 +56,21 @@ XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
-        'source_filenames': ('bower_components/jquery/dist/jquery.min.js',
-                             'bower_components/jquery-migrate-official/src/migrate.js',
-                             'bower_components/jquery-ui/jquery-ui.min.js',
-                             'bower_components/lodash/lodash.min.js',
-                             'bower_components/handlebars/handlebars.min.js',
-                             'bower_components/backbone/backbone.js',
-                             'bower_components/backbone.wreqr/lib/backbone.wreqr.min.js',
-                             'bower_components/backbone.babysitter/lib/backbone.babysitter.min.js',
-                             'bower_components/backbone-relational/backbone-relational.js',
-                             'bower_components/backbone-forms/distribution/backbone-forms.min.js',
-                             'bower_components/marionette/lib/backbone.marionette.min.js',
-                             'bower_components/string-format/string-format.js',
-                             'bower_components/kmltree/kmltree.min.js',
-                             'bower_components/usng/usng.js',
-                             'bower_components/proj4/dist/proj4.js',
+        'source_filenames': ('external/bower_components/jquery/dist/jquery.min.js',
+                             'external/bower_components/jquery-migrate-official/src/migrate.js',
+                             'external/bower_components/jquery-ui/jquery-ui.min.js',
+                             'external/bower_components/lodash/lodash.min.js',
+                             'external/bower_components/handlebars/handlebars.min.js',
+                             'external/bower_components/backbone/backbone.js',
+                             'external/bower_components/backbone.wreqr/lib/backbone.wreqr.min.js',
+                             'external/bower_components/backbone.babysitter/lib/backbone.babysitter.min.js',
+                             'external/bower_components/backbone-relational/backbone-relational.js',
+                             'external/bower_components/backbone-forms/distribution/backbone-forms.min.js',
+                             'external/bower_components/marionette/lib/backbone.marionette.min.js',
+                             'external/bower_components/string-format/string-format.js',
+                             'external/bower_components/kmltree/kmltree.min.js',
+                             'external/bower_components/usng/usng.js',
+                             'external/bower_components/proj4/dist/proj4.js',
                              'xgds_planner2/js/handlebars-helpers.js',
                              'xgds_planner2/js/geo.js',
                              'xgds_planner2/js/forms.js',
@@ -95,10 +95,10 @@ XGDS_PLANNER_PIPELINE_JS = {
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
-#                              'bower_components/kmltree/kmltree.css',
-                             'bower_components/jquery-ui/themes/base/jquery-ui.css',
+                             # 'external/bower_components/kmltree/kmltree.css',
+                             'external/bower_components/jquery-ui/themes/base/jquery-ui.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
-                             #'bower_components/backbone-forms/distribution/templates/old.css',
+                             # 'external/bower_components/backbone-forms/distribution/templates/old.css',
                              'xgds_planner2/css/planner.css',
                              #'xgds_planner2/css/forms_adjust.css',
                              ),
@@ -107,7 +107,7 @@ XGDS_PLANNER_PIPELINE_CSS = {
     },
     'xgds_planner2_testing': {
         'source_filenames': (
-            'bower_components/qunit/qunit/qunit.css',
+            'external/bower_components/qunit/qunit/qunit.css',
         ),
         'output_filename': 'css/planner_tests.css',
     },
