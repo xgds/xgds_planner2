@@ -94,7 +94,8 @@ XGDS_PLANNER_PIPELINE_JS = {
 
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
-        'source_filenames': ('bower_components/kmltree/kmltree.css',
+        'source_filenames': (
+#                              'bower_components/kmltree/kmltree.css',
                              'bower_components/jquery-ui/themes/base/jquery-ui.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
                              #'bower_components/backbone-forms/distribution/templates/old.css',
@@ -206,7 +207,7 @@ XGDS_PLANNER2_SITE_FRAMES = []
 
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
-    'jquery-migrate-official',
+    'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
     'lodash',
     'backbone',
     'marionette',
