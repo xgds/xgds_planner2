@@ -56,24 +56,7 @@ XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 
 XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
-        'source_filenames': (
-#                              'external/bower_components/jquery/dist/jquery.min.js',
-#                              'external/bower_components/jquery-migrate-official/src/migrate.js',
-#                              'external/bower_components/jquery-ui/jquery-ui.min.js',
-#                              'external/bower_components/lodash/lodash.min.js',
-#                              'external/bower_components/handlebars/handlebars.min.js',
-#                              'external/bower_components/backbone/backbone.js',
-#                              'external/bower_components/backbone.wreqr/lib/backbone.wreqr.min.js',
-#                              'external/bower_components/backbone.babysitter/lib/backbone.babysitter.min.js',
-#                              'external/bower_components/backbone-relational/backbone-relational.js',
-#                              'external/bower_components/backbone-forms/distribution/backbone-forms.min.js',
-#                              'external/bower_components/marionette/lib/backbone.marionette.min.js',
-#                              'external/bower_components/string-format/string-format.js',
-#                              'external/bower_components/kmltree/kmltree.min.js',
-#                              'external/bower_components/usng/usng.js',
-#                              'external/bower_components/proj4/dist/proj4.js',
-#                              
-                             'jquery/dist/jquery.min.js',
+        'source_filenames': ('jquery/dist/jquery.min.js',
                              'jquery-migrate-official/src/migrate.js',
                              'jquery-ui/jquery-ui.min.js',
                              'lodash/lodash.min.js',
@@ -112,7 +95,7 @@ XGDS_PLANNER_PIPELINE_JS = {
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
-                             # 'external/bower_components/kmltree/kmltree.css',
+                             # 'kmltree/kmltree.css',
                              'jquery-ui/themes/base/jquery-ui.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
                              # 'backbone-forms/distribution/templates/old.css',
@@ -235,5 +218,6 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
-    'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz'
+     'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
+#    'openlayers=https://github.com/openlayers/ol3/releases/download/v3.2.1/v3.2.1.zip',
 )
