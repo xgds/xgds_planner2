@@ -153,8 +153,7 @@ $(function() {
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
 
-                // set state so untilt can begin
-                app.State.planKMLLoaded = true;
+                app.State.planLoaded = true;
             },
 
             render: function() {

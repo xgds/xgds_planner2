@@ -9,8 +9,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
-        'click #btn-redo': function() { app.Actions.redo(); },
-        'change #gearth-auto-untilt': 'toggleModalUntilt'
+        'click #btn-redo': function() { app.Actions.redo(); }
     },
 
     initialize: function() {
@@ -127,15 +126,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         var msgMap = {
             'edit': 'Double click to delete stations, click and drag to move.',
             'add': 'Click to add stations to end.',
-            'clear': ''
+            'clear': 'Click and drag to pan map.'
         };
         var msg = msgMap[eventName];
         this.$el.find('#tip-status').text(msg);
-    },
-
-    toggleModalUntilt: function() {
-        app.State.untiltModalEnabled = this.$el.find('#gearth-auto-untilt').prop('checked');
-        app.map.untiltMap();
     },
 
     refreshSaveAs: function(model, response) {
