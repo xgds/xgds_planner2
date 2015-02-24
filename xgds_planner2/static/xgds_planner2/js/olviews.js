@@ -80,9 +80,45 @@ $(function() {
                 app.styles['segment'] = new ol.style.Style({
                     stroke: new ol.style.Stroke({
                         color: 'yellow',
-                        width: 2
+                        width: this.options.planLineWidthPixels
                       })
                     });
+                app.styles['station'] = new ol.style.Style({
+                    icon: new ol.style.Icon({
+                        src: this.options.placemarkCircleUrl,
+                        scale: 1.0
+                        })
+                    });
+                app.styles['selectedStation'] = new ol.style.Style({
+                    icon: new ol.style.Icon({
+                        src: this.options.placemarkCircleHighlightedUrl,
+                        scale: 1.5
+                        })
+                    });
+                app.styles['midpoint'] = new ol.style.Style({
+                    icon: new ol.style.Icon({
+                        src: this.options.placemarkCircleUrl,
+                        scale: 0.8,
+                        opacity: 0.5
+                        })
+                    });
+                app.styles['direction'] = new ol.style.Style({
+                    icon: new ol.style.Icon({
+                        src: this.options.placemarkDirectionalUrl,
+                        scale: 0.85,
+                        rotation: 0.0,
+                        rotateWithView: true
+                        })
+                    });
+                app.styles['selectedDirection'] = new ol.style.Style({
+                    icon: new ol.style.Icon({
+                        src: this.options.placemarkSelectedDirectionalUrl,
+                        scale: 1.5,
+                        rotation: 0.0,
+                        rotateWithView: true
+                        })
+                    });
+
             },
 
             render: function() {
@@ -92,7 +128,7 @@ $(function() {
             
             drawPlan: function() {
                 if (this.planView) {
-                    alert("PlanView was previosly instantiated.  It's intended to be a singleton.");
+                    alert("PlanView was previously instantiated.  It's intended to be a singleton.");
                 }
                 
                 this.planView = new PlanLayerView({
@@ -111,12 +147,10 @@ $(function() {
                 this.options = options || {};
                 this.map = this.options.map
                 
-                this.segmentsVector = new ol.source.Vector({
-                   // create an empty vector 
-                });
+                this.segmentsVector = new ol.source.Vector({});
+                this.stationsVector = new ol.source.Vector({});
                 
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
-                this.collection.plan.kmlView = this; // This is here so we can reference it via global scope from inside GE Event handlers.  Grrrr....
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
 
                 // set state so untilt can begin
@@ -125,12 +159,17 @@ $(function() {
 
             render: function() {
                 //console.log('re-rending kml');
-//                this.drawStations();
+                this.drawStations();
                 this.drawSegments();
                 var segmentsLayerVector = new ol.layer.Vector({'name':'segments',
                                                                'source': this.segmentsVector,
-                                                               'style': app.styles['segment']})
+                                                               'style': app.styles['segment']});
                 this.map.addLayer(segmentsLayerVector);
+                
+                var stationsLayerVector = new ol.layer.Vector({'name':'stations',
+                                                                'source': this.stationsVector
+                                                                });
+                this.map.addLayer(stationsLayerVector);
                 
                 //TODO this did not work
                 if (!_.isEmpty(this.segmentsVector.getFeatures())){
@@ -145,9 +184,8 @@ $(function() {
             drawStation: function(station) {
 //                console.log("making station point view " + station.id)
                 var stationPointView = new StationPointView({
-                    map: this.map,
                     model: station,
-                    planKmlView: this
+                    stationsVector: this.stationsVector
                 });
 
                 return stationPointView;
@@ -162,9 +200,9 @@ $(function() {
                 }, this // view context
                       );
 
-                _.each(this.stationViews, function(stationView) {
-                    stationView.addPolygons();
-                });
+//                _.each(this.stationViews, function(stationView) {
+//                    stationView.addPolygons();
+//                });
             },
 
             drawSegment: function(segment, fromStation, toStation) {
@@ -172,9 +210,7 @@ $(function() {
                     model: segment,
                     fromStation: fromStation,
                     toStation: toStation,
-                    map: this.map,
                     segmentsVector: this.segmentsVector
-
                 });
             },
 
@@ -194,10 +230,9 @@ $(function() {
         initialize: function(options) {
             this.options = options || {};
             var options = this.options;
-            if (!options.map && options.toStation && options.fromStation) {
+            if (!options.segmentsVector && options.toStation && options.fromStation) {
                 throw 'Missing a required option!';
             }
-            this.map = this.options.map;
             this.segmentsVector = this.options.segmentsVector;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
@@ -236,11 +271,340 @@ $(function() {
                                });
 
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
-            var segmentFeature = new ol.Feature({'geometry': this.geometry,
+            this.segmentFeature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id']});
-            this.segmentsVector.addFeature(segmentFeature);
+            this.segmentsVector.addFeature(this.segmentFeature);
         }
     });
+    
+ // This view class manages the map point for a single Station model
+    var StationPointView = Backbone.View
+        .extend({
+            initialize: function(options) {
+                this.options = options || {};
+                this.stationsVector = this.options.stationsVector;
+                if (!options.segmentsVector && !options.model) {
+                    throw 'Missing a required option!';
+                }
+
+                var pmOptions = {};
+                var name = '' + this.model._sequenceLabel;
+                if (!_.isUndefined(this.model.get('name'))) {
+                    name += ' ' + this.model.get('name');
+                }
+                pmOptions.name = name || this.model.toString();
+                this.point = transform(this.model.get('geometry').coordinates); // lon, lat
+
+                this.render();
+//                this.updateStyle();
+
+                // Change click event for station points
+//                google.earth.addEventListener(this.placemark, 'click', _
+//                                              .bind(function(evt) {
+//                                                  evt.preventDefault();
+//                                                  app.State.stationSelected = this.model;
+//                                                  app.State.metaExpanded = true;
+//                                                  app.State.addCommandsExpanded = false;
+//                                                  app.State.commandSelected = undefined;
+//                                                  if (app.currentTab != 'sequence') {
+//                                                      app.vent.trigger('setTabRequested',
+//                                                                       'sequence');
+//                                                  } else {
+//                                                      app.tabs.currentView.tabContent.currentView
+//                                                          .render();
+//                                                  }
+//                                              }, this));
+//
+//                // Keep from creating a new station when clicking on an existing one in
+//                // add stations mode
+//                google.earth.addEventListener(this.placemark, 'mousedown',
+//                                              function(evt) {
+//                                                  app.State.disableAddStation = true;
+//                                              });
+
+                this.listenTo(this.model, 'change', this.redraw);
+                this.listenTo(this.model, 'add:sequence remove:sequence',
+                              function(command, collection, event) {
+                                  if (command.hasParam('showWedge')) {
+                                      this.redrawPolygons();
+                                  } else if (command.get('type').indexOf('Pattern') > 0) {
+                                      this.redrawPolygons();
+                                  }
+                              });
+
+                // redraw when we're selected
+                this.listenTo(app.vent, 'showItem:station', function() {
+                    this.redraw();
+                });
+                // redraw when we've been unselected
+                this.listenTo(app.vent, 'tab:change', function() {
+                    this.redraw();
+                });
+                this.listenTo(app.vent, 'showItem:segment', function() {
+                    this.redraw();
+                });
+            },
+            
+            render: function() {
+                this.geometry = new ol.geom.Point(this.point);
+                this.stationFeature = new ol.Feature({'geometry': this.geometry,
+                                                     'id': this.model.attributes['id'],
+                                                     'style': app.styles['station']
+                                                    });
+                this.stationsVector.addFeature(this.stationFeature);
+            },
+
+            redrawHandles: function() {
+                if (!app.mapRotationHandles)
+                    return;
+                if (_.isUndefined(this._geHandle))
+                    return;
+                if (app.currentPlan.kmlView.currentModeName != 'reposition')
+                    return;
+                app.currentPlan.kmlView.dragHandlesFolder.getFeatures()
+                    .removeChild(this._geHandle);
+                this._geHandle = this.createDragRotateHandle();
+                app.currentPlan.kmlView.dragHandlesFolder.getFeatures()
+                    .appendChild(this._geHandle);
+                app.currentPlan.kmlView.destroyMidpoints();
+                app.currentPlan.kmlView.drawMidpoints();
+            },
+
+            redraw: function() {
+                if (this.placemark === undefined){
+                    return;
+                }
+                // redraw code. To be invoked when relevant model attributes change.
+                app.Actions.disable();
+                var kmlPoint = this.placemark.getGeometry();
+
+                var coords = this.model.get('geometry').coordinates; // lon, lat
+                if (this.placemark.getGeometry().getLongitude() - coords[0] != 0 ||
+                    this.placemark.getGeometry().getLatitude() - coords[1] != 0)
+                    this.redrawHandles();
+                coords = [coords[1], coords[0]]; // lat, lon
+                kmlPoint.setLatLng.apply(kmlPoint, coords);
+                var name = '' + this.model._sequenceLabel;
+                if (!_.isUndefined(this.model.get('name'))) {
+                    name += ' ' + this.model.get('name');
+                }
+                this.placemark.setName(name || this.model.toString());
+                this.updateStyle();
+//                console.log('redrawing point ' + name);
+
+                if (this.wedgeViews) {
+                    _.each(this.wedgeViews, function(wedgeView) {
+                        wedgeView.update();
+                    });
+                }
+                if (this.commandViews) {
+                    _.each(this.commandViews, function(commandView) {
+                        commandView.update();
+                    });
+                }
+                app.Actions.enable();
+                app.Actions.action();
+            },
+
+            updateHeadingStyle: function() {
+                var heading = 0.0;
+                try {
+                    heading = this.model.get('headingDegrees');
+                } catch(err) {
+                    // nothing
+                }
+                if (_.isUndefined(heading) || _.isNull(heading)){
+                    heading = 0.0;
+                }  
+                var style = this.placemark.getStyleSelector();
+                if (_.isUndefined(style) || _.isNull(style)){
+                    style = ge.createStyle('');
+                    this.placemark.setStyleSelector(style);
+                }
+                var iconStyle = style.getIconStyle();
+                if (!_.isUndefined(iconStyle)){
+                    iconStyle.setHeading(heading);
+                }
+            },
+
+            updateStyle: function() {
+                if (app.State.stationSelected === this.model) {
+                    if (this.model.get('isDirectional')) {
+                        this.placemark.setStyleUrl("#selectedDirection");
+                        this.updateHeadingStyle();
+                    } else {
+                        this.placemark.setStyleUrl("#selectedStation");
+                    }
+                } else {
+                    if (this.model.get('isDirectional')) {
+                        this.placemark.setStyleUrl("#direction");
+                        this.updateHeadingStyle();
+                    } else {
+                        this.placemark.setStyleUrl("#station");
+                    }
+                }
+            },
+
+
+            dragRotateHandleCoords: function() {
+
+                //var radius = 14.0; // distance in meters in front of the waypoint location to place the rotational handle.  Should be made dynamic with zoom level
+                var cameraAltitude = ge.getView().copyAsCamera(
+                    ge.ALTITUDE_RELATIVE_TO_GROUND).getAltitude();
+                var radius = 0.25 * cameraAltitude; // distance in meters in front of the waypoint location to place the rotational handle.
+
+                var theta = this.model.get('headingDegrees') * Math.PI / 180.00; // radians
+                var stationCoords = this.model.get('geometry').coordinates;
+                var stationPosMeters = latLonToMeters({
+                    lat: stationCoords[1],
+                    lng: stationCoords[0]
+                });
+                var handlePosMeters = {
+                    x: stationPosMeters.x + radius * Math.sin(theta),
+                    y: stationPosMeters.y + radius * Math.cos(theta)
+                };
+                return metersToLatLon(handlePosMeters);
+            },
+
+            updateDragRotateHandlePm: function() {
+                var gex = this.options.ge_gex;
+                var newLatLng = this.dragRotateHandleCoords();
+
+                var geom = this.dragHandlePm.getGeometry(); // a MultiGeometry
+                var point = geom.getGeometries().getFirstChild();
+                point.setLatLng(newLatLng.lat, newLatLng.lng);
+
+                var stLoc = this.model.get('geometry').coordinates; // lon, lat
+                stLoc = _.object(['lat', 'lng'], stLoc);
+
+                var newLineString = gex.dom.buildLineString([
+                    [stLoc.lat, stLoc.lng],
+                    [newLatLng.lat, newLatLng.lng]]);
+                var oldLineString = geom.getGeometries().getLastChild();
+                geom.getGeometries().replaceChild(newLineString,
+                                                  oldLineString);
+            },
+
+            createDragRotateHandle: function() {
+                if (!app.mapRotationHandles)
+                    return;
+                var station = this.model;
+                var gex = this.options.ge_gex;
+
+                var coords = this.dragRotateHandleCoords();
+                var stLoc = _.object(['lng', 'lat'], this.model
+                                     .get('geometry').coordinates);
+                var linestring = gex.dom.buildLineString([
+                    [stLoc.lat, stLoc.lng],
+                    [coords.lat, coords.lng]], {
+                        tessellate: true
+                    });
+
+                this.dragHandlePm = gex.dom.buildPlacemark({
+                    point: new geo.Point([coords.lat, coords.lng]),
+                    lineString: linestring,
+                    style: '#direction' // circle with a target
+                });
+
+                this.model.on('change:headingDegrees',
+                              this.updateDragRotateHandlePm, this);
+                var station = this.model;
+
+                makeDraggable(this.dragHandlePm, {
+                    //getPosition: function(placemark) { var loc = placemark.getGeometry().getLocation(); return [loc.getLatitude(), loc.getLongitude()]; },
+                    startCallback: function(placemark, data) {
+                        //console.log('mousedown');
+                        var coords = station.get('geometry').coordinates;
+                        data.stationLoc = {
+                            lng: coords[0],
+                            lat: coords[1]
+                        };
+                        data.startHeading = station.get('headingDegrees');
+                    },
+                    dragCallback: function(placemark, data) {
+                        var newHeading = getBearing(data.stationLoc, _
+                                                    .object(['lat', 'lng'], data.cursorPos));
+                        //console.log(newHeading);
+                        station.set({
+                            headingDegrees: newHeading,
+                            isDirectional: true
+                        });
+                    }
+                });
+
+                return this.dragHandlePm;
+            },
+
+            addPolygons: function() {
+                var station = this.model;
+                var commandViews = this.commandViews = [];
+                var commandFeatures = this.planKmlView.commandFolder.getFeatures();
+
+                var wedgeViews = this.wedgeViews = [];
+                var wedgeFeatures = this.planKmlView.fovWedgesFolder.getFeatures();
+
+                this.model.get('sequence').each(function(command) {
+                    if (command.hasParam('showWedge')) {
+                        var wedgeView = new PanoWedgeView({
+                            station: station,
+                            command: command,
+                            wedgeFeatures: wedgeFeatures
+                        });
+                        wedgeViews.push(wedgeView);
+                        wedgeFeatures.appendChild(wedgeView.placemark);
+                    } else {
+                        if (command.get('type') in app.commandRenderers) {
+                            var typeKey = command.get('type');
+                            var foundClass = app.commandRenderers[typeKey];
+                            var theClass = window[foundClass];
+
+                            var commandView = new theClass({
+                                station: station,
+                                command: command,
+                                commandFeatures: commandFeatures
+                            });
+                            commandViews.push(commandView);
+                            commandFeatures.appendChild(commandView.placemark);
+                        }
+                    }
+                });
+            },
+
+            destroyPolygons: function() {
+                var wedgeFeatures = this.planKmlView.fovWedgesFolder
+                    .getFeatures();
+
+                if (!_.isUndefined(this.wedgeViews)) {
+                    while (this.wedgeViews.length > 0) {
+                        wedgeView = this.wedgeViews.pop();
+                        wedgeFeatures.removeChild(wedgeView.placemark);
+                        wedgeView.close();
+                    }
+                }
+
+                var commandFeatures = this.planKmlView.commandFolder.getFeatures();
+
+                if (!_.isUndefined(this.commandViews)) {
+                    while (this.commandViews.length > 0) {
+                        commandView = this.commandViews.pop();
+                        commandFeatures.removeChild(commandView.placemark);
+                        commandView.close();
+                    }
+                }
+
+            },
+
+            redrawPolygons: function() {
+                this.destroyPolygons();
+                this.addPolygons();
+            },
+
+            close: function() {
+                this.destroyPolygons();
+                this.stopListening();
+            }
+
+        });
 
     
 });
