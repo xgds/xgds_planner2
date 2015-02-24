@@ -56,10 +56,22 @@ $(function() {
                     })
                   });
                 this.buildStyles();
+                this.updateBbox();
                 this.on('layers:loaded', this.render);
                 app.vent.trigger('layers:loaded');
                 this.drawPlan();
-
+            },
+            
+            updateBbox: function() {
+             // move to bounding box defined in plan
+                var site = app.currentPlan.get('site');
+                if (site != undefined)
+                    var bbox = site.bbox;
+                if (bbox != undefined) {
+                    var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
+                    extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
+                    this.map.getView().fitExtent(extent, this.map.getSize());
+                }
             },
             
             buildStyles: function() {
@@ -67,18 +79,10 @@ $(function() {
                 
                 app.styles['segment'] = new ol.style.Style({
                     stroke: new ol.style.Stroke({
-                        color: 'white',
-                        width: 2
-                      })
-                    });
-                
-                app.styles['segmentWithActions'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
                         color: 'yellow',
                         width: 2
                       })
-                    });  
-
+                    });
             },
 
             render: function() {
@@ -96,19 +100,7 @@ $(function() {
                     map: this.map
                 });
                 this.planView.render();
-                
-             // move to bounding box defined in plan
-                var site = app.currentPlan.get('site');
-                if (site != undefined)
-                    var bbox = site.bbox;
-                if (bbox != undefined) {
-                    var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
-                    extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
-                    this.map.getView().fitExtent(extent, this.map.getSize());
-                }
             }
-
-
         });
     
     // This view class manages the layers that represents an entire plan.
@@ -133,11 +125,11 @@ $(function() {
 
             render: function() {
                 //console.log('re-rending kml');
-//                _.each(this.kmlFolders, this.clearKmlFolder);
 //                this.drawStations();
                 this.drawSegments();
                 var segmentsLayerVector = new ol.layer.Vector({'name':'segments',
-                                                               'source': this.segmentsVector})
+                                                               'source': this.segmentsVector,
+                                                               'style': app.styles['segment']})
                 this.map.addLayer(segmentsLayerVector);
                 
                 //TODO this did not work
@@ -157,8 +149,6 @@ $(function() {
                     model: station,
                     planKmlView: this
                 });
-//                var stationFeatures = this.stationsFolder.getFeatures();
-//                stationFeatures.appendChild(stationPointView.placemark);
 
                 return stationPointView;
             },
@@ -247,7 +237,7 @@ $(function() {
 
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             var segmentFeature = new ol.Feature({'geometry': this.geometry,
-                                                 'style': app.styles['segment']});
+                                                 'id': this.fromStation.attributes['id']});
             this.segmentsVector.addFeature(segmentFeature);
         }
     });
