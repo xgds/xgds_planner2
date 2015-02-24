@@ -35,5 +35,7 @@ urlpatterns = patterns(
     url(r'deletePlanExecution/(?P<pe_id>[\w-]+)$', views.deletePlanExecution, {'loginRequired': True}, 'planner2_deletePlanExecution'),
     url(r'manage/help$', views.manageHelp, {'loginRequired': False}, 'planner2_manageFlightHelp'),
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
+    url(r'oltest$', views.oltest, {'loginRequired': True}, 'planner2_oltest'),
+    
 
 )

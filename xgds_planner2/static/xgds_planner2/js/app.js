@@ -16,7 +16,6 @@ var app = (function($, _, Backbone) {
     app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
-        //map: '#map',
         'tabs' : '#tabs'
     });
 
@@ -218,7 +217,7 @@ var app = (function($, _, Backbone) {
                 this.options.mapRotationHandles : true;
 
             // temporarily define ge so that we don't get a reference error later
-            window.ge = undefined;
+//            window.ge = undefined;
 
             /*
              * Initialize the plan schema, and build easy-access indecies.
@@ -290,7 +289,7 @@ var app = (function($, _, Backbone) {
             app.selectedViews = []; // This array holds the views currently selected by checkboxes
             app.copiedCommands = []; // array of copied commands
 
-            app.map = new app.views.EarthView({
+            app.map = new app.views.OLView({
                 el: '#map'
             });
             app.toolbar.show(new app.views.ToolbarView());

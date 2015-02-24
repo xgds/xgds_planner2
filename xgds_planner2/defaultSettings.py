@@ -219,5 +219,6 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
      'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
-#    'openlayers=https://github.com/openlayers/ol3/releases/download/v3.2.1/v3.2.1.zip',
+#     'openlayers=https://github.com/openlayers/ol3/releases/download/v3.2.1/v3.2.1.zip',
+    'ol3',
 )
