@@ -506,7 +506,7 @@ app.views.makeExpandable = function(view, expandClass) {
         unexpand: function() {
             //            console.log('(((((((Unexpanding');
             this.expanded = false;
-            this.$el.find('i').removeClass('icon-chevron-right');
+            this.$el.find('i').removeClass('icon-play');
         },
         onExpandOther: function(target, expandClass) {
             //            console.log('Got onExpandOther');
@@ -530,7 +530,7 @@ app.views.makeExpandable = function(view, expandClass) {
         },
         _addIcon: function() {
             this._ensureIcon();
-            this.$el.find('i').addClass('icon-chevron-right');
+            this.$el.find('i').addClass('icon-play');
         },
         onClose: function() {
             this.stopListening();
