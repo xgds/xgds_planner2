@@ -165,6 +165,9 @@ $(function() {
                 this.segmentsVector = new ol.source.Vector({});
                 this.stationsVector = new ol.source.Vector({});
                 
+                app.vent.on('mapmode', this.setMode, this);
+                app.vent.trigger('mapmode', 'navigate');
+                
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
 
@@ -175,15 +178,15 @@ $(function() {
                 //console.log('re-rending kml');
                 this.drawStations();
                 this.drawSegments();
-                var segmentsLayerVector = new ol.layer.Vector({'name':'segments',
-                                                               'source': this.segmentsVector,
-                                                               'style': app.styles['segment']});
-                this.map.addLayer(segmentsLayerVector);
+                this.segmentsLayer = new ol.layer.Vector({'name':'segments',
+                                                          'source': this.segmentsVector,
+                                                          'style': app.styles['segment']});
+                this.map.addLayer(this.segmentsLayer);
                 
-                var stationsLayerVector = new ol.layer.Vector({'name':'stations',
-                                                                'source': this.stationsVector
-                                                                });
-                this.map.addLayer(stationsLayerVector);
+                this.stationsLayer = new ol.layer.Vector({'name':'stations',
+                                                          'source': this.stationsVector
+                                                          });
+                this.map.addLayer(this.stationsLayer);
                 
                 //TODO this did not work
                 if (!_.isEmpty(this.segmentsVector.getFeatures())){
@@ -237,6 +240,200 @@ $(function() {
                     }
                 }, this);
 
+            },
+            setMode: function(modeName) {
+                //console.log('Set mouse mode: ' + modeName);
+                var modeMap = {
+                    'addStations' : 'addStationsMode',
+                    'navigate' : 'navigateMode',
+                    'reposition' : 'repositionMode'
+                };
+
+                if (this.currentMode) {
+                    this.currentMode.exit.call(this);
+                }
+                var mode = _.isObject(modeName) ? modeName : this[modeMap[modeName]];
+                mode.enter.call(this);
+                this.currentMode = mode;
+                this.currentModeName = modeName;
+            },
+
+            // Clean up, then re-enter the mode.  Useful for re-draws/
+            resetMode: function() {
+                if (this.currentMode) {
+                    var mode = this.currentMode;
+                    mode.exit.call(this);
+                    mode.enter.call(this);
+                }
+            },
+
+            addStationsMode: {
+                enter: function() {
+                    this.clearGeEvents();
+                    this.addGeEvent(this.ge.getGlobe(), 'mousedown',
+                                    this.addStationsMouseDown);
+                    this.addGeEvent(this.ge.getGlobe(), 'mousemove',
+                                    this.addStationsMouseMove);
+                    this.addGeEvent(this.ge.getGlobe(), 'mouseup',
+                                    this.addStationsMouseUp);
+                    app.State.disableAddStation = false; // reset state possibly set in other mode
+                },
+                exit: function() {
+                    // nothing
+                }
+            }, // end addStationMode
+
+            navigateMode: {
+                enter: function() {
+                    if (_.isUndefined(this.selectNavigate)){
+                        this.selectNavigate = new ol.interaction.Select({
+                            layers: this.segmentsLayer || this.stationsLayer
+                        });
+                        this.selectNavigate.getFeatures().on('add', function(e) {
+                            var feature = e.element;
+                            var model = feature.get('model');
+                            switch (model.get('type')) {
+                            case 'Station':
+                                app.State.stationSelected = feature.get('model');
+                                app.State.segmentSelected = undefined;
+                                break;
+                            case 'Segment':
+                                app.State.segmentSelected = feature.get('model');
+                                app.State.stationSelected = undefined;
+
+                                break;
+                            }
+                            
+                            app.State.metaExpanded = true;
+                            app.State.addCommandsExpanded = false;
+                            app.State.commandSelected = undefined;
+                            if (app.currentTab != 'sequence') {
+                                app.vent.trigger('setTabRequested',
+                                                 'sequence');
+                            } else {
+                                app.tabs.currentView.tabContent.currentView
+                                    .render();
+                            }
+                        });
+                        
+                    };
+                    this.map.addInteraction(this.selectNavigate);
+                    
+                },
+                exit: function() {
+                    // nothing
+                    this.map.removeInteraction(this.selectNavigate);
+                }
+            },
+            
+
+            repositionMode: {
+                enter: function() {
+                    this.clearGeEvents();
+                    var planview = this;
+                    var stations = this.stationsFolder.getFeatures()
+                        .getChildNodes();
+                    var l = stations.getLength();
+                    var point;
+                    for (var station, i = 0; i < l; i++) {
+                        station = stations.item(i);
+                        //point = station.getGeometry().getGeometries().getFirstChild();
+                        if (app.options.mapRotationHandles) {
+                            var handle = getGeCache(station).view
+                                .createDragRotateHandle();
+                        }
+                        this.processStation(station, handle);
+                    }
+                    this.drawMidpoints();
+
+                }, // end enter
+                exit: function() {
+                    this.destroyMidpoints();
+                    var stations = this.stationsFolder.getFeatures()
+                        .getChildNodes();
+                    var l = stations.getLength();
+                    for (var station, i = 0; i < l; i++) {
+                        station = stations.item(i);
+                        window.ge_gex.edit.endDraggable(station);
+
+                        getGeCache(station).view.model.off('change:headingDegrees'); // kill drag handle update binding
+                    }
+
+                    this.clearKmlFolder(this.dragHandlesFolder);
+
+                }
+            }, // end repositionMode
+
+            addStationsMouseDown: function(evt) {
+                if (app.State.disableAddStation) {
+                    // don't react to a single click
+                    // usually from events that fire before this one is
+                    app.State.disableAddStation = false;
+                    return;
+                }
+                var distance = -1;
+                if (!_.isUndefined(app.State.addStationLocation) &&
+                    _.isFinite(app.State.addStationTime)) {
+                    distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
+                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1], 2));
+                }
+                if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
+                    (distance >= 5 || distance == -1)) { // at least five client pixels away from the last station
+                    // or no previous click or added station
+                    // start state change leading to adding a station
+                    app.State.addStationOnMouseUp = true;
+                    app.State.mouseDownLocation = [evt.getClientX(),
+                                                   evt.getClientY()];
+                }
+            },
+
+            addStationsMouseMove: function(evt) {
+                if (_.isUndefined(app.State.mouseDownLocation))
+                    return;
+                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
+                                         Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
+                if (distance >= 5) { // allow for small movements due to double-clicking on touchpad
+                    app.State.addStationOnMouseUp = false;
+                    app.State.mouseDownLocation = undefined;
+                }
+            },
+
+            addStationsMouseUp: function(evt) {
+                if (_.isUndefined(app.State.mouseDownLocation))
+                    return;
+                if (!_.isBoolean(app.State.addStationOnMouseUp) ||
+                    !app.State.addStationOnMouseUp)
+                    return;
+                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
+                                         Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
+                if (distance < 5) { // all conditions met to add station
+                    var coords = [evt.getLongitude(), evt.getLatitude()];
+                    var station = app.models.stationFactory({
+                        coordinates: coords
+                    });
+                    var seq = app.currentPlan.get('sequence');
+                    seq.appendStation(station); // returns a segment if one was created
+                    // this returns an array of the last three elements
+                    var end = seq.last(3);
+
+                    // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
+                    app.currentPlan.kmlView.drawStation(station);
+
+                    // only drow a segment if other stations exist
+                    if (end.length == 3) {
+                        app.currentPlan.kmlView.drawSegment(end[1], end[0],
+                                                            end[2]);
+                    }
+
+                    // set time and location for added station
+                    app.State.addStationLocation = [evt.getClientX(),
+                                                    evt.getClientY()];
+                    app.State.addStationTime = Date.now();
+                }
+
+                // reset state
+                app.State.mouseDownLocation = undefined;
+                app.State.addStationOnMouseUp = false;
             }
         });
     
@@ -286,7 +483,9 @@ $(function() {
 
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             this.segmentFeature = new ol.Feature({'geometry': this.geometry,
-                                                 'id': this.fromStation.attributes['id']});
+                                                 'id': this.fromStation.attributes['id'],
+                                                 'model': this.model
+                                                 });
             this.segmentsVector.addFeature(this.segmentFeature);
         }
     });
@@ -364,7 +563,8 @@ $(function() {
             render: function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.stationFeature = new ol.Feature({'geometry': this.geometry,
-                                                     'id': this.model.attributes['id']
+                                                       'id': this.model.attributes['id'],
+                                                       'model': this.model
 //                                                     'style': this.updateStyle()
                                                     });
                 this.stationFeature.setStyle(this.updateStyle());

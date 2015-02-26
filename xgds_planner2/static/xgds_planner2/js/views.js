@@ -634,8 +634,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         if (!_.isUndefined(app.State.stationSelected)) {
             var childView = this.children.findByModel(app.State.stationSelected);
             if (_.isUndefined(childView)) {
-                // try to find the child view by ID since models
-                // change on save
+                // try to find the child view by ID since models change on save
                 var childId = app.State.stationSelected.cid;
                 var childModel = this.collection.get(childId);
                 if (_.isUndefined(childModel)) {
@@ -649,6 +648,32 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                         app.vent.trigger('showNothing');
                     } else {
                         app.State.stationSelected = childModel;
+                        childView.expand();
+                        app.vent.trigger('showItem:' + childModel.get('type').toLowerCase(), childModel);
+                    }
+                }
+            } else {
+                // restore expanded state
+                childView.expand();
+                app.vent.trigger('showItem:' + childView.model.get('type').toLowerCase(), childView.model);
+            }
+        } else if (!_.isUndefined(app.State.segmentSelected)) {
+            var childView = this.children.findByModel(app.State.segmentSelected);
+            if (_.isUndefined(childView)) {
+                // try to find the child view by ID since models change on save
+                var childId = app.State.segmentSelected.cid;
+                var childModel = this.collection.get(childId);
+                if (_.isUndefined(childModel)) {
+                    // can't find by id, so the view is gone
+                    app.State.segmentSelected = undefined;
+                    app.vent.trigger('showNothing');
+                } else {
+                    childView = this.children.findByModel(childModel);
+                    if (_.isUndefined(childView)) {
+                        // the model isn't in our list, oh noes!
+                        app.vent.trigger('showNothing');
+                    } else {
+                        app.State.segmentSelected = childModel;
                         childView.expand();
                         app.vent.trigger('showItem:' + childModel.get('type').toLowerCase(), childModel);
                     }

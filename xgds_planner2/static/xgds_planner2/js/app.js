@@ -23,6 +23,7 @@ var app = (function($, _, Backbone) {
         this.addInitializer(function(options) {
             this.commandSelected = undefined;
             this.stationSelected = undefined;
+            this.segmentSelected = undefined;
             this.metaExpanded = undefined;
             this.addCommandsExpanded = undefined;
             this.disableSimulate = false;

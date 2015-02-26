@@ -104,8 +104,8 @@
 {% block jsInit %}
     plannerAppOptions = {
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
-        planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
-        layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}",
+        planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
+        layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
         dataUrl: "{{ settings.DATA_URL }}",
         simulator: {{ simulator }},
         directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
