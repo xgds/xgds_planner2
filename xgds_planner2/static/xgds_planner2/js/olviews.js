@@ -83,20 +83,27 @@ $(function() {
                         width: app.options.planLineWidthPixels
                       })
                     });
-                
+                app.styles['selectedSegment'] = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'cyan',
+                        width: app.options.planLineWidthPixels + 2
+                      })
+                    });
+                app.styles['placemarkImage'] = new ol.style.Icon({
+                    src: app.options.placemarkCircleUrl,
+                    scale: 1.0,
+                    rotateWithView: false,
+                    opacity: 1.0
+                    });
                 app.styles['station'] = new ol.style.Style({
-                    image: new ol.style.Icon({
-                        src: app.options.placemarkCircleUrl,
-                        scale: 1.0,
-                        rotateWithView: false,
-                        opacity: 1.0
-                        })
+                    image: app.styles['placemarkImage']
+                    });
+                app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
+                    src: app.options.placemarkCircleHighlightedUrl,
+                    scale: 1.5
                     });
                 app.styles['selectedStation'] = new ol.style.Style({
-                    image: new ol.style.Icon({
-                        src: app.options.placemarkCircleHighlightedUrl,
-                        scale: 1.5
-                        })
+                    image: app.styles['selectedPlacemarkImage']
                     });
                 app.styles['midpoint'] = new ol.style.Style({
                     image: new ol.style.Icon({
@@ -105,22 +112,18 @@ $(function() {
                         opacity: 0.5
                         })
                     });
-                app.styles['direction'] = new ol.style.Style({
-                    image: new ol.style.Icon({
+                app.styles['direction'] = {
                         src: app.options.placemarkDirectionalUrl,
                         scale: 0.85,
                         rotation: 0.0,
                         rotateWithView: true
-                        })
-                    });
-                app.styles['selectedDirection'] = new ol.style.Style({
-                    image: new ol.style.Icon({
+                        };
+                app.styles['selectedDirection'] = {
                         src: app.options.placemarkSelectedDirectionalUrl,
                         scale: 1.5,
                         rotation: 0.0,
                         rotateWithView: true
-                        })
-                    });
+                        };
                 
                 app.styles['stationText'] = {
                     font: '16px Calibri,sans-serif',
@@ -287,8 +290,21 @@ $(function() {
                 enter: function() {
                     if (_.isUndefined(this.selectNavigate)){
                         this.selectNavigate = new ol.interaction.Select({
-                            layers: this.segmentsLayer || this.stationsLayer
-                        });
+                            layers: this.segmentsLayer || this.stationsLayer,
+                            style: (function() {
+                                  return function(feature, resolution) {
+                                      var model = feature.get('model');
+                                      switch (model.get('type')) {
+                                      case 'Station':
+                                          return [feature.get('selectedStyle'), feature.getStyle()[1]];
+                                          break;
+                                      case 'Segment':
+                                          return [app.styles['selectedSegment']];
+                                          break;
+                                      }
+                                  };
+                                })()
+                            });
                         this.selectNavigate.getFeatures().on('add', function(e) {
                             var feature = e.element;
                             var model = feature.get('model');
@@ -300,7 +316,6 @@ $(function() {
                             case 'Segment':
                                 app.State.segmentSelected = feature.get('model');
                                 app.State.stationSelected = undefined;
-
                                 break;
                             }
                             
@@ -321,7 +336,6 @@ $(function() {
                     
                 },
                 exit: function() {
-                    // nothing
                     this.map.removeInteraction(this.selectNavigate);
                 }
             },
@@ -511,24 +525,7 @@ $(function() {
                 this.initIconStyle();
                 this.initTextStyle();
                 this.render();
-//                this.updateStyle();
 
-                // Change click event for station points
-//                google.earth.addEventListener(this.placemark, 'click', _
-//                                              .bind(function(evt) {
-//                                                  evt.preventDefault();
-//                                                  app.State.stationSelected = this.model;
-//                                                  app.State.metaExpanded = true;
-//                                                  app.State.addCommandsExpanded = false;
-//                                                  app.State.commandSelected = undefined;
-//                                                  if (app.currentTab != 'sequence') {
-//                                                      app.vent.trigger('setTabRequested',
-//                                                                       'sequence');
-//                                                  } else {
-//                                                      app.tabs.currentView.tabContent.currentView
-//                                                          .render();
-//                                                  }
-//                                              }, this));
 //
 //                // Keep from creating a new station when clicking on an existing one in
 //                // add stations mode
@@ -564,8 +561,8 @@ $(function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.stationFeature = new ol.Feature({'geometry': this.geometry,
                                                        'id': this.model.attributes['id'],
-                                                       'model': this.model
-//                                                     'style': this.updateStyle()
+                                                       'model': this.model,
+                                                       'selectedStyle': this.selectedIconStyle
                                                     });
                 this.stationFeature.setStyle(this.updateStyle());
                 this.stationsVector.addFeature(this.stationFeature);
@@ -623,7 +620,7 @@ $(function() {
                 app.Actions.action();
             },
 
-            updateHeadingStyle: function() {
+            getHeading: function() {
                 var heading = 0.0;
                 try {
                     heading = this.model.get('headingDegrees');
@@ -633,15 +630,21 @@ $(function() {
                 if (_.isUndefined(heading) || _.isNull(heading)){
                     heading = 0.0;
                 }  
-                this.iconStyle.rotation = heading;
+                return heading;
             },
             
             initIconStyle: function() {
                 if (this.model.get('isDirectional')) {
-                    this.iconStyle = new ol.style.Style(app.styles['direction']);
-                    this.updateHeadingStyle();
+                    heading = this.getHeading();
+                    app.styles['direction']['rotation'] = this.getHeading();
+                    app.styles['selectedDirection']['rotation'] = this.getHeading();
+                    this.iconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['direction'])});
+                    this.selectedIconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['selectedDirection'])});
+                    app.styles['direction']['rotation'] = 0.0;
+                    app.styles['selectedDirection']['rotation'] = 0.0;
                 } else {
                     this.iconStyle = app.styles['station'];
+                    this.selectedIconStyle = app.styles['selectedStation'];
                 }
             },
             
@@ -659,7 +662,7 @@ $(function() {
                 });
             },
 
-            updateStyle: function() {
+            updateStyle: function(model) {
                 if (app.State.stationSelected === this.model) {
                     if (this.model.get('isDirectional')) {
                         this.iconStyle.scale = 1.5;
