@@ -323,12 +323,19 @@ $(function() {
                             app.State.addCommandsExpanded = false;
                             app.State.commandSelected = undefined;
                             if (app.currentTab != 'sequence') {
-                                app.vent.trigger('setTabRequested',
-                                                 'sequence');
+                                app.vent.trigger('setTabRequested','sequence');
                             } else {
-                                app.tabs.currentView.tabContent.currentView
-                                    .render();
+                                app.tabs.currentView.tabContent.currentView.render();
                             }
+                        });
+                        this.listenTo(app.vent, 'showItem:station', function() {
+                            var selectedItem = app.State.stationSelected;
+                            this.mapSelect(selectedItem);
+                        });
+                        
+                        this.listenTo(app.vent, 'showItem:segment', function() {
+                            var selectedItem = app.State.stationSelected;
+                            this.mapSelect(selectedItem);
                         });
                         
                     };
@@ -338,6 +345,22 @@ $(function() {
                 exit: function() {
                     this.map.removeInteraction(this.selectNavigate);
                 }
+            },
+            
+            mapSelect: function(selectedItem){
+                if (!_.isUndefined(selectedItem)){
+                    var snav = this.selectNavigate;
+                    var features = snav.getFeatures();
+                    var foundFeature = selectedItem['feature'];
+                    if (features.getLength() > 0){
+                        var alreadySelected = features.item(0);
+                        if (alreadySelected == foundFeature) {
+                            return;
+                        }
+                    }
+                    features.clear();
+                    features.push(foundFeature);
+                }  
             },
             
 
@@ -500,6 +523,7 @@ $(function() {
                                                  'id': this.fromStation.attributes['id'],
                                                  'model': this.model
                                                  });
+            this.model['feature'] = this.segmentFeature;
             this.segmentsVector.addFeature(this.segmentFeature);
         }
     });
@@ -565,6 +589,7 @@ $(function() {
                                                        'selectedStyle': this.selectedIconStyle
                                                     });
                 this.stationFeature.setStyle(this.updateStyle());
+                this.model['feature'] = this.stationFeature;
                 this.stationsVector.addFeature(this.stationFeature);
             },
             
