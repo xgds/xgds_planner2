@@ -349,12 +349,10 @@ $(function() {
             
             mapSelect: function(selectedItem){
                 if (!_.isUndefined(selectedItem)){
-                    var snav = this.selectNavigate;
-                    var features = snav.getFeatures();
+                    var features = this.selectNavigate;.getFeatures();
                     var foundFeature = selectedItem['feature'];
                     if (features.getLength() > 0){
-                        var alreadySelected = features.item(0);
-                        if (alreadySelected == foundFeature) {
+                        if (features.item(0) == foundFeature) {
                             return;
                         }
                     }
