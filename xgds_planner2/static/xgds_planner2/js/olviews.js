@@ -1,7 +1,11 @@
 var DEG2RAD = Math.PI / 180.0;
 
 function transform(coords){
-    return ol.proj.transform(coords, 'EPSG:4326',   'EPSG:3857')    
+    return ol.proj.transform(coords, 'EPSG:4326',   'EPSG:3857');    
+}
+
+function inverse(coords){
+    return ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');    
 }
 
 $(function() {
@@ -81,6 +85,21 @@ $(function() {
                     stroke: new ol.style.Stroke({
                         color: 'yellow',
                         width: app.options.planLineWidthPixels
+                      })
+                    });
+                app.styles['edit'] = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: 'orange',
+                        width: app.options.planLineWidthPixels
+                      }),
+                    fill: new ol.style.Fill({
+                        color: 'orange'
+                    }),
+                    image: new ol.style.Circle({
+                        radius: 10,
+                        fill: new ol.style.Fill({
+                          color: 'orange'
+                        })
                       })
                     });
                 app.styles['selectedSegment'] = new ol.style.Style({
@@ -167,6 +186,12 @@ $(function() {
                 
                 this.segmentsVector = new ol.source.Vector({});
                 this.stationsVector = new ol.source.Vector({});
+
+                // for editing
+                this.featureOverlay = new ol.FeatureOverlay({
+                    style: app.styles['edit']
+                });
+                this.featureOverlay.setMap(this.map);
                 
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
@@ -290,7 +315,7 @@ $(function() {
                 enter: function() {
                     if (_.isUndefined(this.selectNavigate)){
                         this.selectNavigate = new ol.interaction.Select({
-                            layers: this.segmentsLayer || this.stationsLayer,
+                            layers: [this.segmentsLayer, this.stationsLayer],
                             style: (function() {
                                   return function(feature, resolution) {
                                       var model = feature.get('model');
@@ -305,7 +330,7 @@ $(function() {
                                   };
                                 })()
                             });
-                        this.selectNavigate.getFeatures().on('add', function(e) {
+                        this.selectNavigate.getFeatures().on(ol.CollectionEventType.ADD, function(e) {
                             var feature = e.element;
                             var model = feature.get('model');
                             switch (model.get('type')) {
@@ -349,7 +374,7 @@ $(function() {
             
             mapSelect: function(selectedItem){
                 if (!_.isUndefined(selectedItem)){
-                    var features = this.selectNavigate;.getFeatures();
+                    var features = this.selectNavigate.getFeatures();
                     var foundFeature = selectedItem['feature'];
                     if (features.getLength() > 0){
                         if (features.item(0) == foundFeature) {
@@ -364,37 +389,42 @@ $(function() {
 
             repositionMode: {
                 enter: function() {
-                    this.clearGeEvents();
-                    var planview = this;
-                    var stations = this.stationsFolder.getFeatures()
-                        .getChildNodes();
-                    var l = stations.getLength();
-                    var point;
-                    for (var station, i = 0; i < l; i++) {
-                        station = stations.item(i);
-                        //point = station.getGeometry().getGeometries().getFirstChild();
-                        if (app.options.mapRotationHandles) {
-                            var handle = getGeCache(station).view
-                                .createDragRotateHandle();
-                        }
-                        this.processStation(station, handle);
+                    if (_.isUndefined(this.repositioner)){
+                        this.repositioner = new ol.interaction.Modify({
+                            features: this.featureOverlay.getFeatures(),
+                            deleteCondition: function(event) {
+                                return ol.events.condition.shiftKeyOnly(event) &&
+                                       ol.events.condition.singleClick(event);
+                            }
+                        });
                     }
-                    this.drawMidpoints();
+                    this.stationsVector.getFeatures().forEach(function(feature){
+                       this.addFeature(feature); 
+                    }, this.featureOverlay);
+                    this.segmentsVector.getFeatures().forEach(function(feature){
+                        this.addFeature(feature); 
+                    }, this.featureOverlay);
+
+                    this.map.addInteraction(this.repositioner);
+//                    for (var station, i = 0; i < l; i++) {
+//                        station = stations.item(i);
+//                        if (app.options.mapRotationHandles) {
+//                            var handle = getGeCache(station).view
+//                                .createDragRotateHandle();
+//                        }
+//                        this.processStation(station, handle);
+//                    }
 
                 }, // end enter
                 exit: function() {
-                    this.destroyMidpoints();
-                    var stations = this.stationsFolder.getFeatures()
-                        .getChildNodes();
-                    var l = stations.getLength();
-                    for (var station, i = 0; i < l; i++) {
-                        station = stations.item(i);
-                        window.ge_gex.edit.endDraggable(station);
+                    this.map.removeInteraction(this.repositioner);
+//                    var l = stations.getLength();
+//                    for (var station, i = 0; i < l; i++) {
+//                        station = stations.item(i);
+//                        window.ge_gex.edit.endDraggable(station);
+//                        getGeCache(station).view.model.off('change:headingDegrees'); // kill drag handle update binding
+//                    }
 
-                        getGeCache(station).view.model.off('change:headingDegrees'); // kill drag handle update binding
-                    }
-
-                    this.clearKmlFolder(this.dragHandlesFolder);
 
                 }
             }, // end repositionMode
@@ -487,9 +517,9 @@ $(function() {
             this.otherStation[options.fromStation.cid] = options.toStation;
             _.each([this.fromStation, this.toStation],
                     function(stationModel) {
-                        stationModel.on('change:geometry',
-                                        function() {this.updateGeom(stationModel);}, 
-                                        this);
+//                        stationModel.on('change:geometry',
+//                                        function() {this.updateGeom(stationModel);}, 
+//                                        this);
                         stationModel.on('dragUpdate',
                                 function(placemark) {
                                     var geom = placemark.getGeometry();
@@ -521,6 +551,9 @@ $(function() {
                                                  'id': this.fromStation.attributes['id'],
                                                  'model': this.model
                                                  });
+            this.segmentFeature.on('change', function(event) {
+                console.log(event);
+            });
             this.model['feature'] = this.segmentFeature;
             this.segmentsVector.addFeature(this.segmentFeature);
         }
@@ -587,6 +620,17 @@ $(function() {
                                                        'selectedStyle': this.selectedIconStyle
                                                     });
                 this.stationFeature.setStyle(this.updateStyle());
+                this.stationFeature.on('change', function(event) {
+                    console.log(event);
+                    var geometry = event.target.get('geometry');
+                    var model = event.target.get('model');
+                    var coords = inverse(geometry.flatCoordinates);
+                    model.setPoint({
+                        lng: coords[0],
+                        lat: coords[1]
+                    });
+                });
+
                 this.model['feature'] = this.stationFeature;
                 this.stationsVector.addFeature(this.stationFeature);
             },
