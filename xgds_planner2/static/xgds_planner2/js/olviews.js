@@ -92,14 +92,15 @@ $(function() {
                         color: 'orange',
                         width: app.options.planLineWidthPixels
                       }),
-                    fill: new ol.style.Fill({
-                        color: 'orange'
-                    }),
                     image: new ol.style.Circle({
-                        radius: 10,
+                        radius: 8,
                         fill: new ol.style.Fill({
-                          color: 'orange'
-                        })
+                          color: 'lightblue'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: 'orange',
+                            width: 2
+                          }),
                       })
                     });
                 app.styles['selectedSegment'] = new ol.style.Style({
@@ -110,7 +111,7 @@ $(function() {
                     });
                 app.styles['placemarkImage'] = new ol.style.Icon({
                     src: app.options.placemarkCircleUrl,
-                    scale: 1.0,
+                    scale: .8,
                     rotateWithView: false,
                     opacity: 1.0
                     });
@@ -119,17 +120,10 @@ $(function() {
                     });
                 app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
                     src: app.options.placemarkCircleHighlightedUrl,
-                    scale: 1.5
+                    scale: 1.2
                     });
                 app.styles['selectedStation'] = new ol.style.Style({
                     image: app.styles['selectedPlacemarkImage']
-                    });
-                app.styles['midpoint'] = new ol.style.Style({
-                    image: new ol.style.Icon({
-                        src: app.options.placemarkCircleUrl,
-                        scale: 0.8,
-                        opacity: 0.5
-                        })
                     });
                 app.styles['direction'] = {
                         src: app.options.placemarkDirectionalUrl,
@@ -139,7 +133,7 @@ $(function() {
                         };
                 app.styles['selectedDirection'] = {
                         src: app.options.placemarkSelectedDirectionalUrl,
-                        scale: 1.5,
+                        scale: 1.2,
                         rotation: 0.0,
                         rotateWithView: true
                         };
@@ -189,7 +183,11 @@ $(function() {
 
                 // for editing
                 this.featureOverlay = new ol.FeatureOverlay({
-                    style: app.styles['edit']
+                    style: (function() {
+                          return function(feature, resolution) {
+                            return feature.getStyle();
+                          };
+                        })()
                 });
                 this.featureOverlay.setMap(this.map);
                 
@@ -203,23 +201,22 @@ $(function() {
             },
 
             render: function() {
-                //console.log('re-rending kml');
                 this.drawStations();
                 this.drawSegments();
                 this.segmentsLayer = new ol.layer.Vector({'name':'segments',
-                                                          'source': this.segmentsVector,
-                                                          'style': app.styles['segment']});
-                this.map.addLayer(this.segmentsLayer);
+                                                          'source': this.segmentsVector
+                                                          });
+//                this.map.addLayer(this.segmentsLayer);
                 
                 this.stationsLayer = new ol.layer.Vector({'name':'stations',
                                                           'source': this.stationsVector
                                                           });
-                this.map.addLayer(this.stationsLayer);
+//                this.map.addLayer(this.stationsLayer);
                 
                 //TODO this did not work
-                if (!_.isEmpty(this.segmentsVector.getFeatures())){
-                    this.map.getView().fitExtent(this.segmentsVector.getExtent(), this.map.getSize());
-                }
+//                if (!_.isEmpty(this.segmentsVector.getFeatures())){
+//                    this.map.getView().fitExtent(this.segmentsVector.getExtent(), this.map.getSize());
+//                }
 
                 if (this.currentMode) {
                     this.resetMode();
@@ -227,10 +224,10 @@ $(function() {
             },
 
             drawStation: function(station) {
-//                console.log("making station point view " + station.id)
                 var stationPointView = new StationPointView({
                     model: station,
-                    stationsVector: this.stationsVector
+                    stationsVector: this.stationsVector,
+                    featureOverlay: this.featureOverlay
                 });
 
                 return stationPointView;
@@ -255,7 +252,8 @@ $(function() {
                     model: segment,
                     fromStation: fromStation,
                     toStation: toStation,
-                    segmentsVector: this.segmentsVector
+                    segmentsVector: this.segmentsVector,
+                    featureOverlay: this.featureOverlay
                 });
             },
 
@@ -297,13 +295,6 @@ $(function() {
 
             addStationsMode: {
                 enter: function() {
-                    this.clearGeEvents();
-                    this.addGeEvent(this.ge.getGlobe(), 'mousedown',
-                                    this.addStationsMouseDown);
-                    this.addGeEvent(this.ge.getGlobe(), 'mousemove',
-                                    this.addStationsMouseMove);
-                    this.addGeEvent(this.ge.getGlobe(), 'mouseup',
-                                    this.addStationsMouseUp);
                     app.State.disableAddStation = false; // reset state possibly set in other mode
                 },
                 exit: function() {
@@ -330,7 +321,8 @@ $(function() {
                                   };
                                 })()
                             });
-                        this.selectNavigate.getFeatures().on(ol.CollectionEventType.ADD, function(e) {
+                        
+                        this.selectNavigate.getFeatures().on('add', function(e) {
                             var feature = e.element;
                             var model = feature.get('model');
                             switch (model.get('type')) {
@@ -386,6 +378,18 @@ $(function() {
                 }  
             },
             
+            updateFeatureOverlayFeatures: function(fill) {
+//                this.featureOverlay.getFeatures().clear();
+//                if (fill){
+//                    this.stationsVector.getFeatures().forEach(function(feature){
+//                        this.addFeature(feature); 
+//                     }, this.featureOverlay);
+//                     this.segmentsVector.getFeatures().forEach(function(feature){
+//                         this.addFeature(feature); 
+//                     }, this.featureOverlay);
+//                }
+  
+            },
 
             repositionMode: {
                 enter: function() {
@@ -398,12 +402,7 @@ $(function() {
                             }
                         });
                     }
-                    this.stationsVector.getFeatures().forEach(function(feature){
-                       this.addFeature(feature); 
-                    }, this.featureOverlay);
-                    this.segmentsVector.getFeatures().forEach(function(feature){
-                        this.addFeature(feature); 
-                    }, this.featureOverlay);
+                    this.updateFeatureOverlayFeatures(true);
 
                     this.map.addInteraction(this.repositioner);
 //                    for (var station, i = 0; i < l; i++) {
@@ -418,6 +417,8 @@ $(function() {
                 }, // end enter
                 exit: function() {
                     this.map.removeInteraction(this.repositioner);
+                    this.updateFeatureOverlayFeatures(false);
+
 //                    var l = stations.getLength();
 //                    for (var station, i = 0; i < l; i++) {
 //                        station = stations.item(i);
@@ -506,10 +507,11 @@ $(function() {
         initialize: function(options) {
             this.options = options || {};
             var options = this.options;
-            if (!options.segmentsVector && options.toStation && options.fromStation) {
+            if (!options.featureOverlay && options.toStation && options.fromStation) {
                 throw 'Missing a required option!';
             }
             this.segmentsVector = this.options.segmentsVector;
+            this.featureOverlay = this.options.featureOverlay;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
             this.otherStation = {};
@@ -517,26 +519,16 @@ $(function() {
             this.otherStation[options.fromStation.cid] = options.toStation;
             _.each([this.fromStation, this.toStation],
                     function(stationModel) {
-//                        stationModel.on('change:geometry',
-//                                        function() {this.updateGeom(stationModel);}, 
-//                                        this);
-                        stationModel.on('dragUpdate',
-                                function(placemark) {
-                                    var geom = placemark.getGeometry();
-                                    var coords = {
-                                        lat: geom.getLatitude(),
-                                        lng: geom.getLongitude()
-                                    };
-                                    this.update(this.otherStation[getGeCache(placemark.view).model.cid],
-                                                coords);
-                                }, this);
+                        stationModel.on('change:geometry',
+                                        function() {this.updateGeometry(stationModel);}, 
+                                        this);
                     }, this);
             this.render();
-            this.listenTo(this.model,
-                          'add:sequence delete:sequence change:sequence',
-                          function(evt, options) {
-                              this.updateStyle();
-                          }, this);
+//            this.listenTo(this.model,
+//                          'add:sequence delete:sequence change:sequence',
+//                          function(evt, options) {
+//                              this.updateStyle();
+//                          }, this);
         },
 
         render: function() {
@@ -549,14 +541,64 @@ $(function() {
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             this.segmentFeature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id'],
-                                                 'model': this.model
+                                                 'model': this.model,
+                                                 'style': [app.styles['segment']]
                                                  });
+            this.segmentFeature.setStyle([app.styles['segment']]);
             this.segmentFeature.on('change', function(event) {
                 console.log(event);
+//                app.Actions.disable();
+//                var view = options.view, index = options.index;
+//                // new stuff
+//                var geometry = event.target.get('geometry');
+//                // TODO have to get the point
+//                var model = event.target.get('model');
+//                var coords = inverse(geometry.flatCoordinates);
+//                
+//                var seq = app.currentPlan.get('sequence');
+//                var oldSegment = seq.at(index);
+//                var station = app.models.stationFactory({
+//                    coordinates: [geom.getLongitude(), geom.getLatitude()]
+//                });
+//                view.collection.insertStation(index, station);
+//                view.segmentsFolder.getFeatures().removeChild(
+//                    oldSegment._geSegment.placemark);
+//                var stationPointView = view.drawStation(station);
+//                var handle = stationPointView.createDragRotateHandle();
+//                view.processStation(stationPointView.placemark, handle);
             });
             this.model['feature'] = this.segmentFeature;
             this.segmentsVector.addFeature(this.segmentFeature);
-        }
+            this.featureOverlay.addFeature(this.segmentFeature);
+        },
+        /*
+         ** Update the endpoints of the segment when either adjacent station changes.
+         ** points can be either station PathElements, or an array of coordinates (lon, lat)
+         ** You can also supply just one station PathElement
+         */
+         updateGeometry: function(point1, point2) {
+
+             if (_.isUndefined(point2) && !_.isUndefined(point1) && point1.cid) {
+                 // only one model was supplied for update.  Go get the other one.
+                 point2 = this.otherStation[point1.cid];
+             }
+
+             if (point1 && point2) {
+                 var coords = [];
+                 _.each([point1, point2], function(point) {
+                     if (_.isArray(point)) {
+                         coords.push(transform(point));
+                     } else if (_.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng')) {
+                         coords.push(transform([point.lng, point.lat]));
+                     } else if (_.isObject(point) && _.isFunction(point.get)) {
+                         coords.push(transform(point.get('geometry').coordinates));
+                     }
+                 });
+                 
+                 this.geometry.setCoordinates(coords);
+             }
+
+         }
     });
     
  // This view class manages the map point for a single Station model
@@ -565,7 +607,9 @@ $(function() {
             initialize: function(options) {
                 this.options = options || {};
                 this.stationsVector = this.options.stationsVector;
-                if (!options.segmentsVector && !options.model) {
+                this.featureOverlay = this.options.featureOverlay;
+                
+                if (!options.featureOverlay && !options.model) {
                     throw 'Missing a required option!';
                 }
 
@@ -600,16 +644,16 @@ $(function() {
                               });
 
                 // redraw when we're selected
-                this.listenTo(app.vent, 'showItem:station', function() {
-                    this.redraw();
-                });
+//                this.listenTo(app.vent, 'showItem:station', function() {
+//                    this.redraw();
+//                });
                 // redraw when we've been unselected
-                this.listenTo(app.vent, 'tab:change', function() {
-                    this.redraw();
-                });
-                this.listenTo(app.vent, 'showItem:segment', function() {
-                    this.redraw();
-                });
+//                this.listenTo(app.vent, 'tab:change', function() {
+//                    this.redraw();
+//                });
+//                this.listenTo(app.vent, 'showItem:segment', function() {
+//                    this.redraw();
+//                });
             },
             
             render: function() {
@@ -617,11 +661,11 @@ $(function() {
                 this.stationFeature = new ol.Feature({'geometry': this.geometry,
                                                        'id': this.model.attributes['id'],
                                                        'model': this.model,
-                                                       'selectedStyle': this.selectedIconStyle
+                                                       'selectedStyle': this.selectedIconStyle,
+                                                       'style': [this.iconStyle, this.textStyle]
                                                     });
-                this.stationFeature.setStyle(this.updateStyle());
+                this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
                 this.stationFeature.on('change', function(event) {
-                    console.log(event);
                     var geometry = event.target.get('geometry');
                     var model = event.target.get('model');
                     var coords = inverse(geometry.flatCoordinates);
@@ -633,6 +677,7 @@ $(function() {
 
                 this.model['feature'] = this.stationFeature;
                 this.stationsVector.addFeature(this.stationFeature);
+                this.featureOverlay.addFeature(this.stationFeature);
             },
             
             redrawHandles: function() {
@@ -652,26 +697,30 @@ $(function() {
             },
 
             redraw: function() {
-                if (this.placemark === undefined){
+                if (_.isUndefined(this.geometry)){
                     return;
                 }
                 // redraw code. To be invoked when relevant model attributes change.
                 app.Actions.disable();
-                var kmlPoint = this.placemark.getGeometry();
 
-                var coords = this.model.get('geometry').coordinates; // lon, lat
-                if (this.placemark.getGeometry().getLongitude() - coords[0] != 0 ||
-                    this.placemark.getGeometry().getLatitude() - coords[1] != 0)
-                    this.redrawHandles();
-                coords = [coords[1], coords[0]]; // lat, lon
-                kmlPoint.setLatLng.apply(kmlPoint, coords);
-                var name = '' + this.model._sequenceLabel;
-                if (!_.isUndefined(this.model.get('name'))) {
-                    name += ' ' + this.model.get('name');
+                var coords = transform(this.model.get('geometry').coordinates);
+                var existingCoords = this.geometry.getCoordinates();
+                if ((coords[0] != existingCoords[0]) || 
+                    (coords[1] != existingCoords[1])) {
+                    this.geometry.setCoordinates(coords);
                 }
-                this.placemark.setName(name || this.model.toString());
-                this.updateStyle();
-//                console.log('redrawing point ' + name);
+//                if (existingCoords[0] - coords[0] != 0 ||
+//                    existingCoords[1] - coords[1] != 0)
+//                    this.redrawHandles();
+                var name = this.getLabel();
+                var textInStyle = this.textStyle.getText();
+                if (!_.isEqual(name, textInStyle.getText())){
+                    //TODO this totally does not work.  sucky.  I think we have to make a new style.
+                    // https://github.com/openlayers/ol3/pull/2678
+//                    textInStyle.set('text',name);
+                    this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
+                }
+                this.updateHeadingStyle();
 
                 if (this.wedgeViews) {
                     _.each(this.wedgeViews, function(wedgeView) {
@@ -703,8 +752,8 @@ $(function() {
             initIconStyle: function() {
                 if (this.model.get('isDirectional')) {
                     heading = this.getHeading();
-                    app.styles['direction']['rotation'] = this.getHeading();
-                    app.styles['selectedDirection']['rotation'] = this.getHeading();
+                    app.styles['direction']['rotation'] = heading;
+                    app.styles['selectedDirection']['rotation'] = heading;
                     this.iconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['direction'])});
                     this.selectedIconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['selectedDirection'])});
                     app.styles['direction']['rotation'] = 0.0;
@@ -715,41 +764,54 @@ $(function() {
                 }
             },
             
+            updateHeadingStyle: function() {
+                if (this.model.get('isDirectional')) {
+                    var heading = this.getHeading();
+                    this.iconStyle.set('rotation', heading);
+                    this.selectedIconStyle.set('rotation', heading);
+                } 
+            },
+            
+            getLabel: function() {
+                var name = '' + this.model._sequenceLabel;
+                if (!_.isUndefined(this.model.get('name'))) {
+                    name += ' ' + this.model.get('name');
+                }
+                return name;
+            },
+            
             initTextStyle: function() {
                 app.styles['stationText']['text'] = name || this.model.toString();
                 var textStyle = new ol.style.Text(app.styles['stationText']);
                 app.styles['stationText']['text'] = null;
                 
-                var name = '' + this.model._sequenceLabel;
-                if (!_.isUndefined(this.model.get('name'))) {
-                    name += ' ' + this.model.get('name');
-                }
+                var name = this.getLabel();
                 this.textStyle = new ol.style.Style({
                     text: textStyle
                 });
             },
 
-            updateStyle: function(model) {
-                if (app.State.stationSelected === this.model) {
-                    if (this.model.get('isDirectional')) {
-                        this.iconStyle.scale = 1.5;
-                        this.iconStyle.src = app.styles['selectedDirection'].src;
-                        this.updateHeadingStyle();
-                    } else {
-                        this.iconStyle = app.styles['selectedStation'];
-                    }
-                } else {
-                    if (this.model.get('isDirectional')) {
-                        this.iconStyle.scale = 0.85;
-                        this.iconStyle.src = app.styles['direction'].src;
-                        this.updateHeadingStyle();
-                    } else {
-                        this.iconStyle = app.styles['station'];
-                    }
-                }
-                var result = [this.iconStyle, this.textStyle];
-                return result;
-            },
+//            updateStyle: function(model) {
+//                if (app.State.stationSelected === this.model) {
+//                    if (this.model.get('isDirectional')) {
+//                        this.iconStyle.scale = 1.5;
+//                        this.iconStyle.src = app.styles['selectedDirection'].src;
+//                        this.updateHeadingStyle();
+//                    } else {
+//                        this.iconStyle = app.styles['selectedStation'];
+//                    }
+//                } else {
+//                    if (this.model.get('isDirectional')) {
+//                        this.iconStyle.scale = 0.85;
+//                        this.iconStyle.src = app.styles['direction'].src;
+//                        this.updateHeadingStyle();
+//                    } else {
+//                        this.iconStyle = app.styles['station'];
+//                    }
+//                }
+//                var result = [this.iconStyle, this.textStyle];
+//                return result;
+//            },
 
 
             dragRotateHandleCoords: function() {
