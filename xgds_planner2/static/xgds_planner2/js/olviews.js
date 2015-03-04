@@ -206,12 +206,10 @@ $(function() {
                 this.segmentsLayer = new ol.layer.Vector({'name':'segments',
                                                           'source': this.segmentsVector
                                                           });
-//                this.map.addLayer(this.segmentsLayer);
                 
                 this.stationsLayer = new ol.layer.Vector({'name':'stations',
                                                           'source': this.stationsVector
                                                           });
-//                this.map.addLayer(this.stationsLayer);
                 
                 //TODO this did not work
 //                if (!_.isEmpty(this.segmentsVector.getFeatures())){
@@ -253,7 +251,8 @@ $(function() {
                     fromStation: fromStation,
                     toStation: toStation,
                     segmentsVector: this.segmentsVector,
-                    featureOverlay: this.featureOverlay
+                    featureOverlay: this.featureOverlay,
+                    planLayerView: this
                 });
             },
 
@@ -296,12 +295,40 @@ $(function() {
             addStationsMode: {
                 enter: function() {
                     app.State.disableAddStation = false; // reset state possibly set in other mode
+                    if (_.isUndefined(this.stationAdder)){
+                        this.stationAdder = new ol.interaction.Draw({
+                            features: this.featureOverlay.getFeatures(),
+                            type: /** @type {ol.geom.GeometryType} */ ol.interaction.DrawMode.POINT
+                        });
+                        this.stationAdder.on('drawend', function(e) {
+                            var geometry = e.feature.getGeometry();
+                            var coords = inverse(geometry.getCoordinates());
+                            var station = app.models.stationFactory({
+                                coordinates: coords
+                            });
+                            var sequence = app.currentPlan.get('sequence');
+                            var newSegment = sequence.appendStation(station); // returns a segment if one was created
+
+                            var stationPointView = this.drawStation(station);
+                            this.stationViews.push(stationPointView);
+
+                            if (!_.isUndefined(newSegment)) {
+                                var segIndex = sequence.indexOf(newSegment);
+                                this.drawSegment(newSegment, sequence.at(segIndex - 1), station);
+                            }
+
+                            // set time and location for added station
+                            app.State.addStationLocation = coords;
+                            app.State.addStationTime = Date.now();
+                        }, this);
+                    }
+                    this.map.addInteraction(this.stationAdder);
                 },
                 exit: function() {
-                    // nothing
+                    this.map.removeInteraction(this.stationAdder);
                 }
             }, // end addStationMode
-
+            
             navigateMode: {
                 enter: function() {
                     if (_.isUndefined(this.selectNavigate)){
@@ -326,14 +353,14 @@ $(function() {
                             var feature = e.element;
                             var model = feature.get('model');
                             switch (model.get('type')) {
-                            case 'Station':
-                                app.State.stationSelected = feature.get('model');
-                                app.State.segmentSelected = undefined;
-                                break;
-                            case 'Segment':
-                                app.State.segmentSelected = feature.get('model');
-                                app.State.stationSelected = undefined;
-                                break;
+                                case 'Station':
+                                    app.State.stationSelected = feature.get('model');
+                                    app.State.segmentSelected = undefined;
+                                    break;
+                                case 'Segment':
+                                    app.State.segmentSelected = feature.get('model');
+                                    app.State.stationSelected = undefined;
+                                    break;
                             }
                             
                             app.State.metaExpanded = true;
@@ -378,19 +405,6 @@ $(function() {
                 }  
             },
             
-            updateFeatureOverlayFeatures: function(fill) {
-//                this.featureOverlay.getFeatures().clear();
-//                if (fill){
-//                    this.stationsVector.getFeatures().forEach(function(feature){
-//                        this.addFeature(feature); 
-//                     }, this.featureOverlay);
-//                     this.segmentsVector.getFeatures().forEach(function(feature){
-//                         this.addFeature(feature); 
-//                     }, this.featureOverlay);
-//                }
-  
-            },
-
             repositionMode: {
                 enter: function() {
                     if (_.isUndefined(this.repositioner)){
@@ -402,67 +416,12 @@ $(function() {
                             }
                         });
                     }
-                    this.updateFeatureOverlayFeatures(true);
-
                     this.map.addInteraction(this.repositioner);
-//                    for (var station, i = 0; i < l; i++) {
-//                        station = stations.item(i);
-//                        if (app.options.mapRotationHandles) {
-//                            var handle = getGeCache(station).view
-//                                .createDragRotateHandle();
-//                        }
-//                        this.processStation(station, handle);
-//                    }
-
                 }, // end enter
                 exit: function() {
                     this.map.removeInteraction(this.repositioner);
-                    this.updateFeatureOverlayFeatures(false);
-
-//                    var l = stations.getLength();
-//                    for (var station, i = 0; i < l; i++) {
-//                        station = stations.item(i);
-//                        window.ge_gex.edit.endDraggable(station);
-//                        getGeCache(station).view.model.off('change:headingDegrees'); // kill drag handle update binding
-//                    }
-
-
                 }
             }, // end repositionMode
-
-            addStationsMouseDown: function(evt) {
-                if (app.State.disableAddStation) {
-                    // don't react to a single click
-                    // usually from events that fire before this one is
-                    app.State.disableAddStation = false;
-                    return;
-                }
-                var distance = -1;
-                if (!_.isUndefined(app.State.addStationLocation) &&
-                    _.isFinite(app.State.addStationTime)) {
-                    distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.addStationLocation[0], 2),
-                                         Math.pow(evt.getClientY() - app.State.addStationLocation[1], 2));
-                }
-                if ((Date.now() - app.State.addStationTime >= 300) || // at least 300ms past last station added
-                    (distance >= 5 || distance == -1)) { // at least five client pixels away from the last station
-                    // or no previous click or added station
-                    // start state change leading to adding a station
-                    app.State.addStationOnMouseUp = true;
-                    app.State.mouseDownLocation = [evt.getClientX(),
-                                                   evt.getClientY()];
-                }
-            },
-
-            addStationsMouseMove: function(evt) {
-                if (_.isUndefined(app.State.mouseDownLocation))
-                    return;
-                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
-                                         Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
-                if (distance >= 5) { // allow for small movements due to double-clicking on touchpad
-                    app.State.addStationOnMouseUp = false;
-                    app.State.mouseDownLocation = undefined;
-                }
-            },
 
             addStationsMouseUp: function(evt) {
                 if (_.isUndefined(app.State.mouseDownLocation))
@@ -512,6 +471,7 @@ $(function() {
             }
             this.segmentsVector = this.options.segmentsVector;
             this.featureOverlay = this.options.featureOverlay;
+            this.planLayerView = this.options.planLayerView;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
             this.otherStation = {};
@@ -532,7 +492,6 @@ $(function() {
         },
 
         render: function() {
-            //console.log('re-rendering segment');
             this.coords = _.map([this.fromStation, this.toStation],
                                function(station) {
                                    return transform(station.get('geometry').coordinates);
@@ -544,29 +503,41 @@ $(function() {
                                                  'model': this.model,
                                                  'style': [app.styles['segment']]
                                                  });
+            // for some reason you have to set the style this way
             this.segmentFeature.setStyle([app.styles['segment']]);
             this.segmentFeature.on('change', function(event) {
-                console.log(event);
-//                app.Actions.disable();
-//                var view = options.view, index = options.index;
-//                // new stuff
-//                var geometry = event.target.get('geometry');
-//                // TODO have to get the point
-//                var model = event.target.get('model');
-//                var coords = inverse(geometry.flatCoordinates);
-//                
-//                var seq = app.currentPlan.get('sequence');
-//                var oldSegment = seq.at(index);
-//                var station = app.models.stationFactory({
-//                    coordinates: [geom.getLongitude(), geom.getLatitude()]
-//                });
-//                view.collection.insertStation(index, station);
-//                view.segmentsFolder.getFeatures().removeChild(
-//                    oldSegment._geSegment.placemark);
-//                var stationPointView = view.drawStation(station);
-//                var handle = stationPointView.createDragRotateHandle();
-//                view.processStation(stationPointView.placemark, handle);
-            });
+                var geometry = event.target.get('geometry');
+                var newCoordinates = geometry.getCoordinates();
+                if (newCoordinates.length > 2) {
+                    // add the new station!
+                    var model = event.target.get('model');
+                    var station = app.models.stationFactory({
+                        coordinates: inverse(newCoordinates[1])
+                    });
+                    this.planLayerView.collection.insertStation(model, station);
+                    var stationPointView = this.planLayerView.drawStation(station);
+                    this.planLayerView.stationViews.push(stationPointView);
+                    
+                    //add the new segments
+                    var sequence = app.currentPlan.get('sequence');
+                    var index = sequence.indexOf(station);
+                    var segmentBefore = sequence.at(index - 1);
+                    var segmentAfter = sequence.at(index + 1);
+                    if (!_.isUndefined(segmentBefore)){
+                        this.planLayerView.drawSegment(segmentBefore, sequence.at(index - 2), sequence.at(index));
+                    }
+                    if (!_.isUndefined(segmentAfter)){
+                        this.planLayerView.drawSegment(segmentAfter, station, sequence.at(index + 2));
+                    }
+                    
+                    // remove the old segment
+                    this.segmentsVector.removeFeature(this.segmentFeature);
+//                    app.vent.trigger('segmentFeature:deleted', this.segmentFeature);
+                    
+                    this.featureOverlay.removeFeature(this.segmentFeature);
+                }
+                
+            }, this);
             this.model['feature'] = this.segmentFeature;
             this.segmentsVector.addFeature(this.segmentFeature);
             this.featureOverlay.addFeature(this.segmentFeature);
@@ -718,6 +689,8 @@ $(function() {
                     //TODO this totally does not work.  sucky.  I think we have to make a new style.
                     // https://github.com/openlayers/ol3/pull/2678
 //                    textInStyle.set('text',name);
+                    delete this.textStyle; // for garbage collection
+                    this.initTextStyle();
                     this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
                 }
                 this.updateHeadingStyle();
@@ -781,14 +754,14 @@ $(function() {
             },
             
             initTextStyle: function() {
-                app.styles['stationText']['text'] = name || this.model.toString();
-                var textStyle = new ol.style.Text(app.styles['stationText']);
-                app.styles['stationText']['text'] = null;
-                
                 var name = this.getLabel();
+                
+                app.styles['stationText']['text'] = name;
+                var textStyle = new ol.style.Text(app.styles['stationText']);
                 this.textStyle = new ol.style.Style({
                     text: textStyle
                 });
+                app.styles['stationText']['text'] = null;
             },
 
 //            updateStyle: function(model) {

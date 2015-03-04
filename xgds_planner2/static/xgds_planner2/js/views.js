@@ -124,8 +124,8 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     updateTip: function(eventName) {
         var msgMap = {
-            'edit': 'Double click to delete stations, click and drag to move.',
-            'add': 'Click to add stations to end.',
+            'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
+            'add': 'Click to add stations to end.  Double-click last station.',
             'clear': 'Click and drag to pan map.'
         };
         var msg = msgMap[eventName];

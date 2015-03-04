@@ -435,10 +435,11 @@ app.models = app.models || {};
          * station-segment-station adjecency.
          */
         appendStation: function(stationModel) {
+            var segment = undefined;
             app.Actions.disable();
             if (this.length > 0) { // Don't append a segment if this is the
                 // first station in the list.
-                var segment = models.segmentFactory();
+                segment = models.segmentFactory();
                 this.add([segment, stationModel]);
             } else {
                 this.add(stationModel);
@@ -446,19 +447,20 @@ app.models = app.models || {};
             app.Actions.enable();
             app.Actions.action();
             app.vent.trigger('station:change');
+            return segment;
         },
 
         /*
          * Insert a station just before the segment at the given index. Also add
          * a new segment.
          */
-        insertStation: function(idx, stationModel) {
-            var segmentAfter = this.at(idx);
+        insertStation: function(segmentAfter, stationModel) {
+//            var segmentAfter = this.at(idx);
             if (segmentAfter.get('type') != 'Segment') { throw 'You can only insert stations before a Segment.'}
-            var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone
-            // the
-            // stationAfter's
-            // properties.
+            // Clone the stationAfter's properties
+            var segmentBefore = models.segmentFactory({}, segmentAfter); 
+            var seq = this.plan.get('sequence');
+            var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
             app.vent.trigger('station:change');
         },
