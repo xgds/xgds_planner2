@@ -479,10 +479,22 @@ app.models = app.models || {};
             // disable actions so that the segment and
             // the station get removed in the same action
             app.Actions.disable();
+            var nextSegment;
+            if (idx < this.length){
+                // next segment needs to be updated
+                var nextSegment = this.at(idx + 1);
+            }
             this.remove([segment, stationModel]);
+            
+            app.vent.trigger('station:change');
+            app.vent.trigger('station:remove', stationModel);
+            app.vent.trigger('segment:remove', segment);
+            if (!_.isUndefined(nextSegment)){
+                nextSegment.trigger('change:geometry');
+            }
             app.Actions.enable();
             app.Actions.action();
-            app.vent.trigger('station:change');
+            return segment;
         }
     });
 

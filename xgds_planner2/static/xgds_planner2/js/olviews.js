@@ -412,14 +412,54 @@ $(function() {
                             features: this.featureOverlay.getFeatures(),
                             deleteCondition: function(event) {
                                 return ol.events.condition.shiftKeyOnly(event) &&
-                                       ol.events.condition.singleClick(event);
-                            }
+                                    ol.events.condition.singleClick(event);
+                              }
                         });
+                        this.stationDeleter = new ol.interaction.Select({
+                            layers: [this.stationsLayer],
+                            addCondition: function(event) {
+                                return ol.events.condition.shiftKeyOnly(event) &&
+                                    ol.events.condition.singleClick(event);
+                              }
+                            });
+                        
+                        this.stationDeleter.getFeatures().on('add', function(e) {
+                            var feature = e.element;
+                            var model = feature.get('model');
+                            if (!_.isUndefined(model)){
+                                // delete the station
+                                
+                                var killedSegment = this.collection.removeStation(model);
+                            }
+                            
+                        }, this);
+                        this.listenTo(app.vent, 'segment:remove', function(killedSegment) {
+                            if (!_.isUndefined(killedSegment)){
+                                var segmentFeature = killedSegment.feature;
+                                if (!_.isUndefined(segmentFeature)){
+                                    this.segmentsVector.removeFeature(segmentFeature);
+                                    this.featureOverlay.removeFeature(segmentFeature);
+                                }
+                            }
+                        }, this);
+                        this.listenTo(app.vent, 'station:remove', function(killedStation) {
+                            if (!_.isUndefined(killedStation)){
+                                var feature = killedStation.feature;
+                                if (!_.isUndefined(feature)){
+                                    this.stationDeleter.getFeatures().remove(feature);
+                                    this.stationsVector.removeFeature(feature);
+                                    this.featureOverlay.removeFeature(feature);
+                                }
+                            }
+                        }, this);
                     }
                     this.map.addInteraction(this.repositioner);
+                    this.map.addInteraction(this.stationDeleter);
                 }, // end enter
                 exit: function() {
                     this.map.removeInteraction(this.repositioner);
+                    this.map.removeInteraction(this.stationDeleter);
+
                 }
             }, // end repositionMode
 
@@ -482,7 +522,20 @@ $(function() {
                         stationModel.on('change:geometry',
                                         function() {this.updateGeometry(stationModel);}, 
                                         this);
+                        stationModel.on('station:remove',
+                                        function() {this.removeStation(stationModel);},
+                                        this);
                     }, this);
+            this.model.on('change:geometry', function() {
+                // the geometry has changed for the segment probably because of a station removal.
+                // make sure we have the correct from and to stations.
+                segmentIndex = this.planLayerView.collection.indexOf(this.model);
+                this.fromStation = this.planLayerView.collection.at(segmentIndex - 1);
+                this.toStation = this.planLayerView.collection.at(segmentIndex + 1);
+                this.otherStation[this.toStation.cid] = this.fromStation;
+                this.otherStation[this.fromStation.cid] = this.toStation;
+                this.updateGeometry(this.fromStation, this.toStation);
+            }, this);
             this.render();
 //            this.listenTo(this.model,
 //                          'add:sequence delete:sequence change:sequence',
@@ -636,6 +689,10 @@ $(function() {
                                                        'style': [this.iconStyle, this.textStyle]
                                                     });
                 this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
+                this.stationFeature.on('remove', function(event) {
+                    console.log(this);
+                    
+                }, this);
                 this.stationFeature.on('change', function(event) {
                     var geometry = event.target.get('geometry');
                     var model = event.target.get('model');
