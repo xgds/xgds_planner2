@@ -96,5 +96,22 @@ var draw = new ol.interaction.Draw({
     type: /** @type {ol.geom.GeometryType} */ ol.interaction.DrawMode.POINT
   });
   map.addInteraction(draw);
+  
+   var selectNavigate = new ol.interaction.Select({
+                            layers: [this.segmentsLayer, this.stationsLayer],
+                            style: (function() {
+                                  return function(feature, resolution) {
+                                      var model = feature.get('model');
+                                      switch (model.get('type')) {
+                                      case 'Station':
+                                          return [feature.get('selectedStyle'), feature.getStyle()[1]];
+                                          break;
+                                      case 'Segment':
+                                          return [app.styles['selectedSegment']];
+                                          break;
+                                      }
+                                  };
+                                })()
+                            });
   {% endblock jsInit %}
       

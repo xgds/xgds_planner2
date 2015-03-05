@@ -455,7 +455,6 @@ app.models = app.models || {};
          * a new segment.
          */
         insertStation: function(segmentAfter, stationModel) {
-//            var segmentAfter = this.at(idx);
             if (segmentAfter.get('type') != 'Segment') { throw 'You can only insert stations before a Segment.'}
             // Clone the stationAfter's properties
             var segmentBefore = models.segmentFactory({}, segmentAfter); 
@@ -463,6 +462,9 @@ app.models = app.models || {};
             var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
             app.vent.trigger('station:change');
+            segmentBefore.trigger('change:geometry');
+            segmentAfter.trigger('change:geometry');
+
         },
 
         removeStation: function(stationModel) {
