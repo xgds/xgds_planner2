@@ -482,17 +482,26 @@ app.models = app.models || {};
             // the station get removed in the same action
             app.Actions.disable();
             var nextSegment;
+            var prevStation;
             if (idx < this.length){
                 // next segment needs to be updated
-                var nextSegment = this.at(idx + 1);
+                nextSegment = this.at(idx + 1);
+                if (!_.isUndefined(nextSegment)) {
+                    if (idx - 2 >= 0){
+                        prevStation = this.at(idx - 2);
+                    }
+                }
             }
             this.remove([segment, stationModel]);
             
-            app.vent.trigger('station:change');
+            app.vent.trigger('station:change', stationModel);
             app.vent.trigger('station:remove', stationModel);
-            app.vent.trigger('segment:remove', segment);
-            if (!_.isUndefined(nextSegment)){
-                nextSegment.trigger('change:geometry');
+            stationModel.trigger('station:remove');
+            if (!_.isUndefined(segment)){
+                segment.trigger('segment:remove');
+            }
+            if (!_.isUndefined(nextSegment) && (segment != nextSegment)){
+                nextSegment.trigger('change:geometry', prevStation);
             }
             app.Actions.enable();
             app.Actions.action();

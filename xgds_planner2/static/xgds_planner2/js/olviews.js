@@ -292,29 +292,24 @@ $(function() {
                 }
             },
 
+            getLastStationCoords: function() {
+                var endStation = this.collection.at(this.collection.length - 1);
+                if (!_.isUndefined(endStation)) {
+                    return transform(endStation.get('geometry').coordinates);
+                }
+                return undefined;
+            },
+            
             addStationsMode: {
                 enter: function() {
                     app.State.disableAddStation = false; // reset state possibly set in other mode
                     if (_.isUndefined(this.stationAdder)){
+//                        this.stationAdder = new ol.interaction.StationRubberband({
                         this.stationAdder = new ol.interaction.Draw({
                             features: this.featureOverlay.getFeatures(),
-                            type: /** @type {ol.geom.GeometryType} */ ol.interaction.DrawMode.POINT
-//                            startDrawing_:  function(event) {
-//                                var endStation = this.collection.at(this.collection.length - 1);
-//                                var start = transform(endStation.get('geometry').coordinates);
-//                                this.finishCoordinate_ = start;
-//                                var geometry= new ol.geom.LineString([start.slice(), start.slice()]);
-//                                goog.asserts.assert(goog.isDef(geometry));
-//                                this.sketchFeature_ = new ol.Feature();
-//                                if (goog.isDef(this.geometryName_)) {
-//                                  this.sketchFeature_.setGeometryName(this.geometryName_);
-//                                }
-//                                this.sketchFeature_.setGeometry(geometry);
-//                                this.updateSketchFeatures_();
-//                                this.dispatchEvent(new ol.DrawEvent(ol.DrawEventType.DRAWSTART,
-//                                    this.sketchFeature_));
-//                              }
-                        }, this.stationAdder);
+                            type: ol.interaction.DrawMode.POINT
+//                            startCoordinates: this.getLastStationCoords()
+                        }, this);
 //                        this.stationAdder.on('drawstart', function(event) {
 //                                console.log(event);
 //                                endStation = this.collection.at(this.collection.length - 1);
@@ -323,8 +318,8 @@ $(function() {
 //                                firstCoords.push(newGeometry.getCoordinates());
 //                                newGeometry.setCoordinates(firstCoords);
 //                            }, this);
-                        this.stationAdder.on('drawend', function(e) {
-                            var geometry = e.feature.getGeometry();
+                        this.stationAdder.on('drawend', function(event) {
+                            var geometry = event.feature.getGeometry();
                             var coords = inverse(geometry.getCoordinates());
                             var station = app.models.stationFactory({
                                 coordinates: coords
@@ -442,17 +437,10 @@ $(function() {
                             layers: [this.stationsLayer],
                             // for debugging
                             style: new ol.style.Style({
-                                fill: new ol.style.Fill({
-                                  color: 'pink'
-                                }),
-                                stroke: new ol.style.Stroke({
-                                  color: 'pink',
-                                  width: 2
-                                }),
                                 image: new ol.style.Circle({
                                   radius: 12,
                                   fill: new ol.style.Fill({
-                                    color: 'pink'
+                                    color: 'rgba(255, 0, 0, 0.5)'
                                   })
                                 })
                               }),
@@ -467,27 +455,29 @@ $(function() {
                             var model = feature.get('model');
                             if (!_.isUndefined(model)){
                                 // delete the station
-                                
                                 var killedSegment = this.collection.removeStation(model);
+                            } else {
+                                // extra feature, just kill it
+//                                this.stationDeleter.getFeatures().clear();
                             }
                             
                         }, this);
-                        this.listenTo(app.vent, 'segment:remove', function(killedSegment) {
-                            if (!_.isUndefined(killedSegment)){
-                                var segmentFeature = killedSegment.feature;
-                                if (!_.isUndefined(segmentFeature)){
-                                    this.segmentsVector.removeFeature(segmentFeature);
-                                    this.featureOverlay.removeFeature(segmentFeature);
-                                }
-                            }
-                        }, this);
+//                        this.listenTo(app.vent, 'segment:remove', function(killedSegment) {
+//                            if (!_.isUndefined(killedSegment)){
+//                                var feature = killedSegment.feature;
+//                                if (!_.isUndefined(feature)){
+//                                    this.segmentsVector.removeFeature(feature);
+//                                    this.featureOverlay.removeFeature(feature);
+//                                }
+//                            }
+//                        }, this);
                         this.listenTo(app.vent, 'station:remove', function(killedStation) {
                             if (!_.isUndefined(killedStation)){
                                 var feature = killedStation.feature;
                                 if (!_.isUndefined(feature)){
-                                    this.stationDeleter.getFeatures().remove(feature);
-                                    this.stationsVector.removeFeature(feature);
-                                    this.featureOverlay.removeFeature(feature);
+                                    this.stationDeleter.getFeatures().clear();
+//                                    this.stationsVector.removeFeature(feature);
+//                                    this.featureOverlay.removeFeature(feature);
                                 }
                             }
                         }, this);
@@ -554,16 +544,11 @@ $(function() {
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
             this.otherStation = {};
-            this.otherStation[options.toStation.cid] = options.fromStation;
-            this.otherStation[options.fromStation.cid] = options.toStation;
+            this.otherStation[this.toStation.cid] = this.fromStation;
+            this.otherStation[this.fromStation.cid] = this.toStation;
             _.each([this.fromStation, this.toStation],
                     function(stationModel) {
-                        stationModel.on('change:geometry',
-                                        function() {this.updateGeometry(stationModel);}, 
-                                        this);
-                        stationModel.on('station:remove',
-                                        function() {this.removeStation(stationModel);},
-                                        this);
+                        this.addChangeListener(stationModel);
                     }, this);
             this.model.on('change:geometry', function() {
                 // the geometry has changed for the segment probably because of a station removal.
@@ -575,7 +560,29 @@ $(function() {
                 this.otherStation[this.fromStation.cid] = this.toStation;
                 this.updateGeometry(this.fromStation, this.toStation);
             }, this);
+            this.model.on('segment:remove', function() {
+                var feature = this.feature;
+                if (!_.isUndefined(feature)){
+                    this.segmentsVector.removeFeature(feature);
+                    this.featureOverlay.removeFeature(feature);
+                }
+            }, this);
             this.render();
+        },
+        
+        addChangeListener: function(station) {
+            station.on('change:geometry',
+                    function(prevStation) {
+                        // make sure the next & previous stations are correct
+                        if (!_.isUndefined(prevStation) && (prevStation != this.fromStation) &&
+                                (prevStation != this.toStation)){
+                            this.fromStation = prevStation;
+                            this.otherStation[prevStation.cid] = this.toStation;
+                            this.addChangeListener(prevStation);
+                        }
+                        this.updateGeometry(station);
+                    }, 
+                    this);
         },
 
         render: function() {
@@ -585,14 +592,14 @@ $(function() {
                                });
 
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
-            this.segmentFeature = new ol.Feature({'geometry': this.geometry,
+            this.feature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id'],
                                                  'model': this.model,
                                                  'style': [app.styles['segment']]
                                                  });
             // for some reason you have to set the style this way
-            this.segmentFeature.setStyle([app.styles['segment']]);
-            this.segmentFeature.on('change', function(event) {
+            this.feature.setStyle([app.styles['segment']]);
+            this.feature.on('change', function(event) {
                 var geometry = event.target.get('geometry');
                 var newCoordinates = geometry.getCoordinates();
                 if (newCoordinates.length > 2) {
@@ -615,9 +622,9 @@ $(function() {
                     }
                     
                     // remove the old segment
-                    this.segmentsVector.removeFeature(this.segmentFeature);
-                    this.featureOverlay.removeFeature(this.segmentFeature);
-//                    app.vent.trigger('segmentFeature:deleted', this.segmentFeature);
+                    this.segmentsVector.removeFeature(this.feature);
+                    this.featureOverlay.removeFeature(this.feature);
+//                    app.vent.trigger('feature:deleted', this.feature);
                   
                     if (!_.isUndefined(segmentAfter)){
                         this.planLayerView.drawSegment(segmentAfter, station, sequence.at(index + 2));
@@ -625,9 +632,9 @@ $(function() {
                 }
                 
             }, this);
-            this.model['feature'] = this.segmentFeature;
-            this.segmentsVector.addFeature(this.segmentFeature);
-            this.featureOverlay.addFeature(this.segmentFeature);
+            this.model['feature'] = this.feature;
+            this.segmentsVector.addFeature(this.feature);
+            this.featureOverlay.addFeature(this.feature);
         },
         /*
          ** Update the endpoints of the segment when either adjacent station changes.
@@ -692,22 +699,26 @@ $(function() {
                                       this.redrawPolygons();
                                   }
                               });
+                this.model.on('station:remove', function() {
+                    this.stationsVector.removeFeature(this.feature);
+                    this.featureOverlay.removeFeature(this.feature);
+                }, this);
 
             },
             
             render: function() {
                 this.geometry = new ol.geom.Point(this.point);
-                this.stationFeature = new ol.Feature({'geometry': this.geometry,
+                this.feature = new ol.Feature({'geometry': this.geometry,
                                                        'id': this.model.attributes['id'],
                                                        'model': this.model,
                                                        'selectedStyle': this.selectedIconStyle,
                                                        'style': [this.iconStyle, this.textStyle]
                                                     });
-                this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
-                this.stationFeature.on('remove', function(event) {
+                this.feature.setStyle([this.iconStyle, this.textStyle]);
+                this.feature.on('remove', function(event) {
                     console.log(this);
                 }, this);
-                this.stationFeature.on('change', function(event) {
+                this.feature.on('change', function(event) {
                     var geometry = event.target.get('geometry');
                     var model = event.target.get('model');
                     var coords = inverse(geometry.flatCoordinates);
@@ -717,9 +728,9 @@ $(function() {
                     });
                 });
 
-                this.model['feature'] = this.stationFeature;
-                this.stationsVector.addFeature(this.stationFeature);
-                this.featureOverlay.addFeature(this.stationFeature);
+                this.model['feature'] = this.feature;
+                this.stationsVector.addFeature(this.feature);
+                this.featureOverlay.addFeature(this.feature);
             },
             
             redrawHandles: function() {
@@ -762,7 +773,7 @@ $(function() {
 //                    textInStyle.set('text',name);
                     delete this.textStyle; // for garbage collection
                     this.initTextStyle();
-                    this.stationFeature.setStyle([this.iconStyle, this.textStyle]);
+                    this.feature.setStyle([this.iconStyle, this.textStyle]);
                 }
                 this.updateHeadingStyle();
 
