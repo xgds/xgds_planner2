@@ -93,7 +93,7 @@ map.addInteraction(modify);
 
 var draw = new ol.interaction.Draw({
     features: featureOverlay.getFeatures(),
-    type: /** @type {ol.geom.GeometryType} */ ol.interaction.DrawMode.POINT
+    type: /** @type {ol.geom.GeometryType} */ ol.interaction.DrawMode.LINE_STRING
   });
   map.addInteraction(draw);
   

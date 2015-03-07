@@ -8,6 +8,8 @@ function inverse(coords){
     return ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');    
 }
 
+var DEBUG_SEGMENTS = true;
+
 $(function() {
     app.views = app.views || {};
 
@@ -87,22 +89,6 @@ $(function() {
                         width: app.options.planLineWidthPixels
                       })
                     });
-                app.styles['edit'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        color: 'orange',
-                        width: app.options.planLineWidthPixels
-                      }),
-                    image: new ol.style.Circle({
-                        radius: 8,
-                        fill: new ol.style.Fill({
-                          color: 'lightblue'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: 'orange',
-                            width: 2
-                          }),
-                      })
-                    });
                 app.styles['selectedSegment'] = new ol.style.Style({
                     stroke: new ol.style.Stroke({
                         color: 'cyan',
@@ -139,16 +125,23 @@ $(function() {
                         };
                 
                 app.styles['stationText'] = {
-                    font: '16px Calibri,sans-serif',
-                    fill: new ol.style.Fill({
-                        color: '#000'
-                    }),
-                    stroke: new ol.style.Stroke({
-                        color: '#fff',
-                        width: 2
-                    }),
-                    offsetY: -20
+                        font: '16px Calibri,sans-serif',
+                        fill: new ol.style.Fill({
+                            color: '#000'
+                        }),
+                        stroke: new ol.style.Stroke({
+                            color: '#fff',
+                            width: 2
+                        }),
+                        offsetY: -20
                 };
+                app.styles['segmentText'] = {
+                        font: '14px Calibri,sans-serif',
+                        stroke: new ol.style.Stroke({
+                            color: 'red',
+                            width: 1
+                        })
+                    };
 
             },
 
@@ -254,6 +247,7 @@ $(function() {
                     featureOverlay: this.featureOverlay,
                     planLayerView: this
                 });
+                return segmentLineView;
             },
 
             drawSegments: function() {
@@ -445,8 +439,8 @@ $(function() {
                                 })
                               }),
                             addCondition: function(event) {
-                                return ol.events.condition.shiftKeyOnly(event) &&
-                                    ol.events.condition.singleClick(event);
+                                return ol.events.condition.shiftKeyOnly(event)
+                                && ol.events.condition.singleClick(event);
                               }
                             });
                         
@@ -456,28 +450,14 @@ $(function() {
                             if (!_.isUndefined(model)){
                                 // delete the station
                                 var killedSegment = this.collection.removeStation(model);
-                            } else {
-                                // extra feature, just kill it
-//                                this.stationDeleter.getFeatures().clear();
                             }
                             
                         }, this);
-//                        this.listenTo(app.vent, 'segment:remove', function(killedSegment) {
-//                            if (!_.isUndefined(killedSegment)){
-//                                var feature = killedSegment.feature;
-//                                if (!_.isUndefined(feature)){
-//                                    this.segmentsVector.removeFeature(feature);
-//                                    this.featureOverlay.removeFeature(feature);
-//                                }
-//                            }
-//                        }, this);
                         this.listenTo(app.vent, 'station:remove', function(killedStation) {
                             if (!_.isUndefined(killedStation)){
                                 var feature = killedStation.feature;
                                 if (!_.isUndefined(feature)){
                                     this.stationDeleter.getFeatures().clear();
-//                                    this.stationsVector.removeFeature(feature);
-//                                    this.featureOverlay.removeFeature(feature);
                                 }
                             }
                         }, this);
@@ -490,45 +470,8 @@ $(function() {
                     this.map.removeInteraction(this.stationDeleter);
 
                 }
-            }, // end repositionMode
+            } // end repositionMode
 
-            addStationsMouseUp: function(evt) {
-                if (_.isUndefined(app.State.mouseDownLocation))
-                    return;
-                if (!_.isBoolean(app.State.addStationOnMouseUp) ||
-                    !app.State.addStationOnMouseUp)
-                    return;
-                var distance = Math.sqrt(Math.pow(evt.getClientX() - app.State.mouseDownLocation[0], 2),
-                                         Math.pow(evt.getClientY() - app.State.mouseDownLocation[1], 2));
-                if (distance < 5) { // all conditions met to add station
-                    var coords = [evt.getLongitude(), evt.getLatitude()];
-                    var station = app.models.stationFactory({
-                        coordinates: coords
-                    });
-                    var seq = app.currentPlan.get('sequence');
-                    seq.appendStation(station); // returns a segment if one was created
-                    // this returns an array of the last three elements
-                    var end = seq.last(3);
-
-                    // Jump through some hoops to avoid a slow total re-render.  Not really thrilled with this solution.
-                    app.currentPlan.kmlView.drawStation(station);
-
-                    // only drow a segment if other stations exist
-                    if (end.length == 3) {
-                        app.currentPlan.kmlView.drawSegment(end[1], end[0],
-                                                            end[2]);
-                    }
-
-                    // set time and location for added station
-                    app.State.addStationLocation = [evt.getClientX(),
-                                                    evt.getClientY()];
-                    app.State.addStationTime = Date.now();
-                }
-
-                // reset state
-                app.State.mouseDownLocation = undefined;
-                app.State.addStationOnMouseUp = false;
-            }
         });
     
     var SegmentLineView = Backbone.View.extend({
@@ -550,19 +493,18 @@ $(function() {
                     function(stationModel) {
                         this.addChangeListener(stationModel);
                     }, this);
-            this.model.on('change:geometry', function() {
-                // the geometry has changed for the segment probably because of a station removal.
-                // make sure we have the correct from and to stations.
-                segmentIndex = this.planLayerView.collection.indexOf(this.model);
-                this.fromStation = this.planLayerView.collection.at(segmentIndex - 1);
-                this.toStation = this.planLayerView.collection.at(segmentIndex + 1);
-                this.otherStation[this.toStation.cid] = this.fromStation;
-                this.otherStation[this.fromStation.cid] = this.toStation;
+//            this.model.on('change:geometry', function() {
+//                this.updateGeometry(this.fromStation, this.toStation);
+//            }, this);
+            this.model.on('alter:stations', function() {
+                this.updateStations();
                 this.updateGeometry(this.fromStation, this.toStation);
             }, this);
             this.model.on('segment:remove', function() {
                 var feature = this.feature;
                 if (!_.isUndefined(feature)){
+                    this.removeChangeListener(this.fromStation);
+                    this.removeChangeListener(this.toStation);
                     this.segmentsVector.removeFeature(feature);
                     this.featureOverlay.removeFeature(feature);
                 }
@@ -570,21 +512,62 @@ $(function() {
             this.render();
         },
         
+        updateStations: function() {
+            // make sure we have the correct from and to stations.
+            var segmentIndex = this.planLayerView.collection.indexOf(this.model);
+            if (segmentIndex < 1){
+                return;
+            }
+            var newFromStation = this.planLayerView.collection.at(segmentIndex - 1);
+            var newToStation = this.planLayerView.collection.at(segmentIndex + 1);
+            var changed = false;
+            
+            if (newFromStation != this.fromStation){
+                this.removeChangeListener(this.fromStation);
+                this.fromStation = newFromStation;
+                this.addChangeListener(this.fromStation);
+                changed = true;
+            }
+            
+            if (newToStation != this.toStation){
+                this.removeChangeListener(this.toStation);
+                this.toStation = newToStation;
+                this.addChangeListener(this.toStation);
+                changed = true;
+            }
+            if (changed){
+                this.otherStation[this.toStation.cid] = this.fromStation;
+                this.otherStation[this.fromStation.cid] = this.toStation;
+                // for debugging
+                if (DEBUG_SEGMENTS){
+                    if (!_.isEqual(this.getLabel(), this.textStyle.getText().getText())){
+                        delete this.textStyle; // for garbage collection
+                        this.feature.setStyle(this.getStyles());
+                    }
+                }
+            }
+        },
+        
+        removeChangeListener: function(station){
+          station.off('change:geometry');  
+        },
         addChangeListener: function(station) {
             station.on('change:geometry',
-                    function(prevStation) {
-                        // make sure the next & previous stations are correct
-                        if (!_.isUndefined(prevStation) && (prevStation != this.fromStation) &&
-                                (prevStation != this.toStation)){
-                            this.fromStation = prevStation;
-                            this.otherStation[prevStation.cid] = this.toStation;
-                            this.addChangeListener(prevStation);
-                        }
+                    function() {
                         this.updateGeometry(station);
                     }, 
                     this);
         },
 
+        getStyles: function() {
+            if (DEBUG_SEGMENTS){
+                this.initTextStyle();
+                return [app.styles['segment'], this.textStyle]
+            } else {
+                return [app.styles['segment']];
+            }
+            
+        },
         render: function() {
             this.coords = _.map([this.fromStation, this.toStation],
                                function(station) {
@@ -594,41 +577,37 @@ $(function() {
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             this.feature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id'],
-                                                 'model': this.model,
-                                                 'style': [app.styles['segment']]
+                                                 'model': this.model
                                                  });
             // for some reason you have to set the style this way
-            this.feature.setStyle([app.styles['segment']]);
-            this.feature.on('change', function(event) {
-                var geometry = event.target.get('geometry');
+            this.feature.setStyle(this.getStyles());
+            this.geometry.on('change', function(event) {
+                var geometry = event.target;
                 var newCoordinates = geometry.getCoordinates();
                 if (newCoordinates.length > 2) {
                     // add the new station!
-                    var model = event.target.get('model');
-                    var station = app.models.stationFactory({
+                    var oldSegment = this.model; //event.target.get('model');
+                    var oldFirstStation = this.fromStation;
+                    var newStation = app.models.stationFactory({
                         coordinates: inverse(newCoordinates[1])
                     });
-                    this.planLayerView.collection.insertStation(model, station);
-                    var stationPointView = this.planLayerView.drawStation(station);
+                    var segmentBefore = this.planLayerView.collection.insertStation(oldSegment, newStation);
+                    var stationPointView = this.planLayerView.drawStation(newStation);
                     this.planLayerView.stationViews.push(stationPointView);
                     
-                    //add the new segments
-                    var sequence = app.currentPlan.get('sequence');
-                    var index = sequence.indexOf(station);
-                    var segmentBefore = sequence.at(index - 1);
-                    var segmentAfter = sequence.at(index + 1);
                     if (!_.isUndefined(segmentBefore)){
-                        this.planLayerView.drawSegment(segmentBefore, sequence.at(index - 2), sequence.at(index));
+                        this.planLayerView.drawSegment(segmentBefore, oldFirstStation, newStation);
                     }
                     
-                    // remove the old segment
-                    this.segmentsVector.removeFeature(this.feature);
-                    this.featureOverlay.removeFeature(this.feature);
-//                    app.vent.trigger('feature:deleted', this.feature);
-                  
-                    if (!_.isUndefined(segmentAfter)){
-                        this.planLayerView.drawSegment(segmentAfter, station, sequence.at(index + 2));
+                    //total hack, remove and readd this segment to the feature
+                    // this will prevent continuing to edit the second point of the segment (ie the one we just added)
+                    try {
+                        this.featureOverlay.removeFeature(this.feature);
+                    } catch (err){
+                        // ulp
                     }
+                    this.featureOverlay.addFeature(this.feature);
+                    
                 }
                 
             }, this);
@@ -642,27 +621,54 @@ $(function() {
          ** You can also supply just one station PathElement
          */
          updateGeometry: function(point1, point2) {
-
-             if (_.isUndefined(point2) && !_.isUndefined(point1) && point1.cid) {
-                 // only one model was supplied for update.  Go get the other one.
-                 point2 = this.otherStation[point1.cid];
+             if (!_.isUndefined(this.fromStation) && !_.isUndefined(this.toStation)){
+                 this.coords = _.map([this.fromStation, this.toStation],
+                         function(station) {
+                             return transform(station.get('geometry').coordinates);
+                         });
+                 this.geometry.setCoordinates(this.coords);
              }
 
-             if (point1 && point2) {
-                 var coords = [];
-                 _.each([point1, point2], function(point) {
-                     if (_.isArray(point)) {
-                         coords.push(transform(point));
-                     } else if (_.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng')) {
-                         coords.push(transform([point.lng, point.lat]));
-                     } else if (_.isObject(point) && _.isFunction(point.get)) {
-                         coords.push(transform(point.get('geometry').coordinates));
-                     }
+//             if (_.isUndefined(point2) && !_.isUndefined(point1) && point1.cid) {
+//                 // only one model was supplied for update.  Go get the other one.
+//                 point2 = this.otherStation[point1.cid];
+//             }
+//
+//             if (point1 && point2) {
+//                 var coords = [];
+//                 _.each([point1, point2], function(point) {
+//                     if (_.isArray(point)) {
+//                         coords.push(transform(point));
+//                     } else if (_.isObject(point) && _.has(point, 'lat') && _.has(point, 'lng')) {
+//                         coords.push(transform([point.lng, point.lat]));
+//                     } else if (_.isObject(point) && _.isFunction(point.get)) {
+//                         coords.push(transform(point.get('geometry').coordinates));
+//                     }
+//                 });
+//                 
+//                 this.geometry.setCoordinates(coords);
+//             }
+
+         },
+         
+         // for debugging put a label on the segment
+         getLabel: function() {
+             var sequence = app.currentPlan.get('sequence');
+             var segIndex = sequence.indexOf(this.model);
+             var name = '' + segIndex + '(' + sequence.indexOf(this.fromStation) + ',' + sequence.indexOf(this.toStation) + ')';
+             return name;
+         },
+         
+         initTextStyle: function() {
+             if (DEBUG_SEGMENTS){
+                 var name = this.getLabel();
+                 app.styles['segmentText']['text'] = name;
+                 var textStyle = new ol.style.Text(app.styles['segmentText']);
+                 this.textStyle = new ol.style.Style({
+                     text: textStyle
                  });
-                 
-                 this.geometry.setCoordinates(coords);
+                 app.styles['segmentText']['text'] = null;
              }
-
          }
     });
     
@@ -711,8 +717,7 @@ $(function() {
                 this.feature = new ol.Feature({'geometry': this.geometry,
                                                        'id': this.model.attributes['id'],
                                                        'model': this.model,
-                                                       'selectedStyle': this.selectedIconStyle,
-                                                       'style': [this.iconStyle, this.textStyle]
+                                                       'selectedStyle': this.selectedIconStyle
                                                     });
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
                 this.feature.on('remove', function(event) {
@@ -733,22 +738,6 @@ $(function() {
                 this.featureOverlay.addFeature(this.feature);
             },
             
-            redrawHandles: function() {
-                if (!app.mapRotationHandles)
-                    return;
-                if (_.isUndefined(this._geHandle))
-                    return;
-                if (app.currentPlan.kmlView.currentModeName != 'reposition')
-                    return;
-                app.currentPlan.kmlView.dragHandlesFolder.getFeatures()
-                    .removeChild(this._geHandle);
-                this._geHandle = this.createDragRotateHandle();
-                app.currentPlan.kmlView.dragHandlesFolder.getFeatures()
-                    .appendChild(this._geHandle);
-                app.currentPlan.kmlView.destroyMidpoints();
-                app.currentPlan.kmlView.drawMidpoints();
-            },
-
             redraw: function() {
                 if (_.isUndefined(this.geometry)){
                     return;
@@ -762,12 +751,7 @@ $(function() {
                     (coords[1] != existingCoords[1])) {
                     this.geometry.setCoordinates(coords);
                 }
-//                if (existingCoords[0] - coords[0] != 0 ||
-//                    existingCoords[1] - coords[1] != 0)
-//                    this.redrawHandles();
-                var name = this.getLabel();
-                var textInStyle = this.textStyle.getText();
-                if (!_.isEqual(name, textInStyle.getText())){
+                if (!_.isEqual(this.getLabel(), this.textStyle.getText().getText())){
                     // You can't change text of an existing style, you have to make a new one.
                     // https://github.com/openlayers/ol3/pull/2678
 //                    textInStyle.set('text',name);

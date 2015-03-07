@@ -462,8 +462,8 @@ app.models = app.models || {};
             var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
             app.vent.trigger('station:change');
-            segmentBefore.trigger('change:geometry');
-            segmentAfter.trigger('change:geometry');
+            segmentAfter.trigger('alter:stations'); 
+            return segmentBefore;
 
         },
 
@@ -482,14 +482,14 @@ app.models = app.models || {};
             // the station get removed in the same action
             app.Actions.disable();
             var nextSegment;
-            var prevStation;
+//            var prevStation;
             if (idx < this.length){
                 // next segment needs to be updated
                 nextSegment = this.at(idx + 1);
                 if (!_.isUndefined(nextSegment)) {
-                    if (idx - 2 >= 0){
-                        prevStation = this.at(idx - 2);
-                    }
+//                    if (idx - 2 >= 0){
+//                        prevStation = this.at(idx - 2);
+//                    }
                 }
             }
             this.remove([segment, stationModel]);
@@ -501,7 +501,7 @@ app.models = app.models || {};
                 segment.trigger('segment:remove');
             }
             if (!_.isUndefined(nextSegment) && (segment != nextSegment)){
-                nextSegment.trigger('change:geometry', prevStation);
+                nextSegment.trigger('alter:stations'); 
             }
             app.Actions.enable();
             app.Actions.action();
