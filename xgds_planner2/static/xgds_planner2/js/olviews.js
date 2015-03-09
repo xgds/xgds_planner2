@@ -8,7 +8,7 @@ function inverse(coords){
     return ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');    
 }
 
-var DEBUG_SEGMENTS = true;
+var DEBUG_SEGMENTS = false;
 
 $(function() {
     app.views = app.views || {};
@@ -102,26 +102,31 @@ $(function() {
                     opacity: 1.0
                     });
                 app.styles['station'] = new ol.style.Style({
-                    image: app.styles['placemarkImage']
+                    image: app.styles['placemarkImage'],
+                    zIndex: Infinity
                     });
                 app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
                     src: app.options.placemarkCircleHighlightedUrl,
-                    scale: 1.2
+                    scale: 1.2,
+                    zIndex: Infinity
                     });
                 app.styles['selectedStation'] = new ol.style.Style({
-                    image: app.styles['selectedPlacemarkImage']
+                    image: app.styles['selectedPlacemarkImage'],
+                    zIndex: Infinity
                     });
                 app.styles['direction'] = {
                         src: app.options.placemarkDirectionalUrl,
                         scale: 0.85,
                         rotation: 0.0,
-                        rotateWithView: true
+                        rotateWithView: true,
+                        zIndex: Infinity
                         };
                 app.styles['selectedDirection'] = {
                         src: app.options.placemarkSelectedDirectionalUrl,
                         scale: 1.2,
                         rotation: 0.0,
-                        rotateWithView: true
+                        rotateWithView: true,
+                        zIndex: Infinity
                         };
                 
                 app.styles['stationText'] = {
@@ -133,14 +138,16 @@ $(function() {
                             color: '#fff',
                             width: 2
                         }),
-                        offsetY: -20
+                        offsetY: -20,
+                        zIndex: 10
                 };
                 app.styles['segmentText'] = {
                         font: '14px Calibri,sans-serif',
                         stroke: new ol.style.Stroke({
                             color: 'red',
                             width: 1
-                        })
+                        }),
+                        zIndex: 10
                     };
 
             },
