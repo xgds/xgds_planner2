@@ -1,7 +1,17 @@
 # __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+#Copyright © 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
+#
+#The xGDS platform is licensed under the Apache License, Version 2.0 
+#(the "License"); you may not use this file except in compliance with the License. 
+#You may obtain a copy of the License at 
+#http://www.apache.org/licenses/LICENSE-2.0.
+#
+#Unless required by applicable law or agreed to in writing, software distributed 
+#under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+#CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+#specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
 """
@@ -129,7 +139,7 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 )
 
 # kml root from xgds_map_server
-XGDS_PLANNER2_LAYER_FEED_URL = "/xgds_map_server/feed/all/?logo=0"
+XGDS_PLANNER2_LAYER_FEED_URL = "/xgds_map_server/treejson/"
 
 XGDS_PLANNER2_LINE_WIDTH_PIXELS = 3
 
@@ -221,7 +231,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
-     'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
-#     'openlayers=https://github.com/openlayers/ol3/releases/download/v3.2.1/v3.2.1.zip',
+    'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
     'ol3',
+    'fancytree',
 )

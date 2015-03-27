@@ -1,3 +1,19 @@
+// __BEGIN_LICENSE__
+//Copyright © 2015, United States Government, as represented by the 
+//Administrator of the National Aeronautics and Space Administration. 
+//All rights reserved.
+//
+//The xGDS platform is licensed under the Apache License, Version 2.0 
+//(the "License"); you may not use this file except in compliance with the License. 
+//You may obtain a copy of the License at 
+//http://www.apache.org/licenses/LICENSE-2.0.
+//
+//Unless required by applicable law or agreed to in writing, software distributed 
+//under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+//CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+//specific language governing permissions and limitations under the License.
+// __END_LICENSE__
+
 var DEG2RAD = Math.PI / 180.0;
 
 function transform(coords){
@@ -9,6 +25,7 @@ function inverse(coords){
 }
 
 var DEBUG_SEGMENTS = false;
+var KML_PROJECTION = ol.proj.get('EPSG:3857');
 
 $(function() {
     app.views = app.views || {};
@@ -63,9 +80,37 @@ $(function() {
                   });
                 this.buildStyles();
                 this.updateBbox();
-                this.on('layers:loaded', this.render);
+                app.vent.on('layers:loaded', this.render);
+                app.vent.on('layers:loaded', this.initializeMapLayers);
                 app.vent.trigger('layers:loaded');
-                this.drawPlan();
+//                this.drawPlan();
+            },
+            
+            // load map tree ahead of time to load layers into map
+            initializeMapLayers: function() {
+                $.ajax({
+                    url: app.options.layerFeedUrl,
+                    success: function(data) {
+                        app.treeData = data; 
+                    },
+                    dataType: 'json'
+                  });
+//                $.get( app.options.layerFeedUrl, function(data) {
+//                   app.treeData = data; 
+//                }, this);
+            },
+            
+            turnOnMapLayers: function(node) {
+                if (!_.isUndefined(node.selected) && node.selected){
+                    var kmlfile = node.data.localfile;
+                    
+                }
+                $.each(node.children, turnOnMapLayers(i, child);
+                });
+            }
+            
+            updateMapLayers: function() {
+              console.log('updating');  
             },
             
             updateBbox: function() {
@@ -154,6 +199,7 @@ $(function() {
 
             render: function() {
                 //           console.log('re-rendering map');
+                this.updateMapLayers();
                 this.drawPlan();
             },
             
@@ -843,5 +889,17 @@ $(function() {
 
         });
 
+    var KmlLayer{
+        View = Backbone.View.extend({
+        initialize: function(options) {
+            this.options = options || {};
+            this.kmlVector = this.options.kmlVector;
+            this.featureOverlay = this.options.featureOverlay;
+            
+            if (!options.featureOverlay && !options.model) {
+                throw 'Missing a required option!';
+            }
+        }
+    });
     
 });

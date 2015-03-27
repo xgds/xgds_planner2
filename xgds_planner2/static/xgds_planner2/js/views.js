@@ -1,3 +1,19 @@
+// __BEGIN_LICENSE__
+//Copyright © 2015, United States Government, as represented by the 
+//Administrator of the National Aeronautics and Space Administration. 
+//All rights reserved.
+//
+//The xGDS platform is licensed under the Apache License, Version 2.0 
+//(the "License"); you may not use this file except in compliance with the License. 
+//You may obtain a copy of the License at 
+//http://www.apache.org/licenses/LICENSE-2.0.
+//
+//Unless required by applicable law or agreed to in writing, software distributed 
+//under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+//CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+//specific language governing permissions and limitations under the License.
+// __END_LICENSE__
+
 app.views = app.views || {};
 
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
@@ -26,7 +42,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
-
     },
 
     onShow: function() {
@@ -1146,70 +1161,46 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
+app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
     template: '#template-layer-tree',
-//    onShow: function() {
-//        if (!_.isUndefined(app.tree)) {
-//            var layertreeContainer = this.$el.find('#layertreeContainer');
-//            if (!_.isUndefined(layertreeContainer)) {
-//                layertreeContainer.show();
-////                console.log("show tree");
-////                var layertree = this.$el.find('#layertree');
-////                if (!_.isUndefined(layertree)) {
-////                    var kmltreeDiv = layertree.find(">:first-child");
-////                    if (!_.isUndefined(kmltreeDiv)){
-////                        kmltreeDiv.show();
-////                    }
-////                }
-//            }
-//        }
-//    },
-//    close: function() {
-//        var layertreeContainer = this.$el.find('#layertreeContainer');
-//        if (!_.isUndefined(layertreeContainer)) {
-//            console.log("close tree");
-////            var layertree = this.$el.find('#layertree');
-////            if (!_.isUndefined(layertree)) {
-////                var kmltreeDiv = layertree.find(">:first-child");
-////                if (!_.isUndefined(kmltreeDiv)){
-////                    kmltreeDiv.hide();
-////                }
-////            }
-//            layertreeContainer.hide();
-//        }
-//    },
     onRender: function() {
         app.vent.trigger('layerView:onRender');
-        if (!_.isUndefined(ge)) {
-            if (!_.isUndefined(app.tree)) {
-                // only remove if it's there in the first place
-                app.tree.destroy();
-            }
-            app.tree = kmltree({
-                url: app.options.layerFeedUrl,
-                gex: ge_gex,
-                mapElement: $('#map'),
-                element: this.$el.find('#layertree'),
-                restoreState: true,
-                bustCache: true
-            });
-            app.tree.load();
-            //TODO this rebuilds the tree every single time but using the same one it does not appear.
-            // WHAT THE FUCK
-//            if (_.isUndefined(app.tree)) {
-//                app.tree = kmltree({
-//                    url: app.options.layerFeedUrl,
-//                    gex: ge_gex,
-//                    mapElement: $('#map'),
-//                    element: this.$el.find('#layertree'),
-//                    restoreState: true,
-//                    bustCache: true
-//                });
-//                app.tree.load();
-//            } 
+        if (!_.isUndefined(app.tree)) {
+            // only remove if it's there in the first place
+            return;
         }
+        var mytree = $("#layertree").fancytree({
+            source: app.treeData,
+//            lazyLoad: function(event, data){
+//                // we can't return values from an event handler, so we
+//                // pass the result as `data`attribute.
+////                      data.result = {url: "unit/ajax-sub2.json"};
+//                data.result = $.ajax({
+//                  url: "ajax-sub2.json",
+//                  dataType: "json"
+//                });
+//              }
+            checkbox: true,
+            activate: function(event, data) {
+              $("#echoActive").text(data.node.title);
+//                          alert(node.getKeyPath());
+//              if( data.node.url )
+//                window.open(data.node.url, data.node.target);
+            },
+            deactivate: function(event, data) {
+              $("#echoSelected").text("-");
+            },
+            focus: function(event, data) {
+              $("#echoFocused").text(data.node.title);
+            },
+            blur: function(event, data) {
+              $("#echoFocused").text("-");
+            }
+        });
+        app.tree = $("#layertree").fancytree("getTree");
     }
 });
+
 
 app.views.PlanToolsView = Backbone.View.extend({
     template: '#template-plan-tools',
@@ -1395,33 +1386,13 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         //'meta': app.views.PlanMetaView,
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
-        'layers': app.views.LayerTreeView,
+        'layers': app.views.FancyTreeView,
         'tools': app.views.PlanToolsView,
         'links': app.views.PlanLinksView
     },
 
     initialize: function() {
         this.on('tabSelected', this.setTab);
-        // load layer tree ahead of time to load layers into map
-//        app.tree = null;
-        this.listenTo(app.vent, 'earth:loaded', function() {
-            app.initialTree = kmltree({
-                url: app.options.layerFeedUrl,
-                gex: ge_gex,
-                mapElement: [],
-                element: [],
-                restoreState: true,
-                bustCache: true
-            });
-            app.initialTree.load();
-        });
-        this.listenTo(app.vent, 'layerView:onRender', function() {
-            // remove tree once user loads layers tab
-            if (!_.isNull(app.initialTree)) {
-                // only remove if it's there in the first place
-                app.initialTree.destroy();
-            }
-        });
         this.listenTo(app.vent, 'setTabRequested', function(tabId) {
             this.setTab(tabId);
         });

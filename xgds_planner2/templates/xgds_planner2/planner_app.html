@@ -15,10 +15,11 @@
   @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
                              
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
-  @import url('{{EXTERNAL_URL}}kmltree/kmltree.css');
-  @import url('{{EXTERNAL_URL}}backbone-forms/distribution/templates/old.css');
-  @import url('{{EXTERNAL_URL}}ol3/css/ol.css');
-  @import url('{{STATIC_URL}}xgds_planner2/css/forms_adjust.css');
+  @import url('{{ EXTERNAL_URL }}kmltree/kmltree.css');
+  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
+  @import url('{{ EXTERNAL_URL }}ol3/css/ol.css');
+  @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
+  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
       .map {
         height: 400px;
         width: 100%;
@@ -52,6 +53,9 @@
 		<tr></tr>
 		</table>
 	</div>
+	<div class="row">
+	<div id="layertree" data-source="ajax" class="sampletree"></div>
+	</div>
     
 </div>
 {% endblock content %}
@@ -62,18 +66,22 @@
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery/dist/jquery.min.js'></script>
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}fancytree/dist/jquery.fancytree.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}lodash/lodash.min.js'></script>
+    
     <script type="text/javascript" src='{{ EXTERNAL_URL }}handlebars/handlebars.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone/backbone.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
+<!--     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.babysitter/lib/backbone.babysitter.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
+ -->    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}marionette/lib/backbone.marionette.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/string-format.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}proj4/dist/proj4.js'></script>
+    
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/handlebars-helpers.js'></script>
+    
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/geo.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/forms.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/app.js'></script>
@@ -84,7 +92,9 @@
     <!-- <script src="{{EXTERNAL_URL}}ol3/build/ol.js" type="text/javascript"></script>
      -->
     <script src="{{EXTERNAL_URL}}ol3/build/ol-debug.js" type="text/javascript"></script>
-   	<script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olviews.js'></script>
+   	<!-- <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olStationRubberband.js'></script>
+   	 -->
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olviews.js'></script>
      
     <!-- 
     <script type="text/javascript" src="{{ planner_appUrl }}"></script>
@@ -129,4 +139,3 @@ $(function(){
     }); 
 {% endblock jsInit %}
   
-      
