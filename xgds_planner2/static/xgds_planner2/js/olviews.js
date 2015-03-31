@@ -103,11 +103,9 @@ $(function() {
             turnOnMapLayers: function(node) {
                 if (!_.isUndefined(node.selected) && node.selected){
                     var kmlfile = node.data.localfile;
-                    
                 }
-                $.each(node.children, turnOnMapLayers(i, child);
-                });
-            }
+                $.each(node.children, turnOnMapLayers(i, child));
+            },
             
             updateMapLayers: function() {
               console.log('updating');  
@@ -147,31 +145,31 @@ $(function() {
                     opacity: 1.0
                     });
                 app.styles['station'] = new ol.style.Style({
-                    image: app.styles['placemarkImage'],
-                    zIndex: Infinity
+                    image: app.styles['placemarkImage']
+//                    zIndex: Infinity
                     });
                 app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
                     src: app.options.placemarkCircleHighlightedUrl,
-                    scale: 1.2,
-                    zIndex: Infinity
+                    scale: 1.2
+//                    zIndex: Infinity
                     });
                 app.styles['selectedStation'] = new ol.style.Style({
-                    image: app.styles['selectedPlacemarkImage'],
-                    zIndex: Infinity
+                    image: app.styles['selectedPlacemarkImage']
+//                    zIndex: Infinity
                     });
                 app.styles['direction'] = {
                         src: app.options.placemarkDirectionalUrl,
                         scale: 0.85,
                         rotation: 0.0,
-                        rotateWithView: true,
-                        zIndex: Infinity
+                        rotateWithView: true
+//                        zIndex: Infinity
                         };
                 app.styles['selectedDirection'] = {
                         src: app.options.placemarkSelectedDirectionalUrl,
                         scale: 1.2,
                         rotation: 0.0,
-                        rotateWithView: true,
-                        zIndex: Infinity
+                        rotateWithView: true
+//                        zIndex: Infinity
                         };
                 
                 app.styles['stationText'] = {
@@ -183,16 +181,16 @@ $(function() {
                             color: '#fff',
                             width: 2
                         }),
-                        offsetY: -20,
-                        zIndex: 10
+                        offsetY: -20
+//                        zIndex: 10
                 };
                 app.styles['segmentText'] = {
                         font: '14px Calibri,sans-serif',
                         stroke: new ol.style.Stroke({
                             color: 'red',
                             width: 1
-                        }),
-                        zIndex: 10
+                        })
+//                        zIndex: 10
                     };
 
             },
@@ -404,11 +402,10 @@ $(function() {
                                       var model = feature.get('model');
                                       switch (model.get('type')) {
                                       case 'Station':
+                                          var selectedstyle = feature.get('selectedStyle');
                                           return [feature.get('selectedStyle'), feature.getStyle()[1]];
-                                          break;
                                       case 'Segment':
                                           return [app.styles['selectedSegment']];
-                                          break;
                                       }
                                   };
                                 })()
@@ -725,6 +722,18 @@ $(function() {
          }
     });
     
+    var KmlLayer = Backbone.View.extend({
+        initialize: function(options) {
+            this.options = options || {};
+            this.kmlVector = this.options.kmlVector;
+            this.featureOverlay = this.options.featureOverlay;
+            
+            if (!options.featureOverlay && !options.model) {
+                throw 'Missing a required option!';
+            }
+        }
+    });
+    
  // This view class manages the map point for a single Station model
     var StationPointView = Backbone.View
         .extend({
@@ -768,10 +777,10 @@ $(function() {
             render: function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.feature = new ol.Feature({'geometry': this.geometry,
-                                                       'id': this.model.attributes['id'],
-                                                       'model': this.model,
-                                                       'selectedStyle': this.selectedIconStyle
-                                                    });
+                                               'id': this.model.attributes['id'],
+                                               'model': this.model,
+                                               'selectedStyle': this.selectedIconStyle
+                                            });
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
                 this.feature.on('remove', function(event) {
                     console.log(this);
@@ -888,18 +897,5 @@ $(function() {
             }
 
         });
-
-    var KmlLayer{
-        View = Backbone.View.extend({
-        initialize: function(options) {
-            this.options = options || {};
-            this.kmlVector = this.options.kmlVector;
-            this.featureOverlay = this.options.featureOverlay;
-            
-            if (!options.featureOverlay && !options.model) {
-                throw 'Missing a required option!';
-            }
-        }
-    });
     
 });
