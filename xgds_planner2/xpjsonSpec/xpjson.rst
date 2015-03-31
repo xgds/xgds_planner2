@@ -1903,7 +1903,7 @@ The resulting Plan_ might have these auto-generated ``id`` values::
 .. _Python String Formatting: http://docs.python.org/3/library/string.html#formatstrings
 
 .. o  __BEGIN_LICENSE__
-.. o Copyright © 2015, United States Government, as represented by the 
+.. o Copyright (c) 2015, United States Government, as represented by the 
 .. o Administrator of the National Aeronautics and Space Administration. 
 .. o All rights reserved.
 .. o 
