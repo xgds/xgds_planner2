@@ -255,14 +255,15 @@ $(function() {
                                                           'source': this.stationsVector
                                                           });
                 
-                //TODO this did not work
-//                if (!_.isEmpty(this.segmentsVector.getFeatures())){
-//                    this.map.getView().fitExtent(this.segmentsVector.getExtent(), this.map.getSize());
-//                }
-
                 if (this.currentMode) {
                     this.resetMode();
                 }
+                
+                // scale map to focus on plan
+                if (!_.isEmpty(this.segmentsVector.getFeatures())){
+                    this.map.getView().fitExtent(this.segmentsVector.getExtent(), this.map.getSize());
+                }
+
             },
 
             drawStation: function(station) {
@@ -312,7 +313,6 @@ $(function() {
 
             },
             setMode: function(modeName) {
-                //console.log('Set mouse mode: ' + modeName);
                 var modeMap = {
                     'addStations' : 'addStationsMode',
                     'navigate' : 'navigateMode',
@@ -400,10 +400,13 @@ $(function() {
                             style: (function() {
                                   return function(feature, resolution) {
                                       var model = feature.get('model');
+                                      console.log('style method ');
+                                      console.log(model.get('type'));
                                       switch (model.get('type')) {
                                       case 'Station':
-                                          var selectedstyle = feature.get('selectedStyle');
-                                          return [feature.get('selectedStyle'), feature.getStyle()[1]];
+                                          var iconStyle = feature.get('selectedIconStyle');
+                                          var textStyle = feature.get('textStyle');
+                                          return [iconStyle, textStyle];
                                       case 'Segment':
                                           return [app.styles['selectedSegment']];
                                       }
@@ -455,15 +458,40 @@ $(function() {
             
             mapSelect: function(selectedItem){
                 if (!_.isUndefined(selectedItem)){
+                    var snav = this.selectNavigate;
                     var features = this.selectNavigate.getFeatures();
                     var foundFeature = selectedItem['feature'];
                     if (features.getLength() > 0){
                         if (features.item(0) == foundFeature) {
                             return;
                         }
+                        features.forEach(function(item, index, array){
+                            var model = item.get('model');
+                            switch (model.get('type')) {
+                            case 'Station':
+                                var iconStyle = item.get('iconStyle');
+                                var textStyle = item.getStyle()[1];
+                                item.setStyle([iconStyle, textStyle]);
+                                break;
+                            case 'Segment':
+                                item.setStyle([app.styles['segment']]);
+                                break;
+                            }
+                        });
+                        features.clear();
                     }
-                    features.clear();
+                    
                     features.push(foundFeature);
+                    switch (foundFeature.get('model').get('type')) {
+                    case 'Station':
+                        var iconStyle = foundFeature.get('selectedIconStyle');
+                        var textStyle = foundFeature.get('textStyle');
+                        foundFeature.setStyle([iconStyle, textStyle]);
+                        break;
+                    case 'Segment':
+                        foundFeature.setStyle([app.styles['selectedSegment']]);
+                        break;
+                    }
                 }  
             },
             
@@ -518,7 +546,6 @@ $(function() {
                 exit: function() {
                     this.map.removeInteraction(this.repositioner);
                     this.map.removeInteraction(this.stationDeleter);
-
                 }
             } // end repositionMode
 
@@ -713,9 +740,8 @@ $(function() {
              if (DEBUG_SEGMENTS){
                  var name = this.getLabel();
                  app.styles['segmentText']['text'] = name;
-                 var textStyle = new ol.style.Text(app.styles['segmentText']);
                  this.textStyle = new ol.style.Style({
-                     text: textStyle
+                     text: new ol.style.Text(app.styles['segmentText'])
                  });
                  app.styles['segmentText']['text'] = null;
              }
@@ -779,7 +805,9 @@ $(function() {
                 this.feature = new ol.Feature({'geometry': this.geometry,
                                                'id': this.model.attributes['id'],
                                                'model': this.model,
-                                               'selectedStyle': this.selectedIconStyle
+                                               'iconStyle': this.iconStyle,
+                                               'selectedIconStyle': this.selectedIconStyle,
+                                               'textStyle': this.textStyle
                                             });
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
                 this.feature.on('remove', function(event) {
@@ -885,9 +913,8 @@ $(function() {
                 var name = this.getLabel();
                 
                 app.styles['stationText']['text'] = name;
-                var textStyle = new ol.style.Text(app.styles['stationText']);
                 this.textStyle = new ol.style.Style({
-                    text: textStyle
+                    text: new ol.style.Text(app.styles['stationText'])
                 });
                 app.styles['stationText']['text'] = null;
             },
