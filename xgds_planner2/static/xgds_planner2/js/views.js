@@ -1171,30 +1171,22 @@ app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
         }
         var mytree = $("#layertree").fancytree({
             source: app.treeData,
-//            lazyLoad: function(event, data){
-//                // we can't return values from an event handler, so we
-//                // pass the result as `data`attribute.
-////                      data.result = {url: "unit/ajax-sub2.json"};
-//                data.result = $.ajax({
-//                  url: "ajax-sub2.json",
-//                  dataType: "json"
-//                });
-//              }
             checkbox: true,
+            select: function(event, data) {
+                if (_.isUndefined(data.node.kmlLayerView)) {
+                    // make a new one
+                    app.vent.trigger('kmlNode:create', data.node);
+                } else {
+                    data.node.kmlLayerView.render();
+                }
+              },
             activate: function(event, data) {
-              $("#echoActive").text(data.node.title);
-//                          alert(node.getKeyPath());
-//              if( data.node.url )
-//                window.open(data.node.url, data.node.target);
             },
             deactivate: function(event, data) {
-              $("#echoSelected").text("-");
             },
             focus: function(event, data) {
-              $("#echoFocused").text(data.node.title);
             },
             blur: function(event, data) {
-              $("#echoFocused").text("-");
             }
         });
         app.tree = $("#layertree").fancytree("getTree");
