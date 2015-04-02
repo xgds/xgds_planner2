@@ -1198,6 +1198,7 @@ app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
             }
         });
         app.tree = $("#layertree").fancytree("getTree");
+        app.vent.trigger('tree:loaded');
     }
 });
 

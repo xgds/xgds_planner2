@@ -65,13 +65,17 @@ $(function() {
                                                   app.map.$el.outerWidth() -
                                                   app.State.tabsLeftMargin);
                 });
+                
+                this.kmlGroup = new ol.layer.Group();
+                
                 this.map = new ol.Map({
                     target: 'map',
                     layers: [
                       new ol.layer.Tile({
 //                          source: new ol.source.MapQuest({layer: 'sat'})
                           source: new ol.source.MapQuest({layer: 'osm'})
-                      })
+                      }),
+                      this.kmlGroup
                     ],
                     view: new ol.View({
                         // we will center the view later
@@ -82,6 +86,7 @@ $(function() {
                 this.updateBbox();
                 app.vent.on('layers:loaded', this.render);
                 app.vent.on('layers:loaded', this.initializeMapLayers);
+                app.vent.on('tree:loaded', this.updateMapLayers);
                 app.vent.trigger('layers:loaded');
 //                this.drawPlan();
             },
@@ -92,6 +97,7 @@ $(function() {
                     url: app.options.layerFeedUrl,
                     success: function(data) {
                         app.treeData = data; 
+//                        this.updateMapLayers();
                     },
                     dataType: 'json'
                   });
@@ -100,15 +106,40 @@ $(function() {
 //                }, this);
             },
             
-            turnOnMapLayers: function(node) {
-                if (!_.isUndefined(node.selected) && node.selected){
-                    var kmlfile = node.data.localfile;
+            nodeVisitor: function(node){
+                if (_.isUndefined(node.kmlLayerView) && node.selected){
+                    // create the kml layer view
+                    var kmlLayerView = new KmlLayerView({
+                        node: node,
+                        kmlGroup: this.kmlGroup
+                    });
+                    node.kmlLayerView = kmlLayerView;
                 }
-                $.each(node.children, turnOnMapLayers(i, child));
+                if (node.selected){
+                    node.kmlLayerView.render();
+                }
+                return true;
             },
             
             updateMapLayers: function() {
-              console.log('updating');  
+                if (!_.isUndefined(app.tree)){
+                    var selectedNodes = app.tree.getSelectedNodes();
+                    selectedNodes.forEach(function(node){
+                        if (_.isUndefined(node.kmlLayerView) && node.selected){
+                            // create the kml layer view
+                            var kmlLayerView = new KmlLayerView({
+                                node: node,
+                                kmlGroup: this.kmlGroup
+                            });
+                            node.kmlLayerView = kmlLayerView;
+                        }
+                        if (node.selected){
+                            node.kmlLayerView.render();
+                        }
+                        return true;
+                    }, this);
+//                    app.tree.visit(this.nodeVisitor(), true);
+                }
             },
             
             updateBbox: function() {
@@ -748,14 +779,35 @@ $(function() {
          }
     });
     
-    var KmlLayer = Backbone.View.extend({
+    var KmlLayerView = Backbone.View.extend({
         initialize: function(options) {
             this.options = options || {};
-            this.kmlVector = this.options.kmlVector;
-            this.featureOverlay = this.options.featureOverlay;
+            this.kmlGroup = this.options.kmlGroup;
+            this.node = this.options.node;
             
-            if (!options.featureOverlay && !options.model) {
+            if (!options.kmlGroup && !options.node) {
                 throw 'Missing a required option!';
+            }
+            this.constructVector();
+            this.render();
+        },
+        constructVector: function() {
+            if (_.isUndefined(this.kmlVector)){
+                var kmlfile = this.node.data.kmlFile;
+                this.kmlVector = new ol.layer.Vector({
+                    source: new ol.source.KML({
+                        projection: KML_PROJECTION,
+                        url: this.node.data.kmlFile
+                    })
+                });
+            }
+        },
+        render: function() {
+            if (this.node.selected){
+                this.constructVector();
+                this.kmlGroup.getLayers().push(this.kmlVector);
+            } else if (!_.isUndefined(this.kmlVector)){
+                this.kmlGroup.getLayers().remove(this.kmlVector);
             }
         }
     });
