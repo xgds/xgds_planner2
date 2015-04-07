@@ -234,4 +234,5 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
     'ol3',
     'fancytree',
+    'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'
 )

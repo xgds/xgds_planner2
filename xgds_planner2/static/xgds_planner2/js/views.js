@@ -391,8 +391,6 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('sequence')});
         this.col2.show(view);
-
-        //this.showMeta(itemModel);
     },
 
     showSegment: function(itemModel) {
@@ -1060,6 +1058,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             app.vent.trigger('cutAfterPaste');
         }
     }
+    
+    
 });
 
 /*
@@ -1161,7 +1161,12 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
     }
 });
 
+
 app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
+    initialize: function() {
+        this.listenTo(app.vent, 'refreshTree', function() {this.refreshTree()});
+//        this.listenTo(app.vent, 'tree:loaded',function() { this.moveNode()});
+    },
     template: '#template-layer-tree',
     onRender: function() {
         app.vent.trigger('layerView:onRender');
@@ -1169,7 +1174,11 @@ app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
             // only remove if it's there in the first place
             return;
         }
-        var mytree = $("#layertree").fancytree({
+        var layertreeNode = $("#layertree");
+//        layertreeNode.detach();
+//        $("#layertreeContainer").append(layertreeNode);
+        var mytree = layertreeNode.fancytree({
+            extensions: ["persist"],
             source: app.treeData,
             checkbox: true,
             select: function(event, data) {
@@ -1180,17 +1189,43 @@ app.views.FancyTreeView = Backbone.Marionette.ItemView.extend({
                     data.node.kmlLayerView.render();
                 }
               },
-            activate: function(event, data) {
-            },
-            deactivate: function(event, data) {
-            },
-            focus: function(event, data) {
-            },
-            blur: function(event, data) {
-            }
+              persist: {
+                  // Available options with their default:
+                  cookieDelimiter: "~",    // character used to join key strings
+                  cookiePrefix: undefined, // 'fancytree-<treeId>-' by default
+                  cookie: { // settings passed to jquery.cookie plugin
+                    raw: false,
+                    expires: "",
+                    path: "",
+                    domain: "",
+                    secure: false
+                  },
+                  expandLazy: false, // true: recursively expand and load lazy nodes
+                  overrideSource: true,  // true: cookie takes precedence over `source` data attributes.
+                  store: "auto",     // 'cookie': use cookie, 'local': use localStore, 'session': use sessionStore
+                  types: "active expanded focus selected"  // which status types to store
+                }
         });
-        app.tree = $("#layertree").fancytree("getTree");
+        app.tree = layertreeNode.fancytree("getTree");
         app.vent.trigger('tree:loaded');
+        return;
+    },
+    refreshTree: function() {
+        if (!_.isUndefined(app.tree)){
+            app.tree.reload({
+                url: app.options.layerFeedUrl
+            }).done(function(){
+                //TODO implement
+                app.vent.trigger('layerView:reloadKmlLayers');
+            });
+        }
+    },
+    moveNode: function() {
+        if (!_.isUndefined(app.tree)){
+            var layertreeNode = $("#layertree");
+            layertreeNode.detach();
+            $("#layertreeContainer").append(layertreeNode);
+        }
     }
 });
 

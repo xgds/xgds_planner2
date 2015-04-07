@@ -102,24 +102,16 @@ $(function() {
                         app.treeData = data;
                         app.kmlMap = {}; // temporary hashmap
                         this.initializeMapLayers(app.treeData[0]);
-//                        this.updateMapLayers();
                     }, this)
                   });
-//                $.get( app.options.layerFeedUrl, function(data) {
-//                   app.treeData = data; 
-//                }, this);
             },
             
             // read through the json data and turn on layers that should be on
             initializeMapLayers: function(node, index, collection) {
                 if (node.selected){
-                   // create the kml layer view
-                   var kmlLayerView = new KmlLayerView({
-                       kmlFile: node.data.kmlFile,
-                       kmlGroup: this.kmlGroup
-                   });
+                   // create the kml layer view and
                    // store the layer in a map so we can get it later
-                   app.kmlMap[node.data.kmlFile] = kmlLayerView;
+                   app.kmlMap[node.data.kmlFile] = this.createKmlLayerView(node);
                 }
                 if (!_.isUndefined(node.children)){
                     for (var i = 0; i < node.children.length; i++){
@@ -136,6 +128,7 @@ $(function() {
                     kmlGroup: this.kmlGroup
                 });
                 node.kmlLayerView = kmlLayerView;
+                return kmlLayerView;
             },
             
             updateMapLayers: function() {
@@ -151,9 +144,7 @@ $(function() {
                                 this.createKmlLayerView(node);
                             }
                         }
-                        return true;
                     }, this);
-//                    app.tree.visit(this.nodeVisitor(), true);
                 }
             },
             
