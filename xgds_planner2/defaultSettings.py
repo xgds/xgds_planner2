@@ -231,8 +231,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
-    'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
-    'ol3',
+    'cesiumjs',
     'fancytree',
     'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'
 )
