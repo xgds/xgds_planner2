@@ -17,6 +17,11 @@
 var DEG2RAD = Math.PI / 180.0;
 
 var DEBUG_SEGMENTS = false;
+var STATION_LABEL_OFFSET = new Cesium.Cartesian2(0, -10);
+var STATION_SCALE_BY_DISTANCE = new Cesium.NearFarScalar({
+    near: 0.25,
+    nearValue: 0.25
+});
 
 $(function() {
     app.views = app.views || {};
@@ -57,9 +62,8 @@ $(function() {
                                                   app.State.tabsLeftMargin);
                 });
                 
-//                this.kmlGroup = new ol.layer.Group();
-                
                 this.map = new Cesium.Viewer('map');
+                app.map = this.map;
                 // todo get long lat and height from plan
                 this.map.camera.setView({
                     position : Cesium.Cartesian3.fromDegrees(-121.737714, 50.866680, 50),
@@ -67,33 +71,16 @@ $(function() {
                     pitch : -Cesium.Math.PI_OVER_TWO,
                     roll : 0.0
                 }); 
-//                        {
-//                    target: 'map',
-//                    layers: [
-//                      new ol.layer.Tile({
-////                          source: new ol.source.MapQuest({layer: 'sat'})
-//                          source: new ol.source.MapQuest({layer: 'osm'})
-//                      }),
-//                      this.kmlGroup
-//                    ],
-//                    view: new ol.View({
-//                        // we will center the view later
-//                        zoom: 6
-//                    })
-//                  });
-                /*
-                this.buildStyles();
-                this.updateBbox();
+                this.buildMaterials();
                 app.vent.on('layers:loaded', this.render);
                 app.vent.on('layers:loaded', this.initializeMapData);
                 app.vent.on('tree:loaded', this.updateMapLayers);
-                app.vent.trigger('layers:loaded');
                 app.vent.on('kmlNode:create', function(node) {
                     this.createKmlLayerView(node);
                 }, this);
-                */
-                app.vent.on('layers:loaded', this.render);
+
                 app.vent.trigger('layers:loaded');
+                this.updateBbox();
 
             },
             
@@ -128,8 +115,7 @@ $(function() {
                 //  create the kml layer view
                 var kmlLayerView = new KmlLayerView({
                     node: node,
-                    kmlFile: node.data.kmlFile,
-                    kmlGroup: this.kmlGroup
+                    kmlFile: node.data.kmlFile
                 });
                 node.kmlLayerView = kmlLayerView;
                 return kmlLayerView;
@@ -153,86 +139,70 @@ $(function() {
             },
             
             updateBbox: function() {
+                this.map.zoomTo(this.map.entities);
+                this.map.zoomTo(this.segments);
              // move to bounding box defined in plan
-                var site = app.currentPlan.get('site');
-                if (site != undefined)
-                    var bbox = site.bbox;
-                if (bbox != undefined) {
-                    var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
-                    extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
-                    this.map.getView().fitExtent(extent, this.map.getSize());
-                }
+//                var site = app.currentPlan.get('site');
+//                if (site != undefined)
+//                    var bbox = site.bbox;
+//                if (bbox != undefined) {
+//                    var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
+//                    extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
+//                    this.map.getView().fitExtent(extent, this.map.getSize());
+//                }
             },
             
-            buildStyles: function() {
-                app.styles = new Object();
+            buildMaterials: function() {
+                app.materials = new Object();
                 
-                app.styles['segment'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        color: 'yellow',
-                        width: app.options.planLineWidthPixels
-                      })
+                app.materials['segment'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Color',
+                        uniforms : {
+                          color : Cesium.Color.YELLOW
+                        }
+                      }
                     });
-                app.styles['selectedSegment'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        color: 'cyan',
-                        width: app.options.planLineWidthPixels + 2
-                      })
+                app.materials['selectedSegment'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Color',
+                        uniforms : {
+                          color : Cesium.Color.CYAN
+                        }
+                      }
                     });
-                app.styles['placemarkImage'] = new ol.style.Icon({
-                    src: app.options.placemarkCircleUrl,
-                    scale: .8,
-                    rotateWithView: false,
-                    opacity: 1.0
-                    });
-                app.styles['station'] = new ol.style.Style({
-                    image: app.styles['placemarkImage']
-//                    zIndex: Infinity
-                    });
-                app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
-                    src: app.options.placemarkCircleHighlightedUrl,
-                    scale: 1.2
-//                    zIndex: Infinity
-                    });
-                app.styles['selectedStation'] = new ol.style.Style({
-                    image: app.styles['selectedPlacemarkImage']
-//                    zIndex: Infinity
-                    });
-                app.styles['direction'] = {
-                        src: app.options.placemarkDirectionalUrl,
-                        scale: 0.85,
-                        rotation: 0.0,
-                        rotateWithView: true
-//                        zIndex: Infinity
-                        };
-                app.styles['selectedDirection'] = {
-                        src: app.options.placemarkSelectedDirectionalUrl,
-                        scale: 1.2,
-                        rotation: 0.0,
-                        rotateWithView: true
-//                        zIndex: Infinity
-                        };
-                
-                app.styles['stationText'] = {
-                        font: '16px Calibri,sans-serif',
-                        fill: new ol.style.Fill({
-                            color: '#000'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: '#fff',
-                            width: 2
-                        }),
-                        offsetY: -20
-//                        zIndex: 10
-                };
-                app.styles['segmentText'] = {
-                        font: '14px Calibri,sans-serif',
-                        stroke: new ol.style.Stroke({
-                            color: 'red',
-                            width: 1
-                        })
-//                        zIndex: 10
-                    };
+                app.materials['station'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Image',
+                        uniforms : {
+                          image : app.options.placemarkCircleUrl
+                        }
+                      }
+                });
+                app.materials['selectedStation'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Image',
+                        uniforms : {
+                          image : app.options.placemarkCircleHighlightedUrl
+                        }
+                      }
+                });
+                app.materials['direction'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Image',
+                        uniforms : {
+                          image : app.options.placemarkDirectionalUrl
+                        }
+                      }
+                });
+                app.materials['selectedDirection'] = new Cesium.Material({
+                    fabric : {
+                        type : 'Image',
+                        uniforms : {
+                          image : app.options.placemarkSelectedDirectionalUrl
+                        }
+                      }
+                });
 
             },
 
@@ -240,6 +210,7 @@ $(function() {
                 //           console.log('re-rendering map');
                 //this.updateMapLayers();
                 this.drawPlan();
+                this.updateBbox();
             },
             
             drawPlan: function() {
@@ -268,16 +239,6 @@ $(function() {
                 this.map.entities.add(this.segments);
                 this.map.entities.add(this.stations);
 
-                // for editing
-//                this.featureOverlay = new ol.FeatureOverlay({
-//                    style: (function() {
-//                          return function(feature, resolution) {
-//                            return feature.getStyle();
-//                          };
-//                        })()
-//                });
-//                this.featureOverlay.setMap(this.map);
-                
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
                 
@@ -288,15 +249,8 @@ $(function() {
             },
 
             render: function() {
-//                this.drawStations();
+                this.drawStations();
                 this.drawSegments();
-//                this.segmentsLayer = new ol.layer.Vector({'name':'segments',
-//                                                          'source': this.segmentsVector
-//                                                          });
-//                
-//                this.stationsLayer = new ol.layer.Vector({'name':'stations',
-//                                                          'source': this.stationsVector
-//                                                          });
                 
                 if (this.currentMode) {
                     this.resetMode();
@@ -450,7 +404,7 @@ $(function() {
                                           var textStyle = feature.get('textStyle');
                                           return [iconStyle, textStyle];
                                       case 'Segment':
-                                          return [app.styles['selectedSegment']];
+                                          return [app.materials['selectedSegment']];
                                       }
                                   };
                                 })()
@@ -517,7 +471,7 @@ $(function() {
                                 item.setStyle([iconStyle, textStyle]);
                                 break;
                             case 'Segment':
-                                item.setStyle([app.styles['segment']]);
+                                item.setStyle([app.materials['segment']]);
                                 break;
                             }
                         });
@@ -532,7 +486,7 @@ $(function() {
                         foundFeature.setStyle([iconStyle, textStyle]);
                         break;
                     case 'Segment':
-                        foundFeature.setStyle([app.styles['selectedSegment']]);
+                        foundFeature.setStyle([app.materials['selectedSegment']]);
                         break;
                     }
                 }  
@@ -680,9 +634,9 @@ $(function() {
         getStyles: function() {
             if (DEBUG_SEGMENTS){
                 this.initTextStyle();
-                return [app.styles['segment'], this.textStyle]
+                return [app.materials['segment'], this.textStyle]
             } else {
-                return [app.styles['segment']];
+                return [app.materials['segment']];
             }
         },
         getCoords: function() {
@@ -692,16 +646,26 @@ $(function() {
           return result;
         },
         render: function() {
-            this.geometry = this.segments.add({
+            this.feature = app.map.entities.add({
+
                 name: this.fromStation.attributes['id'],
                 polyline: {
                     positions: this.getCoords(),
-                    width:10,
-                    color: Cesium.Color.YELLOW,
-                    followSurface: false
+                    width: app.options.planLineWidthPixels,
+                    material: Cesium.Color.YELLOW,
+                    followSurface: true
                 },
                 model: this.model
             });
+            if (DEBUG_SEGMENTS){
+                this.feature.setLabel(new Cesium.LabelGraphics({
+                    text: this.getLabel(),
+                    style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                    scale: 0.5,
+                    pixelOffset: STATION_LABEL_OFFSET
+                }));
+            }
+            this.segments.add(this.feature);
 
             // for some reason you have to set the style this way
            /* this.geometry.on('change', function(event) {
@@ -734,7 +698,7 @@ $(function() {
                 }
                 
             }, this); */
-            this.model['feature'] = this.geometry;
+            this.model['feature'] = this.feature;
 //            this.segmentsVector.addFeature(this.feature);
 //            this.featureOverlay.addFeature(this.feature);
         },
@@ -780,50 +744,34 @@ $(function() {
              var segIndex = sequence.indexOf(this.model);
              var name = '' + segIndex + '(' + sequence.indexOf(this.fromStation) + ',' + sequence.indexOf(this.toStation) + ')';
              return name;
-         },
-         
-         initTextStyle: function() {
-             if (DEBUG_SEGMENTS){
-                 var name = this.getLabel();
-                 app.styles['segmentText']['text'] = name;
-                 this.textStyle = new ol.style.Style({
-                     text: new ol.style.Text(app.styles['segmentText'])
-                 });
-                 app.styles['segmentText']['text'] = null;
-             }
          }
+         
     });
     
     var KmlLayerView = Backbone.View.extend({
         initialize: function(options) {
             this.options = options || {};
-            this.kmlGroup = this.options.kmlGroup;
             this.kmlFile = this.options.kmlFile;
             this.node = this.options.node; // may be undefined
             
-            if (!options.kmlGroup && !options.kmlFile) {
+            if (!options.kmlFile) {
                 throw 'Missing a required option!';
             }
-            this.constructVector();
+            this.constructDataSource();
             this.render();
         },
-        constructVector: function() {
-            if (_.isUndefined(this.kmlVector)){
-                this.kmlVector = new ol.layer.Vector({
-                    source: new ol.source.KML({
-                        projection: KML_PROJECTION,
-                        url: this.kmlFile
-                    })
-                });
+        constructDataSource: function() {
+            if (_.isUndefined(this.dataSource)){
+                this.dataSource = new Cesium.KmlDataSource.load(this.kmlFile);
             }
         },
         render: function() {
             if (_.isUndefined(this.node)){
-                this.kmlGroup.getLayers().push(this.kmlVector);
+                app.map.map.dataSources.add(this.dataSource);
             } else if (this.node.selected){
-                this.kmlGroup.getLayers().push(this.kmlVector);                
+                app.map.map.dataSources.add(this.dataSource);
             } else {
-                this.kmlGroup.getLayers().remove(this.kmlVector);
+                app.map.map.dataSources.remove(this.dataSource);
             }
         }
     });
@@ -833,10 +781,9 @@ $(function() {
         .extend({
             initialize: function(options) {
                 this.options = options || {};
-                this.stationsVector = this.options.stationsVector;
-                this.featureOverlay = this.options.featureOverlay;
+                this.stations = this.options.stations;
                 
-                if (!options.featureOverlay && !options.model) {
+                if (!options.stations && !options.model) {
                     throw 'Missing a required option!';
                 }
 
@@ -846,10 +793,10 @@ $(function() {
                     name += ' ' + this.model.get('name');
                 }
                 pmOptions.name = name || this.model.toString();
-                this.point = transform(this.model.get('geometry').coordinates); // lon, lat
+//                this.point = transform(this.model.get('geometry').coordinates); // lon, lat
 
-                this.initIconStyle();
-                this.initTextStyle();
+//                this.initIconStyle();
+//                this.initTextStyle();
                 this.render();
 
                 this.listenTo(this.model, 'change', this.redraw);
@@ -862,47 +809,71 @@ $(function() {
                                   }
                               });
                 this.model.on('station:remove', function() {
-                    this.stationsVector.removeFeature(this.feature);
-                    this.featureOverlay.removeFeature(this.feature);
+                    this.stations.remove(this.feature);
                 }, this);
 
             },
+            getCoords: function() {
+                var coords = this.model.get('geometry').coordinates;
+                var result = Cesium.Cartesian3.fromDegrees(coords[0], coords[1]);
+                return result;
+              },
             
+            getMaterial: function() {
+                
+            },
             render: function() {
-                this.geometry = new ol.geom.Point(this.point);
-                this.feature = new ol.Feature({'geometry': this.geometry,
-                                               'id': this.model.attributes['id'],
-                                               'model': this.model,
-                                               'iconStyle': this.iconStyle,
-                                               'selectedIconStyle': this.selectedIconStyle,
-                                               'textStyle': this.textStyle
-                                            });
-                this.feature.setStyle([this.iconStyle, this.textStyle]);
-                this.feature.on('remove', function(event) {
-                    console.log(this);
-                }, this);
-                this.feature.on('change', function(event) {
-                    var geometry = event.target.get('geometry');
-                    var model = event.target.get('model');
-                    var coords = inverse(geometry.flatCoordinates);
-                    model.setPoint({
-                        lng: coords[0],
-                        lat: coords[1]
-                    });
+                this.feature = app.map.entities.add({
+                    name: this.model.attributes['id'],
+                    position: this.getCoords(),
+                    ellipse: {
+                        semiMinorAxis: app.options.planLineWidthPixels/2,
+                        semiMajorAxis: app.options.planLineWidthPixels/2,
+                        height: 0.1,
+                        material: this.initIconStyle()
+                    },
+                    label: new Cesium.LabelGraphics({
+                        text: this.getLabel(),
+                        style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                        scale: 0.5,
+                        pixelOffset: STATION_LABEL_OFFSET
+//                        pixelOffsetScaleByDistance: STATION_SCALE_BY_DISTANCE
+                    }),
+                    model: this.model
                 });
+                this.stations.add(this.feature);
+//                this.feature = new ol.Feature({'geometry': this.geometry,
+//                                               'id': this.model.attributes['id'],
+//                                               'model': this.model,
+//                                               'iconStyle': this.iconStyle,
+//                                               'selectedIconStyle': this.selectedIconStyle,
+//                                               'textStyle': this.textStyle
+//                                            });
+//                this.feature.setStyle([this.iconStyle, this.textStyle]);
+//                this.feature.on('remove', function(event) {
+//                    console.log(this);
+//                }, this);
+//                this.feature.on('change', function(event) {
+//                    var geometry = event.target.get('geometry');
+//                    var model = event.target.get('model');
+//                    var coords = inverse(geometry.flatCoordinates);
+//                    model.setPoint({
+//                        lng: coords[0],
+//                        lat: coords[1]
+//                    });
+//                });
 
                 this.model['feature'] = this.feature;
-                this.stationsVector.addFeature(this.feature);
-                this.featureOverlay.addFeature(this.feature);
             },
             
             redraw: function() {
-                if (_.isUndefined(this.geometry)){
+                if (_.isUndefined(this.feature)){
                     return;
                 }
                 // redraw code. To be invoked when relevant model attributes change.
                 app.Actions.disable();
 
+                //TODO implement
                 var coords = transform(this.model.get('geometry').coordinates);
                 var existingCoords = this.geometry.getCoordinates();
                 if ((coords[0] != existingCoords[0]) || 
@@ -943,30 +914,38 @@ $(function() {
                 if (_.isUndefined(heading) || _.isNull(heading)){
                     heading = 0.0;
                 }  
-                return heading;
+                return Cesium.Math.toRadians(heading);
             },
             
             initIconStyle: function() {
                 if (this.model.get('isDirectional')) {
-                    heading = this.getHeading();
-                    app.styles['direction']['rotation'] = heading;
-                    app.styles['selectedDirection']['rotation'] = heading;
-                    this.iconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['direction'])});
-                    this.selectedIconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['selectedDirection'])});
-                    app.styles['direction']['rotation'] = 0.0;
-                    app.styles['selectedDirection']['rotation'] = 0.0;
+                    updateHeading();
+                    this.iconStyle = app.materials['direction'];
+                    this.selectedIconStyle = app.materials['selectedDirection'];
                 } else {
-                    this.iconStyle = app.styles['station'];
-                    this.selectedIconStyle = app.styles['selectedStation'];
+                    this.iconStyle = app.materials['station'];
+                    this.selectedIconStyle = app.materials['selectedStation'];
                 }
+                return this.iconStyle;
             },
             
-            updateHeadingStyle: function() {
+            updateHeading: function() {
                 if (this.model.get('isDirectional')) {
-                    var heading = this.getHeading();
-                    this.iconStyle.set('rotation', heading);
-                    this.selectedIconStyle.set('rotation', heading);
-                } 
+                    this.feature.setOrientation({
+                        heading : this.getHeading()
+                    });
+                    if (this.iconStyle != app.materials['direction']){
+                        this.iconStyle = app.materials['direction'];
+                        this.selectedIconStyle = app.materials['selectedDirection'];
+                        this.feature.ellipse.setMaterial(this.iconStyle);
+                    }
+                }  else {
+                    if (this.iconStyle == app.materials['direction']){
+                        this.iconStyle = app.materials['station'];
+                        this.selectedIconStyle = app.materials['selectedStation'];
+                        this.feature.ellipse.setMaterial(this.iconStyle);
+                    }
+                }
             },
             
             getLabel: function() {
@@ -977,16 +956,6 @@ $(function() {
                 return name;
             },
             
-            initTextStyle: function() {
-                var name = this.getLabel();
-                
-                app.styles['stationText']['text'] = name;
-                this.textStyle = new ol.style.Style({
-                    text: new ol.style.Text(app.styles['stationText'])
-                });
-                app.styles['stationText']['text'] = null;
-            },
-
             close: function() {
                 this.stopListening();
             }
