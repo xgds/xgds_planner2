@@ -1207,10 +1207,7 @@ app.views.FancyTreeView = Backbone.View.extend({
     },
     createTree: function() {
         if (_.isUndefined(app.tree)){
-            var layertreeNode = $("#layertree");
-//            layertreeNode.detach();
-//            $("#layertreeContainer").append(layertreeNode);
-//            layertreeNode = $("#layertree");
+            var layertreeNode = this.$el.find("#layertree");
             var mytree = layertreeNode.fancytree({
                 extensions: ["persist"],
                 source: app.treeData,

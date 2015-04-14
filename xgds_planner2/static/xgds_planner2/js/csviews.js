@@ -758,11 +758,15 @@ $(function() {
                 throw 'Missing a required option!';
             }
             this.constructDataSource();
-            this.render();
         },
         constructDataSource: function() {
             if (_.isUndefined(this.dataSource)){
-                this.dataSource = new Cesium.KmlDataSource.load(this.kmlFile);
+                var thisKmlLayerView = this;
+                var promise = new Cesium.KmlDataSource.load(this.kmlFile);
+                Cesium.when(promise, function(dataSource){
+                    thisKmlLayerView.dataSource = dataSource;
+                    thisKmlLayerView.render();
+                });
             }
         },
         render: function() {
