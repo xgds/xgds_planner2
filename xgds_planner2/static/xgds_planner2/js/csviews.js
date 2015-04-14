@@ -207,8 +207,7 @@ $(function() {
             },
 
             render: function() {
-                //           console.log('re-rendering map');
-                //this.updateMapLayers();
+                this.updateMapLayers();
                 this.drawPlan();
                 this.updateBbox();
             },
