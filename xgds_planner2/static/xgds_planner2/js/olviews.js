@@ -75,6 +75,14 @@ $(function() {
 //                          source: new ol.source.MapQuest({layer: 'sat'})
                           source: new ol.source.MapQuest({layer: 'osm'})
                       }),
+                      // hardcode plrp bathymetry, must also ensure that the file is in the right place.
+                      new ol.layer.Image({
+                          source: new ol.source.ImageStatic({
+                              url: '/data/xgds_map_server/pavilion_full/Full_survey_5m_1_1_1.png',
+                              size: [1024, 1024],
+                              imageExtent: ol.extent.applyTransform([-121.7598286, 50.84624269, -121.6857134, 50.89288395] , ol.proj.getTransform("EPSG:4326", "EPSG:3857"))
+                          })
+                      }),
                       this.kmlGroup
                     ],
                     view: new ol.View({
