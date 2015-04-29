@@ -27,6 +27,20 @@ function inverse(coords){
 var DEBUG_SEGMENTS = false;
 var KML_PROJECTION = ol.proj.get('EPSG:3857');
 
+function getExtens(coordinates){
+    var xValues = [];
+    var yValues = [];
+    for (i = 0; i < coordinates.length; i++){
+        xValues.push(coordinates[i][0]);
+        yValues.push(coordinates[i][1]);
+    }
+    var minX = Math.min.apply(null, xValues);
+    var maxX = Math.max.apply(null, xValues);   
+    var minY = Math.min.apply(null, yValues);
+    var maxY = Math.max.apply(null, yValues);   
+    return [minY, minX, maxY, maxX];
+}
+
 $(function() {
     app.views = app.views || {};
 
@@ -67,6 +81,7 @@ $(function() {
                 });
                 
                 this.kmlGroup = new ol.layer.Group();
+                this.mapLayerGroup = new ol.layer.Group();
                 
                 this.map = new ol.Map({
                     target: 'map',
@@ -76,6 +91,7 @@ $(function() {
                           source: new ol.source.MapQuest({layer: 'osm'})
                       }),
                       // hardcode plrp bathymetry, must also ensure that the file is in the right place.
+                      /*
                       new ol.layer.Image({
                           source: new ol.source.ImageStatic({
                               url: '/data/xgds_map_server/pavilion_full/Full_survey_5m_1_1_1.png',
@@ -83,6 +99,7 @@ $(function() {
                               imageExtent: ol.extent.applyTransform([-121.7598286, 50.84624269, -121.6857134, 50.89288395] , ol.proj.getTransform("EPSG:4326", "EPSG:3857"))
                           })
                       }),
+                      */
                       this.kmlGroup
                     ],
                     view: new ol.View({
@@ -108,7 +125,9 @@ $(function() {
                     dataType: 'json',
                     success: $.proxy(function(data) {
                         app.treeData = data;
-                        app.kmlMap = {}; // temporary hashmap
+                        // temporary hashmaps
+                        app.kmlMap = {}; 
+                        app.mapLayerMap = {};
                         this.initializeMapLayers(app.treeData[0]);
                     }, this)
                   });
@@ -117,12 +136,15 @@ $(function() {
             // read through the json data and turn on layers that should be on
             initializeMapLayers: function(node, index, collection) {
                 if (node.selected){
-                   // create the kml layer view and
-                   // store the layer in a map so we can get it later
-                   app.kmlMap[node.data.kmlFile] = this.createKmlLayerView(node);
+                   // create the kml layer view and store the layer in a map so we can get it later
+                    if (!_.isUndefined(node.data.kmlFile)){
+                        app.kmlMap[node.key] = this.createKmlLayerView(node);
+                    } else if (!_.isUndefined(node.data.layerData)){
+                        app.mapLayerMap[node.key] = this.createMapLayerView(node);
+                    }
                 }
                 if (!_.isUndefined(node.children)){
-                    for (var i = 0; i < node.children.length; i++){
+                    for ( i = 0; i < node.children.length; i++){
                         this.initializeMapLayers(node.children[i]);
                     }
                 }
@@ -139,17 +161,36 @@ $(function() {
                 return kmlLayerView;
             },
             
+            createMapLayerView: function(node) {
+                //  create the map layer view
+                var mapLayerView = new MapLayerView({
+                    node: node,
+                    mapLayerJson: node.data.layerData,
+                    mapLayerGroup: this.mapLayerGroup
+                });
+                node.mapLayerView = mapLayerView;
+                return mapLayerView;
+            },
+            
             updateMapLayers: function() {
                 if (!_.isUndefined(app.tree)){
                     var selectedNodes = app.tree.getSelectedNodes();
                     selectedNodes.forEach(function(node){
-                        if (_.isUndefined(node.kmlLayerView) && node.selected){
-                            var kmlLayerView = app.kmlMap[node.data.kmlFile];
+                        if (!_.isUndefined(node.data.kmlFile) && _.isUndefined(node.kmlLayerView)){
+                            var kmlLayerView = app.kmlMap[node.key];
                             if (!_.isUndefined(kmlLayerView)){
                                 kmlLayerView.node = node;
                                 node.kmlLayerView = kmlLayerView;
                             } else {
                                 this.createKmlLayerView(node);
+                            }
+                        } else if (!_.isUndefined(node.data.layerData) && _.isUndefined(node.mapLayerView)){
+                            var mapLayerView = app.mapLayerMap[node.key];
+                            if (!_.isUndefined(mapLayerView)){
+                                mapLayerView.node = node;
+                                node.mapLayerView = mapLayerView;
+                            } else {
+                                this.createMapLayerView(node);
                             }
                         }
                     }, this);
@@ -824,6 +865,78 @@ $(function() {
             } else {
                 this.kmlGroup.getLayers().remove(this.kmlVector);
             }
+        }
+    });
+    
+    var MapLayerView = Backbone.View.extend({
+        initialize: function(options) {
+            this.options = options || {};
+            if (!options.mapLayerGroup && !options.mapLayerJson) {
+                throw 'Missing a required option!';
+            }
+            this.mapLayerGroup = this.options.mapLayerGroup;
+            this.mapLayerJson = this.options.mapLayerJson;
+            this.node = this.options.node; // may be undefined
+            this.features = [];
+            
+            this.constructFeatures();
+            this.render();
+        },
+        constructFeatures: function() {
+            if (_.isUndefined(this.layerGroup)){
+                this.layerGroup = new ol.layer.Group({name:this.mapLayerJson.name});
+            };
+            for (i = 0; i < this.mapLayerJson.features.length; i++){
+                var featureJson = this.mapLayerJson.features[i];
+                this.createFeature(featureJson);
+            }
+        },
+        createFeature: function(featureJson){
+            var newFeature;
+            switch (featureJson['type']){
+            case 'GroundOverlay':
+                newFeature = new GroundOverlayView({
+                    layerGroup: this.layerGroup,
+                    featureJson: featureJson
+                });
+                this.features.push(newFeature);
+            }
+        },
+        render: function() {
+            if (_.isUndefined(this.node)){
+                this.mapLayerGroup.getLayers().push(this.layerGroup);
+            } else if (this.node.selected){
+                this.mapLayerGroup.getLayers().push(this.layerGroup);                
+            } else {
+                this.mapLayerGroup.getLayers().remove(this.layerGroup);
+            }
+        }
+    });
+    
+    var GroundOverlayView = Backbone.View.extend({
+        initialize: function(options) {
+            this.options = options || {};
+            if (!options.layerGroup && !options.featureJson) {
+                throw 'Missing a required option!';
+            }
+            this.layerGroup = this.options.layerGroup;
+            this.featureJson = this.options.featureJson;
+            this.constructContent();
+            this.render();
+        },
+        constructContent: function() {
+            var extens = getExtens(this.featureJson.polygon);
+            console.log(extens);
+            this.imageLayer = new ol.layer.Image({
+                source: new ol.source.ImageStatic({
+                    url: this.featureJson.image,
+                    size: [this.featureJson.width, this.featureJson.height],
+                    imageExtent: ol.extent.applyTransform(extens , ol.proj.getTransform("EPSG:4326", "EPSG:3857"))
+                })
+            });
+        },
+        render: function() {
+            this.layerGroup.getLayers().push(this.imageLayer);
         }
     });
     

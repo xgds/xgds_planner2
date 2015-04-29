@@ -164,6 +164,11 @@ h4.kmltree-title {
 	font-size: 1.25rem;
 }
 
+ul.fancytree-container {
+ 	 height: 400px;
+  	 width: 95%;
+  }
+
 /* __BEGIN_LICENSE__
 /*Copyright (c) 2015, United States Government, as represented by the 
 /*Administrator of the National Aeronautics and Space Administration. 
