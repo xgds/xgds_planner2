@@ -24,12 +24,17 @@ function inverse(coords){
     return ol.proj.transform(coords, 'EPSG:3857', 'EPSG:4326');    
 }
 
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
 var DEBUG_SEGMENTS = false;
 var KML_PROJECTION = ol.proj.get('EPSG:3857');
 
 function getExtens(coordinates){
     var xValues = [];
     var yValues = [];
+    var olview = this;
     for (i = 0; i < coordinates.length; i++){
         xValues.push(coordinates[i][0]);
         yValues.push(coordinates[i][1]);
@@ -117,6 +122,9 @@ $(function() {
                 app.vent.on('kmlNode:create', function(node) {
                     this.createKmlLayerView(node);
                 }, this);
+                app.vent.on('mapLayerNode:create', function(node) {
+                    this.createMapLayerView(node);
+                }, this);
             },
             
             // load map tree ahead of time to load layers into map
@@ -139,20 +147,24 @@ $(function() {
                 if (node.selected){
                    // create the kml layer view and store the layer in a map so we can get it later
                     if (!_.isUndefined(node.data.kmlFile)){
-                        app.kmlMap[node.key] = this.createKmlLayerView(node);
+                        if (!endsWith(node.data.kmlFile, "kmz")) {
+                            app.kmlMap[node.key] = this.createKmlLayerView(node);
+                        }
                     } else if (!_.isUndefined(node.data.layerData)){
                         app.mapLayerMap[node.key] = this.createMapLayerView(node);
                     }
                 }
                 if (!_.isUndefined(node.children)){
-                    for ( i = 0; i < node.children.length; i++){
-                        this.initializeMapLayers(node.children[i]);
-                    }
+                    var olview = this;
+                    $.each(node.children, function( index, value ) {
+                        olview.initializeMapLayers(value);
+                      });
                 }
             }, 
             
             createKmlLayerView: function(node) {
                 //  create the kml layer view
+                // openlayers3 does not support kmz so right now we are not including those files.
                 var kmlLayerView = new KmlLayerView({
                     node: node,
                     kmlFile: node.data.kmlFile,
@@ -178,12 +190,14 @@ $(function() {
                     var selectedNodes = app.tree.getSelectedNodes();
                     selectedNodes.forEach(function(node){
                         if (!_.isUndefined(node.data.kmlFile) && _.isUndefined(node.kmlLayerView)){
-                            var kmlLayerView = app.kmlMap[node.key];
-                            if (!_.isUndefined(kmlLayerView)){
-                                kmlLayerView.node = node;
-                                node.kmlLayerView = kmlLayerView;
-                            } else {
-                                this.createKmlLayerView(node);
+                            if (!endsWith(node.data.kmlFile, "kmz")) {
+                                var kmlLayerView = app.kmlMap[node.key];
+                                if (!_.isUndefined(kmlLayerView)){
+                                    kmlLayerView.node = node;
+                                    node.kmlLayerView = kmlLayerView;
+                                } else {
+                                    this.createKmlLayerView(node);
+                                }
                             }
                         } else if (!_.isUndefined(node.data.layerData) && _.isUndefined(node.mapLayerView)){
                             var mapLayerView = app.mapLayerMap[node.key];
@@ -887,10 +901,10 @@ $(function() {
             if (_.isUndefined(this.layerGroup)){
                 this.layerGroup = new ol.layer.Group({name:this.mapLayerJson.name});
             };
-            for (i = 0; i < this.mapLayerJson.features.length; i++){
-                var featureJson = this.mapLayerJson.features[i];
-                this.createFeature(featureJson);
-            }
+            var mlview = this;
+            $.each(mlview.mapLayerJson.features, function( index, value ) {
+                    mlview.createFeature(value);
+              });
         },
         createFeature: function(featureJson){
             var newFeature;
