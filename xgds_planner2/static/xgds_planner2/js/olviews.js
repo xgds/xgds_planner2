@@ -100,7 +100,8 @@ $(function() {
                           })
                       }),
                       */
-                      this.kmlGroup
+                      this.kmlGroup,
+                      this.mapLayerGroup
                     ],
                     view: new ol.View({
                         // we will center the view later
@@ -926,7 +927,6 @@ $(function() {
         },
         constructContent: function() {
             var extens = getExtens(this.featureJson.polygon);
-            console.log(extens);
             this.imageLayer = new ol.layer.Image({
                 source: new ol.source.ImageStatic({
                     url: this.featureJson.image,

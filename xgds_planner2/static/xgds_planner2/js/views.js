@@ -1213,12 +1213,23 @@ app.views.FancyTreeView = Backbone.View.extend({
                 source: app.treeData,
                 checkbox: true,
                 select: function(event, data) {
-                    if (_.isUndefined(data.node.kmlLayerView)) {
-                        // make a new one
-                        app.vent.trigger('kmlNode:create', data.node);
-                    } else {
-                        data.node.kmlLayerView.render();
+                    if (!_.isUndefined(data.node.data.kmlFile)){
+                        if (_.isUndefined(data.node.kmlLayerView)) {
+                            // make a new one
+                            app.vent.trigger('kmlNode:create', data.node);
+                        } else {
+                            data.node.kmlLayerView.render();
+                        }
+                    } else if (!_.isUndefined(data.node.data.layerData)){
+                        if (_.isUndefined(data.node.mapLayerView)) {
+                            // make a new one
+                            app.vent.trigger('mapLayerNode:create', data.node);
+                        } else {
+                            data.node.mapLayerView.render();
+                        }
                     }
+
+                   
                   },
                   persist: {
                       // Available options with their default:
