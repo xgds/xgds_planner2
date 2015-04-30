@@ -36,8 +36,8 @@ function getExtens(coordinates){
     var yValues = [];
     var olview = this;
     for (i = 0; i < coordinates.length; i++){
-        xValues.push(coordinates[i][0]);
-        yValues.push(coordinates[i][1]);
+        xValues.push(coordinates[i][1]);
+        yValues.push(coordinates[i][0]);
     }
     var minX = Math.min.apply(null, xValues);
     var maxX = Math.max.apply(null, xValues);   
@@ -45,6 +45,34 @@ function getExtens(coordinates){
     var maxY = Math.max.apply(null, yValues);   
     return [minY, minX, maxY, maxX];
 }
+
+// hardcode some styles for now
+var layerStyles = new Object();
+layerStyles['point'] =  new ol.style.Style({
+    image: new ol.style.Circle({
+        radius: 5,
+        fill: new ol.style.Fill({
+          color: 'rgba(255, 255, 0, 0.1)'
+        }),
+        stroke: new ol.style.Stroke({color: 'red', width: 1})
+      })
+    });
+layerStyles['polygon'] = new ol.style.Style({
+    stroke: new ol.style.Stroke({
+        color: 'blue',
+        width: 3
+      }),
+      fill: new ol.style.Fill({
+        color: 'rgba(0, 0, 255, 0.2)'
+      })
+    });
+layerStyles['lineString'] = new ol.style.Style({
+    stroke: new ol.style.Stroke({
+        color: 'orange',
+        width: 3
+      })
+    });
+
 
 $(function() {
     app.views = app.views || {};
@@ -914,6 +942,28 @@ $(function() {
                     layerGroup: this.layerGroup,
                     featureJson: featureJson
                 });
+                break;
+            case 'Polygon':
+                newFeature = new PolygonView({
+                    layerGroup: this.layerGroup,
+                    featureJson: featureJson
+                });
+                break;
+            case 'Point':
+                newFeature = new PointView({
+                    layerGroup: this.layerGroup,
+                    featureJson: featureJson
+                });
+                break;
+            case 'LineString':
+                newFeature = new LineStringView({
+                    layerGroup: this.layerGroup,
+                    featureJson: featureJson
+                });
+                break;
+            } 
+            
+            if (!_.isUndefined(newFeature)){
                 this.features.push(newFeature);
             }
         },
@@ -928,7 +978,7 @@ $(function() {
         }
     });
     
-    var GroundOverlayView = Backbone.View.extend({
+    var LayerFeatureView = Backbone.View.extend({
         initialize: function(options) {
             this.options = options || {};
             if (!options.layerGroup && !options.featureJson) {
@@ -940,6 +990,21 @@ $(function() {
             this.render();
         },
         constructContent: function() {
+            // override this in your child class
+        },
+        getLayer: function() {
+            // override this in your child class to return the layer you want added to the group.
+        },
+        render: function() {
+            var childLayer = this.getLayer();
+            if (!_.isUndefined(childLayer)){
+                this.layerGroup.getLayers().push(childLayer);
+            }
+        }
+    });
+    
+    var GroundOverlayView = LayerFeatureView.extend({
+        constructContent: function() {
             var extens = getExtens(this.featureJson.polygon);
             this.imageLayer = new ol.layer.Image({
                 source: new ol.source.ImageStatic({
@@ -949,9 +1014,68 @@ $(function() {
                 })
             });
         },
-        render: function() {
-            this.layerGroup.getLayers().push(this.imageLayer);
+        getLayer: function() {
+            return this.imageLayer;
         }
+    });
+    
+    var VectorView = LayerFeatureView.extend({
+        constructContent: function() {
+            var feature = this.constructFeature();
+            if (!_.isUndefined(feature)){
+                this.vectorLayer = new ol.layer.Vector({
+                    name: this.featureJson.name,
+                    source: new ol.source.Vector({
+                        features: [feature]
+                    }),
+                    style: this.getStyle()
+                });    
+            }
+        },
+        getLayer: function() {
+            return this.vectorLayer;
+        },
+        getStyle: function() {
+            // override this in derived class
+        }
+    });
+    
+    var PolygonView = VectorView.extend({
+        constructFeature: function() {
+            var coords = this.featureJson.polygon;
+            this.polygonFeature = new ol.Feature({
+               geometry: new ol.geom.Polygon([this.featureJson.polygon]).transform('EPSG:4326', 'EPSG:3857')
+            });
+            return this.polygonFeature;
+        }, 
+        getStyle: function() {
+            return layerStyles['polygon'];
+        }
+    });
+    
+    var PointView = VectorView.extend({
+        constructFeature: function() {
+            this.pointFeature = new ol.Feature({
+               geometry: new ol.geom.Point(transform(this.featureJson.point))
+            });
+            return this.pointFeature;
+        }, 
+        getStyle: function() {
+            return layerStyles['point'];
+        }
+    });
+    
+    var LineStringView = VectorView.extend({
+        constructFeature: function() {
+            this.lineStringFeature = new ol.Feature({
+               geometry: new ol.geom.LineString(this.featureJson.lineString).transform('EPSG:4326', 'EPSG:3857')
+            });
+            return this.lineStringFeature;
+        }, 
+        getStyle: function() {
+            return layerStyles['lineString'];
+        }
+    
     });
     
  // This view class manages the map point for a single Station model
