@@ -72,7 +72,20 @@ layerStyles['lineString'] = new ol.style.Style({
         width: 3
       })
     });
-
+layerStyles['groundOverlay'] =  new ol.style.Style({
+    zIndex: Infinity
+});
+layerStyles['label'] = {
+        font: '14px Calibri,sans-serif',
+        fill: new ol.style.Fill({
+            color: 'yellow'
+        }),
+        stroke: new ol.style.Stroke({
+            color: 'black',
+            width: 2
+        }),
+        offsetY: -20
+};
 
 $(function() {
     app.views = app.views || {};
@@ -868,11 +881,11 @@ $(function() {
          initTextStyle: function() {
              if (DEBUG_SEGMENTS){
                  var name = this.getLabel();
-                 app.styles['segmentText']['text'] = name;
+                 var theText = new ol.style.Text(app.styles['segmentText']);
+                 theText.setText(name);
                  this.textStyle = new ol.style.Style({
-                     text: new ol.style.Text(app.styles['segmentText'])
+                     text: theText 
                  });
-                 app.styles['segmentText']['text'] = null;
              }
          }
     });
@@ -920,6 +933,7 @@ $(function() {
             this.mapLayerGroup = this.options.mapLayerGroup;
             this.mapLayerJson = this.options.mapLayerJson;
             this.node = this.options.node; // may be undefined
+            this.drawBelow = false;
             this.features = [];
             
             this.constructFeatures();
@@ -942,6 +956,7 @@ $(function() {
                     layerGroup: this.layerGroup,
                     featureJson: featureJson
                 });
+                this.drawBelow = true;
                 break;
             case 'Polygon':
                 newFeature = new PolygonView({
@@ -969,9 +984,17 @@ $(function() {
         },
         render: function() {
             if (_.isUndefined(this.node)){
-                this.mapLayerGroup.getLayers().push(this.layerGroup);
+                if (this.drawBelow){
+                    this.mapLayerGroup.getLayers().insertAt(0,this.layerGroup);
+                } else {
+                    this.mapLayerGroup.getLayers().push(this.layerGroup);
+                }
             } else if (this.node.selected){
-                this.mapLayerGroup.getLayers().push(this.layerGroup);                
+                if (this.drawBelow){
+                    this.mapLayerGroup.getLayers().insertAt(0,this.layerGroup);
+                } else {
+                    this.mapLayerGroup.getLayers().push(this.layerGroup);
+                }              
             } else {
                 this.mapLayerGroup.getLayers().remove(this.layerGroup);
             }
@@ -994,6 +1017,38 @@ $(function() {
         },
         getLayer: function() {
             // override this in your child class to return the layer you want added to the group.
+            return null;
+        },
+        getStyles: function() {
+          // return the array of styles, or null
+            var textStyle = this.getTextStyle();
+            var style = this.getStyle();
+            var styles = [];
+            if (!_.isNull(style)){
+                styles.push(style);
+            }
+            if (!_.isNull(textStyle)){
+                styles.push(textStyle);
+            }
+            if (styles.length > 0){
+                return styles;
+            }
+            return null;
+        },
+        getStyle: function() {
+            // override this in derived class
+            return null;
+        },
+        getTextStyle: function() {
+            if (this.featureJson.showLabel) {
+                var theText = new ol.style.Text(layerStyles['label']);
+                theText.setText(this.featureJson.name);
+                this.textStyle = new ol.style.Style({
+                    text: theText
+                });
+                return this.textStyle;
+            }
+            return null;
         },
         render: function() {
             var childLayer = this.getLayer();
@@ -1011,12 +1066,17 @@ $(function() {
                     url: this.featureJson.image,
                     size: [this.featureJson.width, this.featureJson.height],
                     imageExtent: ol.extent.applyTransform(extens , ol.proj.getTransform("EPSG:4326", "EPSG:3857"))
-                })
+                }),
+                style: this.getStyles()
             });
         },
         getLayer: function() {
             return this.imageLayer;
+        },
+        getStyle: function() {
+            return layerStyles['groundOverlay'];
         }
+        
     });
     
     var VectorView = LayerFeatureView.extend({
@@ -1028,15 +1088,12 @@ $(function() {
                     source: new ol.source.Vector({
                         features: [feature]
                     }),
-                    style: this.getStyle()
+                    style: this.getStyles()
                 });    
             }
         },
         getLayer: function() {
             return this.vectorLayer;
-        },
-        getStyle: function() {
-            // override this in derived class
         }
     });
     
@@ -1229,12 +1286,11 @@ $(function() {
             
             initTextStyle: function() {
                 var name = this.getLabel();
-                
-                app.styles['stationText']['text'] = name;
+                var theText = new ol.style.Text(app.styles['stationText']);
+                theText.setText(name);
                 this.textStyle = new ol.style.Style({
-                    text: new ol.style.Text(app.styles['stationText'])
+                    text: theText
                 });
-                app.styles['stationText']['text'] = null;
             },
 
             close: function() {
