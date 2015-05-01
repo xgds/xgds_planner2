@@ -156,6 +156,7 @@ $(function() {
                   });
                 this.buildStyles();
                 this.updateBbox();
+                this.createPopup();
                 app.vent.on('layers:loaded', this.render);
                 app.vent.on('layers:loaded', this.initializeMapData);
                 app.vent.on('tree:loaded', this.updateMapLayers);
@@ -353,6 +354,28 @@ $(function() {
                     map: this.map
                 });
                 this.planView.render();
+            },
+            createPopup: function() {
+                this.popup = new ol.Overlay.Popup();
+                this.map.addOverlay(this.popup);
+                
+                // display popup on click
+                var theMap = this.map;
+                this.map.on('singleclick', function(evt) {
+                  var feature = this.map.forEachFeatureAtPixel(evt.pixel,
+                      function(feature, layer) {
+                        return feature;
+                      });
+                  if (feature) {
+                      var popup = feature['popup'];
+                      if (!_.isNull(popup)){
+                          this.popup.show(evt.coordinate, '<div><h3>' + feature.get('name') + '</h3><p>' + popup + '</p></div>');
+                      }
+                  } else {
+                      this.popup.hide();
+                  }
+                }, this);
+
             }
         });
     
@@ -1062,6 +1085,7 @@ $(function() {
         constructContent: function() {
             var extens = getExtens(this.featureJson.polygon);
             this.imageLayer = new ol.layer.Image({
+                name: this.featureJson.name,
                 source: new ol.source.ImageStatic({
                     url: this.featureJson.image,
                     size: [this.featureJson.width, this.featureJson.height],
@@ -1082,7 +1106,7 @@ $(function() {
     var VectorView = LayerFeatureView.extend({
         constructContent: function() {
             var feature = this.constructFeature();
-            if (!_.isUndefined(feature)){
+            if (!_.isNull(feature)){
                 this.vectorLayer = new ol.layer.Vector({
                     name: this.featureJson.name,
                     source: new ol.source.Vector({
@@ -1091,6 +1115,20 @@ $(function() {
                     style: this.getStyles()
                 });    
             }
+            var popup = this.getPopupContent();
+            if (!_.isNull(popup)){
+                feature['popup'] = popup;
+            }
+        },
+        constructFeature() {
+            // override this in derived class
+            return null;
+        },
+        getPopupContent: function() {
+            if (this.featureJson.popup) {
+                return this.featureJson.description;
+            }
+            return null;
         },
         getLayer: function() {
             return this.vectorLayer;
@@ -1101,7 +1139,8 @@ $(function() {
         constructFeature: function() {
             var coords = this.featureJson.polygon;
             this.polygonFeature = new ol.Feature({
-               geometry: new ol.geom.Polygon([this.featureJson.polygon]).transform('EPSG:4326', 'EPSG:3857')
+                name: this.featureJson.name,
+                geometry: new ol.geom.Polygon([this.featureJson.polygon]).transform('EPSG:4326', 'EPSG:3857')
             });
             return this.polygonFeature;
         }, 
@@ -1113,7 +1152,8 @@ $(function() {
     var PointView = VectorView.extend({
         constructFeature: function() {
             this.pointFeature = new ol.Feature({
-               geometry: new ol.geom.Point(transform(this.featureJson.point))
+                name: this.featureJson.name,
+                geometry: new ol.geom.Point(transform(this.featureJson.point))
             });
             return this.pointFeature;
         }, 
@@ -1125,7 +1165,8 @@ $(function() {
     var LineStringView = VectorView.extend({
         constructFeature: function() {
             this.lineStringFeature = new ol.Feature({
-               geometry: new ol.geom.LineString(this.featureJson.lineString).transform('EPSG:4326', 'EPSG:3857')
+                name: this.featureJson.name,
+                geometry: new ol.geom.LineString(this.featureJson.lineString).transform('EPSG:4326', 'EPSG:3857')
             });
             return this.lineStringFeature;
         }, 
