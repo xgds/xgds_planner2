@@ -361,12 +361,12 @@ $(function() {
                 
                 // display popup on click
                 var theMap = this.map;
-                this.map.on('singleclick', function(evt) {
+                this.map.on('click', function(evt) {
                   var feature = this.map.forEachFeatureAtPixel(evt.pixel,
                       function(feature, layer) {
                         return feature;
                       });
-                  if (feature) {
+                  if (!_.isUndefined(feature)) {
                       var popup = feature['popup'];
                       if (!_.isNull(popup)){
                           this.popup.show(evt.coordinate, '<div><h3>' + feature.get('name') + '</h3><p>' + popup + '</p></div>');
