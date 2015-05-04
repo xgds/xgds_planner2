@@ -29,7 +29,6 @@ $(function() {
                 // set up tabs
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-                this.updateBbox();
             },
             
             handleResize: function() {
@@ -134,6 +133,7 @@ $(function() {
             render: function() {
                 app.views.OLMapView.prototype.render.call(this);
                 this.drawPlan();
+                this.updateBbox();
             },
             
             drawPlan: function() {
@@ -282,6 +282,7 @@ $(function() {
             
             addStationsMode: {
                 enter: function() {
+                    app.State.popupsEnabled = false;
                     app.State.disableAddStation = false; // reset state possibly set in other mode
                     if (_.isUndefined(this.stationAdder)){
 //                        this.stationAdder = new ol.interaction.StationRubberband({
@@ -329,6 +330,7 @@ $(function() {
             
             navigateMode: {
                 enter: function() {
+                    app.State.popupsEnabled = true;
                     if (_.isUndefined(this.selectNavigate)){
                         this.selectNavigate = new ol.interaction.Select({
                             layers: [this.segmentsLayer, this.stationsLayer],
@@ -432,6 +434,7 @@ $(function() {
             
             repositionMode: {
                 enter: function() {
+                    app.State.popupsEnabled = false;
                     if (_.isUndefined(this.repositioner)){
                         this.repositioner = new ol.interaction.Modify({
                             features: this.featureOverlay.getFeatures(),
