@@ -14,6 +14,7 @@
 //specific language governing permissions and limitations under the License.
 // __END_LICENSE__
 
+// This is the deprecated google earth map views javascript; it is here for reference until we have ported all functionality.
 var DEG2RAD = Math.PI / 180.0;
 
 function kmlColor(rgbColor, alpha) {

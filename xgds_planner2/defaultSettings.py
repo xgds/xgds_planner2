@@ -87,7 +87,8 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'xgds_planner2/js/app.js',
                              'xgds_planner2/js/models.js',
                              'xgds_planner2/js/views.js',
-                             'xgds_planner2/js/mapviews.js',
+                             'xgds_planner2/js/olMapViews.js',
+                             'xgds_planner2/js/olPlanViews.js',
                              'xgds_planner2/js/simulatorDriver.js'
                              ),
         'output_filename': 'js/planner_app.js'
