@@ -333,34 +333,35 @@ $(function() {
                     app.State.popupsEnabled = true;
                     if (_.isUndefined(this.selectNavigate)){
                         this.selectNavigate = new ol.interaction.Select({
-                            layers: [this.segmentsLayer, this.stationsLayer],
-                            style: (function() {
-                                  return function(feature, resolution) {
-                                      var model = feature.get('model');
-                                      console.log('style method ');
-                                      console.log(model.get('type'));
-                                      switch (model.get('type')) {
-                                      case 'Station':
-                                          var iconStyle = feature.get('selectedIconStyle');
-                                          var textStyle = feature.get('textStyle');
-                                          return [iconStyle, textStyle];
-                                      case 'Segment':
-                                          return [app.styles['selectedSegment']];
-                                      }
-                                  };
-                                })()
-                            });
+                            condition: ol.events.condition.click,
+                            // even though the documentation says the below should work, it does not.
+//                            style: (function(feature, resolution) {
+//                                console.log('style method ');
+//                                console.log(model.get('type'));
+//                                var model = feature.get('model');
+//                                return model.getSelectedStyles();
+//                            }),
+                            layers: [this.segmentsLayer, this.stationsLayer]
+                        });
                         
                         this.selectNavigate.getFeatures().on('add', function(e) {
                             var feature = e.element;
                             var model = feature.get('model');
+                            if (!_.isUndefined(app.State.stationSelected)){
+                                app.State.stationSelected.feature.setStyle(app.State.stationSelected.feature.get('styles'));
+                            }
+                            if (!_.isUndefined(app.State.segmentSelected)){
+                                app.State.segmentSelected.feature.setStyle(app.State.segmentSelected.feature.get('styles'));
+                            }
                             switch (model.get('type')) {
                                 case 'Station':
                                     app.State.stationSelected = feature.get('model');
+                                    feature.setStyle(feature.get('selectedStyles'));
                                     app.State.segmentSelected = undefined;
                                     break;
                                 case 'Segment':
                                     app.State.segmentSelected = feature.get('model');
+                                    feature.setStyle(feature.get('selectedStyles'));
                                     app.State.stationSelected = undefined;
                                     break;
                             }
@@ -402,6 +403,7 @@ $(function() {
                         if (features.item(0) == foundFeature) {
                             return;
                         }
+                        /*
                         features.forEach(function(item, index, array){
                             var model = item.get('model');
                             switch (model.get('type')) {
@@ -414,11 +416,12 @@ $(function() {
                                 item.setStyle([app.styles['segment']]);
                                 break;
                             }
-                        });
+                        }); */
                         features.clear();
                     }
                     
                     features.push(foundFeature);
+                    /*
                     switch (foundFeature.get('model').get('type')) {
                     case 'Station':
                         var iconStyle = foundFeature.get('selectedIconStyle');
@@ -428,7 +431,7 @@ $(function() {
                     case 'Segment':
                         foundFeature.setStyle([app.styles['selectedSegment']]);
                         break;
-                    }
+                    } */
                 }  
             },
             
@@ -573,7 +576,6 @@ $(function() {
                     }, 
                     this);
         },
-
         getStyles: function() {
             if (DEBUG_SEGMENTS){
                 this.initTextStyle();
@@ -581,7 +583,14 @@ $(function() {
             } else {
                 return [app.styles['segment']];
             }
-            
+        },
+        getSelectedStyles: function() {
+            if (DEBUG_SEGMENTS){
+                this.initTextStyle();
+                return [app.styles['selectedSegment'], this.textStyle]
+            } else {
+                return [app.styles['selectedSegment']];
+            }
         },
         render: function() {
             this.coords = _.map([this.fromStation, this.toStation],
@@ -592,7 +601,9 @@ $(function() {
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             this.feature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id'],
-                                                 'model': this.model
+                                                 'model': this.model,
+                                                 'styles': this.getStyles(),
+                                                 'selectedStyles': this.getSelectedStyles()
                                                  });
             // for some reason you have to set the style this way
             this.feature.setStyle(this.getStyles());
@@ -733,7 +744,9 @@ $(function() {
                                                'model': this.model,
                                                'iconStyle': this.iconStyle,
                                                'selectedIconStyle': this.selectedIconStyle,
-                                               'textStyle': this.textStyle
+                                               'textStyle': this.textStyle,
+                                               'styles': this.getStyles(),
+                                               'selectedStyles': this.getSelectedStyles()
                                             });
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
                 this.feature.on('remove', function(event) {
@@ -773,7 +786,7 @@ $(function() {
 //                    textInStyle.set('text',name);
                     delete this.textStyle; // for garbage collection
                     this.initTextStyle();
-                    this.feature.setStyle([this.iconStyle, this.textStyle]);
+                    this.feature.setStyle(this.getStyles());
                 }
                 this.updateHeadingStyle();
 
@@ -842,6 +855,14 @@ $(function() {
                 this.textStyle = new ol.style.Style({
                     text: theText
                 });
+            },
+            
+            getStyles: function() {
+                return [this.iconStyle, this.textStyle];
+            },
+            
+            getSelectedStyles: function() {
+                return [this.selectedIconStyle, this.textStyle];
             },
 
             close: function() {
