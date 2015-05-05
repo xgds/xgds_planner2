@@ -1341,7 +1341,6 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     events: {
         'click ul.tab-nav li': 'clickSelectTab'
     },
-
     viewMap: {
         //'meta': app.views.PlanMetaView,
         'meta': app.views.PropertiesForm,
@@ -1356,6 +1355,7 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         this.listenTo(app.vent, 'setTabRequested', function(tabId) {
             this.setTab(tabId);
         });
+        this.layersView = null;
     },
 
     onRender: function() {
@@ -1388,36 +1388,24 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         });
         var viewClass = this.viewMap[tabId];
         if (! viewClass) { return undefined; }
-//        if (oldTab != "layers"){
-//            this.tabContent.close();
-//            var view = new viewClass({
-//                model: app.currentPlan
-//            });
-//            this.tabContent.show(view);
-//        } else {
-//            var view = this.tabContent.currentView;
-//            if (!view || view.isClosed){ return; }
-//            if (view.close) { view.close(); }
-//
-//            var newView = new viewClass({
-//                model: app.currentPlan
-//            });
-//
-//            this.tabContent.ensureEl();
-//
-//            newView.render();
-//            this.tabContent.open(newView);
-//
-//            Marionette.triggerMethod.call(newView, "show");
-//            Marionette.triggerMethod.call(this.tabContent, "show", newView);
-//
-//            this.tabContent.currentView = newView;
-//        }
         var view = new viewClass({
             model: app.currentPlan
         });
-        this.tabContent.show(view);
-
+        if (oldTab == 'layers'){
+            this.tabContent.show(view, {preventClose: true});
+        } else {
+            if (tabId == 'layers'){
+                if (!_.isNull(this.layersView)){
+                    this.tabContent.show(this.layersView);
+                } else {
+                    this.layersView = view;
+                    this.tabContent.show(view);
+                }
+            } else {
+                this.tabContent.show(view);
+            }
+        }
+        
         app.vent.trigger('tab:change', tabId);
     }
 
