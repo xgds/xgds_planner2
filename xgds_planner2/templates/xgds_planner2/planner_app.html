@@ -73,7 +73,8 @@
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone/backbone.js'></script>
 <!--     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.babysitter/lib/backbone.babysitter.min.js'></script>
- -->    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
+ -->    
+ 	<script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}marionette/lib/backbone.marionette.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/string-format.js'></script>
@@ -105,9 +106,9 @@
     <script type="text/javascript" src="{{ simulatorUrl}}"></script>
     -->
     {% for template_name, template in templates.items %}
-<script type="text/handlebars" id="template-{{template_name}}">
-{{template|safe}}
-</script>
+	<script type="text/handlebars" id="template-{{template_name}}">
+		{{template|safe}}
+	</script>
     {% endfor %}
     <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
     <script id="plan_library_json" type="application/json">{{ plan_library_json|safe }}</script>
@@ -133,9 +134,9 @@
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }}
     };
-$(function(){
-    app.start(plannerAppOptions);
-})
+	$(function(){
+    	app.start(plannerAppOptions);
+	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
             return 'Unsaved changes, are you sure you want to exit?';

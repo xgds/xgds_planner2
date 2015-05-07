@@ -22,8 +22,6 @@ $(function() {
     app.views = app.views || {};
 
     app.views.OLPlanView =  app.views.OLMapView.extend({
-            el: 'div',
-
             initialize: function(options) {
                 app.views.OLMapView.prototype.initialize.call(this);
                 // set up tabs
@@ -36,7 +34,6 @@ $(function() {
                 app.State.tabsContainer.width(app.State.pageInnerWidth -
                                               app.map.$el.outerWidth() -
                                               app.State.tabsLeftMargin);
-            
             },
             
             handleWindowResize: function() {
@@ -54,9 +51,11 @@ $(function() {
             updateBbox: function() {
              // move to bounding box defined in plan
                 var site = app.currentPlan.get('site');
-                if (site != undefined)
-                    var bbox = site.bbox;
-                if (bbox != undefined) {
+                var bbox = undefined;
+                if (!_.isUndefined(site)) {
+                    bbox = site.bbox;
+                }
+                if (!_.isUndefined(bbox)) {
                     var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
                     extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
                     this.map.getView().fitExtent(extent, this.map.getSize());
@@ -127,7 +126,6 @@ $(function() {
                             width: 1
                         })
                     };
-
             },
 
             render: function() {

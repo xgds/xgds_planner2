@@ -1377,6 +1377,9 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     setTab: function(tabId) {
         var oldTab = app.currentTab;
         app.currentTab = tabId;
+        if (oldTab == tabId){
+            return;
+        }
         var $tabList = this.$el.find('ul.tab-nav li');
         $tabList.each(function() {
             li = $(this);

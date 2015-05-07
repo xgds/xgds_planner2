@@ -32,7 +32,7 @@ var app = (function($, _, Backbone) {
     app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
-        'tabs' : '#tabs'
+        tabs : '#tabs'
     });
 
     app.module('State', function(options) {
