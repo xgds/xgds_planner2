@@ -163,7 +163,7 @@ def plan_REST(request, plan_id, jsonPlanId):
         # TODO I don't understand why this did not work above
         plan.creator = request.user
         plan.jsonPlan.creator = request.user.username
-        
+
         #make sure it is not read only
         plan.readOnly = False
         plan.save()
