@@ -332,12 +332,9 @@ $(function() {
                     if (_.isUndefined(this.selectNavigate)){
                         this.selectNavigate = new ol.interaction.Select({
                             condition: ol.events.condition.click,
-                            // even though the documentation says the below should work, it does not.
+//                            the below SHOULD work, but it does not.
 //                            style: (function(feature, resolution) {
-//                                console.log('style method ');
-//                                console.log(model.get('type'));
-//                                var model = feature.get('model');
-//                                return model.getSelectedStyles();
+//                                return feature.get('selectedStyles');
 //                            }),
                             layers: [this.segmentsLayer, this.stationsLayer]
                         });
@@ -345,12 +342,6 @@ $(function() {
                         this.selectNavigate.getFeatures().on('add', function(e) {
                             var feature = e.element;
                             var model = feature.get('model');
-                            if (!_.isUndefined(app.State.stationSelected)){
-                                app.State.stationSelected.feature.setStyle(app.State.stationSelected.feature.get('styles'));
-                            }
-                            if (!_.isUndefined(app.State.segmentSelected)){
-                                app.State.segmentSelected.feature.setStyle(app.State.segmentSelected.feature.get('styles'));
-                            }
                             switch (model.get('type')) {
                                 case 'Station':
                                     app.State.stationSelected = feature.get('model');
@@ -372,6 +363,10 @@ $(function() {
                             } else {
                                 app.tabs.currentView.tabContent.currentView.render();
                             }
+                        });
+                        this.selectNavigate.getFeatures().on('remove', function(e) {
+                            var feature = e.element;
+                            feature.setStyle(feature.get('styles'));
                         });
                         this.listenTo(app.vent, 'showItem:station', function() {
                             var selectedItem = app.State.stationSelected;
@@ -400,36 +395,14 @@ $(function() {
                     if (features.getLength() > 0){
                         if (features.item(0) == foundFeature) {
                             return;
+                        } else {
+                            // we are only doing single selection so this should be fine
+                            features.removeAt(0);
                         }
-                        /*
-                        features.forEach(function(item, index, array){
-                            var model = item.get('model');
-                            switch (model.get('type')) {
-                            case 'Station':
-                                var iconStyle = item.get('iconStyle');
-                                var textStyle = item.getStyle()[1];
-                                item.setStyle([iconStyle, textStyle]);
-                                break;
-                            case 'Segment':
-                                item.setStyle([app.styles['segment']]);
-                                break;
-                            }
-                        }); */
-                        features.clear();
                     }
                     
                     features.push(foundFeature);
-                    /*
-                    switch (foundFeature.get('model').get('type')) {
-                    case 'Station':
-                        var iconStyle = foundFeature.get('selectedIconStyle');
-                        var textStyle = foundFeature.get('textStyle');
-                        foundFeature.setStyle([iconStyle, textStyle]);
-                        break;
-                    case 'Segment':
-                        foundFeature.setStyle([app.styles['selectedSegment']]);
-                        break;
-                    } */
+                    
                 }  
             },
             
