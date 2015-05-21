@@ -430,7 +430,7 @@ app.models = app.models || {};
                     if (app.planJson){
                         var stationId = template.format(context);
                         item.set('id', stationId);
-                        item.trigger('change')
+                        item.trigger('change');
                         
                     }
                     if (itemType == 'Station') {

@@ -223,7 +223,7 @@ XGDS_PLANNER2_SITE_FRAMES = []
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
     'lodash',
-    'backbone',
+    'backbone#1.1.2',
     'marionette',
     'backbone-relational',
     'backbone-forms',
@@ -233,7 +233,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
     'ol3',
-    'ol3-popup'
+    'ol3-popup',
     'fancytree',
     'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'
 )
