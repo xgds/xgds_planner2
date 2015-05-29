@@ -194,9 +194,9 @@ XGDS_PLANNER_COMMAND_RENDERER_SCRIPTS = ()
 # see xgds_kn for example
 XGDS_PLANNER_COMMAND_RENDERERS = {}
 
-# XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
-# extra JavaScript callback to call after Google Earth is loaded.
-XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'
+# XGDS_PLANNER_MAP_LOADED_CALLBACK: The fully qualified name of an
+# extra JavaScript callback to call after the map is loaded.
+XGDS_PLANNER_MAP_LOADED_CALLBACK = 'null'
 
 # If this is defined (true) then include the scheduling & flight management features in display
 # IMPORTANT YOU MUST INCLUDE THIS IN SITE SETTINGS
