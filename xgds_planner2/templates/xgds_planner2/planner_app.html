@@ -39,7 +39,6 @@
     <div class="row">
 		<div id="postmap" ></div>
 	</div>
-    
     <div id="saveAsDialog" style="display:none; background:white !important;">
 		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
 		<table>
@@ -75,9 +74,6 @@
     
     <script type="text/javascript" src='{{ EXTERNAL_URL }}handlebars/handlebars.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone/backbone.js'></script>
-<!--     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.babysitter/lib/backbone.babysitter.min.js'></script>
- -->    
  	<script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}marionette/lib/backbone.marionette.min.js'></script>
@@ -102,6 +98,8 @@
    	 <script type="text/javascript" src='{{ EXTERNAL_URL }}ol3-popup/src/ol3-popup.js'></script>
   
       {% javascript 'simulator' %}
+      {% javascript 'custom_map' %}
+      
    	 <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/olMapViews.js'></script>
    	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlanViews.js'></script>
      
@@ -134,7 +132,7 @@
         placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
         placemarkDirectionalUrl: "{{ placemark_directional_url }}",
         placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
-        XGDS_PLANNER_MAP_LOADED_CALLBACK: {{ settings.XGDS_PLANNER_MAP_LOADED_CALLBACK }},
+        XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }}
     };
