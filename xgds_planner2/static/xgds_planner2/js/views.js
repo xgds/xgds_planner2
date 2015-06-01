@@ -60,6 +60,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                 app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
             });
             app.State.mapHeightSet = true;
+            app.vent.trigger('doMapResize');
         }
     },
 

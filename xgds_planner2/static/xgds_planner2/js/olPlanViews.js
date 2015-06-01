@@ -31,9 +31,11 @@ $(function() {
             
             handleResize: function() {
                 app.views.OLMapView.prototype.handleResize.call(this);
-                app.State.tabsContainer.width(app.State.pageInnerWidth -
-                                              app.map.$el.outerWidth() -
-                                              app.State.tabsLeftMargin);
+                if (!_.isUndefined(app.State.tabsContainer)){
+                    app.State.tabsContainer.width(app.State.pageInnerWidth -
+                                                  app.map.$el.outerWidth() -
+                                                  app.State.tabsLeftMargin);
+                }
             },
             
             handleWindowResize: function() {
@@ -49,16 +51,19 @@ $(function() {
             },
             
             updateBbox: function() {
-             // move to bounding box defined in plan
-                var site = app.currentPlan.get('site');
-                var bbox = undefined;
-                if (!_.isUndefined(site)) {
-                    bbox = site.bbox;
-                }
-                if (!_.isUndefined(bbox)) {
-                    var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
-                    extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
-                    this.map.getView().fitExtent(extent, this.map.getSize());
+                var sequence = app.currentPlan.get('sequence');
+                if (_.isUndefined(sequence) || sequence.length == 0){
+                 // move to bounding box defined in plan
+                    var site = app.currentPlan.get('site');
+                    var bbox = undefined;
+                    if (!_.isUndefined(site)) {
+                        bbox = site.bbox;
+                    }
+                    if (!_.isUndefined(bbox)) {
+                        var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
+                        extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
+                        this.map.getView().fitExtent(extent, this.map.getSize());
+                    }
                 }
             },
             
@@ -131,7 +136,6 @@ $(function() {
             render: function() {
                 app.views.OLMapView.prototype.render.call(this);
                 this.drawPlan();
-                this.updateBbox();
             },
             
             drawPlan: function() {
