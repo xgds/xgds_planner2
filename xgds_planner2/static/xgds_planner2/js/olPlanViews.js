@@ -424,14 +424,14 @@ $(function() {
                         this.stationDeleter = new ol.interaction.Select({
                             layers: [this.stationsLayer],
                             // for debugging
-                            style: new ol.style.Style({
-                                image: new ol.style.Circle({
-                                  radius: 12,
-                                  fill: new ol.style.Fill({
-                                    color: 'rgba(255, 0, 0, 0.5)'
-                                  })
-                                })
-                              }),
+//                            style: new ol.style.Style({
+//                                image: new ol.style.Circle({
+//                                  radius: 12,
+//                                  fill: new ol.style.Fill({
+//                                    color: 'rgba(255, 0, 0, 0.5)'
+//                                  })
+//                                })
+//                              }),
                             addCondition: function(event) {
                                 return ol.events.condition.shiftKeyOnly(event)
                                 && ol.events.condition.singleClick(event);
