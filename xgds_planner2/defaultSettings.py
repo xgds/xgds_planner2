@@ -215,6 +215,9 @@ XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []
 
+XGDS_MAP_SERVER_JS_MAP = {}
+XGDS_MAP_SERVER_JS_MAP['Plan'] = 'xgds_planner2/js/olPlanMap.js'
+
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',

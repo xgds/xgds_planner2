@@ -27,6 +27,7 @@ from django.core.urlresolvers import reverse
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
+from geocamUtil.modelJson import modelToDict
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
 # from geocamUtil.loader import getModelByName
@@ -211,7 +212,6 @@ class AbstractPlan(models.Model):
             logging.warning('extractFromJson: could not extract stats from plan %s',
                             self.uuid)
             raise  # FIX
-
         return self
 
     def getSummaryOfCommandsByType(self):
@@ -268,6 +268,32 @@ class AbstractPlan(models.Model):
             return result
         else:
             return None
+
+    def toMapDict(self):
+        """
+        Return a reduced dictionary that will be turned to JSON for rendering in a map
+        Here we are just interested in the route plan and not in activities
+        We just include stations
+        """
+        result = {}
+        result['author'] = self.jsonPlan.creator
+        result['name'] = self.jsonPlan.name
+        result['type'] = 'AbstractPlan'
+        if self.jsonPlan.notes:
+            result['notes'] = self.jsonPlan.notes
+
+        stations = []
+        seq = self.jsonPlan.sequence
+        for el in seq:
+            if el.type == "Station":
+                sta = {}
+                sta['id'] = el.id
+                sta['coords'] = el.geometry.coordinates
+                if el.notes:
+                    sta['notes'] = el.notes
+                stations.append(sta)
+        result['stations'] = stations
+        return result
 
     def __unicode__(self):
         if self.name:
