@@ -117,12 +117,17 @@
     <script id="plan_index_json" type="application/json">{{ plan_index_json|safe }}</script>
     <script id="plan_links_json" type="application/json">{{ plan_links_json|safe }}</script>
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}sprintf.js/dist/sprintf.min.js'></script>
+    {% for key, value in settings.XGDS_MAP_SERVER_JS_MAP.items %}
+   		<script type="text/javascript" src='{{STATIC_URL}}{{ value }}'></script>
+   	{% endfor %}
 {% endblock scripts %}
 
 {% block jsInit %}
     plannerAppOptions = {
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
+       	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",
         layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
         dataUrl: "{{ settings.DATA_URL }}",
         simulator: {{ simulator }},
