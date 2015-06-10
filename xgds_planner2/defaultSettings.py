@@ -1,7 +1,17 @@
 # __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+#Copyright (c) 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
+#
+#The xGDS platform is licensed under the Apache License, Version 2.0 
+#(the "License"); you may not use this file except in compliance with the License. 
+#You may obtain a copy of the License at 
+#http://www.apache.org/licenses/LICENSE-2.0.
+#
+#Unless required by applicable law or agreed to in writing, software distributed 
+#under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+#CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+#specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
 """
@@ -77,7 +87,8 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'xgds_planner2/js/app.js',
                              'xgds_planner2/js/models.js',
                              'xgds_planner2/js/views.js',
-                             'xgds_planner2/js/mapviews.js',
+                             'xgds_planner2/js/olMapViews.js',
+                             'xgds_planner2/js/olPlanViews.js',
                              'xgds_planner2/js/simulatorDriver.js'
                              ),
         'output_filename': 'js/planner_app.js'
@@ -129,7 +140,10 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 )
 
 # kml root from xgds_map_server
-XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/feed/all/?logo=0"
+XGDS_PLANNER2_LAYER_FEED_URL = "/xgds_map_server/treejson/"
+
+XGDS_PLANNER2_LINE_WIDTH_PIXELS = 3
+
 
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
 XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
@@ -180,10 +194,6 @@ XGDS_PLANNER_COMMAND_RENDERER_SCRIPTS = ()
 # see xgds_kn for example
 XGDS_PLANNER_COMMAND_RENDERERS = {}
 
-# XGDS_PLANNER_EARTH_LOADED_CALLBACK: The fully qualified name of an
-# extra JavaScript callback to call after Google Earth is loaded.
-XGDS_PLANNER_EARTH_LOADED_CALLBACK = 'null'
-
 # If this is defined (true) then include the scheduling & flight management features in display
 # IMPORTANT YOU MUST INCLUDE THIS IN SITE SETTINGS
 # TEMPLATE_CONTEXT_PROCESSORS = (global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
@@ -205,11 +215,14 @@ XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []
 
+XGDS_MAP_SERVER_JS_MAP = {}
+XGDS_MAP_SERVER_JS_MAP['Plan'] = 'xgds_planner2/js/olPlanMap.js'
+
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
     'lodash',
-    'backbone',
+    'backbone#1.1.2',
     'marionette',
     'backbone-relational',
     'backbone-forms',
@@ -218,6 +231,8 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
-     'kmltree=https://kmltree.googlecode.com/files/kmltree-1.0.tar.gz',
-#    'openlayers=https://github.com/openlayers/ol3/releases/download/v3.2.1/v3.2.1.zip',
+    'ol3',
+    'ol3-popup',
+    'fancytree',
+    'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'
 )

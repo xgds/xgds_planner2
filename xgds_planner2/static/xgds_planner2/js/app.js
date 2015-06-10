@@ -1,3 +1,19 @@
+// __BEGIN_LICENSE__
+//Copyright (c) 2015, United States Government, as represented by the 
+//Administrator of the National Aeronautics and Space Administration. 
+//All rights reserved.
+//
+//The xGDS platform is licensed under the Apache License, Version 2.0 
+//(the "License"); you may not use this file except in compliance with the License. 
+//You may obtain a copy of the License at 
+//http://www.apache.org/licenses/LICENSE-2.0.
+//
+//Unless required by applicable law or agreed to in writing, software distributed 
+//under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+//CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+//specific language governing permissions and limitations under the License.
+// __END_LICENSE__
+
 /*
 ** Override the TemplateCache function responsible for
 ** rendering templates so that it will use Handlebars.
@@ -16,24 +32,22 @@ var app = (function($, _, Backbone) {
     app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
-        //map: '#map',
-        'tabs' : '#tabs'
+        tabs : '#tabs'
     });
 
     app.module('State', function(options) {
         this.addInitializer(function(options) {
             this.commandSelected = undefined;
             this.stationSelected = undefined;
+            this.segmentSelected = undefined;
             this.metaExpanded = undefined;
             this.addCommandsExpanded = undefined;
             this.disableSimulate = false;
-            this.untiltTimeoutId = undefined;
-            this.untiltModalEnabled = true;
             this.addStationOnMouseUp = false;
             this.mouseDownLocation = undefined;
             this.addStationLocation = undefined;
             this.addStationTime = undefined;
-            this.planKMLLoaded = false;
+            this.planLoaded = false;
             this.disableAddStation = false;
             this.pageInnerWidth = undefined;
             this.tabsLeftMargin = undefined;
@@ -43,7 +57,7 @@ var app = (function($, _, Backbone) {
             this.mapHeightSet = false;
             this.siteFrameMode = false;
             this.tree = undefined;
-            this.initialTree = null;
+            this.treeData = null;
         });
     });
 
@@ -218,7 +232,7 @@ var app = (function($, _, Backbone) {
                 this.options.mapRotationHandles : true;
 
             // temporarily define ge so that we don't get a reference error later
-            window.ge = undefined;
+//            window.ge = undefined;
 
             /*
              * Initialize the plan schema, and build easy-access indecies.
@@ -290,9 +304,10 @@ var app = (function($, _, Backbone) {
             app.selectedViews = []; // This array holds the views currently selected by checkboxes
             app.copiedCommands = []; // array of copied commands
 
-            app.map = new app.views.EarthView({
+            app.map = new app.views.OLPlanView({
                 el: '#map'
             });
+            app.vent.trigger('onMapSetup');
             app.toolbar.show(new app.views.ToolbarView());
             app.tabs.show(new app.views.TabNavView());
             

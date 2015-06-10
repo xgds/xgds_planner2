@@ -6,25 +6,39 @@
 {% endblock %}
 
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
-{% block content %}
 
+
+{% block content %}
 <style scoped>
-  {% stylesheet 'planner_app' %}
+  {# stylesheet 'planner_app' #}
+  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
+  @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
+  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+                             
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
-  @import url('{{EXTERNAL_URL}}kmltree/kmltree.css');
-  @import url('{{EXTERNAL_URL}}backbone-forms/distribution/templates/old.css');
-  @import url('{{STATIC_URL}}xgds_planner2/css/forms_adjust.css');
+  @import url('{{ EXTERNAL_URL }}kmltree/kmltree.css');
+  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
+  @import url('{{ EXTERNAL_URL }}ol3/css/ol.css');
+  @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
+  @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
+  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
+      .map {
+        height: 400px;
+        width: 100%;
+      }
 </style>
 
 <div id="application" >
     <div id="toolbar" class="row">
     </div>
 
-    <div class="row">
-        <div id="map" class="five columns"></div>
+    <div class="row" id="mapContainer">
+    	<div id="map" class="five columns"></div>
         <div id="tabs" class="seven columns"></div>
     </div>
-    
+    <div class="row">
+		<div id="postmap" ></div>
+	</div>
     <div id="saveAsDialog" style="display:none; background:white !important;">
 		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
 		<table>
@@ -43,65 +57,78 @@
 		<tr></tr>
 		</table>
 	</div>
-    
 </div>
 {% endblock content %}
-
+  
 
 {% block scripts %}
-    {% if not settings.XGDS_PLANNER_OFFLINE %}
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    {% endif %}
-    {% javascript 'planner_app' %}
-    <!-- 
+    {# javascript 'planner_app' #}
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery/dist/jquery.min.js'></script>
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js'></script>
+    
+	<script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-cookie/jquery.cookie.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}fancytree/dist/jquery.fancytree.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}fancytree/dist/src/jquery.fancytree.persist.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}lodash/lodash.min.js'></script>
+    
     <script type="text/javascript" src='{{ EXTERNAL_URL }}handlebars/handlebars.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone/backbone.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.wreqr/lib/backbone.wreqr.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone.babysitter/lib/backbone.babysitter.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
+ 	<script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}marionette/lib/backbone.marionette.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/string-format.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}kmltree/kmltree.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}proj4/dist/proj4.js'></script>
+    
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/handlebars-helpers.js'></script>
+    
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/geo.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/forms.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/app.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/models.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/fancyTreeView.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/views.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/mapviews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
+    <!-- <script src="{{EXTERNAL_URL}}ol3/build/ol.js" type="text/javascript"></script>
      -->
-    {% javascript 'simulator' %}
-    <!--  google earth extensions -->
-    <script type="text/javascript" src="{{STATIC_URL}}external/js/extensions-0.2.1.js"></script>
+    <script src="{{EXTERNAL_URL}}ol3/build/ol-debug.js" type="text/javascript"></script>
+   	<!-- <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olStationRubberband.js'></script>
+   	 -->
+   	 <script type="text/javascript" src='{{ EXTERNAL_URL }}ol3-popup/src/ol3-popup.js'></script>
+  
+      {% javascript 'simulator' %}
+      {% javascript 'custom_map' %}
+      
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/olMapViews.js'></script>
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlanViews.js'></script>
+     
     <!-- 
     <script type="text/javascript" src="{{ planner_appUrl }}"></script>
     <script type="text/javascript" src="{{ simulatorUrl}}"></script>
     -->
     {% for template_name, template in templates.items %}
-<script type="text/handlebars" id="template-{{template_name}}">
-{{template|safe}}
-</script>
+	<script type="text/handlebars" id="template-{{template_name}}">
+		{{template|safe}}
+	</script>
     {% endfor %}
     <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
     <script id="plan_library_json" type="application/json">{{ plan_library_json|safe }}</script>
     <script id="plan_index_json" type="application/json">{{ plan_index_json|safe }}</script>
     <script id="plan_links_json" type="application/json">{{ plan_links_json|safe }}</script>
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}sprintf.js/dist/sprintf.min.js'></script>
+    {% for key, value in settings.XGDS_MAP_SERVER_JS_MAP.items %}
+   		<script type="text/javascript" src='{{STATIC_URL}}{{ value }}'></script>
+   	{% endfor %}
 {% endblock scripts %}
 
 {% block jsInit %}
     plannerAppOptions = {
         offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
-        planLineWidthPixels: {{ settings.XGDS_PLANNER_LINE_WIDTH_PIXELS|default:"2" }},
-        layerFeedUrl: "{{ settings.XGDS_PLANNER_LAYER_FEED_URL }}",
+        planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
+       	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",
+        layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
         dataUrl: "{{ settings.DATA_URL }}",
         simulator: {{ simulator }},
         directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
@@ -110,16 +137,17 @@
         placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
         placemarkDirectionalUrl: "{{ placemark_directional_url }}",
         placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
-        XGDS_PLANNER_EARTH_LOADED_CALLBACK: {{ settings.XGDS_PLANNER_EARTH_LOADED_CALLBACK }},
+        XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }}
     };
-$(function(){
-    app.start(plannerAppOptions);
-})
+	$(function(){
+    	app.start(plannerAppOptions);
+	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
             return 'Unsaved changes, are you sure you want to exit?';
         }
     }); 
 {% endblock jsInit %}
+  

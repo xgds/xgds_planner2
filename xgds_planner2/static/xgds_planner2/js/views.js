@@ -1,3 +1,19 @@
+// __BEGIN_LICENSE__
+//Copyright (c) 2015, United States Government, as represented by the 
+//Administrator of the National Aeronautics and Space Administration. 
+//All rights reserved.
+//
+//The xGDS platform is licensed under the Apache License, Version 2.0 
+//(the "License"); you may not use this file except in compliance with the License. 
+//You may obtain a copy of the License at 
+//http://www.apache.org/licenses/LICENSE-2.0.
+//
+//Unless required by applicable law or agreed to in writing, software distributed 
+//under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+//CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+//specific language governing permissions and limitations under the License.
+// __END_LICENSE__
+
 app.views = app.views || {};
 
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
@@ -9,8 +25,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
-        'click #btn-redo': function() { app.Actions.redo(); },
-        'change #gearth-auto-untilt': 'toggleModalUntilt'
+        'click #btn-redo': function() { app.Actions.redo(); }
     },
 
     initialize: function() {
@@ -27,7 +42,6 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
-
     },
 
     onShow: function() {
@@ -46,6 +60,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                 app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
             });
             app.State.mapHeightSet = true;
+            app.vent.trigger('doMapResize');
         }
     },
 
@@ -125,17 +140,12 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
     updateTip: function(eventName) {
         var msgMap = {
-            'edit': 'Double click to delete stations, click and drag to move.',
-            'add': 'Click to add stations to end.',
-            'clear': ''
+            'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
+            'add': 'Click to add stations to end.  Double-click last station.',
+            'clear': 'Click and drag to pan map.'
         };
         var msg = msgMap[eventName];
         this.$el.find('#tip-status').text(msg);
-    },
-
-    toggleModalUntilt: function() {
-        app.State.untiltModalEnabled = this.$el.find('#gearth-auto-untilt').prop('checked');
-        app.map.untiltMap();
     },
 
     refreshSaveAs: function(model, response) {
@@ -382,8 +392,6 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('sequence')});
         this.col2.show(view);
-
-        //this.showMeta(itemModel);
     },
 
     showSegment: function(itemModel) {
@@ -512,7 +520,7 @@ app.views.makeExpandable = function(view, expandClass) {
         unexpand: function() {
             //            console.log('(((((((Unexpanding');
             this.expanded = false;
-            this.$el.find('i').removeClass('icon-chevron-right');
+            this.$el.find('i').removeClass('icon-play');
         },
         onExpandOther: function(target, expandClass) {
             //            console.log('Got onExpandOther');
@@ -536,7 +544,7 @@ app.views.makeExpandable = function(view, expandClass) {
         },
         _addIcon: function() {
             this._ensureIcon();
-            this.$el.find('i').addClass('icon-chevron-right');
+            this.$el.find('i').addClass('icon-play');
         },
         onClose: function() {
             this.stopListening();
@@ -640,8 +648,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
         if (!_.isUndefined(app.State.stationSelected)) {
             var childView = this.children.findByModel(app.State.stationSelected);
             if (_.isUndefined(childView)) {
-                // try to find the child view by ID since models
-                // change on save
+                // try to find the child view by ID since models change on save
                 var childId = app.State.stationSelected.cid;
                 var childModel = this.collection.get(childId);
                 if (_.isUndefined(childModel)) {
@@ -655,6 +662,32 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                         app.vent.trigger('showNothing');
                     } else {
                         app.State.stationSelected = childModel;
+                        childView.expand();
+                        app.vent.trigger('showItem:' + childModel.get('type').toLowerCase(), childModel);
+                    }
+                }
+            } else {
+                // restore expanded state
+                childView.expand();
+                app.vent.trigger('showItem:' + childView.model.get('type').toLowerCase(), childView.model);
+            }
+        } else if (!_.isUndefined(app.State.segmentSelected)) {
+            var childView = this.children.findByModel(app.State.segmentSelected);
+            if (_.isUndefined(childView)) {
+                // try to find the child view by ID since models change on save
+                var childId = app.State.segmentSelected.cid;
+                var childModel = this.collection.get(childId);
+                if (_.isUndefined(childModel)) {
+                    // can't find by id, so the view is gone
+                    app.State.segmentSelected = undefined;
+                    app.vent.trigger('showNothing');
+                } else {
+                    childView = this.children.findByModel(childModel);
+                    if (_.isUndefined(childView)) {
+                        // the model isn't in our list, oh noes!
+                        app.vent.trigger('showNothing');
+                    } else {
+                        app.State.segmentSelected = childModel;
                         childView.expand();
                         app.vent.trigger('showItem:' + childModel.get('type').toLowerCase(), childModel);
                     }
@@ -1026,6 +1059,8 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
             app.vent.trigger('cutAfterPaste');
         }
     }
+    
+    
 });
 
 /*
@@ -1127,70 +1162,6 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.LayerTreeView = Backbone.Marionette.ItemView.extend({
-    template: '#template-layer-tree',
-//    onShow: function() {
-//        if (!_.isUndefined(app.tree)) {
-//            var layertreeContainer = this.$el.find('#layertreeContainer');
-//            if (!_.isUndefined(layertreeContainer)) {
-//                layertreeContainer.show();
-////                console.log("show tree");
-////                var layertree = this.$el.find('#layertree');
-////                if (!_.isUndefined(layertree)) {
-////                    var kmltreeDiv = layertree.find(">:first-child");
-////                    if (!_.isUndefined(kmltreeDiv)){
-////                        kmltreeDiv.show();
-////                    }
-////                }
-//            }
-//        }
-//    },
-//    close: function() {
-//        var layertreeContainer = this.$el.find('#layertreeContainer');
-//        if (!_.isUndefined(layertreeContainer)) {
-//            console.log("close tree");
-////            var layertree = this.$el.find('#layertree');
-////            if (!_.isUndefined(layertree)) {
-////                var kmltreeDiv = layertree.find(">:first-child");
-////                if (!_.isUndefined(kmltreeDiv)){
-////                    kmltreeDiv.hide();
-////                }
-////            }
-//            layertreeContainer.hide();
-//        }
-//    },
-    onRender: function() {
-        app.vent.trigger('layerView:onRender');
-        if (!_.isUndefined(ge)) {
-            if (!_.isUndefined(app.tree)) {
-                // only remove if it's there in the first place
-                app.tree.destroy();
-            }
-            app.tree = kmltree({
-                url: app.options.layerFeedUrl,
-                gex: ge_gex,
-                mapElement: $('#map'),
-                element: this.$el.find('#layertree'),
-                restoreState: true,
-                bustCache: true
-            });
-            app.tree.load();
-            //TODO this rebuilds the tree every single time but using the same one it does not appear.
-            // WHAT THE FUCK
-//            if (_.isUndefined(app.tree)) {
-//                app.tree = kmltree({
-//                    url: app.options.layerFeedUrl,
-//                    gex: ge_gex,
-//                    mapElement: $('#map'),
-//                    element: this.$el.find('#layertree'),
-//                    restoreState: true,
-//                    bustCache: true
-//                });
-//                app.tree.load();
-//            } 
-        }
-    }
-});
 
 app.views.PlanToolsView = Backbone.View.extend({
     template: '#template-plan-tools',
@@ -1371,41 +1342,21 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     events: {
         'click ul.tab-nav li': 'clickSelectTab'
     },
-
     viewMap: {
         //'meta': app.views.PlanMetaView,
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
-        'layers': app.views.LayerTreeView,
+        'layers': app.views.FancyTreeView,
         'tools': app.views.PlanToolsView,
         'links': app.views.PlanLinksView
     },
 
     initialize: function() {
         this.on('tabSelected', this.setTab);
-        // load layer tree ahead of time to load layers into map
-//        app.tree = null;
-        this.listenTo(app.vent, 'earth:loaded', function() {
-            app.initialTree = kmltree({
-                url: app.options.layerFeedUrl,
-                gex: ge_gex,
-                mapElement: [],
-                element: [],
-                restoreState: true,
-                bustCache: true
-            });
-            app.initialTree.load();
-        });
-        this.listenTo(app.vent, 'layerView:onRender', function() {
-            // remove tree once user loads layers tab
-            if (!_.isNull(app.initialTree)) {
-                // only remove if it's there in the first place
-                app.initialTree.destroy();
-            }
-        });
         this.listenTo(app.vent, 'setTabRequested', function(tabId) {
             this.setTab(tabId);
         });
+        this.layersView = null;
     },
 
     onRender: function() {
@@ -1427,6 +1378,9 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     setTab: function(tabId) {
         var oldTab = app.currentTab;
         app.currentTab = tabId;
+        if (oldTab == tabId){
+            return;
+        }
         var $tabList = this.$el.find('ul.tab-nav li');
         $tabList.each(function() {
             li = $(this);
@@ -1438,36 +1392,24 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         });
         var viewClass = this.viewMap[tabId];
         if (! viewClass) { return undefined; }
-//        if (oldTab != "layers"){
-//            this.tabContent.close();
-//            var view = new viewClass({
-//                model: app.currentPlan
-//            });
-//            this.tabContent.show(view);
-//        } else {
-//            var view = this.tabContent.currentView;
-//            if (!view || view.isClosed){ return; }
-//            if (view.close) { view.close(); }
-//
-//            var newView = new viewClass({
-//                model: app.currentPlan
-//            });
-//
-//            this.tabContent.ensureEl();
-//
-//            newView.render();
-//            this.tabContent.open(newView);
-//
-//            Marionette.triggerMethod.call(newView, "show");
-//            Marionette.triggerMethod.call(this.tabContent, "show", newView);
-//
-//            this.tabContent.currentView = newView;
-//        }
         var view = new viewClass({
             model: app.currentPlan
         });
-        this.tabContent.show(view);
-
+        if (oldTab == 'layers'){
+            this.tabContent.show(view, {preventClose: true});
+        } else {
+            if (tabId == 'layers'){
+                if (!_.isNull(this.layersView)){
+                    this.tabContent.show(this.layersView);
+                } else {
+                    this.layersView = view;
+                    this.tabContent.show(view);
+                }
+            } else {
+                this.tabContent.show(view);
+            }
+        }
+        
         app.vent.trigger('tab:change', tabId);
     }
 

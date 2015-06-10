@@ -1,3 +1,19 @@
+// __BEGIN_LICENSE__
+//Copyright (c) 2015, United States Government, as represented by the 
+//Administrator of the National Aeronautics and Space Administration. 
+//All rights reserved.
+//
+//The xGDS platform is licensed under the Apache License, Version 2.0 
+//(the "License"); you may not use this file except in compliance with the License. 
+//You may obtain a copy of the License at 
+//http://www.apache.org/licenses/LICENSE-2.0.
+//
+//Unless required by applicable law or agreed to in writing, software distributed 
+//under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+//CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+//specific language governing permissions and limitations under the License.
+// __END_LICENSE__
+
 app.models = app.models || {};
 
 (function(models) {
@@ -414,7 +430,7 @@ app.models = app.models || {};
                     if (app.planJson){
                         var stationId = template.format(context);
                         item.set('id', stationId);
-                        item.trigger('change')
+                        item.trigger('change');
                         
                     }
                     if (itemType == 'Station') {
@@ -435,10 +451,11 @@ app.models = app.models || {};
          * station-segment-station adjecency.
          */
         appendStation: function(stationModel) {
+            var segment = undefined;
             app.Actions.disable();
             if (this.length > 0) { // Don't append a segment if this is the
                 // first station in the list.
-                var segment = models.segmentFactory();
+                segment = models.segmentFactory();
                 this.add([segment, stationModel]);
             } else {
                 this.add(stationModel);
@@ -446,21 +463,24 @@ app.models = app.models || {};
             app.Actions.enable();
             app.Actions.action();
             app.vent.trigger('station:change');
+            return segment;
         },
 
         /*
          * Insert a station just before the segment at the given index. Also add
          * a new segment.
          */
-        insertStation: function(idx, stationModel) {
-            var segmentAfter = this.at(idx);
+        insertStation: function(segmentAfter, stationModel) {
             if (segmentAfter.get('type') != 'Segment') { throw 'You can only insert stations before a Segment.'}
-            var segmentBefore = models.segmentFactory({}, segmentAfter); // Clone
-            // the
-            // stationAfter's
-            // properties.
+            // Clone the stationAfter's properties
+            var segmentBefore = models.segmentFactory({}, segmentAfter); 
+            var seq = this.plan.get('sequence');
+            var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
             app.vent.trigger('station:change');
+            segmentAfter.trigger('alter:stations'); 
+            return segmentBefore;
+
         },
 
         removeStation: function(stationModel) {
@@ -477,10 +497,31 @@ app.models = app.models || {};
             // disable actions so that the segment and
             // the station get removed in the same action
             app.Actions.disable();
+            var nextSegment;
+//            var prevStation;
+            if (idx < this.length){
+                // next segment needs to be updated
+                nextSegment = this.at(idx + 1);
+                if (!_.isUndefined(nextSegment)) {
+//                    if (idx - 2 >= 0){
+//                        prevStation = this.at(idx - 2);
+//                    }
+                }
+            }
             this.remove([segment, stationModel]);
+            
+            app.vent.trigger('station:change', stationModel);
+            app.vent.trigger('station:remove', stationModel);
+            stationModel.trigger('station:remove');
+            if (!_.isUndefined(segment)){
+                segment.trigger('segment:remove');
+            }
+            if (!_.isUndefined(nextSegment) && (segment != nextSegment)){
+                nextSegment.trigger('alter:stations'); 
+            }
             app.Actions.enable();
             app.Actions.action();
-            app.vent.trigger('station:change');
+            return segment;
         }
     });
 

@@ -1,5 +1,4 @@
 <div id="layertreeContainer">
-<a href="#" onclick="javascript:app.tree.refresh()">Refresh</a>
-<br/>
-<div id="layertree"></div>
-</div>
+	<i class="icon-arrows-ccw" alt="refresh" id="refreshTreeLink" onclick="javascript: app.vent.trigger('refreshTree');"></i>
+ 	<div id="layertree" data-source="ajax" class="sampletree"></div>
+ </div>

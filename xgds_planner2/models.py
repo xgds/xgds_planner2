@@ -1,7 +1,17 @@
 # __BEGIN_LICENSE__
-# Copyright (C) 2008-2010 United States Government as represented by
-# the Administrator of the National Aeronautics and Space Administration.
-# All Rights Reserved.
+#Copyright (c) 2015, United States Government, as represented by the 
+#Administrator of the National Aeronautics and Space Administration. 
+#All rights reserved.
+#
+#The xGDS platform is licensed under the Apache License, Version 2.0 
+#(the "License"); you may not use this file except in compliance with the License. 
+#You may obtain a copy of the License at 
+#http://www.apache.org/licenses/LICENSE-2.0.
+#
+#Unless required by applicable law or agreed to in writing, software distributed 
+#under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+#CONDITIONS OF ANY KIND, either express or implied. See the License for the 
+#specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
 import re
@@ -17,6 +27,7 @@ from django.core.urlresolvers import reverse
 
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
+from geocamUtil.modelJson import modelToDict
 
 from xgds_planner2 import xpjson, settings, statsPlanExporter
 # from geocamUtil.loader import getModelByName
@@ -201,7 +212,6 @@ class AbstractPlan(models.Model):
             logging.warning('extractFromJson: could not extract stats from plan %s',
                             self.uuid)
             raise  # FIX
-
         return self
 
     def getSummaryOfCommandsByType(self):
@@ -258,6 +268,32 @@ class AbstractPlan(models.Model):
             return result
         else:
             return None
+
+    def toMapDict(self):
+        """
+        Return a reduced dictionary that will be turned to JSON for rendering in a map
+        Here we are just interested in the route plan and not in activities
+        We just include stations
+        """
+        result = {}
+        result['author'] = self.jsonPlan.creator
+        result['name'] = self.jsonPlan.name
+        result['type'] = 'AbstractPlan'
+        if self.jsonPlan.notes:
+            result['notes'] = self.jsonPlan.notes
+
+        stations = []
+        seq = self.jsonPlan.sequence
+        for el in seq:
+            if el.type == "Station":
+                sta = {}
+                sta['id'] = el.id
+                sta['coords'] = el.geometry.coordinates
+                if el.notes:
+                    sta['notes'] = el.notes
+                stations.append(sta)
+        result['stations'] = stations
+        return result
 
     def __unicode__(self):
         if self.name:
