@@ -10,7 +10,7 @@ Authors
   | Ted Scharff (NASA Ames Research Center)
 
 Revision
-  Pre-0.1 draft
+  0.2
 
 Date
   TBD
@@ -56,7 +56,7 @@ Examples
 An XPJSON Plan_::
 
   {
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "type": "Plan",
 
     "name": "Marscape Traverse",
@@ -157,7 +157,7 @@ An XPJSON Plan_::
 The PlanSchema_ that the Plan_ conforms to::
 
   {
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "type": "PlanSchema",
 
     "name": "Robot Science Schema",
@@ -295,7 +295,7 @@ A PlanLibrary_ providing reusable elements that were incorporated into
 the plan::
 
   {
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "type": "PlanLibrary",
 
     "name": "Robot Science Library",
@@ -459,19 +459,72 @@ Inherits from:
 |                  |                |                 |Targets, Commands, and the Plan     |
 |                  |                |                 |itself).                            |
 +------------------+----------------+-----------------+------------------------------------+
-|``id``            |string          |optional         |Unique identifier.                  |
+|``id``            |string          |optional         |Identifier.                         |
 |                  |                |                 |                                    |
 |                  |                |                 |In some applications, the ``id`` is |
 |                  |                |                 |part of a formal naming convention. |
 |                  |                |                 |For example, the ``id`` of a command|
 |                  |                |                 |might include ids from the site, the|
 |                  |                |                 |plan, and the station that it is    |
-|                  |                |                 |part of.                            |
+|                  |                |                 |part of. Note that, depending on the|
+|                  |                |                 |naming convention, the id of an     |
+|                  |                |                 |object might automatically change if|
+|                  |                |                 |the sequence that contains it is    |
+|                  |                |                 |reordered.                          |
 |                  |                |                 |                                    |
 |                  |                |                 |For PlanSchema_ and PlanLibrary_    |
 |                  |                |                 |documents, we suggest using the     |
 |                  |                |                 |canonical URL of the document as the|
 |                  |                |                 |``id``.                             |
++------------------+----------------+-----------------+------------------------------------+
+|``uuid``          |string          |optional         |Universally unique identifier for   |
+|                  |                |                 |the given object.                   |
+|                  |                |                 |                                    |
+|                  |                |                 |In contrast to the ``id`` value, the|
+|                  |                |                 |``uuid`` value must persist when the|
+|                  |                |                 |object is edited or the sequence    |
+|                  |                |                 |that contains it is reordered. The  |
+|                  |                |                 |``uuid`` field was created in order |
+|                  |                |                 |to provide this persistence,        |
+|                  |                |                 |especially to maintain object       |
+|                  |                |                 |identity when exchanging plans      |
+|                  |                |                 |between different planning systems. |
+|                  |                |                 |                                    |
+|                  |                |                 |If an object is copied, the copy    |
+|                  |                |                 |must be assigned a new UUID to      |
+|                  |                |                 |maintain uniqueness.                |
+|                  |                |                 |                                    |
+|                  |                |                 |For simplicity, we recommend using a|
+|                  |                |                 |Version 4 (randomly generated) UUID.|
++------------------+----------------+-----------------+------------------------------------+
+|``derivedInfo``   |object          |optional         |A place to put unstructured         |
+|                  |                |                 |"derived" information about objects |
+|                  |                |                 |in the plan.                        |
+|                  |                |                 |                                    |
+|                  |                |                 |Its primary purpose is for          |
+|                  |                |                 |exchanging extra information between|
+|                  |                |                 |different planning systems. For     |
+|                  |                |                 |example, if system A has a model for|
+|                  |                |                 |calculating expected duration of    |
+|                  |                |                 |travel along a Segment_, it can     |
+|                  |                |                 |store the model results in the      |
+|                  |                |                 |``derivedInfo`` field of each       |
+|                  |                |                 |Segment at plan export, making them |
+|                  |                |                 |available to system B.              |
+|                  |                |                 |                                    |
+|                  |                |                 |This field should only store        |
+|                  |                |                 |"non-precious" information about the|
+|                  |                |                 |plan that was calculated by a       |
+|                  |                |                 |planning tool rather than entered by|
+|                  |                |                 |a user, and that can be regenerated |
+|                  |                |                 |from other fields if needed.        |
+|                  |                |                 |                                    |
+|                  |                |                 |Its value is an unstructured object,|
+|                  |                |                 |i.e., its contents are not described|
+|                  |                |                 |in the PlanSchema_. As a result,    |
+|                  |                |                 |planning interfaces may not support |
+|                  |                |                 |user inspection or editing of the   |
+|                  |                |                 |contents.                           |
 +------------------+----------------+-----------------+------------------------------------+
 
 .. _ClassSpec:
@@ -576,14 +629,20 @@ Inherits from:
 |                   |                |                 |commands belonging to a particular  |
 |                   |                |                 |plan.                               |
 +-------------------+----------------+-----------------+------------------------------------+
-|``id``             |string          |required         |Unique identifier for the command.  |
+|``id``             |string          |required         |Identifier for the command.         |
 |                   |                |                 |                                    |
 |                   |                |                 |Probably auto-generated by the      |
 |                   |                |                 |planning interface according to a   |
 |                   |                |                 |naming convention.                  |
 +-------------------+----------------+-----------------+------------------------------------+
-|``stopCommandId``  |string          |optional         |Identifies an earlier non-blocking  |
-|                   |                |                 |command to stop by its ``id``.      |
+|``uuid``           |string          |required         |Persistent universally unique       |
+|                   |                |                 |identifier for the command.         |
+|                   |                |                 |                                    |
+|                   |                |                 |Typically a Version 4 UUID randomly |
+|                   |                |                 |generated by the planning interface.|
++-------------------+----------------+-----------------+------------------------------------+
+|``stopCommandUuid``|string          |optional         |Identifies an earlier non-blocking  |
+|                   |                |                 |command to stop by its ``uuid``.    |
 |                   |                |                 |                                    |
 |                   |                |                 |Used only if ``isStopCommand`` is   |
 |                   |                |                 |``true`` for this command subclass. |
@@ -593,12 +652,6 @@ Inherits from:
 |                   |                |                 |                                    |
 |                   |                |                 |Used only if ``isStopCommand`` is   |
 |                   |                |                 |``true`` for this command subclass. |
-+-------------------+----------------+-----------------+------------------------------------+
-|``id``             |string          |required         |Unique identifier for the command.  |
-|                   |                |                 |                                    |
-|                   |                |                 |Probably auto-generated by the      |
-|                   |                |                 |planning interface according to a   |
-|                   |                |                 |naming convention.                  |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Command Subclasses
@@ -653,6 +706,7 @@ Example instance of a "DriveForward" subclass::
     "name": "Drive 1",
     "notes": "-",
     "id": "ARC_R001A00_0_FWD",
+    "uuid": "46b5a8f5-d5bd-4fe8-a493-99c29d088bce",
 
     // inherited from Command
     "stationId": "ARC_R001A00",
@@ -732,7 +786,7 @@ Inherits from:
 |``isStopCommand``   |boolean         |optional (default|If true, each instance of this       |
 |                    |                |``false``)       |command has the effect of stopping an|
 |                    |                |                 |earlier non-blocking command         |
-|                    |                |                 |specified in the ``stopCommandId``   |
+|                    |                |                 |specified in the ``stopCommandUuid`` |
 |                    |                |                 |and ``stopCommandType`` fields.      |
 +--------------------+----------------+-----------------+-------------------------------------+
 |``scopeTerminate``  |boolean         |optional (default|(Non-blocking commands only.)  The   |
@@ -762,6 +816,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from ClassSpec
     "parent": "(parent CommandSpec id)",
@@ -795,7 +851,7 @@ Inherits from:
 +------------------+----------------+-----------------+------------------------------------+
 |Member            |Type            |Values           |Meaning                             |
 +==================+================+=================+====================================+
-|``xpjson``        |string          |optional         |Indicates this is an XPJSON document|
+|``xpjson``        |string          |"0.2"            |Indicates this is an XPJSON document|
 |                  |                |                 |(a Plan_, PlanSchema_, or           |
 |                  |                |                 |PlanLibrary_). Specifies what       |
 |                  |                |                 |version of the XPJSON spec the      |
@@ -866,11 +922,26 @@ Inherits from:
 |                  |                |                        |and the schema designer will need to|
 |                  |                |                        |choose from among that subset.      |
 |                  |                +------------------------+------------------------------------+
-|                  |                |``"date-time"``         |A date and time. Specified as a     |
-|                  |                |                        |number (milliseconds since UNIX     |
-|                  |                |                        |epoch, Java style), or as a string  |
-|                  |                |                        |in `ISO 8601`_ format               |
-|                  |                |                        |``yyyy-mm-ddTHH:MM:SSZ``.           |
+|                  |                |``"date-time"``         |A date and time.                    |
+|                  |                |                        |                                    |
+|                  |                |                        |Specified as a string in the format |
+|                  |                |                        |``yyyy-mm-ddTHH:MM:SSZ``. The time  |
+|                  |                |                        |zone must be UTC and must be        |
+|                  |                |                        |specified explicitly (using the     |
+|                  |                |                        |``Z`` character). This format is one|
+|                  |                |                        |of the formats described in `ISO    |
+|                  |                |                        |8601`_, and has the same semantics  |
+|                  |                |                        |specified there.  To ensure strict  |
+|                  |                |                        |compatibility between planning      |
+|                  |                |                        |systems, other formats defined by   |
+|                  |                |                        |ISO 8601 must not be used.          |
+|                  |                |                        |                                    |
+|                  |                |                        |To ensure consistency when          |
+|                  |                |                        |exchanging plans, all planning      |
+|                  |                |                        |systems should use timestamps and   |
+|                  |                |                        |duration calculations with          |
+|                  |                |                        |resolution of 1 second (not         |
+|                  |                |                        |fractional seconds).                |
 |                  |                +------------------------+------------------------------------+
 |                  |                |``"targetId"``          |Parameter is a string referring to  |
 |                  |                |                        |the id of one of the targets found  |
@@ -985,6 +1056,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // defined in ParamSpec
     "parent": "(parent ParamSpec id)",
@@ -1023,7 +1096,17 @@ Inherits from:
 |Member            |Type            |Values           |Meaning                             |
 +==================+================+=================+====================================+
 |``sequence``      |array containing|optional         |A sequence of commands that should  |
-|                  |Command_ entries|                 |be executed at this PathElement.    |
+|                  |Command_ entries|                 |be executed at or along this        |
+|                  |                |                 |PathElement.                        |
+|                  |                |                 |                                    |
+|                  |                |                 |If not specified, the default       |
+|                  |                |                 |interpretation is an empty sequence.|
++------------------+----------------+-----------------+------------------------------------+
+|``uuid``          |string          |required         |Persistent universally unique       |
+|                  |                |                 |identifier.                         |
+|                  |                |                 |                                    |
+|                  |                |                 |Typically a Version 4 UUID randomly |
+|                  |                |                 |generated by the planning interface.|
 +------------------+----------------+-----------------+------------------------------------+
 
 .. _Plan:
@@ -1098,9 +1181,11 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from Document
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "subject": [
       "(tag 1)",
       ...
@@ -1220,9 +1305,11 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from Document
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "subject": [
       "(tag 1)",
       ...
@@ -1370,9 +1457,11 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from Document
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "subject": [
       "(tag 1)",
       ...
@@ -1446,6 +1535,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)"
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
   }
 
 .. _Segment:
@@ -1499,12 +1590,6 @@ Inherits from:
 |                  |            |                |support editing the Segment         |
 |                  |            |                |geometry.)                          |
 +------------------+------------+----------------+------------------------------------+
-|``sequence``      |array       |optional        |Commands to be executed while moving|
-|                  |containing  |                |along the Segment.                  |
-|                  |Command_    |                |                                    |
-|                  |entries     |                |                                    |
-|                  |            |                |                                    |
-+------------------+------------+----------------+------------------------------------+
 
 Example
 -------
@@ -1517,6 +1602,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from PathElement
     "geometry": {
@@ -1605,6 +1692,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // defined in Site
     "crs": {
@@ -1652,6 +1741,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // inherited from PathElement
     "geometry": {
@@ -1701,6 +1792,8 @@ Example
     "name": "(name)",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // defined in Target
     "geometry": {
@@ -1742,6 +1835,8 @@ Example
     "name": "length",
     "notes": "(notes)",
     "id": "(id)",
+    "uuid": "(uuid)",
+    "derivedInfo": { ... },
 
     // defined in UnitSpec
     "units": {
@@ -1763,7 +1858,7 @@ of the `Python String Formatting`_ syntax.
 
 If no format string is specified, the planning interface should default
 to filling the relevant ``id`` field with a persistent randomly
-generated UUID.
+generated UUID (same as the ``uuid`` field).
 
 To substitute the value of a variable into the formatted output, you
 include a pattern ``{<expression>:<printfFormat>}`` in the
@@ -1849,7 +1944,7 @@ Example
 If the PlanSchema_ contains the following formats::
 
   {
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "type": "PlanSchema",
     ...
 
@@ -1862,7 +1957,7 @@ If the PlanSchema_ contains the following formats::
 The resulting Plan_ might have these auto-generated ``id`` values::
 
   {
-    "xpjson": "0.1",
+    "xpjson": "0.2",
     "type": "Plan",
     "site": {
       "type": "Site",
