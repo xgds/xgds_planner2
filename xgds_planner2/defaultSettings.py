@@ -211,12 +211,17 @@ XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT = False
 XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE = False
 XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 
+XGDS_PLANNER2_HANDLEBARS_DIRS = [os.path.join('xgds_planner2', 'templates', 'handlebars'),
+                                 os.path.join('xgds_map_server', 'templates', 'handlebars', 'search')]
+
 # This is used to hold a map of site frames, so we can convert lat/long to the closest site frame.
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []
 
 XGDS_MAP_SERVER_JS_MAP = {}
-XGDS_MAP_SERVER_JS_MAP['Plan'] = 'xgds_planner2/js/olPlanMap.js'
+XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
+                                  'model': XGDS_PLANNER2_PLAN_MODEL}
+
 
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (

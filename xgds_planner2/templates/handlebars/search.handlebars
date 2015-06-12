@@ -1,0 +1,13 @@
+<div id="searchContainer">
+	<div id="modelChoiceDiv">
+		Search for: 
+		<select id="searchModelSelector">
+		{{#each searchModels}}
+			<option value="{{this}}">{{this}}</option>
+		{{/each}}
+		</select>
+		<button id="getSearchFormButton" class="small">Start</button>
+	</div>
+	<div id="searchFormDiv"></div>
+	<div id="searchResultsDiv"></div>
+ </div>

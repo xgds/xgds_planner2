@@ -119,8 +119,17 @@
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
     <script type="text/javascript" src='{{ EXTERNAL_URL }}sprintf.js/dist/sprintf.min.js'></script>
     {% for key, value in settings.XGDS_MAP_SERVER_JS_MAP.items %}
-   		<script type="text/javascript" src='{{STATIC_URL}}{{ value }}'></script>
+   		<script type="text/javascript" src='{{STATIC_URL}}{{ value.ol|safe }}'></script>
    	{% endfor %}
+   	{% for key, value in searchForms.items %}
+   	<script type="text/handlebars" id="template-{{key}}">
+		<table>
+		{{value.as_table}}
+		</table>
+		<button id="doSearch" class="small">Search</button>
+	</script>
+   	{% endfor %}
+   	
 {% endblock scripts %}
 
 {% block jsInit %}
@@ -139,7 +148,8 @@
         placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
         XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
-        readOnly: {{ editable|yesno:"false,true" }}
+        readOnly: {{ editable|yesno:"false,true" }},
+        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP.keys|safe }}
     };
 	$(function(){
     	app.start(plannerAppOptions);

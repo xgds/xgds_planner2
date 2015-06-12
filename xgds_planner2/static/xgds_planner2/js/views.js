@@ -306,7 +306,6 @@ app.views.HideableRegion = Backbone.Marionette.Region.extend({
 
 app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     template: '#template-sequence-view',
-
     regions: {
         //Column Headings
         colhead1: '#colhead1',
@@ -333,18 +332,6 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
         this.listenTo(app.vent, 'showMeta', this.showMeta, this);
         this.listenTo(app.vent, 'showPresets', this.showPresets, this);
         this.listenTo(app.vent, 'showNothing', this.showNothing, this);
-        //this.listenTo(this.col1, 'all', function(evt) {
-        //    console.log('Event on column 1: ' + evt);
-        //});
-        //this.listenTo(this.col2, 'all', function(evt) {
-        //    console.log('Event on column 2: ' + evt);
-        //});
-        //this.listenTo(this.col3, 'all', function(evt) {
-        //    console.log('Event on column 3: ' + evt);
-        //});
-        //this.listenTo(app.vent, 'all', function(evt) {
-        //    console.log('PlanSequenceView event: ' + evt);
-        //});
     },
 
     onClose: function() {
@@ -1333,6 +1320,53 @@ app.views.PlanLinksView = Backbone.View.extend({
     }
 });
 
+app.views.SearchView = Backbone.Marionette.LayoutView.extend({
+    template: '#template-search',
+    events: {
+        'click #getSearchFormButton': 'setupSearchForm'
+    },
+    regions: {
+        modelChoiceRegion: '#modelChoiceDiv',
+        searchFormRegion: { selector: '#searchFormDiv',
+                            regionType: app.views.HideableRegion },
+        searchResultsRegion: { selector: '#searchResultsDiv',
+                               regionType: app.views.HideableRegion }
+    },
+    initialize: function() {
+        var source = $(this.template).html();
+        if (_.isUndefined(source)) {
+            this.template = function() {
+                return '';
+            };
+        } else {
+            this.template = Handlebars.compile(source);
+        }
+    },
+    onRender: function() {
+        this.$el.html(this.template({
+            searchModels: app.options.searchModels
+        }));
+    },
+    setupSearchForm: function() {
+        var newModel = this.$("#searchModelSelector").val();
+        if (!_.isUndefined(this.selectedModel)){
+            if (newModel == this.selectedModel){
+                return;
+            }
+        }
+        this.selectedModel = newModel;
+        var templateName = '#template-' + this.selectedModel;
+        this.searchFormView = new app.views.SearchFormView({template:templateName})
+        this.searchFormRegion.show(this.searchFormView);
+    },
+    clearSearch: function() {
+        
+    }
+});
+
+app.views.SearchFormView = Backbone.Marionette.ItemView.extend({
+});
+
 app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     template: '#template-tabnav',
     regions: {
@@ -1347,6 +1381,7 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
         'layers': app.views.FancyTreeView,
+        'search': app.views.SearchView,
         'tools': app.views.PlanToolsView,
         'links': app.views.PlanLinksView
     },
