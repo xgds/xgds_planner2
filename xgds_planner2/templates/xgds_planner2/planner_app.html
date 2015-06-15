@@ -123,10 +123,18 @@
    	{% endfor %}
    	{% for key, value in searchForms.items %}
    	<script type="text/handlebars" id="template-{{key}}">
+	<form  id="form-{{key}}" action="" method="post">
+		{{ value.0.management_form }}
+		{% csrf_token %}
+		{% for form in value.0 %}
 		<table>
-		{{value.as_table}}
+		{{ form.as_table }}
+		{#value.0.0.as_table#}
 		</table>
+		{% endfor %}
 		<button id="doSearch" class="small">Search</button>
+	</form>
+	
 	</script>
    	{% endfor %}
    	
@@ -149,7 +157,7 @@
         XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }},
-        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP.keys|safe }}
+        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }}
     };
 	$(function(){
     	app.start(plannerAppOptions);

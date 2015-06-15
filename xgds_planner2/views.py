@@ -51,6 +51,7 @@ from xgds_planner2.forms import GroupFlightForm
 from xgds_planner2.models import getPlanSchema
 
 from xgds_data.forms import SearchForm, SpecializedForm
+from django.forms.formsets import formset_factory
 
 _template_cache = None
 
@@ -234,7 +235,10 @@ def plan_editor_app(request, plan_id=None, editable=True):
     for key, entry in settings.XGDS_MAP_SERVER_JS_MAP.iteritems():
         theClass = LazyGetModelByName(entry['model'])
         theForm = SpecializedForm(SearchForm, theClass.get())
-        forms[key] = theForm
+        theFormSetMaker = formset_factory(theForm, extra=0)
+        theFormSet = theFormSetMaker(initial=[{'modelClass': entry['model']}])
+
+        forms[key] = [theFormSet, entry['model']]
 
 #     print planSchema.getJsonSchema();
     return render_to_response(

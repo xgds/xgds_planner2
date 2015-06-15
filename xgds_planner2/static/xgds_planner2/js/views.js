@@ -1323,7 +1323,8 @@ app.views.PlanLinksView = Backbone.View.extend({
 app.views.SearchView = Backbone.Marionette.LayoutView.extend({
     template: '#template-search',
     events: {
-        'click #getSearchFormButton': 'setupSearchForm'
+        'click #getSearchFormButton': 'setupSearchForm',
+        'click #doSearch': 'doSearch'
     },
     regions: {
         modelChoiceRegion: '#modelChoiceDiv',
@@ -1343,8 +1344,9 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
         }
     },
     onRender: function() {
+        var theKeys = Object.keys(app.options.searchModels);
         this.$el.html(this.template({
-            searchModels: app.options.searchModels
+            searchModels: theKeys
         }));
     },
     setupSearchForm: function() {
@@ -1358,6 +1360,26 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
         var templateName = '#template-' + this.selectedModel;
         this.searchFormView = new app.views.SearchFormView({template:templateName})
         this.searchFormRegion.show(this.searchFormView);
+        this.$("#form-"+this.selectedModel).on('submit', function(event){
+            event.preventDefault();
+        });
+    },
+    doSearch: function() {
+        var theForm = this.$("#form-"+this.selectedModel);
+        var postData = theForm.serializeArray();
+        postData.push({'name':'modelClass', 'value':app.options.searchModels[this.selectedModel].model});
+        $.ajax({
+            url: '/xgds_map_server/doMapSearch',
+            dataType: 'json',
+            data: postData,
+            success: $.proxy(function(data) {
+                app.vent.trigger("mapSearch:found", data);
+            }, this),
+            error: $.proxy(function(data){
+                app.vent.trigger("mapSearch:clear");
+                this.showDataError(data);
+            }, this)
+          });
     },
     clearSearch: function() {
         
