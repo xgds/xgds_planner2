@@ -1342,6 +1342,7 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
         } else {
             this.template = Handlebars.compile(source);
         }
+        this.searchResultsView = new app.views.SearchResultsView({template:'#template-search-results'})
     },
     onRender: function() {
         var theKeys = Object.keys(app.options.searchModels);
@@ -1356,10 +1357,12 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
                 return;
             }
         }
+        app.vent.trigger("mapSearch:clear");
         this.selectedModel = newModel;
         var templateName = '#template-' + this.selectedModel;
         this.searchFormView = new app.views.SearchFormView({template:templateName})
         this.searchFormRegion.show(this.searchFormView);
+        this.searchResultsRegion.show(this.searchResultsView);
         this.$("#form-"+this.selectedModel).on('submit', function(event){
             event.preventDefault();
         });
@@ -1374,6 +1377,7 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
             data: postData,
             success: $.proxy(function(data) {
                 app.vent.trigger("mapSearch:found", data);
+                this.searchResultsView.updateContents(data);
             }, this),
             error: $.proxy(function(data){
                 app.vent.trigger("mapSearch:clear");
@@ -1387,6 +1391,26 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
 });
 
 app.views.SearchFormView = Backbone.Marionette.ItemView.extend({
+});
+
+app.views.SearchResultsView = Backbone.Marionette.ItemView.extend({
+    updateContents: function(data) {
+        if (data.length > 0){
+            var theTable = this.$("#searchResultsTable");
+            var columns = Object.keys(data[0]);
+            var columnHeaders = columns.map(function(col){
+                return { data: col}
+            });
+            var dataTableObj = {
+                    data: data,
+                    columns: columnHeaders
+            }
+            this.theDataTable = theTable.dataTable( dataTableObj );
+        }
+    },
+    onRender: function() {
+        
+    }
 });
 
 app.views.TabNavView = Backbone.Marionette.LayoutView.extend({

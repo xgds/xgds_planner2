@@ -14,6 +14,9 @@
   @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
   @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
   @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+  @import "{{ EXTERNAL_URL }}datatablesEditable/media/css/demo_page.css";
+@import "{{ EXTERNAL_URL }}datatablesEditable/media/css/demo_table.css";
+  
                              
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
   @import url('{{ EXTERNAL_URL }}kmltree/kmltree.css');
@@ -66,6 +69,9 @@
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery/dist/jquery.min.js'></script>
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js'></script>
+    
+    <script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
+	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
     
 	<script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-cookie/jquery.cookie.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}fancytree/dist/jquery.fancytree.js'></script>
