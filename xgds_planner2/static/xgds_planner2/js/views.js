@@ -292,18 +292,6 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-command-presets-header'
 });
 
-app.views.HideableRegion = Backbone.Marionette.Region.extend({
-    close: function() {
-        Backbone.Marionette.Region.prototype.close.call(this);
-        this.ensureEl();
-        this.$el.hide();
-    },
-    show: function(view) {
-        Backbone.Marionette.Region.prototype.show.call(this, view);
-        this.$el.show();
-    }
-});
-
 app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     template: '#template-sequence-view',
     regions: {
