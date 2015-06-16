@@ -1342,13 +1342,14 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
         } else {
             this.template = Handlebars.compile(source);
         }
-        this.searchResultsView = new app.views.SearchResultsView({template:'#template-search-results'})
     },
     onRender: function() {
         var theKeys = Object.keys(app.options.searchModels);
         this.$el.html(this.template({
             searchModels: theKeys
         }));
+        this.searchResultsView = new app.views.SearchResultsView({template:'#template-search-results'})
+        this.searchResultsRegion.show(this.searchResultsView);
     },
     setupSearchForm: function() {
         var newModel = this.$("#searchModelSelector").val();
@@ -1358,11 +1359,11 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
             }
         }
         app.vent.trigger("mapSearch:clear");
+        this.searchResultsView.reset();
         this.selectedModel = newModel;
         var templateName = '#template-' + this.selectedModel;
         this.searchFormView = new app.views.SearchFormView({template:templateName})
         this.searchFormRegion.show(this.searchFormView);
-        this.searchResultsRegion.show(this.searchResultsView);
         this.$("#form-"+this.selectedModel).on('submit', function(event){
             event.preventDefault();
         });
@@ -1396,20 +1397,29 @@ app.views.SearchFormView = Backbone.Marionette.ItemView.extend({
 app.views.SearchResultsView = Backbone.Marionette.ItemView.extend({
     updateContents: function(data) {
         if (data.length > 0){
-            var theTable = this.$("#searchResultsTable");
-            var columns = Object.keys(data[0]);
-            var columnHeaders = columns.map(function(col){
-                return { data: col}
-            });
-            var dataTableObj = {
-                    data: data,
-                    columns: columnHeaders
+            if (!_.isUndefined(this.theDataTable)) {
+                this.theDataTable.fnClearTable();
+                this.theDataTable.fnAddData(data);
+            } else {
+                var theTable = this.$("#searchResultsTable");
+                var columns = Object.keys(data[0]);
+                var columnHeaders = columns.map(function(col){
+                    return { data: col}
+                });
+                var dataTableObj = {
+                        data: data,
+                        columns: columnHeaders
+                }
+                this.theDataTable = theTable.dataTable( dataTableObj );
             }
-            this.theDataTable = theTable.dataTable( dataTableObj );
+            
         }
     },
-    onRender: function() {
-        
+    reset: function() {
+        if (!_.isUndefined(this.theDataTable)) {
+            this.theDataTable.destroy();
+            this.theDataTable = undefined;
+        }
     }
 });
 
