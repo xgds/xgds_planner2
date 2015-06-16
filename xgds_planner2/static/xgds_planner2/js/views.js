@@ -1348,7 +1348,8 @@ app.views.SearchView = Backbone.Marionette.LayoutView.extend({
         this.$el.html(this.template({
             searchModels: theKeys
         }));
-        this.searchResultsView = new app.views.SearchResultsView({template:'#template-search-results'})
+        this.searchResultsView = new app.views.SearchResultsView({template:'#template-search-results', 
+                                                                  region: this.searchResultsRegion})
         this.searchResultsRegion.show(this.searchResultsView);
     },
     setupSearchForm: function() {
@@ -1395,6 +1396,9 @@ app.views.SearchFormView = Backbone.Marionette.ItemView.extend({
 });
 
 app.views.SearchResultsView = Backbone.Marionette.ItemView.extend({
+    initialize: function(options){
+        this.region = this.options.region;
+    },
     updateContents: function(data) {
         if (data.length > 0){
             if (!_.isUndefined(this.theDataTable)) {
@@ -1408,12 +1412,27 @@ app.views.SearchResultsView = Backbone.Marionette.ItemView.extend({
                 });
                 var dataTableObj = {
                         data: data,
-                        columns: columnHeaders
+                        columns: columnHeaders,
+                        bAutoWidth: true,
+                        stateSave: true,
+                        bPaginate: true,
+                        iDisplayLength: -1, 
+                        bLengthChange: true,
+                        bSort: true,
+                        bJQueryUI: false,
+                        sScrollY:  this.calcDataTableHeight(),
+                        "lengthMenu": [[10, 20, 40, -1], [10, 20, 40, "All"]],
+                        "oLanguage": {
+                            "sLengthMenu": "Display _MENU_"
+                        }
                 }
                 this.theDataTable = theTable.dataTable( dataTableObj );
             }
-            
         }
+    },
+    calcDataTableHeight : function() {
+        var h =  Math.floor($(window).height()*.4);
+        return h + 'px';
     },
     reset: function() {
         if (!_.isUndefined(this.theDataTable)) {
