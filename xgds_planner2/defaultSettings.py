@@ -219,8 +219,9 @@ XGDS_PLANNER2_SITE_FRAMES = []
 
 XGDS_MAP_SERVER_JS_MAP = {}
 XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
-                                  'model': XGDS_PLANNER2_PLAN_MODEL}
-
+                                  'model': XGDS_PLANNER2_PLAN_MODEL,
+                                  'hiddenColumns': ['stations', 'type', 'id']
+                                  }
 
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (

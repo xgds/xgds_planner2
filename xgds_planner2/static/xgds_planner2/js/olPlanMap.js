@@ -21,6 +21,9 @@ var AbstractPlan = {
              };
         },
         constructElements: function(plansJson){
+            if (_.isEmpty(plansJson)){
+                return null;
+            }
             this.initStyles();
             var olFeatures = [];
             for (var i = 0; i < plansJson.length; i++) {

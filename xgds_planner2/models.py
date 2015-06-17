@@ -276,6 +276,7 @@ class AbstractPlan(models.Model):
         We just include stations
         """
         result = {}
+        result['id'] = self.uuid
         result['author'] = self.jsonPlan.creator
         result['name'] = self.jsonPlan.name
         result['type'] = 'AbstractPlan'
