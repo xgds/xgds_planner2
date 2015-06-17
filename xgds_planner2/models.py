@@ -281,6 +281,8 @@ class AbstractPlan(models.Model):
         result['type'] = 'AbstractPlan'
         if self.jsonPlan.notes:
             result['notes'] = self.jsonPlan.notes
+        else:
+            result['notes'] = ''
 
         stations = []
         seq = self.jsonPlan.sequence

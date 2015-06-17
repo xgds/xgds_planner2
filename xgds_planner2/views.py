@@ -49,30 +49,13 @@ from xgds_planner2 import (settings,
                            fillIdsPlanExporter)
 from xgds_planner2.forms import GroupFlightForm
 from xgds_planner2.models import getPlanSchema
-
-from xgds_data.forms import SearchForm, SpecializedForm
-from django.forms.formsets import formset_factory
+from xgds_map_server.views import getSearchForms, get_handlebars_templates
 
 _template_cache = None
 
 
 def get_plan_model():
     return getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
-
-
-def get_handlebars_templates():
-    global _template_cache
-    if settings.XGDS_PLANNER_TEMPLATE_DEBUG or not _template_cache:
-        templates = {}
-        for thePath in settings.XGDS_PLANNER2_HANDLEBARS_DIRS:
-            inp = os.path.join(settings.PROJ_ROOT, 'apps', thePath)
-            print 'looking for handlebars in ' + inp
-            for template_file in glob.glob(os.path.join(inp, '*.handlebars')):
-                with open(template_file, 'r') as infile:
-                    template_name = os.path.splitext(os.path.basename(template_file))[0]
-                    templates[template_name] = infile.read()
-        _template_cache = templates
-    return _template_cache
 
 
 def plan_help(request):
@@ -87,7 +70,7 @@ def plan_help(request):
 @login_required
 def plan_tests(request, plan_id, editable=True):
     Plan = get_plan_model()
-    templates = get_handlebars_templates()
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
 
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -128,7 +111,7 @@ def aggregate_handlebars_templates(request):
     Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse(json.dumps(get_handlebars_templates()), content_type='application/json')
+    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)), content_type='application/json')
 
 
 @login_required
@@ -219,7 +202,7 @@ def plan_detail_doc(request, plan_id=None):
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
     Plan = get_plan_model()
-    templates = get_handlebars_templates()
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
 
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -230,23 +213,13 @@ def plan_editor_app(request, plan_id=None, editable=True):
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
 
-    # get the forms for searches
-    forms = {}
-    for key, entry in settings.XGDS_MAP_SERVER_JS_MAP.iteritems():
-        theClass = LazyGetModelByName(entry['model'])
-        theForm = SpecializedForm(SearchForm, theClass.get())
-        theFormSetMaker = formset_factory(theForm, extra=0)
-        theFormSet = theFormSetMaker(initial=[{'modelClass': entry['model']}])
-
-        forms[key] = [theFormSet, entry['model']]
-
 #     print planSchema.getJsonSchema();
     return render_to_response(
         'xgds_planner2/planner_app.html',
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
-            'searchForms': forms,
+            'searchForms': getSearchForms(),
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
             'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
             'plan_json': json.dumps(plan_json),

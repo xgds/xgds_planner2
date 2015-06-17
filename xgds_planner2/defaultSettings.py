@@ -58,7 +58,6 @@ PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
 import os
 
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
-XGDS_PLANNER_TEMPLATE_DEBUG = True  # If this is true, handlebars templates will not be cached.
 XGDS_PLANNER_MAP_ROTATION_HANDLES = True
 XGDS_PLANNER_DIRECTIONAL_STATIONS = True
 

@@ -125,24 +125,7 @@
     {% for key, value in settings.XGDS_MAP_SERVER_JS_MAP.items %}
    		<script type="text/javascript" src='{{STATIC_URL}}{{ value.ol|safe }}'></script>
    	{% endfor %}
-   	{% for key, value in searchForms.items %}
-   	<script type="text/handlebars" id="template-{{key}}">
-	<form  id="form-{{key}}" action="" method="post">
-		{{ value.0.management_form }}
-		{% csrf_token %}
-		{% for form in value.0 %}
-		<table>
-		{{ form.as_table }}
-		{#value.0.0.as_table#}
-		</table>
-		{% endfor %}
-		<button id="doSearch" class="small">Search</button>
-<!--		<button id="doSaveSearch" class="small">Save Search</button> -->
-	</form>
-	
-	</script>
-   	{% endfor %}
-   	
+   	{% include "xgds_map_server/SearchForms.html" with searchForms=searchForms %}
 {% endblock scripts %}
 
 {% block jsInit %}
