@@ -617,6 +617,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
     onItemExpand: function(childView) {
         app.State.stationSelected = childView.model;
+        app.vent.trigger('itemSelected:station', this.model);
     },
 
     restoreExpanded: function() {
@@ -664,6 +665,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                     } else {
                         app.State.segmentSelected = childModel;
                         childView.expand();
+                        app.vent.trigger('itemSelected:segment', this.model);
                         app.vent.trigger('showItem:' + childModel.get('type').toLowerCase(), childModel);
                     }
                 }

@@ -219,6 +219,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
         'xgds_planner2/planner_app.html',
         RequestContext(request, {
             'templates': templates,
+            'app': 'xgds_planner2/js/app.js',
             'settings': settings,
             'saveSearchForm': MapSearchForm(),
             'searchForms': getSearchForms(),

@@ -236,7 +236,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
     'qunit',
-    'ol3',
+    'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.6.0/v3.6.0-dist.zip',
     'ol3-popup',
     'fancytree',
     'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'

@@ -330,17 +330,19 @@ $(function() {
                 }
             }, // end addStationMode
             
+            selectedStyleFunction: function(feature, resolution) {
+                return feature.get('selectedStyles');
+            },
             navigateMode: {
                 enter: function() {
                     app.State.popupsEnabled = true;
                     if (_.isUndefined(this.selectNavigate)){
+                        var _this = this;
                         this.selectNavigate = new ol.interaction.Select({
                             condition: ol.events.condition.click,
 //                            the below SHOULD work, but it does not.
-//                            style: (function(feature, resolution) {
-//                                return feature.get('selectedStyles');
-//                            }),
-                            layers: [this.segmentsLayer, this.stationsLayer]
+//                            style: _this.selectedStyleFunction,
+                            layers: [_this.segmentsLayer, _this.stationsLayer]
                         });
                         
                         this.selectNavigate.getFeatures().on('add', function(e) {
@@ -349,13 +351,15 @@ $(function() {
                             switch (model.get('type')) {
                                 case 'Station':
                                     app.State.stationSelected = feature.get('model');
-                                    feature.setStyle(feature.get('selectedStyles'));
                                     app.State.segmentSelected = undefined;
+                                    var selectedStyles = feature.get('selectedStyles');
+                                    feature.setStyle(selectedStyles);
                                     break;
                                 case 'Segment':
                                     app.State.segmentSelected = feature.get('model');
-                                    feature.setStyle(feature.get('selectedStyles'));
                                     app.State.stationSelected = undefined;
+                                    var selectedStyles = feature.get('selectedStyles');
+                                    feature.setStyle(selectedStyles);
                                     break;
                             }
                             
@@ -370,14 +374,15 @@ $(function() {
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
                             var feature = e.element;
-                            feature.setStyle(feature.get('styles'));
+                            var styles = feature.get('styles');
+                            feature.setStyle(styles);
                         });
-                        this.listenTo(app.vent, 'showItem:station', function() {
+                        this.listenTo(app.vent, 'itemSelected:station', function() {
                             var selectedItem = app.State.stationSelected;
                             this.mapSelect(selectedItem);
                         });
                         
-                        this.listenTo(app.vent, 'showItem:segment', function() {
+                        this.listenTo(app.vent, 'itemSelected:segment', function() {
                             var selectedItem = app.State.stationSelected;
                             this.mapSelect(selectedItem);
                         });
@@ -576,10 +581,12 @@ $(function() {
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
             this.feature = new ol.Feature({'geometry': this.geometry,
                                                  'id': this.fromStation.attributes['id'],
-                                                 'model': this.model,
-                                                 'styles': this.getStyles(),
-                                                 'selectedStyles': this.getSelectedStyles()
+                                                 'model': this.model
+//                                                 'styles': this.getStyles(),
+//                                                 'selectedStyles': this.getSelectedStyles()
                                                  });
+            this.feature.set('selectedStyles', this.getSelectedStyles());
+            this.feature.set('styles', this.getStyles());
             // for some reason you have to set the style this way
             this.feature.setStyle(this.getStyles());
             this.geometry.on('change', function(event) {
@@ -719,10 +726,12 @@ $(function() {
                                                'model': this.model,
                                                'iconStyle': this.iconStyle,
                                                'selectedIconStyle': this.selectedIconStyle,
-                                               'textStyle': this.textStyle,
-                                               'styles': this.getStyles(),
-                                               'selectedStyles': this.getSelectedStyles()
+                                               'textStyle': this.textStyle
+//                                               'styles': this.getStyles(),
+//                                               'selectedStyles': this.getSelectedStyles()
                                             });
+                this.feature.set('styles', this.getStyles());
+                this.feature.set('selectedStyles', this.getSelectedStyles());
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
                 this.feature.on('remove', function(event) {
                     console.log(this);
@@ -730,7 +739,7 @@ $(function() {
                 this.feature.on('change', function(event) {
                     var geometry = event.target.get('geometry');
                     var model = event.target.get('model');
-                    var coords = inverse(geometry.flatCoordinates);
+                    var coords = inverse(geometry.getCoordinates());
                     model.setPoint({
                         lng: coords[0],
                         lat: coords[1]
