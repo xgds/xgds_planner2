@@ -50,6 +50,7 @@ from xgds_planner2 import (settings,
 from xgds_planner2.forms import GroupFlightForm
 from xgds_planner2.models import getPlanSchema
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
+from xgds_map_server.forms import MapSearchForm
 
 _template_cache = None
 
@@ -219,6 +220,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
         RequestContext(request, {
             'templates': templates,
             'settings': settings,
+            'saveSearchForm': MapSearchForm(),
             'searchForms': getSearchForms(),
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
             'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
