@@ -774,6 +774,18 @@ def toggleReadOnly(request):
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
+def mapJsonPlan(request, uuid):
+    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    try:
+        plan = PLAN_MODEL.get().objects.get(uuid=uuid)
+        json_data = json.dumps(plan.toMapDict(), indent=4)
+        return HttpResponse(content=json_data,
+                            content_type="application/json")
+    except:
+        return HttpResponse(content={},
+                            content_type="application/json")
+
+
 def getActiveFlights():
     ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
     return ACTIVE_FLIGHTS_MODEL.get().objects.all()

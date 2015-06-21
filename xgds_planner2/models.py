@@ -316,6 +316,16 @@ class AbstractPlan(models.Model):
         result['stations'] = stations
         return result
 
+    def getTreeJson(self):
+        result = {"title": self.name,
+                  "key": self.uuid,
+                  "tooltip": self.summary,
+                  "data": {"type": "MapLink", # we cheat so this will be 'live'
+                           "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
+                           }
+                  }
+        return result
+
     def __unicode__(self):
         if self.name:
             return self.name
