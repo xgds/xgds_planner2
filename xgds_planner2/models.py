@@ -320,8 +320,9 @@ class AbstractPlan(models.Model):
         result = {"title": self.name,
                   "key": self.uuid,
                   "tooltip": self.summary,
-                  "data": {"type": "MapLink", # we cheat so this will be 'live'
+                  "data": {"type": "MapLink",  # we cheat so this will be 'live'
                            "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
+                           "url": reverse('planner2_edit', kwargs={'plan_id': str(self.id)})
                            }
                   }
         return result
