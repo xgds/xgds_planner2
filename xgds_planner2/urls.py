@@ -46,6 +46,8 @@ urlpatterns = patterns(
     url(r'manage/help$', views.manageHelp, {'loginRequired': False}, 'planner2_manageFlightHelp'),
     # url(r'^templates.json$', views.aggregate_handlebars_templates, {}, name='planner_handlebars_templates'),
     url(r'oltest$', views.oltest, {'loginRequired': True}, 'planner2_oltest'),
-    
+    url(r'activeFlightsTreeNodes$', views.activeFlightsTreeNodes, {'loginRequired': True}, 'planner2_activeFlightsTreeNodes'),
+    url(r'completedFlightsTreeNodes$', views.completedFlightsTreeNodes, {'loginRequired': True}, 'planner2_completedFlightsTreeNodes'),
+
 
 )

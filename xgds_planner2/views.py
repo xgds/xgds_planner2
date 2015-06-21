@@ -772,3 +772,22 @@ def toggleReadOnly(request):
             except:
                 pass
     return HttpResponseRedirect(reverse('planner2_index'))
+
+
+def getActiveFlights():
+    ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
+    return ACTIVE_FLIGHTS_MODEL.get().objects.all()
+
+
+def activeFlightsTreeNodes(request):
+    activeFlights = getActiveFlights()
+    result = []
+    for aFlight in activeFlights:
+        result.append(aFlight.flight.getTreeJson())
+    json_data = json.dumps(result, indent=4)
+    return HttpResponse(content=json_data,
+                        content_type="application/json")
+
+
+def completedFlightsTreeNodes(request):
+    pass

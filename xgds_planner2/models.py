@@ -104,6 +104,16 @@ class AbstractFlight(models.Model):
     def __unicode__(self):
         return self.name
 
+    def getTreeJson(self):
+        result = {"title": self.name,
+                  "key": self.uuid,
+                  "tooltip": self.notes,
+                  "data": {"type": self.__class__.__name__,
+                           "vehicle": self.vehicle.name
+                           }
+                  }
+        return result
+
     class Meta:
         abstract = True
         ordering = ['-name']
@@ -113,12 +123,20 @@ class Flight(AbstractFlight):
     pass
 
 
-class ActiveFlight(models.Model):
+class AbstractActiveFlight(models.Model):
     flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, unique=True, related_name="active")
 
     def __unicode__(self):
         return (u'ActiveFlight(%s, %s)' %
                 (self.id, repr(self.flight.name)))
+
+    class Meta:
+        abstract = True
+
+
+class ActiveFlight(AbstractActiveFlight):
+    """ name collision with PLRP, sorry"""
+    pass
 
 
 class AbstractGroupFlight(models.Model):
