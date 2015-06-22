@@ -290,7 +290,7 @@ $(function() {
 //                        this.stationAdder = new ol.interaction.StationRubberband({
                         this.stationAdder = new ol.interaction.Draw({
                             features: this.featureOverlay.getFeatures(),
-                            type: ol.interaction.DrawMode.POINT
+                            type: "Point"
 //                            startCoordinates: this.getLastStationCoords()
                         }, this);
 //                        this.stationAdder.on('drawstart', function(event) {
