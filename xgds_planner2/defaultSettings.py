@@ -233,12 +233,12 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'backbone-relational',
     'backbone-forms',
     'handlebars=git://github.com/components/handlebars.js.git',
-    'string-format=https://github.com/deleted/string-format.git',
+    'string-format=git://github.com/deleted/string-format.git',
     'proj4',
-    'usng=https://github.com/codice/usng.js.git',
+    'usng=git://github.com/codice/usng.js.git',
     'qunit',
     'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.6.0/v3.6.0-dist.zip',
     'ol3-popup',
     'fancytree',
-    'jquery-cookie=https://github.com/carhartl/jquery-cookie.git'
+    'jquery-cookie=git://github.com/carhartl/jquery-cookie.git'
 )
