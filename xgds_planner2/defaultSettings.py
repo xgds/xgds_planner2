@@ -232,7 +232,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'marionette',
     'backbone-relational',
     'backbone-forms',
-    'handlebars=https://github.com/components/handlebars.js.git',
+    'handlebars=git://github.com/components/handlebars.js.git',
     'string-format=https://github.com/deleted/string-format.git',
     'proj4',
     'usng=https://github.com/codice/usng.js.git',
