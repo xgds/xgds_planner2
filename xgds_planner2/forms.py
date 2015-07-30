@@ -17,7 +17,7 @@
 import datetime
 from django import forms
 from django.conf import settings
-from geocamUtil.loader import getModelByName
+from geocamUtil.loader import LazyGetModelByName
 from xgds_planner2 import settings
 from xgds_planner2.models import getPlanSchema
 
@@ -63,8 +63,9 @@ class GroupFlightForm(forms.Form):
                              initial='A')
 
     CHOICES = []
-    VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
-    for vehicle in VehicleModel.objects.all().order_by('name'):
+    VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+#     VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+    for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
         CHOICES.append((vehicle.name, vehicle.name))
 
     if len(CHOICES) == 1:
