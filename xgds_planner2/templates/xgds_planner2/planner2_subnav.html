@@ -2,6 +2,7 @@
 {% block sitemenu-content-secondary %}
 {% load nav %}
 <div class="sitemenu-nav-secondary">
+	<nav class="subnav">
 	<ul>
 		<li {% currentnav planner2_index %}><a href="{% url 'planner2_index' %}"> List Plans </a></li>
 		{% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
@@ -12,5 +13,6 @@
 			<li {% currentnav planner2_edit %} ><a> Edit {{ plan_name }}</a></li>
 		{% endif %}
 	</ul>
+	</nav>
 </div>
 {% endblock %}
