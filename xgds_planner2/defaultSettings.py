@@ -77,7 +77,6 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'backbone-forms/distribution/backbone-forms.min.js',
                              'marionette/lib/backbone.marionette.min.js',
                              'string-format/string-format.js',
-                             'kmltree/kmltree.min.js',
                              'usng/usng.js',
                              'proj4/dist/proj4.js',
                              'xgds_planner2/js/handlebars-helpers.js',
@@ -105,7 +104,6 @@ XGDS_PLANNER_PIPELINE_JS = {
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
-                             # 'kmltree/kmltree.css',
                              'jquery-ui/themes/base/jquery-ui.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
                              # 'backbone-forms/distribution/templates/old.css',

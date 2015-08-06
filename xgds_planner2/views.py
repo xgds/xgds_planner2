@@ -17,9 +17,7 @@
 # pylint: disable=W0702
 from cStringIO import StringIO
 import datetime
-import glob
 import json
-import os
 from uuid import uuid4
 
 from django.contrib.auth.decorators import login_required
@@ -175,11 +173,6 @@ def plan_REST(request, plan_id, jsonPlanId):
         return HttpResponse(json.dumps(response), content_type='application/json')
 
     return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
-
-# with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/schema.json')) as schemafile:
-#     SCHEMA = schemafile.read()
-# with open(os.path.join(settings.STATIC_ROOT, 'xgds_planner2/library.json')) as libraryfile:
-#     LIBRARY = libraryfile.read()
 
 
 def plan_detail_doc(request, plan_id=None):
@@ -368,9 +361,8 @@ def planCreate(request):
             return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.id]))
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
-    return render_to_response(request,
-                              'xgds_planner2/planCreate.html',
-                              {'form': form})
+    return render_to_response('xgds_planner2/planCreate.html',
+                              RequestContext(request,{'form': form}))
 
 
 @login_required
