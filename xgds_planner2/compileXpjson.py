@@ -19,7 +19,8 @@ import os
 
 from geocamUtil.Builder import Builder
 
-from xgds_planner2 import settings, xpjson, models
+from xgds_planner2 import xpjson, models
+from django.conf import settings
 
 
 def compileXpjson(builder=None):

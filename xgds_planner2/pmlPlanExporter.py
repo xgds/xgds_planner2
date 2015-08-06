@@ -19,7 +19,7 @@ import datetime
 import os
 import re
 
-from xgds_planner2 import settings
+from django.conf import settings
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2.models import getPlanSchema
 

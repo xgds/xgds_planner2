@@ -40,17 +40,3 @@ def get_version():
     return ''.join(vers)
 
 __version__ = get_version()
-
-import sys
-MultiSettings = None
-try:
-    from geocamUtil.MultiSettings import MultiSettings
-except ImportError:
-    print >> sys.stderr, "warning: geocamUtil not installed, can't load defaultSettings.py"
-
-if MultiSettings:
-    import django.conf
-    import defaultSettings
-    settings = MultiSettings(django.conf.settings, defaultSettings)
-else:
-    from django.conf import settings

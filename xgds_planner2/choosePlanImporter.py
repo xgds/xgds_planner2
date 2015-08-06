@@ -16,7 +16,7 @@
 
 from geocamUtil.loader import getClassByName
 
-from xgds_planner2 import settings
+from django.conf import settings
 
 
 def getModClass(name):
