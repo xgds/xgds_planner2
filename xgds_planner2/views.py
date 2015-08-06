@@ -84,7 +84,6 @@ def plan_tests(request, plan_id, editable=True):
         'xgds_planner2/planner_tests.html',
         RequestContext(request, {
             'templates': templates,
-            'settings': settings,
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
             'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
             'plan_json': json.dumps(plan_json),
@@ -213,7 +212,6 @@ def plan_editor_app(request, plan_id=None, editable=True):
         RequestContext(request, {
             'templates': templates,
             'app': 'xgds_planner2/js/app.js',
-            'settings': settings,
             'saveSearchForm': MapSearchForm(),
             'searchForms': getSearchForms(),
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),

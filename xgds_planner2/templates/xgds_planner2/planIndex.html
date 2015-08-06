@@ -6,9 +6,7 @@
 {% block cssExtras %}
 {{ block.super }}
 <style type="text/css" title="currentStyle">
-@import "{{ EXTERNAL_URL }}datatables-editable/media/css/demo_page.css";
-@import "{{ EXTERNAL_URL }}datatables-editable/media/css/demo_table.css";
-@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css";
+	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.css";
 </style>
 <style type="text/css">
 table.planIndex td.exportFormat a {
@@ -30,10 +28,10 @@ table.planIndex td.exportFormat a {
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
 <input type="submit" class="mybutton right" id="deleteButton" value="Delete Selected" ></input>
 <input class="mybutton right" type="button" id="toggle_button" value="Toggle Lock" ></input>
-{% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+{% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <input class="mybutton right" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 {% endif %}
-<a href={% if siteSettings.XGDS_PLANNER2_CREATE_URL %} "{{ siteSettings.XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
+<a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
@@ -46,7 +44,7 @@ table.planIndex td.exportFormat a {
     <th>Dist</th>
     <th>#Stn</th>
     <th>#Commands</th>
-    {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
     <th>Scheduled</th>
     {% endif %}
     <th>Export</th>
@@ -57,14 +55,14 @@ table.planIndex td.exportFormat a {
   <tr id={{ plan.id }}>
   	<td><input type="checkbox" id="pick_{{plan.id}}" name="picks" value="{{plan.id}}" class="check"/></td>
   	<td>{% if plan.readOnly %}<img src="{{ STATIC_URL }}xgds_planner2/images/lock.png" alt="Read Only">{% endif %}</td>
-    <td ><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></td>
-    <td>{{ plan.creator }}</td>
+  	<td ><label for="pick_{{plan.id}}"><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></label></td>
+  	<td>{{ plan.creator }}</td>
     <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i e" }}</td>
     <td>{{ plan.jsonPlan.site.name }}</td>
     <td class="right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
-    {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
     <td style="width:150px;">{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}}<br/>{% endfor %}</td>
     {% endif %}
     <td class="exportFormat">
@@ -80,7 +78,7 @@ table.planIndex td.exportFormat a {
 </table>
 </form>
 
-{% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+{% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <div id="scheduleDialog" style="display:none">
 	<form name='ScheduleForm' id="scheduleForm" action="{% url 'planner2_schedulePlans' %}" method="post">
 		<input type="hidden" name="planIds" id="id_planIds"></input>
@@ -189,7 +187,7 @@ $("#deleteButton").click(function() {
 	};
 
 	 $(document).ready( function () {
-	     {% if siteSettings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+	     {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 	    $( "#id_schedule_date" ).datetimepicker();
 	    {% endif %}
 	   
