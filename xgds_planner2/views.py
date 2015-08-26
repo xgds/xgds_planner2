@@ -20,6 +20,7 @@ import datetime
 import json
 from uuid import uuid4
 
+from geocamUtil.models.UuidField import makeUuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
@@ -351,7 +352,8 @@ def planCreate(request):
 
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
-            dbPlan.jsonPlan.name = planId
+            dbPlan.jsonPlan["name"] = planId
+            dbPlan.jsonPlan["uuid"] = makeUuid()
             dbPlan.name = planId
 
             dbPlan.save()

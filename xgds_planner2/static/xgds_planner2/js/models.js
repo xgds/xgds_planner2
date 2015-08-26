@@ -51,7 +51,9 @@ app.models = app.models || {};
             name: {type: 'Text'},
             notes: {type: 'TextArea'},
             id: {type: 'Text', readonly: true,
-                 editorAttrs: { disabled: true}}
+                 editorAttrs: { disabled: true}},
+            uuid: {type: 'Text', readonly: true, 
+      				editorAttrs: {disabled: true}}
         };
 
         // data object contains object defaults
