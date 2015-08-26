@@ -18,10 +18,12 @@ import os
 import time
 import datetime
 
+from django.conf import settings
+
 from geocamUtil.dotDict import convertToDotDictRecurse
 from geocamUtil.loader import getModelByName
 
-from xgds_planner2 import models, xpjson, settings
+from xgds_planner2 import models, xpjson
 from xgds_planner2.fillIdsPlanExporter import FillIdsPlanExporter
 
 # Please don't put lines like this at the root of modules, this breaks testing
@@ -59,7 +61,7 @@ class PlanImporter(object):
 
     @classmethod
     def setDefaultMeta(cls, meta, path=None, planSchema=None):
-        meta.setdefault('xpjson', '0.1')
+        meta.setdefault('xpjson', '0.2')
         meta.setdefault('type', 'Plan')
         meta.setdefault('sequence', [])
         meta.setdefault('readOnly', False)

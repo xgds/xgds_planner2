@@ -140,6 +140,16 @@
                     "id": {
                         "type": "string"
                     },
+                    "uuid": {
+          				"type": "string",
+          				"required": true
+        			},
+        			"stopCommandUuid": {
+          				"type": "string"
+        			},
+        			"stopCommandType": {
+          				"type": "string"
+        			},
                     "parent": {
                         "type": "string"
                     },
@@ -248,6 +258,13 @@
                     "id": {
                         "type": "string"
                     },
+                    "uuid": {
+            			"type": "string",
+            			"required": true
+        			},
+        			"derivedInfo": {
+                        "type": "object"
+                    },
                     "parent": {
                         "type": "string"
                     },
@@ -310,6 +327,13 @@
                     },
                     "id": {
                         "type": "string"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "derivedInfo": {
+                        "type": "object"
                     },
                     "parent": {
                         "type": "string"
@@ -374,6 +398,13 @@
                     "id": {
                         "type": "string"
                     },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "derivedInfo": {
+                        "type": "object"
+                    },
                     "parent": {
                         "type": "string"
                     },
@@ -436,6 +467,13 @@
                     },
                     "id": {
                         "type": "string"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "derivedInfo": {
+                        "type": "object"
                     },
                     "parent": {
                         "type": "string"

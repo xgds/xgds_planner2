@@ -623,7 +623,7 @@ class Document(TypedObject):
     dateModified = Field('date-time')
 
     def isValidXpjsonVersion(self, val):
-        return val == '0.1'
+        return val == '0.2'
 
 
 class PlanSchema(Document):
@@ -794,6 +794,8 @@ class PlanLibrary(Document):
         super(PlanLibrary, self).__init__(objDict, **kwargs)
 
     def isValidCommandArray(self, val):
+        if not val:
+            return True
         for elt in val:
             return elt['type'] in self._schema.commandSpecsLookup
 
@@ -863,7 +865,7 @@ class NoSchemaError(Exception):
 
 
 def loadDocumentFromDict(docDict, schema=None, parseOpts=None):
-    assert docDict.xpjson == '0.1'
+    assert docDict.xpjson == '0.2'
     if docDict.type == 'PlanSchema':
         resolveSchemaInheritance(docDict)
     else:

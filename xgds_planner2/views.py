@@ -24,6 +24,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
+from django.conf import settings
+
 from django.db.utils import IntegrityError
 from django.http import (HttpResponseRedirect,
                          HttpResponse,
@@ -39,8 +41,7 @@ from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
 from geocamUtil.loader import getModelByName, LazyGetModelByName
 from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
-from xgds_planner2 import (settings,
-                           models,
+from xgds_planner2 import (models,
                            choosePlanExporter,
                            forms,
                            planImporter,

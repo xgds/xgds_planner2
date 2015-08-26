@@ -125,6 +125,10 @@
                     "id": {
                         "type": "string"
                     },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
+                    },
                     "coords": {
                         "type": "array",
                         "items": {
@@ -152,6 +156,10 @@
                     },
                     "id": {
                         "type": "string"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
                     }
                 }
             }
@@ -174,6 +182,10 @@
                     },
                     "id": {
                         "type": "string"
+                    },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
                     }
                 }
             }
@@ -197,6 +209,10 @@
                     "id": {
                         "type": "string"
                     },
+                    "uuid": {
+                        "type": "string",
+                        "required": true
+                    }
                     "libraryId": {
                         "type": "string"
                     },

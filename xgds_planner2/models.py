@@ -22,6 +22,7 @@ import os
 
 import iso8601
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 
@@ -29,7 +30,7 @@ from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
 from geocamUtil.modelJson import modelToDict
 
-from xgds_planner2 import xpjson, settings, statsPlanExporter
+from xgds_planner2 import xpjson, statsPlanExporter
 # from geocamUtil.loader import getModelByName
 
 # pylint: disable=C1001,E1101
