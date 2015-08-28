@@ -562,6 +562,8 @@ app.models = app.models || {};
             // TODO: interperet id template
             options.id = _.uniqueId('station_');
         }
+        
+        options.uuid = UUID4.generate();
 
         return new models.PathElement(options);
 
@@ -590,6 +592,9 @@ app.models = app.models || {};
             // TODO: interperet id template
             options.id = _.uniqueId('segment_');
         }
+        
+        options.uuid = UUID4.generate();
+
         return new models.PathElement(options);
 
     };
@@ -636,6 +641,7 @@ app.models = app.models || {};
                 commandLabel = "";
             }
             this._commandLabel = commandLabel;
+            this.uuid = UUID4.generate();
         },
 
         hasParam: function(paramName) {

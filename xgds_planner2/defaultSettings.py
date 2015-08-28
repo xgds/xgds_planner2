@@ -238,5 +238,6 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.6.0/v3.6.0-dist.zip',
     'ol3-popup',
     'fancytree',
-    'jquery-cookie=git://github.com/carhartl/jquery-cookie.git'
+    'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
+    'uuid4'
 )
