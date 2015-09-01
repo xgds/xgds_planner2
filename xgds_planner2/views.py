@@ -164,9 +164,10 @@ def plan_REST(request, plan_id, jsonPlanId):
         schema = models.getPlanSchema(plan.jsonPlan.platform['name'])
         exporter = fillIdsPlanExporter.FillIdsPlanExporter()
         planDict = convertToDotDictRecurse(plan.jsonPlan)
+        updateAllUuids(planDict)
         plan.jsonPlan = json.dumps(exporter.exportPlan(planDict, schema.schema))
-        plan.jsonPlan['uuid'] = plan.uuid
-
+        plan.uuid = planDict.uuid
+        
         plan.save()
         response = {}
         response["msg"] = "New plan created"
@@ -176,6 +177,17 @@ def plan_REST(request, plan_id, jsonPlanId):
     return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
 
+def updateAllUuids(planDict):
+    planDict.uuid = makeUuid()
+    for element in planDict.sequence:
+        element.uuid = makeUuid()
+        if element.sequence:
+            for child in element.sequence:
+                if child.uuid:
+                    child.uuid = makeUuid()
+    return planDict
+
+    
 def plan_detail_doc(request, plan_id=None):
     Plan = get_plan_model()
     plan = Plan.objects.get(pk=plan_id)

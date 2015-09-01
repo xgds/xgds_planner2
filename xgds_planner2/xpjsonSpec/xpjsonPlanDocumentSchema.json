@@ -73,6 +73,10 @@
         "planVersion": {
             "type": "string"
         },
+        
+        "scheduledStartTime": {
+             "type": "date-time"
+        },
 
         "site": {
             "type": "object",
@@ -149,6 +153,13 @@
         },
 
         "sequence": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            }
+        },
+        
+        "exceptions": {
             "type": "array",
             "items": {
                 "type": "object"

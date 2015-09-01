@@ -445,6 +445,10 @@
                     },
                     "editable": {
                         "type": "boolean"
+                    },
+                    "userDuration": {
+                        "type": "number",
+                        "unit": "seconds"
                     }
                 }
             }

@@ -227,7 +227,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
     'lodash',
     'backbone#1.1.2',
-    'marionette',
+    'marionette=marionette',
     'backbone-relational',
     'backbone-forms',
     'handlebars=git://github.com/components/handlebars.js.git',
@@ -237,7 +237,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'qunit',
     'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.6.0/v3.6.0-dist.zip',
     'ol3-popup',
-    'fancytree',
+    'fancytree=fancytree',
     'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
     'uuid4'
 )
