@@ -79,6 +79,8 @@ app.models = app.models || {};
             schema.creator = {type: 'Text', readonly: true,
                               editorAttrs: { disabled: true }};
             schema.planVersion = {type: 'Text', title: 'Plan Version'};
+            
+            schema.scheduledStartTime = {type: 'Text'};
         }
 
         _.each(params, function(param) {
