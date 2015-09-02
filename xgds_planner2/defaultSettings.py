@@ -239,5 +239,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'ol3-popup',
     'fancytree=fancytree',
     'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
-    'uuid4'
+    'uuid4',
+    'moment',
+    'moment-duration-format'
 )

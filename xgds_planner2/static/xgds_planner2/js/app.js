@@ -461,6 +461,16 @@ var app = (function($, _, Backbone) {
             });
             return output;
         },
+        HMSToSeconds: function(hms) {
+            // given a time in hh:mm:ss return the seconds
+        	var duration = moment.duration(hms);
+        	return duration.asSeconds();
+        },
+        secondsToHMS: function(seconds) {
+        	// given a time in seconds return the HH:mm:ss
+        	var duration = moment.duration(seconds, "seconds");
+        	return duration.format("hh:mm:ss", { trim: false });
+        },
         randomColor: function() {
             return '#' + ((1 << 24) * Math.random() | 0).toString(16);
         },

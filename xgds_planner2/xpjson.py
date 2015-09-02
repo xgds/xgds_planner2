@@ -389,6 +389,8 @@ class TypedObject(object):
     name = Field('string')
     notes = Field('string')
     id = Field('string')
+    exceptions = Field('array.object', default=[])
+    derivedInfo = Field('custom', default={})
 
     def __init__(self, objDict,
                  schema=None,
@@ -766,6 +768,7 @@ class Plan(Document):
     platform = Field('Platform')
     targets = Field('array.Target', default=[])
     sequence = Field('array.custom', default=[], validMethod='isValidPlanSequence')
+    exceptions = Field('array.object', default=[])
 
     def __init__(self, objDict, **kwargs):
         kwargs['schemaParams'] = kwargs['schema'].planParamsLookup

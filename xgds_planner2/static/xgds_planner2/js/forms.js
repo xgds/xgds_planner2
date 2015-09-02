@@ -24,13 +24,13 @@
         defaultValue: 0,
         getValue: function() {
             var value = this.$el.val();
-            return value === '' ? null : app.util.HMSToMinutes(value);
+            return value === '' ? null : app.util.HMSToSeconds(value);
         },
 
         setValue: function(value) {
             value = (function() {
                 if (_.isNumber(value)) return  value;
-                if (_.isString(value) && value != '') return  parseFloat(value, 10);
+                if (_.isString(value) && value != '') return  parseInt(value, 10);
                 return 0;
             })();
 
@@ -38,7 +38,7 @@
                 value = 0;
             }
 
-            Form.editors.Text.prototype.setValue.call(this, app.util.minutesToHMS(value));
+            Form.editors.Text.prototype.setValue.call(this, app.util.secondsToHMS(value));
         }
     });
 
