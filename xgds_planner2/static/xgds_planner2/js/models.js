@@ -80,7 +80,6 @@ app.models = app.models || {};
                               editorAttrs: { disabled: true }};
             schema.planVersion = {type: 'Text', title: 'Plan Version'};
             
-            schema.scheduledStartTime = {type: 'Text'};
         }
 
         _.each(params, function(param) {
