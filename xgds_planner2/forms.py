@@ -62,8 +62,7 @@ class GroupFlightForm(forms.Form):
                              initial='A')
 
     CHOICES = []
-    VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
-#     VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+    VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
     for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
         CHOICES.append((vehicle.name, vehicle.name))
 
