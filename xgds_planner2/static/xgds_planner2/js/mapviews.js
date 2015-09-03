@@ -1452,7 +1452,6 @@ $(function() {
     var PanoWedgeView = Backbone.View.extend({
         initialize: function(options) {
             this.options = options || {};
-            //console.log('PanoWedgeView init: ' + this.cid);
             this.station = this.options.station;
             this.command = this.options.command;
             this.wedgeFeatures = this.options.wedgeFeatures;
