@@ -20,6 +20,27 @@
         defaultValue: null
     });
 
+    Form.editors.DateTime = Form.editors.Text.extend({
+    	initialize: function(options) {
+            // Call parent constructor
+            Backbone.Form.editors.Base.prototype.initialize.call(this, options);
+
+            // Custom setup code.
+            if (_.isUndefined(options.editable) || options.editable == False) {
+            	this.$el.datetimepicker({'controlType': 'select',
+                    'timeFormat':'HH:mm:ssZ',
+                    'dateFormat':'yy-mm-dd',
+                    'oneLine': true,
+                    'showTimezone': false,
+                    'timezone': '-0000',
+                    'separator': 'T'
+                   });
+            }
+            
+        }
+        
+    });
+    
     Form.editors.HMS = Form.editors.Text.extend({
         defaultValue: 0,
         getValue: function() {

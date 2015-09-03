@@ -129,14 +129,6 @@
     };
 	$(function(){
     	app.start(plannerAppOptions);
-    	$( "#c3_scheduledStartTime" ).datetimepicker({'controlType': 'select',
-    	                                              'timeFormat':'HH:mm:ssZ',
-    	                                              'dateFormat':'yy-mm-dd',
-    	                                              'oneLine': true,
-    	                                              'showTimezone': false,
-    	                                              'timezone': '-0000',
-    	                                              'separator': 'T'
-    	                                             });
 	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
