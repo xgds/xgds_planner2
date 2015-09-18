@@ -61,7 +61,7 @@ $(function() {
                     }
                     if (!_.isUndefined(bbox)) {
                         var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
-                        extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", "EPSG:3857"));
+                        extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", DEFAULT_COORD_SYSTEM));
                         this.map.getView().fitExtent(extent, this.map.getSize());
                     }
                 }
@@ -163,14 +163,18 @@ $(function() {
                 this.stationsVector = new ol.source.Vector({});
 
                 // for editing
-                this.featureOverlay = new ol.FeatureOverlay({
+                this.featureOverlay = new ol.layer.Vector({
+                	map: this.map,
+                	source: new ol.source.Vector({
+                		features: new ol.Collection(),
+                		useSpatialIndex: false
+                	}),
                     style: (function() {
                           return function(feature, resolution) {
                             return feature.getStyle();
                           };
                         })()
                 });
-                this.featureOverlay.setMap(this.map);
                 
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
@@ -289,7 +293,7 @@ $(function() {
                     if (_.isUndefined(this.stationAdder)){
 //                        this.stationAdder = new ol.interaction.StationRubberband({
                         this.stationAdder = new ol.interaction.Draw({
-                            features: this.featureOverlay.getFeatures(),
+                            features: this.featureOverlay.getSource(),
                             type: "Point"
 //                            startCoordinates: this.getLastStationCoords()
                         }, this);
@@ -420,7 +424,7 @@ $(function() {
                     app.State.popupsEnabled = false;
                     if (_.isUndefined(this.repositioner)){
                         this.repositioner = new ol.interaction.Modify({
-                            features: this.featureOverlay.getFeatures(),
+                            features: this.featureOverlay.getSource(),
                             deleteCondition: function(event) {
                                 return ol.events.condition.shiftKeyOnly(event) &&
                                     ol.events.condition.singleClick(event);
@@ -504,7 +508,7 @@ $(function() {
                     this.removeChangeListener(this.fromStation);
                     this.removeChangeListener(this.toStation);
                     this.segmentsVector.removeFeature(feature);
-                    this.featureOverlay.removeFeature(feature);
+                    this.featureOverlay.getSource().removeFeature(feature);
                 }
             }, this);
             this.render();
@@ -610,18 +614,18 @@ $(function() {
                     //total hack, remove and readd this segment to the feature
                     // this will prevent continuing to edit the second point of the segment (ie the one we just added)
                     try {
-                        this.featureOverlay.removeFeature(this.feature);
+                        this.featureOverlay.getSource().removeFeature(this.feature);
                     } catch (err){
                         // ulp
                     }
-                    this.featureOverlay.addFeature(this.feature);
+                    this.featureOverlay.getSource().addFeature(this.feature);
                     
                 }
                 
             }, this);
             this.model['feature'] = this.feature;
             this.segmentsVector.addFeature(this.feature);
-            this.featureOverlay.addFeature(this.feature);
+            this.featureOverlay.getSource().addFeature(this.feature);
         },
         /*
          ** Update the endpoints of the segment when either adjacent station changes.
@@ -714,7 +718,7 @@ $(function() {
                               });
                 this.model.on('station:remove', function() {
                     this.stationsVector.removeFeature(this.feature);
-                    this.featureOverlay.removeFeature(this.feature);
+                    this.featureOverlay.getSource().removeFeature(this.feature);
                 }, this);
 
             },
@@ -748,7 +752,7 @@ $(function() {
 
                 this.model['feature'] = this.feature;
                 this.stationsVector.addFeature(this.feature);
-                this.featureOverlay.addFeature(this.feature);
+                this.featureOverlay.getSource().addFeature(this.feature);
             },
             
             redraw: function() {

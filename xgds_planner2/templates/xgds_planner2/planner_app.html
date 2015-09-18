@@ -110,7 +110,10 @@
 
 {% block jsInit %}
     plannerAppOptions = {
-        offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
+    	DEFAULT_COORD_SYSTEM: "{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}",
+    	SETUP_COORD_SYSTEM: {{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }},
+        DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
+		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
        	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",
         layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
