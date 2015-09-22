@@ -817,13 +817,14 @@ def handle_uploading_xpjson(f):
     return ''.join(buff)
 
 
+import pydevd
 def planImport(request):
+    pydevd.settrace('192.168.1.64')
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
     try:
         form = UploadXPJsonForm(request.POST, request.FILES)
         if form.is_valid():
             planUuid = form.cleaned_data['planUuid']
-            print "Importing plan " + planUuid
             plan = PLAN_MODEL.get().objects.get(uuid=planUuid)
             incoming = request.FILES['file']
             newJson = handle_uploading_xpjson(incoming)
@@ -831,8 +832,8 @@ def planImport(request):
             if (len(newJson) > 0):
                 plan.jsonPlan = newJson
                 plan.save()
-                return HttpResponseRedirect(reverse('planner2_edit', args=[plan.id]))
+                return HttpResponse(json.dumps({'Success':"True"}))
             else:
-                return HttpResponse(json.dumps({'error': 'JSON Invalid or empty'}), content_type='application/json')
+                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Invalid or empty'}), content_type='application/json', status=406)
     except:
-        return HttpResponse(json.dumps({'error': 'Wrong UUID, plan not found'}), content_type='application/json')
+        return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Wrong UUID, plan not found'}), content_type='application/json', status=406)

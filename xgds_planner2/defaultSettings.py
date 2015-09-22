@@ -212,6 +212,10 @@ XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 XGDS_PLANNER2_HANDLEBARS_DIRS = [os.path.join('xgds_planner2', 'templates', 'handlebars'),
                                  os.path.join('xgds_map_server', 'templates', 'handlebars', 'search')]
 
+# XGDS_PLANNER2_LINKS_LOADED_CALLBACK: The fully qualified name of an
+# extra JavaScript callback to call after the links tab is loaded.
+XGDS_PLANNER2_LINKS_LOADED_CALLBACK = 'null'
+
 # This is used to hold a map of site frames, so we can convert lat/long to the closest site frame.
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []

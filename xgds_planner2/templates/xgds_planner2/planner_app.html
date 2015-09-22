@@ -126,6 +126,7 @@
         placemarkDirectionalUrl: "{{ placemark_directional_url }}",
         placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
         XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
+        XGDS_PLANNER2_LINKS_LOADED_CALLBACK: {{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }},
         searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }}

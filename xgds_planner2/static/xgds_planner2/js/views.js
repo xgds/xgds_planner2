@@ -1308,6 +1308,10 @@ app.views.PlanLinksView = Backbone.View.extend({
             planLinks: app.planLinks,
             planUuid: app.currentPlan.get('uuid')
         }));
+        var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
+        if (callback != null) {
+            callback(this.$el);
+        }
     }
 });
 
