@@ -47,7 +47,7 @@ from xgds_planner2 import (models,
                            forms,
                            planImporter,
                            fillIdsPlanExporter)
-from xgds_planner2.forms import GroupFlightForm
+from xgds_planner2.forms import GroupFlightForm, UploadXPJsonForm
 from xgds_planner2.models import getPlanSchema
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
 from xgds_map_server.forms import MapSearchForm
@@ -365,7 +365,7 @@ def planCreate(request):
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
             dbPlan.jsonPlan["name"] = planId
-            dbPlan.jsonPlan["uuid"] = makeUuid()
+            dbPlan.jsonPlan["uuid"] = dbPlan.uuid # makeUuid()
             dbPlan.name = planId
 
             dbPlan.save()
@@ -808,3 +808,31 @@ def activeFlightsTreeNodes(request):
 
 def completedFlightsTreeNodes(request):
     pass
+
+
+def handle_uploading_xpjson(f):
+    buff = []
+    for chunk in f.chunks():
+        buff.append(chunk)
+    return ''.join(buff)
+
+
+def planImport(request):
+    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    try:
+        form = UploadXPJsonForm(request.POST, request.FILES)
+        if form.is_valid():
+            planUuid = form.cleaned_data['planUuid']
+            print "Importing plan " + planUuid
+            plan = PLAN_MODEL.get().objects.get(uuid=planUuid)
+            incoming = request.FILES['file']
+            newJson = handle_uploading_xpjson(incoming)
+            # TODO validate that it is good json ... and then match up the uuids and apply the data
+            if (len(newJson) > 0):
+                plan.jsonPlan = newJson
+                plan.save()
+                return HttpResponseRedirect(reverse('planner2_edit', args=[plan.id]))
+            else:
+                return HttpResponse(json.dumps({'error': 'JSON Invalid or empty'}), content_type='application/json')
+    except:
+        return HttpResponse(json.dumps({'error': 'Wrong UUID, plan not found'}), content_type='application/json')

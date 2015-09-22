@@ -80,3 +80,8 @@ class GroupFlightForm(forms.Form):
         self.day = timeinfo['day']
         self.date = datetime.date(int(self.year), int(self.month), int(self.day))
         self.month = int(timeinfo['month']) - 1  # apparently 0 is january
+
+
+class UploadXPJsonForm(forms.Form):
+    file = forms.FileField(required=True)
+    planUuid = forms.CharField(required=True)

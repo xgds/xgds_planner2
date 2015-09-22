@@ -197,6 +197,7 @@ class AbstractPlan(models.Model):
         if overWriteUuid:
             if not self.uuid:
                 self.uuid = makeUuid()
+                self.jsonPlan.uuid = self.uuid
             self.jsonPlan.serverId = self.id
         if overWriteDateModified:
             self.jsonPlan.dateModified = (datetime.datetime

@@ -1305,7 +1305,8 @@ app.views.PlanLinksView = Backbone.View.extend({
     },
     render: function() {
         this.$el.html(this.template({
-            planLinks: app.planLinks
+            planLinks: app.planLinks,
+            planUuid: app.currentPlan.get('uuid')
         }));
     }
 });

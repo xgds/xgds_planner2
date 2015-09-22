@@ -225,7 +225,7 @@ XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
 # include this in your siteSettings.py BOWER_INSTALLED_APPS
 XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
-    'lodash',
+    'lodash#3.10.0',
     'backbone#1.1.2',
     'marionette=marionette',
     'backbone-relational',
