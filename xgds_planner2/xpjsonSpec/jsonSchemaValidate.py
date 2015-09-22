@@ -22,15 +22,20 @@ import json
 import jsonschema
 
 
-def jsonSchemaValidate(objPath, schemaPath):
-    print 'Validating %s against %s' % (objPath, schemaPath),
-    obj = json.loads(file(objPath).read())
+def jsonSchemaValidateJson(obj, schemaPath):
+    print 'Validating against %s' % (schemaPath),
     schema = json.loads(file(schemaPath).read())
 
     # throws exception on failure
     jsonschema.validate(obj, schema)
 
     print 'PASSED'
+    
+    
+def jsonSchemaValidate(objPath, schemaPath):
+    print 'Validating %s against %s' % (objPath, schemaPath),
+    obj = json.loads(file(objPath).read())
+    return jsonSchemaValidateJson(obj, schemaPath)
 
 
 def main():

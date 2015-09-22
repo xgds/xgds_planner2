@@ -15,9 +15,13 @@
 # __END_LICENSE__
 
 # pylint: disable=W0702
+import sys
+import collections
+import os
 from cStringIO import StringIO
 import datetime
 import json
+import traceback
 from uuid import uuid4
 
 from geocamUtil.models.UuidField import makeUuid
@@ -35,6 +39,7 @@ from django.http import (HttpResponseRedirect,
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
+from django.contrib.staticfiles import finders
 
 from geocamUtil import timezone
 from geocamUtil.KmlUtil import wrapKmlDjango
@@ -49,6 +54,7 @@ from xgds_planner2 import (models,
                            fillIdsPlanExporter)
 from xgds_planner2.forms import GroupFlightForm, UploadXPJsonForm
 from xgds_planner2.models import getPlanSchema
+from xgds_planner2.xpjsonSpec.jsonSchemaValidate import jsonSchemaValidateJson
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
 from xgds_map_server.forms import MapSearchForm
 
@@ -810,6 +816,17 @@ def completedFlightsTreeNodes(request):
     pass
 
 
+def validateJson(newJsonObj):
+    ''' Validate input json against defined schema
+    '''
+#     schemaUrl = newJsonObj['schemaUrl']
+    # there is probably a niftier way of getting this path.
+    schemaPath = os.path.join(settings.PROJ_ROOT, 'apps/xgds_planner2/xpjsonSpec/xpjsonPlanDocumentSchema.json')
+    # TODO right now validation is not working
+#     return jsonSchemaValidateJson(newJsonObj, schemaPath)
+    return True
+
+
 def handle_uploading_xpjson(f):
     buff = []
     for chunk in f.chunks():
@@ -817,23 +834,65 @@ def handle_uploading_xpjson(f):
     return ''.join(buff)
 
 
-import pydevd
+def updateDictionary(original, updated):
+    for key, value in updated.iteritems():
+        if isinstance(value, collections.Mapping):
+            r = updateDictionary(original.get(key, {}), value)
+            original[key] = r
+        else:
+            original[key] = updated[key]
+    return original
+
+
+def replaceElement(sequence, newElement):
+    seekUuid = newElement['uuid']
+    for index, el in enumerate(sequence):
+        if (el['uuid'] == seekUuid):
+            sequence[index] = newElement
+            return 
+
+def updateJson(plan, newJsonObj):
+    mergedJson = plan.jsonPlan
+    originalSequence = mergedJson['sequence']
+    incomingSequence = newJsonObj['sequence']
+    del newJsonObj['sequence']
+    
+    # first deal with the top level plan; we have already verified its uuid 
+    updateDictionary(mergedJson, newJsonObj)
+    
+    # then deal with all of the nested elements in the sequence
+    for pathElement in incomingSequence:
+        replaceElement(originalSequence, pathElement)
+            
+    plan.save()
+    
+    
 def planImport(request):
-    pydevd.settrace('192.168.1.64')
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
     try:
         form = UploadXPJsonForm(request.POST, request.FILES)
         if form.is_valid():
             planUuid = form.cleaned_data['planUuid']
-            plan = PLAN_MODEL.get().objects.get(uuid=planUuid)
+            try:
+                plan = PLAN_MODEL.get().objects.get(uuid=planUuid)
+            except:
+                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Wrong UUID, plan not found'}), content_type='application/json', status=406)
             incoming = request.FILES['file']
             newJson = handle_uploading_xpjson(incoming)
-            # TODO validate that it is good json ... and then match up the uuids and apply the data
             if (len(newJson) > 0):
-                plan.jsonPlan = newJson
-                plan.save()
-                return HttpResponse(json.dumps({'Success':"True"}))
+                newJsonObj = json.loads(newJson, 'UTF-8')
+                foundUuid = newJsonObj['uuid']
+                if (foundUuid != planUuid):
+                    return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Loaded JSON is for a different plan; UUID of plans do not match.'}), content_type='application/json', status=406)
+                isValid = validateJson(newJsonObj)
+                if isValid:
+                    updateJson(plan, newJsonObj)
+                    return HttpResponse(json.dumps({'Success':"True"}))
+                else:
+                    return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Invalid'}), content_type='application/json', status=406)
             else:
-                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Invalid or empty'}), content_type='application/json', status=406)
-    except:
-        return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Wrong UUID, plan not found'}), content_type='application/json', status=406)
+                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Empty'}), content_type='application/json', status=406)
+    except Exception:
+        traceback.print_exc()
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        return HttpResponse(json.dumps({'Success':"False", 'responseText': exc_value['message']}), content_type='application/json', status=406)
