@@ -349,9 +349,13 @@ $(function() {
                         var _this = this;
                         this.selectNavigate = new ol.interaction.Select({
                             condition: ol.events.condition.click,
+                            multi: false,
+                            layers: [_this.segmentsLayer, _this.stationsLayer],
 //                            the below SHOULD work, but it does not.
 //                            style: _this.selectedStyleFunction,
-                            layers: [_this.segmentsLayer, _this.stationsLayer]
+                            style: function(feature, resolution){
+                                return feature.get('selectedStyles');
+                            },
                         });
                         
                         this.selectNavigate.getFeatures().on('add', function(e) {
@@ -420,6 +424,7 @@ $(function() {
                     }
                     
                     features.push(foundFeature);
+                    this.selectNavigate.changed();
                     
                 }  
             },
@@ -752,15 +757,18 @@ $(function() {
                 this.feature.on('remove', function(event) {
                     console.log(this);
                 }, this);
-                this.feature.on('change', function(event) {
-                    var geometry = event.target.get('geometry');
-                    var model = event.target.get('model');
-                    var coords = inverse(geometry.getCoordinates());
-                    model.setPoint({
-                        lng: coords[0],
-                        lat: coords[1]
-                    });
-                });
+                this.geometry.on('change', function(event) {
+                	 var geometry = event.target;
+                	 var coords = inverse(geometry.getCoordinates());
+                	 var oldCoords = this.model.getPoint();
+                	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
+                		 this.model.setPoint({
+                             lng: coords[0],
+                             lat: coords[1]
+                         });
+                	 }
+                     
+                }, this);
 
                 this.model['feature'] = this.feature;
                 this.stationsVector.addFeature(this.feature);

@@ -378,6 +378,15 @@ app.models = app.models || {};
             if (! geom) { throw 'PathElement has no geometry'; }
             geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);
+        },
+        /*
+         * * Relevant to stations only... * A convenience mainly to keep details
+         * about the model's structure * out of the map drag handler.
+         */
+        getPoint: function() {
+            var geom = this.get('geometry');
+            if (! geom) { throw 'PathElement has no geometry'; }
+            return geom.coordinates;
         }
     });
 
