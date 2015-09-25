@@ -54,7 +54,7 @@ from xgds_planner2 import (models,
                            fillIdsPlanExporter)
 from xgds_planner2.forms import GroupFlightForm, UploadXPJsonForm
 from xgds_planner2.models import getPlanSchema
-from xgds_planner2.xpjsonSpec.jsonSchemaValidate import jsonSchemaValidateJson
+from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
 from xgds_map_server.forms import MapSearchForm
 
@@ -819,12 +819,11 @@ def completedFlightsTreeNodes(request):
 def validateJson(newJsonObj):
     ''' Validate input json against defined schema
     '''
-#     schemaUrl = newJsonObj['schemaUrl']
-    # there is probably a niftier way of getting this path.
-    schemaPath = os.path.join(settings.PROJ_ROOT, 'apps/xgds_planner2/xpjsonSpec/xpjsonPlanDocumentSchema.json')
-    # TODO right now validation is not working
-#     return jsonSchemaValidateJson(newJsonObj, schemaPath)
-    return True
+    try:
+        loadDocumentFromDict(newJsonObj)
+        return True
+    except Exception, e:
+        return "Invalid JSON: " + str(e)
 
 
 def handle_uploading_xpjson(f):
@@ -885,11 +884,11 @@ def planImport(request):
                 if (foundUuid != planUuid):
                     return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Loaded JSON is for a different plan; UUID of plans do not match.'}), content_type='application/json', status=406)
                 isValid = validateJson(newJsonObj)
-                if isValid:
+                if isValid == True:
                     updateJson(plan, newJsonObj)
                     return HttpResponse(json.dumps({'Success':"True"}))
                 else:
-                    return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Invalid'}), content_type='application/json', status=406)
+                    return HttpResponse(json.dumps({'Success':"False", 'responseText': isValid}), content_type='application/json', status=406)
             else:
                 return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Empty'}), content_type='application/json', status=406)
     except Exception:

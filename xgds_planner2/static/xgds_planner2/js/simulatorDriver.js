@@ -34,7 +34,14 @@ $(function() {
     }
 
     function setSimInfo(sim, object, startState) {
-        object._simInfo = getSimInfo(sim, startState);
+    	var newSimInfo = getSimInfo(sim, startState);
+    	if (!_.isUndefined(object._simInfo)){
+    		if (JSON.stringify(newSimInfo) === JSON.stringify(object._simInfo)){
+    			return; // has not changed
+    		} 
+    	}
+        object._simInfo = newSimInfo;
+        object.trigger('change');
     }
 
     app.simulatePlan = function() {
