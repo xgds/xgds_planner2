@@ -61,7 +61,7 @@ $(function() {
                     }
                     if (!_.isUndefined(bbox)) {
                         var extent = [bbox[1], bbox[0], bbox[3], bbox[2]];
-                        extent = ol.extent.applyTransform(extent, ol.proj.getTransform("EPSG:4326", DEFAULT_COORD_SYSTEM));
+                        extent = ol.extent.applyTransform(extent, ol.proj.getTransform(LONG_LAT, DEFAULT_COORD_SYSTEM));
                         this.map.getView().fit(extent, this.map.getSize(), {}); //.fit(fitExtent(extent, this.map.getSize());
                     }
                 }
