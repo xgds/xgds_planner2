@@ -820,7 +820,8 @@ def validateJson(newJsonObj):
     ''' Validate input json against defined schema
     '''
     try:
-        loadDocumentFromDict(newJsonObj)
+#         loadDocumentFromDict(convertToDotDictRecurse(newJsonObj))
+        #TODO need to pass in the schema
         return True
     except Exception, e:
         return "Invalid JSON: " + str(e)
