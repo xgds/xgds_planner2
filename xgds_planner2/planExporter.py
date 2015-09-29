@@ -60,7 +60,7 @@ class PlanExporter(object):
         return response
 
     def exportDbPlanToPath(self, dbPlan, path):
-        open(path, 'wb').write(self.exportDbPlan(dbPlan))
+        open(path, 'wb').write(self.serializeExportedObject(self.exportDbPlan(dbPlan)))
 
     def initPlan(self, plan, context):
         """
@@ -68,7 +68,6 @@ class PlanExporter(object):
         initial context before transform*() methods are called.
         """
         pass
-
 
 class JsonPlanExporter(PlanExporter):
     """

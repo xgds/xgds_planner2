@@ -297,7 +297,7 @@ def getDbPlan(uuid):
     return get_object_or_404(Plan, uuid=uuid)
 
 
-def planExport(request, uuid, name, time=None):
+def planExport(request, uuid, name, time=None, outputDirectory=None):
     """
     Normally plan export urls are built up by the planExporter.url
     but some exporters (pml) can take a time.
@@ -326,7 +326,13 @@ def planExport(request, uuid, name, time=None):
             exporter.initPlan(dbPlan, context)
         except:
             pass
-    return exporter.getHttpResponse(dbPlan, attachmentName=name)
+        
+    if outputDirectory:
+        # output the exported file to a directory
+        exporter.exportDbPlanToPath(dbPlan, os.path.join(outputDirectory, name))
+        return True
+    else:
+        return exporter.getHttpResponse(dbPlan, attachmentName=name)
 
 
 @login_required
