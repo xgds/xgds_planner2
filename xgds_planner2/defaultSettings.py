@@ -235,7 +235,7 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'backbone-relational',
     'backbone-forms',
     'handlebars=git://github.com/components/handlebars.js.git',
-    'string-format=git://github.com/deleted/string-format.git',
+    'string-format-tamarmot=git://github.com/tamarmot/string-format.git',
     'proj4',
     'usng=git://github.com/codice/usng.js.git',
     'qunit',
@@ -245,5 +245,5 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
     'uuid4',
     'moment',
-    'moment-duration-format'
+    'moment-duration-format',
 )

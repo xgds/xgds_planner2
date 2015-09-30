@@ -434,7 +434,7 @@ app.models = app.models || {};
                     }[itemType];
 
                     var context = {
-                        plan: app.planJson, //.currentPlan.toJSON(),
+                        plan: app.planJson,
                         stationIndex: stationCounter
                     };
                     context[itemType.toLowerCase()] = item;
