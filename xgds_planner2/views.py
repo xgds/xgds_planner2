@@ -826,8 +826,8 @@ def validateJson(newJsonObj):
     ''' Validate input json against defined schema
     '''
     try:
-#         loadDocumentFromDict(convertToDotDictRecurse(newJsonObj))
-        #TODO need to pass in the schema
+        theSchema = getPlanSchema(newJsonObj['platform']['name'])
+        loadDocumentFromDict(convertToDotDictRecurse(newJsonObj), theSchema.schema)
         return True
     except Exception, e:
         return "Invalid JSON: " + str(e)
