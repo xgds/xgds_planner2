@@ -740,6 +740,10 @@ $(function() {
 
             },
             
+            redrawPolygons: function() {
+            	//TODO implement
+            },
+            
             render: function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.feature = new ol.Feature({'geometry': this.geometry,

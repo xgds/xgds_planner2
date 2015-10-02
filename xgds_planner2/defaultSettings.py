@@ -91,6 +91,13 @@ XGDS_PLANNER_PIPELINE_JS = {
                              ),
         'output_filename': 'js/planner_app.js'
     },
+    'custom_map': {'source_filenames': ('xgds_map_server/js/showMapCoords.js',
+                                        'xgds_map_server/js/initial_layers.js',
+                                        'xgds_planner2/js/uploadJson.js',
+                                        ),
+      'output_filename': 'js/custom_map.js',
+      },
+
     # must create 'simulator' entry in top-level siteSettings.py
     'xgds_planner2_testing': {
         'source_filenames': (
