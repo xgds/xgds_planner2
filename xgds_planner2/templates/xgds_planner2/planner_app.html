@@ -110,7 +110,8 @@
 {% endblock scripts %}
 
 {% block jsInit %}
-    plannerAppOptions = {
+    var appOptions = {
+    	BODY_RADIUS_METERS: {{ settings.XGDS_MAP_SERVER_BODY_RADIUS_METERS }},
     	DEFAULT_COORD_SYSTEM: "{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}",
     	SETUP_COORD_SYSTEM: {{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }},
         DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
@@ -133,7 +134,7 @@
         searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }}
     };
 	$(function(){
-    	app.start(plannerAppOptions);
+    	app.start(appOptions);
 	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
