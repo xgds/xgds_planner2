@@ -595,14 +595,16 @@ $(function() {
                                });
 
             this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
-            this.feature = new ol.Feature({'geometry': this.geometry,
-                                                 'id': this.fromStation.attributes['id'],
-                                                 'model': this.model
+            this.feature = new ol.Feature({geometry: this.geometry,
+                                           id: this.fromStation.attributes['id'],
+                                           name: this.fromStation.attributes['id'],
+                                           model: this.model
 //                                                 'styles': this.getStyles(),
 //                                                 'selectedStyles': this.getSelectedStyles()
                                                  });
             this.feature.set('selectedStyles', this.getSelectedStyles());
             this.feature.set('styles', this.getStyles());
+            
             // for some reason you have to set the style this way
             this.feature.setStyle(this.getStyles());
             this.geometry.on('change', function(event) {
@@ -746,12 +748,13 @@ $(function() {
             
             render: function() {
                 this.geometry = new ol.geom.Point(this.point);
-                this.feature = new ol.Feature({'geometry': this.geometry,
-                                               'id': this.model.attributes['id'],
-                                               'model': this.model,
-                                               'iconStyle': this.iconStyle,
-                                               'selectedIconStyle': this.selectedIconStyle,
-                                               'textStyle': this.textStyle
+                this.feature = new ol.Feature({geometry: this.geometry,
+                                               id: this.model.attributes['id'],
+                                               name: this.model.attributes['id'],
+                                               model: this.model,
+                                               iconStyle: this.iconStyle,
+                                               selectedIconStyle: this.selectedIconStyle,
+                                               textStyle: this.textStyle
 //                                               'styles': this.getStyles(),
 //                                               'selectedStyles': this.getSelectedStyles()
                                             });
@@ -794,12 +797,27 @@ $(function() {
                     this.geometry.setCoordinates(coords);
                 }
                 if (!_.isEqual(this.getLabel(), this.textStyle.getText().getText())){
+                	
+                	var selected = false;
+                    if (this.feature.getStyle()[0] === this.getSelectedStyles()[0]){
+                    	selected = true;
+                    }
+                    
                     // You can't change text of an existing style, you have to make a new one.
                     // https://github.com/openlayers/ol3/pull/2678
 //                    textInStyle.set('text',name);
                     delete this.textStyle; // for garbage collection
                     this.initTextStyle();
-                    this.feature.setStyle(this.getStyles());
+                    
+                    
+                    
+                    this.feature.set('selectedStyles', this.getSelectedStyles());
+                    this.feature.set('styles', this.getStyles())
+                    if (selected){
+                    	this.feature.setStyle(this.getSelectedStyles());
+                    } else {
+                    	this.feature.setStyle(this.getStyles());
+                    }
                 }
                 this.updateHeadingStyle();
 

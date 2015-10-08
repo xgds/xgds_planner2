@@ -498,7 +498,9 @@ app.models = app.models || {};
         removeStation: function(stationModel) {
             var idx = this.indexOf(stationModel);
             var segment;
-            if (idx < 0) { alert('Station not present in collection'); }
+            if (idx < 0) { 
+            	console.log('Station not present in collection ' + stationModel.get('id')); 
+            	return;}
             else if (idx === 0) {
                 segment = this.at(1);
             } else {
@@ -522,7 +524,7 @@ app.models = app.models || {};
             }
             this.remove([segment, stationModel]);
             
-            app.vent.trigger('station:change', stationModel);
+//            app.vent.trigger('station:change', stationModel);
             app.vent.trigger('station:remove', stationModel);
             stationModel.trigger('station:remove');
             if (!_.isUndefined(segment)){
