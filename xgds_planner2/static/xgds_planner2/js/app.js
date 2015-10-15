@@ -14,6 +14,10 @@
 //specific language governing permissions and limitations under the License.
 // __END_LICENSE__
 
+
+var DEBUG_EVENTS = false;
+
+
 /*
 ** Override the TemplateCache function responsible for
 ** rendering templates so that it will use Handlebars.
@@ -29,6 +33,7 @@ Backbone.Marionette.TemplateCache.prototype.compileTemplate = function(
 var app = (function($, _, Backbone) {
     app = new Backbone.Marionette.Application();
 
+    app.resequencing = false;
     app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
@@ -334,16 +339,14 @@ var app = (function($, _, Backbone) {
     });
 
     app.vent.on('all', function(eventname, args) {
-        console.log('event on app.vent: ' + eventname, args);
-        //        console.log('current state:');
-        //        console.log('Command Selected:', app.State.commandSelected);
-        //        console.log('Station Selected:', app.State.stationSelected);
-        //        console.log('Meta Expanded:', app.State.metaExpanded);
-        //        console.log('Presets Expanded:', app.State.addCommandsExpanded);
-        // if (eventname == 'change:plan') {
-        //     var stack = new Error().stack;
-        //     console.log(stack);
-        // }
+    	if (DEBUG_EVENTS){
+    		console.log('event on app.vent: ' + eventname, args);
+                console.log('current state:');
+                console.log('Command Selected:', app.State.commandSelected);
+                console.log('Station Selected:', app.State.stationSelected);
+                console.log('Meta Expanded:', app.State.metaExpanded);
+                console.log('Presets Expanded:', app.State.addCommandsExpanded);
+    	}
         if (eventname == 'change:plan') {
             app.Actions.action();
         } else if (eventname == 'plan:reversing') {

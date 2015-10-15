@@ -245,7 +245,7 @@ app.models = app.models || {};
             {
                 type: Backbone.HasMany,
                 relatedModel: 'app.models.Command',
-                key: 'sequence',
+                key: 'commands',
                 collectionType: 'app.models.CommandCollection',
                 createModels: true,
                 reverseRelation: {
@@ -322,7 +322,7 @@ app.models = app.models || {};
             /*
              * var duration = 0.0; if ( this.get('speed') ) { // TODO: calculate
              * distance and traverse time }
-             * this.get('sequence').each(function(command) { if
+             * this.get('commands').each(function(command) { if
              * (command.get('duration') != undefined) { duration = duration +
              * command.get('duration'); } }); return duration;
              */
@@ -336,7 +336,7 @@ app.models = app.models || {};
             /*
              * // return the cumulative duration of all models in the collection
              * up to and including this one. if ( collection === undefined ) {
-             * collection = app.currentPlan.get('sequence'); } var arr =
+             * collection = app.currentPlan.get('commands'); } var arr =
              * collection.models; var idx = _.indexOf(arr, this); if (idx < 0) {
              * throw 'Model {model} was not found in the collection
              * {collection}'.format({model: this, collection: collection}); }
@@ -360,12 +360,12 @@ app.models = app.models || {};
                 command.set('name', preset.name);
             }
             command.parent = this;
-            this.get('sequence').add(command);
+            this.get('commands').add(command);
         },
 
         appendCommandModel: function(model) {
             model.parent = this;
-            this.get('sequence').add(model);
+            this.get('commands').add(model);
         },
         /*
          * * Relevant to stations only... * A convenience mainly to keep details
@@ -405,6 +405,12 @@ app.models = app.models || {};
          */
         resequence: function() {
             var stationCounter = 0;
+            if (app.resequencing) {
+            	console.log("aha ye wee beastie you WERE in the middle of a resequence");
+            	return;
+            }
+            console.log("RESEQUENCING");
+            app.resequencing = true;
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
                 // prevent undo from capturing *every* change we make
@@ -450,6 +456,8 @@ app.models = app.models || {};
                     }
                 }
             );
+            
+            app.resequencing = false;
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.enable)) {
                 app.Actions.enable();
@@ -506,10 +514,8 @@ app.models = app.models || {};
             } else {
                 segment = this.at(idx - 1);
             }
-            // for whatever reason, relational would rather
-            // you remove the segment first.
-            // disable actions so that the segment and
-            // the station get removed in the same action
+            // for whatever reason, relational would rather you remove the segment first.
+            // disable actions so that the segment and the station get removed in the same action
             app.Actions.disable();
             var nextSegment;
 //            var prevStation;
@@ -522,15 +528,23 @@ app.models = app.models || {};
 //                    }
                 }
             }
+            console.log("ABOUT TO REMOVE seg " + segment.id + " station " + stationModel.id)
             this.remove([segment, stationModel]);
             
 //            app.vent.trigger('station:change', stationModel);
-            app.vent.trigger('station:remove', stationModel);
+            console.log("TRIGGER STATION:REMOVE " + stationModel.id)
             stationModel.trigger('station:remove');
+            console.log("APP:VENT STATION REMOVE " + stationModel.id)
+            app.vent.trigger('station:remove', stationModel);
             if (!_.isUndefined(segment)){
+                console.log("TRIGGER SEGMENT REMOVE " + segment.id );
                 segment.trigger('segment:remove');
+                console.log("APP:VENT SEGMENT REMOVE " + segment.id);
+            	app.vent.trigger('segment:remove', segment);
             }
+            this.resequence();
             if (!_.isUndefined(nextSegment) && (segment != nextSegment)){
+            	console.log("TRIGGER SEGMENT ALTER " + nextSegment.id);
                 nextSegment.trigger('alter:stations'); 
             }
             app.Actions.enable();
@@ -555,7 +569,7 @@ app.models = app.models || {};
             // "headingToleranceDegrees": 9.740282517223996,
             'id': '',
             // "isDirectional": false,
-            'sequence': [],
+            'commands': [],
             // "tolerance": 1,
             'type': 'Station'
         };
@@ -586,7 +600,7 @@ app.models = app.models || {};
         var proto = {
             // "hintedSpeed": 1,
             'id': '',
-            'sequence': [],
+            'commands': [],
             'type': 'Segment'
         };
         _.each(app.planSchema.segmentParams, function(param) {

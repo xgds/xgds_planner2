@@ -79,7 +79,7 @@ $(function() {
                 throw 'Invalid PathElement type.';
             }
 
-            pathElement.get('sequence').each(function(command) {
+            pathElement.get('commands').each(function(command) {
                 var preCommandSimState = getSimState(sim);
                 sim.executeCommand(command);
                 setSimInfo(sim, command, preCommandSimState);
@@ -109,7 +109,7 @@ $(function() {
         output = output + getItemRow(plan);
         plan.get('sequence').each(function(item) {
             output = output + getItemRow(item);
-            item.get('sequence').each(function(command) {
+            item.get('commands').each(function(command) {
                 output = output + getItemRow(command);
             });
         });
