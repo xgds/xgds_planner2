@@ -14,7 +14,7 @@
 //specific language governing permissions and limitations under the License.
 // __END_LICENSE__
 
-var DEBUG_SEGMENTS = true;
+var DEBUG_SEGMENTS = false;
 
 
 $(function() {
