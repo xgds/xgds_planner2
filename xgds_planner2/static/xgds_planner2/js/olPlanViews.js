@@ -576,11 +576,11 @@ $(function() {
         },
         
         removeChangeListener: function(station){
-          station.off('change:geometry', this.updateGeometry, this);
+          station.off('change:geometry', this.updateGeometry, this.model);
 
         },
         addChangeListener: function(station) {
-            station.on('change:geometry', this.updateGeometry, this);
+            station.on('change:geometry', this.updateGeometry, this.model);
         },
         getStyles: function() {
             if (DEBUG_SEGMENTS){
