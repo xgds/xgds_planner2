@@ -1203,7 +1203,6 @@ app.views.PlanToolsView = Backbone.View.extend({
         delete app.prependPlanOnAppend;
     },
     appendPlan: function(data) {
-        console.log(data);
         if (data.sequence.length == 0) {
             // no sequence to add
             app.vent.trigger('clearAppendTool');
@@ -1216,17 +1215,12 @@ app.views.PlanToolsView = Backbone.View.extend({
         delete app.reversePlanOnAppend;
         var method = undefined;
         var sequence = app.currentPlan.get('sequence').models.slice();
-        console.log('number of items');
-        console.log(data.sequence.length);
         if (app.prependPlanOnAppend) {
             if (sequence.length > 0) {
-                console.log('adding connecting segment');
                 var segment = app.models.segmentFactory();
                 sequence.unshift(segment);
             }
             while (data.sequence.length > 0) {
-                console.log('pushing item');
-                console.log(data.sequence.length);
                 var item = data.sequence.shift();
                 var model = undefined;
                 if (item.type == 'Station') {
@@ -1234,17 +1228,12 @@ app.views.PlanToolsView = Backbone.View.extend({
                 } else if (item.type == 'Segment') {
                     model = app.models.segmentFactory(item);
                 } else {
-                    console.log('Error parsing sequence');
                     break;
                 }
                 sequence.unshift(model);
-                console.log('pushed item');
-                console.log(data.sequence.length + ' items left');
-                console.log(data.sequence.length > 0);
             }
         } else {
             if (sequence.length > 0) {
-                console.log('adding connecting segment');
                 var segment = app.models.segmentFactory();
                 sequence.push(segment);
             }
@@ -1256,15 +1245,9 @@ app.views.PlanToolsView = Backbone.View.extend({
                 } else if (item.type == 'Segment') {
                     model = app.models.segmentFactory(item);
                 } else {
-                    console.log('Error parsing sequence');
                     break;
                 }
-                console.log('pushing item');
-                console.log(data.sequence.length);
                 sequence.push(model);
-                console.log('pushed item');
-                console.log(data.sequence.length + ' items left');
-                console.log(data.sequence.length > 0);
             }
         }
         delete app.prependPlanOnAppend;

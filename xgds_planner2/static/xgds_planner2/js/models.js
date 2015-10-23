@@ -310,7 +310,7 @@ app.models = app.models || {};
                 repr = this._sequenceLabel;
                 break;
             case 'Segment':
-                repr = Math.round(this._segmentLength) + ' meters';
+                repr = Math.round(this._segmentLength) + ' m';
                 break;
             }
             return repr;
@@ -378,6 +378,7 @@ app.models = app.models || {};
             if (! geom) { throw 'PathElement has no geometry'; }
             geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);
+            this.trigger('change:geometry');
         },
         /*
          * * Relevant to stations only... * A convenience mainly to keep details
@@ -406,10 +407,8 @@ app.models = app.models || {};
         resequence: function() {
             var stationCounter = 0;
             if (app.resequencing) {
-            	console.log("aha ye wee beastie you WERE in the middle of a resequence");
             	return;
             }
-            console.log("RESEQUENCING");
             app.resequencing = true;
 
             if (!_.isUndefined(app.Actions) && !_.isUndefined(app.Actions.disable)) {
@@ -507,7 +506,7 @@ app.models = app.models || {};
             var idx = this.indexOf(stationModel);
             var segment;
             if (idx < 0) { 
-            	console.log('Station not present in collection ' + stationModel.get('id')); 
+//            	console.log('Station not present in collection ' + stationModel.get('id')); 
             	return;}
             else if (idx === 0) {
                 segment = this.at(1);
@@ -528,23 +527,17 @@ app.models = app.models || {};
 //                    }
                 }
             }
-            console.log("ABOUT TO REMOVE seg " + segment.id + " station " + stationModel.id)
             this.remove([segment, stationModel]);
             
 //            app.vent.trigger('station:change', stationModel);
-            console.log("TRIGGER STATION:REMOVE " + stationModel.id)
             stationModel.trigger('station:remove');
-            console.log("APP:VENT STATION REMOVE " + stationModel.id)
             app.vent.trigger('station:remove', stationModel);
             if (!_.isUndefined(segment)){
-                console.log("TRIGGER SEGMENT REMOVE " + segment.id );
                 segment.trigger('segment:remove');
-                console.log("APP:VENT SEGMENT REMOVE " + segment.id);
-            	app.vent.trigger('segment:remove', segment);
+                app.vent.trigger('segment:remove', segment);
             }
             this.resequence();
             if (!_.isUndefined(nextSegment) && (segment != nextSegment)){
-            	console.log("TRIGGER SEGMENT ALTER " + nextSegment.id);
                 nextSegment.trigger('alter:stations'); 
             }
             app.Actions.enable();

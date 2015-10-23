@@ -157,27 +157,31 @@ $(function() {
             initialize: function(options) {
                 this.options = options || {};
                 this.map = this.options.map
-                
-                this.segmentsVector = new ol.source.Vector({});
-                this.stationsVector = new ol.source.Vector({});
 
-                this.olFeatures = new ol.Collection();
+                this.segmentsFeatures = new ol.Collection();
+                this.stationsFeatures = new ol.Collection();
 
-                // for editing
-                this.mainMapVector = new ol.layer.Vector({
-                	map: this.map,
-                	source: new ol.source.Vector({
-                		features: this.olFeatures,
-                		useSpatialIndex: false
-                	}),
+                this.segmentsVector = new ol.source.Vector({features:this.segmentsFeatures});
+                this.stationsVector = new ol.source.Vector({features:this.stationsFeatures});
+                this.segmentsLayer = new ol.layer.Vector({name:'segments',
+                    source: this.segmentsVector,
                     style: (function() {
-                          return function(feature, resolution) {
-                            return feature.getStyle();
-                          };
-                        })()
-                });
-                this.mainMapVector.setMap(this.map);
-                
+                      return function(feature, resolution) {
+                  	return feature.getStyle();
+                      };
+                    })()
+                    });
+
+                this.stationsLayer = new ol.layer.Vector({name:'stations',
+                    source: this.stationsVector,
+                    zIndex: 2,
+                    style: (function() {
+                        return function(feature, resolution) {
+                    	return feature.getStyle();
+                        };
+                      })()
+                    });
+
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
                 
@@ -190,13 +194,10 @@ $(function() {
             render: function() {
                 this.drawStations();
                 this.drawSegments();
-                this.segmentsLayer = new ol.layer.Vector({'name':'segments',
-                                                          'source': this.segmentsVector
-                                                          });
                 
-                this.stationsLayer = new ol.layer.Vector({'name':'stations',
-                                                          'source': this.stationsVector
-                                                          });
+                this.map.addLayer(this.segmentsLayer);
+                this.map.addLayer(this.stationsLayer);
+
                 
                 if (this.currentMode) {
                     this.resetMode();
@@ -205,7 +206,6 @@ $(function() {
                 // scale map to focus on plan
                 if (!_.isEmpty(this.segmentsVector.getFeatures())){
                     this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
-//                    this.map.getView().fitExtent(this.segmentsVector.getExtent(), this.map.getSize());
                 }
 
             },
@@ -213,9 +213,7 @@ $(function() {
             drawStation: function(station) {
                 var stationPointView = new StationPointView({
                     model: station,
-                    stationsVector: this.stationsVector,
-                    mainMapVector: this.mainMapVector,
-                    olFeatures: this.olFeatures
+                    stationsVector: this.stationsVector
                 });
 
                 return stationPointView;
@@ -241,8 +239,6 @@ $(function() {
                     fromStation: fromStation,
                     toStation: toStation,
                     segmentsVector: this.segmentsVector,
-                    mainMapVector: this.mainMapVector,
-                    olFeatures: this.olFeatures,
                     planLayerView: this
                 });
                 return segmentLineView;
@@ -296,21 +292,12 @@ $(function() {
                     app.State.popupsEnabled = false;
                     app.State.disableAddStation = false; // reset state possibly set in other mode
                     if (_.isUndefined(this.stationAdder)){
-//                        this.stationAdder = new ol.interaction.StationRubberband({
                         this.stationAdder = new ol.interaction.Draw({
-                            features: this.olFeatures, 
+//                            features: this.olFeatures,
+                            features: this.stationsVector.getFeatures(),
                             type: "Point",
                             name: "drawInteraction"
-//                            startCoordinates: this.getLastStationCoords()
                         }, this);
-//                        this.stationAdder.on('drawstart', function(event) {
-//                                console.log(event);
-//                                endStation = this.collection.at(this.collection.length - 1);
-//                                firstCoords = transform(endStation.get('geometry').coordinates);
-//                                var newGeometry = event.feature.getGeometry();
-//                                firstCoords.push(newGeometry.getCoordinates());
-//                                newGeometry.setCoordinates(firstCoords);
-//                            }, this);
                         this.stationAdder.on('drawend', function(event) {
                             var geometry = event.feature.getGeometry();
                             var coords = inverse(geometry.getCoordinates());
@@ -337,14 +324,11 @@ $(function() {
                     this.map.addInteraction(this.stationAdder);
                 },
                 exit: function() {
-                	this.stationAdder.setActive(false);
+                    this.stationAdder.setActive(false);
                     this.map.removeInteraction(this.stationAdder);
                 }
             }, // end addStationMode
             
-            selectedStyleFunction: function(feature, resolution) {
-                return feature.get('selectedStyles');
-            },
             navigateMode: {
                 enter: function() {
                     app.State.popupsEnabled = true;
@@ -354,12 +338,7 @@ $(function() {
                             condition: ol.events.condition.click,
                             multi: false,
                             name: "selectNavigate",
-                            layers: [_this.segmentsLayer, _this.stationsLayer],
-//                            the below SHOULD work, but it does not.
-//                            style: _this.selectedStyleFunction,
-                            style: function(feature, resolution){
-                                return feature.get('selectedStyles');
-                            },
+                            layers: [_this.segmentsLayer, _this.stationsLayer]
                         });
                         
                         this.selectNavigate.getFeatures().on('add', function(e) {
@@ -411,7 +390,7 @@ $(function() {
                     
                 },
                 exit: function() {
-                	this.selectNavigate.getFeatures().clear();
+                    this.selectNavigate.getFeatures().clear();
                     this.selectNavigate.setActive(false);
                     this.map.removeInteraction(this.selectNavigate);
                 }
@@ -444,14 +423,15 @@ $(function() {
             repositionMode: {
                 enter: function() {
                     app.State.popupsEnabled = false;
-                    if (_.isUndefined(this.repositioner)){
-                        this.repositioner = new ol.interaction.Modify({
-                        	name: "repositioner",
-                            features: this.olFeatures,
-                            deleteCondition: function(event) {
-                                return ol.events.condition.shiftKeyOnly(event) &&
-                                    ol.events.condition.singleClick(event);
-                              }
+                    
+                    if (_.isUndefined(this.stationRepositioner)){
+                	this.stationRepositioner = new ol.interaction.Modify({
+                        	name: "stationRepositioner",
+                        	features: this.stationsFeatures
+                        });
+                        this.segmentModifier = new ol.interaction.Modify({
+                        	name: "segmentModifier",
+                        	features: this.segmentsFeatures
                         });
                         this.stationDeleter = new ol.interaction.Select({
                         	name: "stationDeleter",
@@ -467,11 +447,8 @@ $(function() {
                             var model = feature.get('model');
                             if (!_.isUndefined(model)){
                             	if (model.get('type') == 'Station'){
-                            		// delete the station
-                            		console.log("STATION DELETER: " + model.get('id'));
-                            		var killedSegment = this.collection.removeStation(model);
-                            	} else {
-                            		console.log("HOW CAN YOU CHOOSE A SEGMENT HERE");
+                            	    // delete the station
+                            	    var killedSegment = this.collection.removeStation(model);
                             	}
                             }
                             
@@ -485,15 +462,20 @@ $(function() {
                             }
                         }, this);
                     } 
-                    this.repositioner.setActive(true);
-                    this.map.addInteraction(this.repositioner);
+                    this.stationRepositioner.setActive(true);
+                    this.segmentModifier.setActive(true);
+                    this.stationDeleter.getFeatures().clear();
+                    this.map.addInteraction(this.segmentModifier);
+                    this.map.addInteraction(this.stationRepositioner);
                     this.map.addInteraction(this.stationDeleter);
                 }, // end enter
                 exit: function() {
-                	this.repositioner.setActive(false);
-                	this.stationDeleter.getFeatures().clear();
-                    this.map.removeInteraction(this.repositioner);
-                    this.map.removeInteraction(this.stationDeleter);
+                	  this.stationRepositioner.setActive(false);
+                	  this.segmentModifier.setActive(false);
+                	  this.stationDeleter.getFeatures().clear();
+                	  this.map.removeInteraction(this.stationRepositioner);
+                	  this.map.removeInteraction(this.segmentModifier);
+                	  this.map.removeInteraction(this.stationDeleter);
                 }
             } // end repositionMode
 
@@ -503,37 +485,30 @@ $(function() {
         initialize: function(options) {
             this.options = options || {};
             var options = this.options;
-            if (!options.mainMapVector || !options.toStation || !options.fromStation) {
+            if (!options.segmentsVector || !options.toStation || !options.fromStation) {
                 throw 'Missing a required option!';
             }
             this.segmentsVector = this.options.segmentsVector;
-            this.mainMapVector = this.options.mainMapVector;
-            this.olFeatures = this.options.olFeatures;
             this.planLayerView = this.options.planLayerView;
             this.fromStation = this.options.fromStation;
             this.toStation = this.options.toStation;
             this.otherStation = {};
             this.otherStation[this.toStation.cid] = this.fromStation;
             this.otherStation[this.fromStation.cid] = this.toStation;
-            _.each([this.fromStation, this.toStation],
-                    function(stationModel) {
-                        this.addChangeListener(stationModel);
-                    }, this);
+            this.addChangeListener(this.fromStation);
+            this.addChangeListener(this.toStation);
 //            this.model.on('change:geometry', function() {
 //                this.updateGeometry(this.fromStation, this.toStation);
 //            }, this);
             this.model.on('alter:stations', function() {
-            	console.log("SEGMENT ALTER CALLBACK" + this.model.id);
                 this.updateStations();
-                this.updateGeometry(this.fromStation, this.toStation);
+                this.updateGeometry();
             }, this);
             this.model.on('segment:remove', function() {
                 if (!_.isUndefined(this.feature)){
-                	console.log('SEGMENT REMOVE CALLBACK ' + this.model.id);
                     this.removeChangeListener(this.fromStation);
                     this.removeChangeListener(this.toStation);
                     this.segmentsVector.removeFeature(this.feature);
-                    this.mainMapVector.getSource().removeFeature(this.feature);
                 }
             }, this);
             this.render();
@@ -576,11 +551,11 @@ $(function() {
         },
         
         removeChangeListener: function(station){
-          station.off('change:geometry', this.updateGeometry, this.model);
+            this.stopListening(station, 'change:geometry');
 
         },
         addChangeListener: function(station) {
-            station.on('change:geometry', this.updateGeometry, this.model);
+            this.listenTo(station, 'change:geometry', this.updateGeometry);
         },
         getStyles: function() {
             if (DEBUG_SEGMENTS){
@@ -599,7 +574,6 @@ $(function() {
             }
         },
         render: function() {
-        	console.log("RENDERING SEGMENT " + this.model.id + " " + this.model.name);
             this.coords = _.map([this.fromStation, this.toStation],
                                function(station) {
                                    return transform(station.get('geometry').coordinates);
@@ -623,7 +597,7 @@ $(function() {
                 var newCoordinates = geometry.getCoordinates();
                 if (newCoordinates.length > 2) {
                     // add the new station!
-                    var oldSegment = this.model; //event.target.get('model');
+                    var oldSegment = this.model; 
                     var oldFirstStation = this.fromStation;
                     var newStation = app.models.stationFactory({
                         coordinates: inverse(newCoordinates[1])
@@ -639,8 +613,8 @@ $(function() {
                     //total hack, remove and readd this segment to the feature
                     // this will prevent continuing to edit the second point of the segment (ie the one we just added)
                     try {
-                        this.mainMapVector.getSource().removeFeature(this.feature);
-                        this.mainMapVector.getSource().addFeature(this.feature);
+                        this.segmentsVector.removeFeature(this.feature);
+                        this.segmentsVector.addFeature(this.feature);
                     } catch (err){
                         // ulp
                     }
@@ -650,13 +624,12 @@ $(function() {
             }, this);
             this.model['feature'] = this.feature;
             this.segmentsVector.addFeature(this.feature);
-            this.mainMapVector.getSource().addFeature(this.feature);
         },
         /*
          ** Update the endpoints of the segment when either adjacent station changes.
          */
          updateGeometry: function() {
-             if (!_.isUndefined(this.fromStation) && !_.isUndefined(this.toStation)){
+             if (!_.isUndefined(this.fromStation) && !_.isUndefined(this.toStation) && !_.isUndefined(this.geometry)){
                  this.coords = _.map([this.fromStation, this.toStation],
                          function(station) {
                              return transform(station.get('geometry').coordinates);
@@ -693,10 +666,8 @@ $(function() {
             initialize: function(options) {
                 this.options = options || {};
                 this.stationsVector = this.options.stationsVector;
-                this.mainMapVector = this.options.mainMapVector;
-                this.olFeatures = this.options.olFeatures;
                 
-                if (!options.mainMapVector && !options.model) {
+                if (!options.stationsVector && !options.model) {
                     throw 'Missing a required option!';
                 }
 
@@ -723,7 +694,6 @@ $(function() {
                               });
                 this.model.on('station:remove', function() {
                     this.stationsVector.removeFeature(this.feature);
-                    this.mainMapVector.getSource().removeFeature(this.feature);
                 }, this);
 
             },
@@ -747,9 +717,9 @@ $(function() {
                 this.feature.set('styles', this.getStyles());
                 this.feature.set('selectedStyles', this.getSelectedStyles());
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
-                this.feature.on('remove', function(event) {
-                    console.log(this);
-                }, this);
+//                this.feature.on('remove', function(event) {
+//                    console.log(this);
+//                }, this);
                 this.geometry.on('change', function(event) {
                 	 var geometry = event.target;
                 	 var coords = inverse(geometry.getCoordinates());
@@ -765,7 +735,6 @@ $(function() {
 
                 this.model['feature'] = this.feature;
                 this.stationsVector.addFeature(this.feature);
-                this.mainMapVector.getSource().addFeature(this.feature);
             },
             
             redraw: function() {
@@ -793,8 +762,6 @@ $(function() {
 //                    textInStyle.set('text',name);
                     delete this.textStyle; // for garbage collection
                     this.initTextStyle();
-                    
-                    
                     
                     this.feature.set('selectedStyles', this.getSelectedStyles());
                     this.feature.set('styles', this.getStyles())
