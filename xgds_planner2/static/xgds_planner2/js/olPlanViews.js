@@ -113,12 +113,12 @@ $(function() {
                         };
                 
                 app.styles['stationText'] = {
-                        font: '16px Calibri,sans-serif',
+                        font: '16px Calibri,sans-serif,bold',
                         fill: new ol.style.Fill({
-                            color: '#000'
+                            color: 'yellow'
                         }),
                         stroke: new ol.style.Stroke({
-                            color: '#fff',
+                            color: 'black',
                             width: 2
                         }),
                         offsetY: -20
