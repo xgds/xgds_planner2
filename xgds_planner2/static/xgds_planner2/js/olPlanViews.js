@@ -181,6 +181,9 @@ $(function() {
                         };
                       })()
                     });
+                this.map.addLayer(this.segmentsLayer);
+                this.map.addLayer(this.stationsLayer);
+
 
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
@@ -195,9 +198,6 @@ $(function() {
                 this.drawStations();
                 this.drawSegments();
                 
-                this.map.addLayer(this.segmentsLayer);
-                this.map.addLayer(this.stationsLayer);
-
                 
                 if (this.currentMode) {
                     this.resetMode();
