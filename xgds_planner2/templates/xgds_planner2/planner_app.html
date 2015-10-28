@@ -20,6 +20,7 @@
   @import url('{{ EXTERNAL_URL }}openlayers3/ol.css');
   @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
   @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
+  @import url('{{ STATIC_URL }}xgds_map_server/css/xgds_map_server.css');
   @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
       .map {
         height: 400px;
@@ -116,6 +117,7 @@
     	SETUP_COORD_SYSTEM: {{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }},
         DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
 		DEFAULT_ZOOM: {{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }},
+		DEFAULT_ROTATION: {{ settings.XGDS_MAP_SERVER_DEFAULT_ROTATION }},
 		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
         planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
        	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",

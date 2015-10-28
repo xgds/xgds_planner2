@@ -19,7 +19,7 @@ $(function() {
 
     var DEG2RAD = Math.PI / 180.0;
     var RAD2DEG = 180.0 / Math.PI;
-    var BODY_RADIUS_METERS = appOptions.BODY_RADIUS_METERS;
+    var BODY_RADIUS_METERS = app.options.BODY_RADIUS_METERS;
 
 
     /*
