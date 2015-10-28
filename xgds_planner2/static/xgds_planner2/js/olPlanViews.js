@@ -14,7 +14,7 @@
 //specific language governing permissions and limitations under the License.
 // __END_LICENSE__
 
-var DEBUG_SEGMENTS = false;
+var DEBUG_SEGMENTS = false;  // Turn on labels for segments
 
 
 $(function() {
@@ -429,17 +429,41 @@ $(function() {
                         	name: "stationRepositioner",
                         	features: this.stationsFeatures
                         });
+                	app.vent.on('deactivateStationRepositioner', function() {
+                	    this.map.removeInteraction(this.stationRepositioner);
+                	    this.map.removeInteraction(this.stationDeleter);
+                	    this.stationRepositioner.setActive(false);
+                	    this.stationDeleter.setActive(false);
+                	}, this);
+                	app.vent.on('activateStationRepositioner', function() {
+                	    this.stationRepositioner.setActive(true);
+                	    this.stationDeleter.setActive(true);
+                	    this.map.addInteraction(this.stationRepositioner);
+                	    this.map.removeInteraction(this.stationDeleter);
+                	    
+                	}, this);
                         this.segmentModifier = new ol.interaction.Modify({
                         	name: "segmentModifier",
                         	features: this.segmentsFeatures
                         });
+                        this.segmentModifier.on('modifyend', function(event){
+                            event.features.forEach(function(element, index, array) {
+                        	var geom = element.getGeometry();
+                        	var coords = geom.getCoordinates();
+                        	if (coords.length > 2){
+                        	    var model = element.get('model')
+                        	    model.trigger('splitSegment');
+                        	}
+                            }, this);
+                    	
+                        }, this);
                         this.stationDeleter = new ol.interaction.Select({
                         	name: "stationDeleter",
-                            layers: [this.stationsLayer],
-                            addCondition: function(event) {
-                                return ol.events.condition.shiftKeyOnly(event)
-                                && ol.events.condition.singleClick(event);
-                              }
+                        	layers: [this.stationsLayer],
+                        	addCondition: function(event) {
+                        	    return ol.events.condition.shiftKeyOnly(event)
+                        	    && ol.events.condition.singleClick(event);
+                        	}
                             });
                         
                         this.stationDeleter.getFeatures().on('add', function(e) {
@@ -497,6 +521,7 @@ $(function() {
             this.otherStation[this.fromStation.cid] = this.toStation;
             this.addChangeListener(this.fromStation);
             this.addChangeListener(this.toStation);
+            this.splittingGeometry = false;
 //            this.model.on('change:geometry', function() {
 //                this.updateGeometry(this.fromStation, this.toStation);
 //            }, this);
@@ -592,38 +617,53 @@ $(function() {
             
             // for some reason you have to set the style this way
             this.feature.setStyle(this.getStyles());
-            this.geometry.on('change', function(event) {
-                var geometry = event.target;
-                var newCoordinates = geometry.getCoordinates();
-                if (newCoordinates.length > 2) {
-                    // add the new station!
-                    var oldSegment = this.model; 
-                    var oldFirstStation = this.fromStation;
-                    var newStation = app.models.stationFactory({
-                        coordinates: inverse(newCoordinates[1])
-                    });
-                    var segmentBefore = this.planLayerView.collection.insertStation(oldSegment, newStation);
-                    var stationPointView = this.planLayerView.drawStation(newStation);
-                    this.planLayerView.stationViews.push(stationPointView);
-                    
-                    if (!_.isUndefined(segmentBefore)){
-                        this.planLayerView.drawSegment(segmentBefore, oldFirstStation, newStation);
-                    }
-                    
-                    //total hack, remove and readd this segment to the feature
-                    // this will prevent continuing to edit the second point of the segment (ie the one we just added)
-                    try {
-                        this.segmentsVector.removeFeature(this.feature);
-                        this.segmentsVector.addFeature(this.feature);
-                    } catch (err){
-                        // ulp
-                    }
-                    
-                }
-                
-            }, this);
+            
+            this.listenTo(this.model, 'splitSegment', this.handleSplitSegment, this);
             this.model['feature'] = this.feature;
             this.segmentsVector.addFeature(this.feature);
+        },
+        
+        handleSplitSegment: function(event) {
+            if (this.splittingGeometry){
+        	return;
+            }
+            
+            var geometry = this.feature.getGeometry(); //event.target;
+            var newCoordinates = geometry.getCoordinates();
+            if (newCoordinates.length > 2) {
+        	app.vent.trigger('deactivateStationRepositioner');
+                
+                this.splittingGeometry = true;
+
+                // add the new station!
+        	this.segmentsVector.removeFeature(this.feature);
+                
+                this.stopListening(this.model, 'splitSegment');
+        	
+                var oldSegment = this.model; 
+                var oldFirstStation = this.fromStation;
+                var newStation = app.models.stationFactory({
+                    coordinates: inverse(newCoordinates[1])
+                });
+                
+                var segmentBefore = this.planLayerView.collection.insertStation(oldSegment, newStation);
+                var stationPointView = this.planLayerView.drawStation(newStation);
+                
+                this.planLayerView.stationViews.push(stationPointView);
+                
+                if (!_.isUndefined(segmentBefore)){
+                    this.planLayerView.drawSegment(segmentBefore, oldFirstStation, newStation);
+                }
+                
+                //total hack, remove and readd this segment to the feature
+                // this will prevent continuing to edit the second point of the segment (ie the one we just added)
+                this.segmentsVector.addFeature(this.feature);
+                
+                app.vent.trigger('activateStationRepositioner');
+                this.splittingGeometry = false;
+                this.listenTo(this.model, 'splitSegment', this.handleSplitSegment, this);
+            }
+            
         },
         /*
          ** Update the endpoints of the segment when either adjacent station changes.
