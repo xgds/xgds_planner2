@@ -440,6 +440,13 @@ $(function() {
                         	name: "stationRepositioner",
                         	features: this.stationsFeatures
                         });
+                	this.stationRepositioner.on('modifystart', function(event){
+                            app.Actions.disable();
+                        }, this);
+                	this.stationRepositioner.on('modifyend', function(event){
+                            app.Actions.enable();
+                            app.Actions.action();
+                        }, this);
                         this.segmentModifier = new ol.interaction.Modify({
                         	name: "segmentModifier",
                         	features: this.segmentsFeatures

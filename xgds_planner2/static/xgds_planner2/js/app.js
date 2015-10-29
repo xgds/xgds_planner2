@@ -130,8 +130,6 @@ var app = (function($, _, Backbone) {
         };
 
         this.action = function() {
-            //            console.log('\\\\\\\\\\Action called');
-            //console.log('Disable stack: ' + this._disableCount);
             if (this._inAction)
                 return;
             if (!this.enabled)
