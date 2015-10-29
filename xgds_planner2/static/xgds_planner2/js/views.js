@@ -273,10 +273,12 @@ app.views.SegmentSequenceHeaderView = Backbone.Marionette.ItemView.extend({
 
 app.views.StationPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-station-properties-header'
+    
 });
 
 app.views.SegmentPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-segment-properties-header'
+    
 });
 
 app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
@@ -293,9 +295,6 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
 });
 
 app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
-    events: {
-        'updatePlan': 'onRender'
-    },
     template: '#template-sequence-view',
     regions: {
         //Column Headings
@@ -324,6 +323,18 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
         this.listenTo(app.vent, 'showPresets', this.showPresets, this);
         this.listenTo(app.vent, 'showNothing', this.showNothing, this);
         this.listenTo(app.vent, 'clearSelectedStation', this.clearColumns, this);
+        this.listenTo(app.vent, 'updatePlan', this.rerender, this);
+    },
+    
+    onBeforeDestroy: function(data) {
+        this.stopListening(app.vent, 'showItem:station');
+        this.stopListening(app.vent, 'showItem:segment');
+        this.stopListening(app.vent, 'showItem:command');
+        this.stopListening(app.vent, 'showMeta');
+        this.stopListening(app.vent, 'showPresets');
+        this.stopListening(app.vent, 'showNothing');
+        this.stopListening(app.vent, 'clearSelectedStation');
+	this.stopListening(app.vent, 'updatePlan');
     },
 
     onClose: function() {
@@ -335,24 +346,30 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
         this.col2.reset();
         this.col3.reset();
     },
+    
+    rerender: function() {
+        this.colhead1.reset();
+        this.col1.reset();
+        this.colhead1.show(new app.views.PlanSequenceHeaderView());
+        this.col1.show(new app.views.StationSequenceCollectionView({
+            collection: app.currentPlan.get('sequence')
+        }));
+    },
 
     onRender: function() {
+        app.psv = this;
         try {
             this.colhead1.reset();
             this.col1.reset();
             this.clearColumns();
         } catch (err) {
         }
-        var headerView = new app.views.PlanSequenceHeaderView({
-        });
-        this.colhead1.show(headerView);
-        app.psv = this;
-        var sscView = new app.views.StationSequenceCollectionView({
+        this.colhead1.show(new app.views.PlanSequenceHeaderView());
+        this.col1.show(new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence')
-        });
-        this.col1.show(sscView);
+        }));
     },
-
+    
     showStation: function(itemModel) {
         // Clear columns
         try {
@@ -564,8 +581,6 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
         }
     },
     onExpand: function() {
-
-
     },
     serializeData: function() {
         var data = app.views.SequenceListItemView.prototype.serializeData.call(this, arguments);
@@ -617,6 +632,10 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                 var childId = app.State.stationSelected.cid;
                 var childModel = this.collection.get(childId);
                 if (_.isUndefined(childModel)) {
+                    // try to look it up by our id
+                    childModel = this.collection.findWhere({id:app.State.stationSelected.get('id')});
+                }
+                if (_.isUndefined(childModel)) {
                     // can't find by id, so the view is gone
                     app.State.stationSelected = undefined;
                     app.vent.trigger('showNothing');
@@ -642,6 +661,10 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
                 // try to find the child view by ID since models change on save
                 var childId = app.State.segmentSelected.cid;
                 var childModel = this.collection.get(childId);
+                if (_.isUndefined(childModel)) {
+                    // try to look it up by our id
+                    childModel = this.collection.findWhere({id:app.State.segmentSelected.get('id')});
+                }
                 if (_.isUndefined(childModel)) {
                     // can't find by id, so the view is gone
                     app.State.segmentSelected = undefined;
@@ -689,10 +712,10 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
             'click input.select': this.toggleSelect
         });
     },
-    initialize: function(options) {
-        this.options = options || {};
-        app.views.SequenceListItemView.prototype.initialize.call(this);
-    },
+//    initialize: function(options) {
+//        this.options = options || {};
+//        app.views.SequenceListItemView.prototype.initialize.call(this);
+//    },
     onRender: function() {
         this.$el.css('background-color', app.request('getColor', this.model.get('type')));
     },

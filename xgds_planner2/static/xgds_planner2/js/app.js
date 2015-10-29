@@ -290,10 +290,11 @@ var app = (function($, _, Backbone) {
                     app.currentPlan.set(planJSON);
                 }
                 app.simulatePlan();
-                if (!_.isUndefined(app.map.planView))
+                if (!_.isUndefined(app.map.planView)){
                     app.map.planView.render();
-                app.vent.trigger('newPlan');
-                app.tabs.currentView.trigger('updatePlan');
+                }
+                    
+                app.vent.trigger('updatePlan');
             };
 
             this.planJson = JSON.parse($('#plan_json').html());
