@@ -286,8 +286,6 @@ var app = (function($, _, Backbone) {
             }, this);
 
             this.updatePlan = function(planJSON) {
-                //console.log('Updating plan');
-                //console.log(planJSON);
                 if (!_.isUndefined(planJSON)) {
                     app.currentPlan.set(planJSON);
                 }
@@ -295,7 +293,7 @@ var app = (function($, _, Backbone) {
                 if (!_.isUndefined(app.map.planView))
                     app.map.planView.render();
                 app.vent.trigger('newPlan');
-                app.tabs.currentView.render();
+                app.tabs.currentView.trigger('updatePlan');
             };
 
             this.planJson = JSON.parse($('#plan_json').html());

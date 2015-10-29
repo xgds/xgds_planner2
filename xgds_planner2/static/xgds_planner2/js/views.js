@@ -293,6 +293,9 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
 });
 
 app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
+    events: {
+        'updatePlan': 'onRender'
+    },
     template: '#template-sequence-view',
     regions: {
         //Column Headings
@@ -1079,6 +1082,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
             });
         }
         Backbone.Form.prototype.initialize.call(this, this.options);
+        
     },
 
     commitCheck: function() {
