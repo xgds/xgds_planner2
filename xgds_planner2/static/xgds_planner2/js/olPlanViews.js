@@ -209,11 +209,9 @@ $(function() {
                 if (this.currentMode) {
                     this.resetMode();
                 }
-
         	
                 this.drawStations();
                 this.drawSegments();
-                
                 
                 if (!redraw){
                     // scale map to focus on plan
@@ -442,18 +440,6 @@ $(function() {
                         	name: "stationRepositioner",
                         	features: this.stationsFeatures
                         });
-                	app.vent.on('deactivateStationRepositioner', function() {
-                	    this.map.removeInteraction(this.stationRepositioner);
-                	    this.map.removeInteraction(this.stationDeleter);
-                	    this.stationRepositioner.setActive(false);
-                	    this.stationDeleter.setActive(false);
-                	}, this);
-                	app.vent.on('activateStationRepositioner', function() {
-                	    this.stationRepositioner.setActive(true);
-                	    this.stationDeleter.setActive(true);
-                	    this.map.addInteraction(this.stationRepositioner);
-                	    this.map.removeInteraction(this.stationDeleter);
-                	}, this);
                         this.segmentModifier = new ol.interaction.Modify({
                         	name: "segmentModifier",
                         	features: this.segmentsFeatures
@@ -497,6 +483,18 @@ $(function() {
                                 }
                             }
                         }, this);
+                        app.vent.on('deactivateStationRepositioner', function() {
+                	    this.map.removeInteraction(this.stationRepositioner);
+                	    this.map.removeInteraction(this.stationDeleter);
+                	    this.stationRepositioner.setActive(false);
+                	    this.stationDeleter.setActive(false);
+                	}, this);
+                	app.vent.on('activateStationRepositioner', function() {
+                	    this.stationRepositioner.setActive(true);
+                	    this.stationDeleter.setActive(true);
+                	    this.map.addInteraction(this.stationRepositioner);
+                	    this.map.removeInteraction(this.stationDeleter);
+                	}, this);
                     } 
                     this.stationRepositioner.setActive(true);
                     this.segmentModifier.setActive(true);
@@ -534,9 +532,6 @@ $(function() {
             this.addChangeListener(this.fromStation);
             this.addChangeListener(this.toStation);
             this.splittingGeometry = false;
-//            this.model.on('change:geometry', function() {
-//                this.updateGeometry(this.fromStation, this.toStation);
-//            }, this);
             this.model.on('alter:stations', function() {
                 this.updateStations();
                 this.updateGeometry();
@@ -589,7 +584,6 @@ $(function() {
         
         removeChangeListener: function(station){
             this.stopListening(station, 'change:geometry');
-
         },
         addChangeListener: function(station) {
             this.listenTo(station, 'change:geometry', this.updateGeometry);
@@ -769,24 +763,24 @@ $(function() {
                 this.feature.set('styles', this.getStyles());
                 this.feature.set('selectedStyles', this.getSelectedStyles());
                 this.feature.setStyle([this.iconStyle, this.textStyle]);
-//                this.feature.on('remove', function(event) {
-//                    console.log(this);
-//                }, this);
-                this.geometry.on('change', function(event) {
-                	 var geometry = event.target;
-                	 var coords = inverse(geometry.getCoordinates());
-                	 var oldCoords = this.model.getPoint();
-                	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
-                		 this.model.setPoint({
-                             lng: coords[0],
-                             lat: coords[1]
-                         });
-                	 }
-                     
-                }, this);
+                
+//                this.listenTo(this.model, 'geometryChanged', this.geometryChanged, this);
+                this.geometry.on('change', this.geometryChanged, this);
 
                 this.model['feature'] = this.feature;
                 this.stationsVector.addFeature(this.feature);
+            },
+            
+            geometryChanged: function(event) {
+            	 var coords = inverse(this.geometry.getCoordinates());
+            	 var oldCoords = this.model.getPoint();
+//            	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
+            		 this.model.setPoint({
+                         lng: coords[0],
+                         lat: coords[1]
+                     });
+//            	 }
+                 
             },
             
             redraw: function() {
