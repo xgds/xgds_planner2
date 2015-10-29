@@ -644,6 +644,7 @@ $(function() {
             var geometry = this.feature.getGeometry(); //event.target;
             var newCoordinates = geometry.getCoordinates();
             if (newCoordinates.length > 2) {
+        	app.Actions.disable();
         	app.vent.trigger('deactivateStationRepositioner');
                 
                 this.splittingGeometry = true;
@@ -675,6 +676,9 @@ $(function() {
                 app.vent.trigger('activateStationRepositioner');
                 this.splittingGeometry = false;
                 this.listenTo(this.model, 'splitSegment', this.handleSplitSegment, this);
+                app.Actions.enable();
+                app.Actions.action();
+                
             }
             
         },
