@@ -1257,6 +1257,7 @@ app.views.PlanToolsView = Backbone.View.extend({
         app.vent.trigger('clearAppendTool');
         app.updatePlan(undefined);
         app.Actions.enable();
+        app.Actions.action();
         app.vent.trigger('change:plan');
     },
     reverseStations: function() {

@@ -193,19 +193,33 @@ $(function() {
 
                 app.State.planLoaded = true;
             },
-            
+            clear: function() {
+        	
+            },
             render: function() {
+        	var redraw = false;
+        	if (this.stationsFeatures.getLength() > 0){
+        	    redraw = true;
+        	    this.segmentsVector.clear();
+        	    this.segmentsFeatures.clear();
+        	    this.stationsVector.clear();
+        	    this.stationsFeatures.clear();
+        	}
+        	
+                if (this.currentMode) {
+                    this.resetMode();
+                }
+
+        	
                 this.drawStations();
                 this.drawSegments();
                 
                 
-                if (this.currentMode) {
-                    this.resetMode();
-                }
-                
-                // scale map to focus on plan
-                if (!_.isEmpty(this.segmentsVector.getFeatures())){
-                    this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
+                if (!redraw){
+                    // scale map to focus on plan
+                    if (!_.isEmpty(this.segmentsVector.getFeatures())){
+                	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
+                    }
                 }
 
             },
@@ -293,8 +307,7 @@ $(function() {
                     app.State.disableAddStation = false; // reset state possibly set in other mode
                     if (_.isUndefined(this.stationAdder)){
                         this.stationAdder = new ol.interaction.Draw({
-//                            features: this.olFeatures,
-                            features: this.stationsVector.getFeatures(),
+                            features: new ol.Collection(),
                             type: "Point",
                             name: "drawInteraction"
                         }, this);
@@ -440,7 +453,6 @@ $(function() {
                 	    this.stationDeleter.setActive(true);
                 	    this.map.addInteraction(this.stationRepositioner);
                 	    this.map.removeInteraction(this.stationDeleter);
-                	    
                 	}, this);
                         this.segmentModifier = new ol.interaction.Modify({
                         	name: "segmentModifier",
@@ -824,7 +836,6 @@ $(function() {
                     });
                 }
                 app.Actions.enable();
-                app.Actions.action();
             },
 
             getHeading: function() {
