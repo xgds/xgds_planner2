@@ -431,6 +431,34 @@ $(function() {
                 }
             },
             
+            deleteStation: function(e) {
+        	var feature = e.element;
+                var model = feature.get('model');
+                if (!_.isUndefined(model)){
+                	if (model.get('type') == 'Station'){
+                	    // delete the station
+                	    var killedSegment = this.collection.removeStation(model);
+                	}
+                }
+            },
+            
+            activateStationRepositioner: function() {
+        	this.stationRepositioner.setActive(true);
+        	this.stationDeleter.setActive(true);
+        	this.map.addInteraction(this.stationRepositioner);
+        	this.map.addInteraction(this.stationDeleter);
+        	this.stationDeleter.getFeatures().clear();
+        	this.stationDeleter.getFeatures().on('add', this.deleteStation, this);
+            },
+            
+            deactivateStationRepositioner: function() {
+        	this.map.removeInteraction(this.stationRepositioner);
+        	this.map.removeInteraction(this.stationDeleter);
+        	this.stationRepositioner.setActive(false);
+        	this.stationDeleter.setActive(false);
+        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
+            },
+            
             repositionMode: {
                 enter: function() {
                     app.State.popupsEnabled = false;
@@ -465,23 +493,17 @@ $(function() {
                         this.stationDeleter = new ol.interaction.Select({
                         	name: "stationDeleter",
                         	layers: [this.stationsLayer],
-                        	addCondition: function(event) {
+//                        	addCondition: function(event) {
+//                        	    return ol.events.condition.shiftKeyOnly(event)
+//                        	    && ol.events.condition.singleClick(event);
+//                        	},
+                        	condition: function(event){
                         	    return ol.events.condition.shiftKeyOnly(event)
                         	    && ol.events.condition.singleClick(event);
                         	}
                             });
                         
-                        this.stationDeleter.getFeatures().on('add', function(e) {
-                            var feature = e.element;
-                            var model = feature.get('model');
-                            if (!_.isUndefined(model)){
-                            	if (model.get('type') == 'Station'){
-                            	    // delete the station
-                            	    var killedSegment = this.collection.removeStation(model);
-                            	}
-                            }
-                            
-                        }, this);
+                        
                         this.listenTo(app.vent, 'station:remove', function(killedStation) {
                             if (!_.isUndefined(killedStation)){
                                 var feature = killedStation.feature;
@@ -490,25 +512,13 @@ $(function() {
                                 }
                             }
                         }, this);
-                        app.vent.on('deactivateStationRepositioner', function() {
-                	    this.map.removeInteraction(this.stationRepositioner);
-                	    this.map.removeInteraction(this.stationDeleter);
-                	    this.stationRepositioner.setActive(false);
-                	    this.stationDeleter.setActive(false);
-                	}, this);
-                	app.vent.on('activateStationRepositioner', function() {
-                	    this.stationRepositioner.setActive(true);
-                	    this.stationDeleter.setActive(true);
-                	    this.map.addInteraction(this.stationRepositioner);
-                	    this.map.removeInteraction(this.stationDeleter);
-                	}, this);
+                        app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);
+                	app.vent.on('activateStationRepositioner', this.activateStationRepositioner, this);
                     } 
-                    this.stationRepositioner.setActive(true);
+                    
                     this.segmentModifier.setActive(true);
-                    this.stationDeleter.getFeatures().clear();
                     this.map.addInteraction(this.segmentModifier);
-                    this.map.addInteraction(this.stationRepositioner);
-                    this.map.addInteraction(this.stationDeleter);
+                    this.activateStationRepositioner();
                 }, // end enter
                 exit: function() {
                 	  this.stationRepositioner.setActive(false);
@@ -644,14 +654,12 @@ $(function() {
             var geometry = this.feature.getGeometry(); //event.target;
             var newCoordinates = geometry.getCoordinates();
             if (newCoordinates.length > 2) {
-        	app.Actions.disable();
-        	app.vent.trigger('deactivateStationRepositioner');
-                
-                this.splittingGeometry = true;
-
-                // add the new station!
         	this.segmentsVector.removeFeature(this.feature);
                 
+        	// disable everything
+        	app.Actions.disable();
+        	app.vent.trigger('deactivateStationRepositioner');
+                this.splittingGeometry = true;
                 this.stopListening(this.model, 'splitSegment');
         	
                 var oldSegment = this.model; 
@@ -662,7 +670,6 @@ $(function() {
                 
                 var segmentBefore = this.planLayerView.collection.insertStation(oldSegment, newStation);
                 var stationPointView = this.planLayerView.drawStation(newStation);
-                
                 this.planLayerView.stationViews.push(stationPointView);
                 
                 if (!_.isUndefined(segmentBefore)){
