@@ -29,7 +29,7 @@ table.planIndex td.exportFormat a {
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
 <input type="submit" class="mybutton right" id="deleteButton" value="Delete Selected" ></input>
 <input class="mybutton right" type="button" id="toggle_button" value="Toggle Lock" ></input>
-{% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <input class="mybutton right" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 {% endif %}
 <a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
@@ -45,7 +45,7 @@ table.planIndex td.exportFormat a {
     <th>Dist</th>
     <th>#Stn</th>
     <th>#Commands</th>
-    {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
     <th>Scheduled</th>
     {% endif %}
     <th>Export</th>
@@ -63,7 +63,7 @@ table.planIndex td.exportFormat a {
     <td class="right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
-    {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
     <td style="width:150px;">{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}}<br/>{% endfor %}</td>
     {% endif %}
     <td class="exportFormat">
@@ -79,7 +79,7 @@ table.planIndex td.exportFormat a {
 </table>
 </form>
 
-{% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <div id="scheduleDialog" style="display:none">
 	<form name='ScheduleForm' id="scheduleForm" action="{% url 'planner2_schedulePlans' %}" method="post">
 		<input type="hidden" name="planIds" id="id_planIds"></input>
@@ -188,7 +188,7 @@ $("#deleteButton").click(function() {
 	};
 
 	 $(document).ready( function () {
-	     {% if XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+	     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 	     $( "#id_schedule_date" ).datetimepicker({'controlType': 'select',
 	            'oneLine': true,
 	            'showTimezone': false,

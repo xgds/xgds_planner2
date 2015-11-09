@@ -94,6 +94,8 @@ $(document).ready( function () {
     defaultOptions['oLanguage'] = {
         "sLengthMenu": "Display _MENU_ flights & plans"
       };
+    defaultOptions['ordering'] = false;
+    defaultOptions['bSort'] = false;
 	var dataTable = $('#dataTable').dataTable(defaultOptions);
     $(window).resize(function(){ 
         $('div.dataTables_scrollBody').css('height',calcDataTableHeight());

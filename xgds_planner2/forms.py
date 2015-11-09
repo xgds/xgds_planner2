@@ -73,7 +73,7 @@ class GroupFlightForm(forms.Form):
     vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial=initial)
 
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
-
+    
     def initialize(self, timeinfo):
         self.year = timeinfo['year']
         self.month = timeinfo['month']
