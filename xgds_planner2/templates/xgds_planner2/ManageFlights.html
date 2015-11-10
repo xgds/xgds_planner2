@@ -3,7 +3,7 @@
 {% load nav %}
 {% load tz_convert %}
 
-{% block siteSection %} Manage Flight {% endblock %}
+{% block siteSection %} Manage {{ settings.XDGS_PLANNER2_FLIGHT_MONIKER }} {% endblock %}
 
 {% block nav %}
     {% nav "planner2.manageFlight" %}
@@ -28,7 +28,7 @@
 	<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
 	<input type="checkbox" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} style="margin-bottom:3px;"></input><label for="id_today">Today Only</label>
 	</form>
-	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}" style="float:right;margin-bottom:3px;">Create Flights</a>
+	<a class="mybutton" href="{% url 'planner2_addGroupFlight' %}" style="float:right;margin-bottom:3px;">Create {{ settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s</a>
 	<a class="mybutton" href="{% url 'planner2_manageFlightHelp' %}" style="float:right;margin-bottom:3px;" target="help">Help</a>
 	<br/>
 	
@@ -44,7 +44,7 @@
 	</thead>
 	{% for flight in flights %}
 	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
-		<td >Flight: {{ flight.name }}</td>
+		<td >{{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}: {{ flight.name }}</td>
 		<td></td>
 		<td>{% if flight.start_time %} {{flight.start_time|utc_to_django|date:"Y-m-d H:i"}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
 		<td>{% if flight.end_time %} {{flight.end_time|utc_to_django|date:"Y-m-d H:i"}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
@@ -92,7 +92,7 @@ $('#id_today').change(function(e){
 
 $(document).ready( function () {
     defaultOptions['oLanguage'] = {
-        "sLengthMenu": "Display _MENU_ flights & plans"
+        "sLengthMenu": "Display _MENU_ {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s & Plans"
       };
     defaultOptions['ordering'] = false;
     defaultOptions['bSort'] = false;

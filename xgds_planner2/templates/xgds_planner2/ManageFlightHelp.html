@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load url from future %}
 {% load nav %}
-{% block siteSection %}Add Group Flight{% endblock %}
+{% block siteSection %}Manage {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} Help{% endblock %}
 
 	{% block headExtras %}
 	<link rel="stylesheet" type="text/css" href="{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css" ></link>
@@ -21,7 +21,7 @@
 
 <h3>Manage Schedule Help</h3>
 <p>
-A "Flight" is the execution of one or more plans at a given time on a given vehicle.  For example, you may have a series of related plans that you intend to execute in a sequence on a certain day.
+A "{{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}" is the execution of one or more plans at a given time on a given vehicle.  For example, you may have a series of related plans that you intend to execute in a sequence on a certain day.
 </p>
 <p>
 <h2>Schedule Plans:</h2>
@@ -35,42 +35,42 @@ A "Flight" is the execution of one or more plans at a given time on a given vehi
 <li>You will notice that there is now a time in the Scheduled column on the list plans page.</li>
 <li>You can schedule the same plan to be run at different times.</li>
 </ol>
-Notes: behind the scenes, this created a flight for you if there was not already a flight for that day.
+Notes: behind the scenes, this created a {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} for you if there was not already a {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} for that day.
 </p> 
 <p>
 <h2>Manage Schedule:</h2>
-In order to start up the video infrastructure on xGDS, you need to start (and stop) flights.  In order to have accurate times in Playbook you need to start (and stop) plans.
+In order to start up the video infrastructure on xGDS, you need to start (and stop) {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s.  In order to have accurate times in Playbook you need to start (and stop) plans.
 <ol>
 <li>Go to the <a href="{% url 'planner2_manage' %}" target="_blank">Manage Schedule</a> page.</li>
-<li>You will see a list of the flights, indented under the flights are the plans scheduled for those flights.</li>
-<li>If you are just managing flights for today, it's nice to check the "Today Only" box on the upper left.</li>
-<li>To start a flight, click the start link next to the flight you want to start.  Active flights will be listed in green.  You should do this when the rover is up and running and there is a track in xGDS.</li>
+<li>You will see a list of the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s, indented under the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s are the plans scheduled for those {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s.</li>
+<li>If you are just managing {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s for today, it's nice to check the "Today Only" box on the upper left.</li>
+<li>To start a {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}, click the start link next to the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} you want to start.  Active {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s will be listed in green.  You should do this when the rover is up and running and there is a track in xGDS.</li>
 <li>To start a plan, click the start link next to the plan you want to start.  Active plans will be listed in green.</li>
 <li>When the plan is done (aborted or completed) click the stop button next to the plan.  The plan will no longer be green and it will show the stop time.</li>
-<li>When the flight is done, click the stop button next to the flight.  The flight will no longer be green and it will show the stop time.</li>
-<li>If you accidentally added plans you don't intend to run to the flight, you can delete them.</li>
+<li>When the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} is done, click the stop button next to the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}.  The {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} will no longer be green and it will show the stop time.</li>
+<li>If you accidentally added plans you don't intend to run to the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}, you can delete them.</li>
 </ol>
 </p>
 <p>
-<h2>Multiple flights on one day:</h2>
-There may be a time when we have multiple executions on one day, i.e. the rover powers down midday, you move to a different site, or take a lunch break.  There is no limit to how many flights you can set up for one day.  In this case, you will have to manually create all subsequent flights for a day.
-Our naming convention for flights is DATELETTER_VEHICLE, for example 20140912A_KRex2.
-<h2>To create a flight manually:</h2>
+<h2>Multiple {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s on one day:</h2>
+There may be a time when we have multiple executions on one day, i.e. the rover powers down midday, you move to a different site, or take a lunch break.  There is no limit to how many {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s you can set up for one day.  In this case, you will have to manually create all subsequent {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s for a day.
+Our naming convention for {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s is DATELETTER_VEHICLE, for example 20140912A_KRex2.
+<h2>To create a {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} manually:</h2>
 <ol>
 <li>Go to the Manage Schedule page https://mvp.xgds.org/xgds_planner2/manage/</li>
-<li>Click the blue Create Flights button on the upper right.</li>
-<li>Choose the date of the flight you want to create.</li>
-<li>Choose the prefix letter of the flight; most likely it will be B or higher.  Please use uppercase.</li>
+<li>Click the blue Create {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s button on the upper right.</li>
+<li>Choose the date of the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} you want to create.</li>
+<li>Choose the prefix letter of the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}; most likely it will be B or higher.  Please use uppercase.</li>
 <li>Make sure the vehicle(s) you want are checked.</li>
 <li>Click Create.</li>
 </ol>
 </p>
 <p>
-To schedule plans with one of these hand-created flights, see the steps for Schedule Plans above.
+To schedule plans with one of these hand-created {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}s, see the steps for Schedule Plans above.
 <ol>  
-<li>When you are filling out the dialog, choose the flight from the drop down (i.e. 20140912B_KRex2).</li>  
+<li>When you are filling out the dialog, choose the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} from the drop down (i.e. 20140912B_KRex2).</li>  
 <li>You also must enter the date and time for the plan to execute.</li>
 <li>Press Schedule.</li>
-<li>On the Manage Schedule page you will see the plan scheduled under the flight you selected.</li>
+<li>On the Manage Schedule page you will see the plan scheduled under the {{settings.XDGS_PLANNER2_FLIGHT_MONIKER}} you selected.</li>
 </ol>
 {% endblock contents %}

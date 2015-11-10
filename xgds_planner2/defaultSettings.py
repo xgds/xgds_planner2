@@ -154,6 +154,7 @@ XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
 XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL = "xgds_planner2.AbstractFlight"
 XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
+XDGS_PLANNER2_FLIGHT_MONIKER = "Flight"
 
 # OVERRIDE this in your sitesettings to have a custom plan create, note that since it's in site settings you can't have a reverse lookup.
 XGDS_PLANNER2_CREATE_URL = "/xgds_planner2/plan/create"
