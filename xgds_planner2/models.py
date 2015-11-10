@@ -136,7 +136,6 @@ class AbstractActiveFlight(models.Model):
 
 
 class ActiveFlight(AbstractActiveFlight):
-    """ name collision with PLRP, sorry"""
     pass
 
 
