@@ -82,7 +82,7 @@ def plan_tests(request, plan_id, editable=True):
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
-        plan_json.serverId = plan.id
+        plan_json.serverId = plan.pk
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
 
@@ -143,7 +143,7 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.jsonPlan.creator = request.user.username
         plan.creationDate = datetime.datetime.utcnow()
         plan.uuid = None
-        plan.id = None
+        plan.pk = None
         data = json.loads(request.body)
         for k, v in data.iteritems():
             if k == "_simInfo":
@@ -161,7 +161,7 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.readOnly = False
         plan.save()
 
-        newid = plan.id
+        newid = plan.pk
         plan.jsonPlan["serverId"] = newid
         plan.jsonPlan["planNumber"] = newid
         plan.jsonPlan.url = plan.get_absolute_url()
@@ -199,7 +199,7 @@ def plan_detail_doc(request, plan_id=None):
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
-        plan_json.serverId = plan.id
+        plan_json.serverId = plan.pk
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
 
@@ -220,7 +220,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
     plan = Plan.objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
-        plan_json.serverId = plan.id
+        plan_json.serverId = plan.pk
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
 
@@ -284,7 +284,7 @@ def plan_index_json():
     plans_json = []
     for plan in plan_objs:
         plans_json.append({
-            'id': plan.id,
+            'id': plan.pk,
             'name': plan.name,
             'url': plan.get_absolute_url()
         })
@@ -383,7 +383,7 @@ def planCreate(request):
             dbPlan.save()
 
             # redirect to plan editor on newly created plan
-            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.id]))
+            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
     return render_to_response('xgds_planner2/planCreate.html',
@@ -510,7 +510,7 @@ def startFlight(request, uuid):
         errorString = "Flight not found"
 
     if flight:
-        foundFlight = models.ActiveFlight.objects.filter(flight__id=flight.id)
+        foundFlight = models.ActiveFlight.objects.filter(flight__pk=flight.pk)
         if not foundFlight:
             newlyActive = models.ActiveFlight(flight=flight)
             newlyActive.save()
@@ -524,7 +524,7 @@ def stopFlight(request, uuid):
     errorString = ""
     FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     try:
-        flight = FlightModel.objects.get(uuid=uuid)
+        flight = FlightModel.objects.get(pk=uuid)
         if not flight.start_time:
             errorString = "Flight has not been started"
         else:
@@ -538,7 +538,7 @@ def stopFlight(request, uuid):
                     pe.end_time = flight.end_time
                     pe.save()
             try:
-                active = models.ActiveFlight.objects.get(flight__id=flight.id)
+                active = models.ActiveFlight.objects.get(flight__pk=flight.pk)
                 active.delete()
             except ObjectDoesNotExist:
                 errorString = 'Flight IS NOT ACTIVE'
@@ -616,7 +616,7 @@ def schedulePlans(request):
 def startPlan(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(id=pe_id)
+        pe = models.PlanExecution.objects.get(pk=pe_id)
         pe.start_time = datetime.datetime.utcnow()
         pe.end_time = None
         pe.save()
@@ -629,7 +629,7 @@ def startPlan(request, pe_id):
 def stopPlan(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(id=pe_id)
+        pe = models.PlanExecution.objects.get(pk=pe_id)
         if pe.start_time:
             pe.end_time = datetime.datetime.utcnow()
             pe.save()
@@ -644,7 +644,7 @@ def stopPlan(request, pe_id):
 def deletePlanExecution(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(id=pe_id)
+        pe = models.PlanExecution.objects.get(pk=pe_id)
         pe.delete()
     except:
         errorString = "Plan Execution not found"

@@ -83,7 +83,7 @@ class PlanExecution(models.Model):
         ordering = ['planned_start_time']
 
     def __unicode__(self):
-        return self.id
+        return self.pk
 
 
 class AbstractFlight(models.Model):
@@ -96,10 +96,10 @@ class AbstractFlight(models.Model):
     notes = models.TextField(blank=True)
     group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
 
-    def startFlightExtras(self):
+    def startFlightExtras(self, request):
         pass
 
-    def stopFlightExtras(self):
+    def stopFlightExtras(self, request):
         pass
 
     def __unicode__(self):
@@ -129,7 +129,7 @@ class AbstractActiveFlight(models.Model):
 
     def __unicode__(self):
         return (u'ActiveFlight(%s, %s)' %
-                (self.id, repr(self.flight.name)))
+                (self.pk, repr(self.flight.name)))
 
     class Meta:
         abstract = True
@@ -190,14 +190,14 @@ class AbstractPlan(models.Model):
         abstract = True
 
     def get_absolute_url(self):
-        return reverse('planner2_planREST', args=[self.id, self.name])
+        return reverse('planner2_planREST', args=[self.pk, self.name])
 
     def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
         if overWriteUuid:
             if not self.uuid:
                 self.uuid = makeUuid()
                 self.jsonPlan.uuid = self.uuid
-            self.jsonPlan.serverId = self.id
+            self.jsonPlan.serverId = self.pk
         if overWriteDateModified:
             self.jsonPlan.dateModified = (datetime.datetime
                                           .utcnow()
@@ -208,7 +208,7 @@ class AbstractPlan(models.Model):
         self.name = self.jsonPlan.name
         self.jsonPlan.url = self.get_absolute_url()
 #         print 'name is now ' + self.name
-        self.jsonPlan.serverId = self.id
+        self.jsonPlan.serverId = self.pk
         self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
                              .replace(tzinfo=None))
         plannerUsers = User.objects.filter(username=self.jsonPlan.creator)
@@ -323,7 +323,7 @@ class AbstractPlan(models.Model):
                   "tooltip": self.summary,
                   "data": {"type": "MapLink",  # we cheat so this will be 'live'
                            "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
-                           "url": reverse('planner2_edit', kwargs={'plan_id': str(self.id)})
+                           "url": reverse('planner2_edit', kwargs={'plan_id': str(self.pk)})
                            }
                   }
         return result
