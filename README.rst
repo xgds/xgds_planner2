@@ -1,13 +1,7 @@
-How to view the XPJSON spec::
-
-  pip install docutils
-  cd apps/xgds_planner2/xpjsonSpec
-  make
-  cd -
-  open build/static/xgds_planner2/xpjson.html
-
-http://backbonejs.org/
-http://marionettejs.com/
+This is a map based traverse plan editing system, currently built on OpenLayers.
+You can export plans in many formats (extensible).
+The plan format is described here:
+https://github.com/xgds/xgds_planner2/blob/master/xgds_planner2/xpjsonSpec/xpjson.rst
 
 .. o __BEGIN_LICENSE__
 .. o  Copyright (c) 2015, United States Government, as represented by the
