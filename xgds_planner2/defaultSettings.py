@@ -255,3 +255,5 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'moment',
     'moment-duration-format',
 )
+
+XGDS_PLANNER2_SITE_MONIKER = 'Site'

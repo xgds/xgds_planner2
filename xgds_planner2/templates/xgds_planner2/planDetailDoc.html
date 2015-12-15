@@ -44,7 +44,7 @@ textarea {
 <div class="section-title">Plan Details</div>
 <div class="entry"><span class="label">Name:</span><span class="data">{{ plan_json.name }}</span></div>
 <div class="entry"><span class="label">Creator:</span><span class="data">{{ plan_json.creator }}</span></div>
-<div class="entry"><span class="label">Site:</span><span class="data">{{ plan_json.site.name }}</span></div>
+<div class="entry"><span class="label">{{settings.XGDS_PLANNER2_SITE_MONIKER}}:</span><span class="data">{{ plan_json.site.name }}</span></div>
 <div class="entry"><span class="label">Notes:</span><span class="data"><textarea>{{ plan_json.notes|default:"" }}</textarea></span></div>
 {% for param in plan_schema.planParams %}
 <div class="entry"><span class="label">{% if param.name %}{{ param.name }}{% else %}param.id{% endif %}:</span><span>{% if param.widget %}<{{ param.widget }}>{% nest "{{ param.id }}" in "{{ plan_json.item }}" at item %}</{{ param.widget }}>{% else %}{% endif %}</span></div>
