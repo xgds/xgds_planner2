@@ -49,6 +49,10 @@ $(function() {
                 }
             },
             
+            buildStyles: function() {
+            	olStyles.buildPlannerStyles();
+            },
+            
             updateBbox: function() {
                 var sequence = app.currentPlan.get('sequence');
                 if (_.isUndefined(sequence) || sequence.length == 0){
@@ -66,72 +70,6 @@ $(function() {
                 }
             },
             
-            buildStyles: function() {
-                app.views.OLMapView.prototype.buildStyles.call(this);
-                if (_.isUndefined(app.styles)){
-                    app.styles = new Object();
-                }
-                app.styles['segment'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        color: 'yellow',
-                        width: app.options.planLineWidthPixels
-                      })
-                    });
-                app.styles['selectedSegment'] = new ol.style.Style({
-                    stroke: new ol.style.Stroke({
-                        color: 'cyan',
-                        width: app.options.planLineWidthPixels + 2
-                      })
-                    });
-                app.styles['placemarkImage'] = new ol.style.Icon({
-                    src: app.options.placemarkCircleUrl,
-                    scale: .8,
-                    rotateWithView: false,
-                    opacity: 1.0
-                    });
-                app.styles['station'] = new ol.style.Style({
-                    image: app.styles['placemarkImage']
-                    });
-                app.styles['selectedPlacemarkImage'] = new ol.style.Icon({
-                    src: app.options.placemarkCircleHighlightedUrl,
-                    scale: 1.2
-                    });
-                app.styles['selectedStation'] = new ol.style.Style({
-                    image: app.styles['selectedPlacemarkImage']
-                    });
-                app.styles['direction'] = {
-                        src: app.options.placemarkDirectionalUrl,
-                        scale: 0.85,
-                        rotation: 0.0,
-                        rotateWithView: true
-                        };
-                app.styles['selectedDirection'] = {
-                        src: app.options.placemarkSelectedDirectionalUrl,
-                        scale: 1.2,
-                        rotation: 0.0,
-                        rotateWithView: true
-                        };
-                
-                app.styles['stationText'] = {
-                        font: '16px Calibri,sans-serif,bold',
-                        fill: new ol.style.Fill({
-                            color: 'yellow'
-                        }),
-                        stroke: new ol.style.Stroke({
-                            color: 'black',
-                            width: 2
-                        }),
-                        offsetY: -20
-                };
-                app.styles['segmentText'] = {
-                        font: '14px Calibri,sans-serif',
-                        stroke: new ol.style.Stroke({
-                            color: 'red',
-                            width: 1
-                        })
-                    };
-            },
-
             render: function() {
                 app.views.OLMapView.prototype.render.call(this);
                 this.drawPlan();
@@ -608,17 +546,17 @@ $(function() {
         getStyles: function() {
             if (DEBUG_SEGMENTS){
                 this.initTextStyle();
-                return [app.styles['segment'], this.textStyle]
+                return [olStyles.styles['segment'], this.textStyle]
             } else {
-                return [app.styles['segment']];
+                return [olStyles.styles['segment']];
             }
         },
         getSelectedStyles: function() {
             if (DEBUG_SEGMENTS){
                 this.initTextStyle();
-                return [app.styles['selectedSegment'], this.textStyle]
+                return [olStyles.styles['selectedSegment'], this.textStyle]
             } else {
-                return [app.styles['selectedSegment']];
+                return [olStyles.styles['selectedSegment']];
             }
         },
         render: function() {
@@ -715,7 +653,7 @@ $(function() {
          initTextStyle: function() {
              if (DEBUG_SEGMENTS){
                  var name = this.getLabel();
-                 var theText = new ol.style.Text(app.styles['segmentText']);
+                 var theText = new ol.style.Text(olStyles.styles['segmentText']);
                  theText.setText(name);
                  this.textStyle = new ol.style.Style({
                      text: theText 
@@ -866,15 +804,15 @@ $(function() {
             initIconStyle: function() {
                 if (this.model.get('isDirectional')) {
                     heading = this.getHeading();
-                    app.styles['direction']['rotation'] = heading;
-                    app.styles['selectedDirection']['rotation'] = heading;
-                    this.iconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['direction'])});
-                    this.selectedIconStyle = new ol.style.Style({image: new ol.style.Icon(app.styles['selectedDirection'])});
-                    app.styles['direction']['rotation'] = 0.0;
-                    app.styles['selectedDirection']['rotation'] = 0.0;
+                    olStyles.styles['direction']['rotation'] = heading;
+                    olStyles.styles['selectedDirection']['rotation'] = heading;
+                    this.iconStyle = new ol.style.Style({image: new ol.style.Icon(olStyles.styles['direction'])});
+                    this.selectedIconStyle = new ol.style.Style({image: new ol.style.Icon(olStyles.styles['selectedDirection'])});
+                    olStyles.styles['direction']['rotation'] = 0.0;
+                    olStyles.styles['selectedDirection']['rotation'] = 0.0;
                 } else {
-                    this.iconStyle = app.styles['station'];
-                    this.selectedIconStyle = app.styles['selectedStation'];
+                    this.iconStyle = olStyles.styles['station'];
+                    this.selectedIconStyle = olStyles.styles['selectedStation'];
                 }
             },
             
@@ -896,7 +834,7 @@ $(function() {
             
             initTextStyle: function() {
                 var name = this.getLabel();
-                var theText = new ol.style.Text(app.styles['stationText']);
+                var theText = new ol.style.Text(olStyles.styles['stationText']);
                 theText.setText(name);
                 this.textStyle = new ol.style.Style({
                     text: theText

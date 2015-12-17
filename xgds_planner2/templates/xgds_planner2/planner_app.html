@@ -63,7 +63,7 @@
   
 
 {% block scripts %}
-    {# javascript 'planner_app' #}
+    {# javascript 'compiled_planner_app' #}
     {{ block.super }}
     {% include "MapJS.html" %}
      <script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
@@ -74,16 +74,17 @@
     
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format-tamarmot/lib/string-format.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/lib/string-format.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}uuid4/lib/uuid4.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-fileDownload/src/Scripts/jquery.fileDownload.js'></script>
     
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/handlebars-helpers.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/geo.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/forms.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/models.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/views.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/handlebars-helpers.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/geo.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/forms.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerModels.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlannerStyles.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerViews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
   
       {% javascript 'simulator' %}
