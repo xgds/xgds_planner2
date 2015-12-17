@@ -311,7 +311,7 @@ $(function() {
                         }, this);
                         this.stationAdder.on('drawend', function(event) {
                             var geometry = event.feature.getGeometry();
-                            var coords = inverse(geometry.getCoordinates());
+                            var coords = inverseTransform(geometry.getCoordinates());
                             var station = app.models.stationFactory({
                                 coordinates: coords
                             });
@@ -665,7 +665,7 @@ $(function() {
                 var oldSegment = this.model; 
                 var oldFirstStation = this.fromStation;
                 var newStation = app.models.stationFactory({
-                    coordinates: inverse(newCoordinates[1])
+                    coordinates: inverseTransform(newCoordinates[1])
                 });
                 
                 var segmentBefore = this.planLayerView.collection.insertStation(oldSegment, newStation);
@@ -790,7 +790,7 @@ $(function() {
             },
             
             geometryChanged: function(event) {
-            	 var coords = inverse(this.geometry.getCoordinates());
+            	 var coords = inverseTransform(this.geometry.getCoordinates());
             	 var oldCoords = this.model.getPoint();
 //            	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
             		 this.model.setPoint({

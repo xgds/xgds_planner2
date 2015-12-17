@@ -542,7 +542,7 @@ var app = (function($, _, Backbone) {
                 return [lonLat.lon, lonLat.lat];
             } else if (alternateCrs.type == 'proj4') {
                 var proj = proj4(alternateCrs.properties.projection);
-                return proj.inverse(coords);
+                return proj.inverseTransform(coords);
             } else {
                 console.warn('Alternate CRS unknown');
                 return coords;
