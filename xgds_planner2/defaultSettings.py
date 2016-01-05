@@ -259,3 +259,18 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
 )
 
 XGDS_PLANNER2_SITE_MONIKER = 'Site'
+
+# If you have callbacks to be connected to the planner, register them as follows
+# XGDS_PLANNER2_CALLBACK = [(MODIFY,'my.planner.modify.callback', PYTHON),
+#                           (SAVE,'my.planner.save.callback', JAVASCRIPT)] 
+# they will be executed in order either when the plan is modified or when the plan is saved.
+# If it is a Python method, it will happen on the back end after modification or save.
+# If it is a javascript method, it will happen on the front end after modification or save.
+# If it is an 'exec' method, it will happen on the back end after modification or save.
+MODIFY = 'Modify'
+SAVE = 'Save'
+DELETE = 'Delete'
+JAVASCRIPT = 'JavaScript'
+PYTHON = 'Python'
+EXEC = 'Exec'
+XGDS_PLANNER2_CALLBACK = []

@@ -44,7 +44,7 @@ from django.contrib.staticfiles import finders
 from geocamUtil import timezone
 from geocamUtil.KmlUtil import wrapKmlDjango
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
-from geocamUtil.loader import getModelByName, LazyGetModelByName
+from geocamUtil.loader import getModelByName, LazyGetModelByName, getClassByName
 from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
 from xgds_planner2 import (models,
@@ -119,6 +119,13 @@ def aggregate_handlebars_templates(request):
     """
     return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)), content_type='application/json')
 
+def handleCallbacks(request, plan, mode):
+    for callback_mode, methodName, callback_type in settings.XGDS_PLANNER2_CALLBACK:
+        if callback_mode==mode and callback_type==settings.PYTHON:
+            foundMethod = getClassByName(methodName)
+            if foundMethod:
+                foundMethod(request, plan)
+
 
 @login_required
 def plan_REST(request, plan_id, jsonPlanId):
@@ -137,6 +144,7 @@ def plan_REST(request, plan_id, jsonPlanId):
 #         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
+        handleCallbacks(request, plan, settings.SAVE)
 
     elif request.method == "POST":
         # we are doing a save as
@@ -175,6 +183,8 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.uuid = planDict.uuid
         
         plan.save()
+        handleCallbacks(request, plan, settings.SAVE)
+
         response = {}
         response["msg"] = "New plan created"
         response["data"] = newid
@@ -381,6 +391,8 @@ def planCreate(request):
             dbPlan.name = planId
 
             dbPlan.save()
+            handleCallbacks(request, dbPlan, settings.SAVE)
+
 
             # redirect to plan editor on newly created plan
             return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
@@ -399,6 +411,8 @@ def plan_delete(request):
         if plan:
             plan.deleted = True
             plan.save()
+            handleCallbacks(request, plan, settings.DELETE)
+            
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
@@ -871,6 +885,7 @@ def updateJson(plan, newJsonObj):
         replaceElement(originalSequence, pathElement)
             
     plan.save()
+    # does not call the callbacks here; this is probably called DURING a callback
     
     
 def planImport(request):
