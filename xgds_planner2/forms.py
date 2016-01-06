@@ -25,7 +25,7 @@ class CreatePlanForm(forms.Form):
     planNumber = forms.IntegerField(label='Plan number')
     planVersion = forms.CharField(label='Plan version', max_length=1, initial='A')
     platform = forms.ChoiceField(choices=[], required=True)
-    site = forms.ChoiceField(choices=[], required=False, label=settings.XGDS_PLANNER2_SITE_MONIKER)
+    site = forms.ChoiceField(choices=[], required=False, label=settings.XGDS_MAP_SERVER_SITE_MONIKER)
 
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
