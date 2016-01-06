@@ -1323,9 +1323,35 @@ app.views.PlanLinksView = Backbone.View.extend({
     }
 });
 
+app.views.ScheduleView = Backbone.View.extend({
+    template: '#template-schedule',
+    initialize: function() {
+        var source = $(this.template).html();
+        if (_.isUndefined(source)) {
+            this.template = function() {
+                return '';
+            };
+        } else {
+            this.template = Handlebars.compile(source);
+        }
+    },
+    render: function() {
+        this.$el.html(this.template({
+            test: 'hi',
+            planExecution: app.options.planExecution,
+            planUuid: app.currentPlan.get('uuid')
+        }));
+    }
+});
+
 
 app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     template: '#template-tabnav',
+    serializeData: function() {
+        data = new Array();
+        data.schedule = app.options.schedule;
+        return data;
+    },
     regions: {
         tabTarget: '#tab-target',
         tabContent: '#tab-content'
@@ -1339,7 +1365,8 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
         'layers': app.views.FancyTreeView,
         'search': app.views.SearchView,
         'tools': app.views.PlanToolsView,
-        'links': app.views.PlanLinksView
+        'links': app.views.PlanLinksView,
+        'schedule': app.views.ScheduleView
     },
 
     initialize: function() {

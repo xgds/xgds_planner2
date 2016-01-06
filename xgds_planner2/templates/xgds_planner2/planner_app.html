@@ -135,7 +135,9 @@
         XGDS_PLANNER2_LINKS_LOADED_CALLBACK: {{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }},
         commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
         readOnly: {{ editable|yesno:"false,true" }},
-        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }}
+        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
+        schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
+        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %}
     };
 	$(function(){
     	app.start(appOptions);

@@ -67,7 +67,7 @@ class Vehicle(AbstractVehicle):
     pass
 
 
-class PlanExecution(models.Model):
+class AbstractPlanExecution(models.Model):
     """
     Relationship table for managing
     flight to plan's many to many relationship.
@@ -81,9 +81,14 @@ class PlanExecution(models.Model):
 
     class Meta:
         ordering = ['planned_start_time']
+        abstract=True
 
     def __unicode__(self):
-        return self.pk
+        return str(self.pk)
+
+
+class PlanExecution(AbstractPlanExecution):
+    pass
 
 
 class AbstractFlight(models.Model):

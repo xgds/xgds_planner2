@@ -1,0 +1,12 @@
+<div class="schedule" id="schedule">
+  <form name='ScheduleForm' id="scheduleForm" action="#" method="post">
+		<input type="hidden" name="planIds" id="id_planIds"></input>
+		<table>
+		<tr>
+			<td><label for="id_schedule_date">Start</label></td>
+			<td><input type="text" name="schedule_date" id="id_schedule_date" {{#if planExecution}}value="{{ planExecution.planned_start_time }}"{{/if}}</input></td>
+		</tr>
+		</table>
+		<input class="mybutton small" type="submit" value="Save">
+	</form>
+</div>

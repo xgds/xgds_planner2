@@ -24,7 +24,6 @@ import json
 import traceback
 from uuid import uuid4
 
-from geocamUtil.models.UuidField import makeUuid
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
@@ -41,12 +40,16 @@ from django.template import RequestContext
 from django.views.decorators.cache import never_cache
 from django.contrib.staticfiles import finders
 
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from geocamUtil import timezone
+from geocamUtil.models.UuidField import makeUuid
 from geocamUtil.KmlUtil import wrapKmlDjango
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
 from geocamUtil.loader import getModelByName, LazyGetModelByName, getClassByName
 from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
+from geocamUtil.modelJson import modelToJson
+
 from xgds_planner2 import (models,
                            choosePlanExporter,
                            forms,
@@ -235,6 +238,10 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
+    if plan.executions.count() > 0:
+        pe = modelToJson(plan.executions.all()[0], encoder=DatetimeJsonEncoder)
+    else:
+        pe = None
 
 #     print planSchema.getJsonSchema();
     return render_to_response(
@@ -248,6 +255,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
             'plan_json': json.dumps(plan_json),
             'plan_name': plan.name,
+            'plan_execution': pe,
             'plan_index_json': json.dumps(plan_index_json()),
             'editable': editable and not plan.readOnly,
             'simulatorUrl': planSchema.simulatorUrl,
