@@ -31,8 +31,7 @@ from geocamUtil.models.ExtrasDotField import ExtrasDotField
 from geocamUtil.modelJson import modelToDict
 
 from xgds_planner2 import xpjson, statsPlanExporter
-
-# from geocamUtil.loader import getModelByName
+from geocamUtil.loader import LazyGetModelByName
 
 # pylint: disable=C1001,E1101
 
@@ -78,7 +77,7 @@ class PlanExecution(models.Model):
     end_time = models.DateTimeField(null=True, blank=True)
 
     flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="plans")
-    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, related_name="executions")
+    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL) # , related_name="executions")
 
     def toSimpleDict(self):
         result = {}
@@ -297,8 +296,8 @@ class AbstractPlan(models.Model):
         """
         result = {}
         result["KML"] = reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})
-#         for exporter in self.getExporters():
-#             result[exporter.label] = exporter.url
+        for exporter in self.getExporters():
+            result[exporter.label] = exporter.url
         return result
 
     def getEscapedId(self):
@@ -357,7 +356,10 @@ class AbstractPlan(models.Model):
 
 
 class Plan(AbstractPlan):
-    pass
+    
+    @property
+    def executions(self):
+        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(plan=self)
 
 
 # PlanSchema used to be a database model, but is now a normal Python

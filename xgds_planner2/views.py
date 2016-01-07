@@ -239,7 +239,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-    if plan.executions.count() > 0:
+    if plan.executions and plan.executions.count() > 0:
         pe = json.dumps(plan.executions.all()[0].toSimpleDict(), cls=DatetimeJsonEncoder)
     else:
         pe = None
