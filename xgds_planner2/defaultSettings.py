@@ -163,6 +163,10 @@ XGDS_PLANNER2_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
 # It must add a json dictionary called extras
 XGDS_PLANNER2_EDITOR_CONTEXT_METHOD = 'xgds_planner2.views.addToEditorContext'
 
+# Method to add stuff to planExecution if you are not doing the basic planExecution.
+# This gets invoked from schedulePlans call in views.py
+XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD = None
+
 
 # OVERRIDE this in your sitesettings to have a custom plan create, note that since it's in site settings you can't have a reverse lookup.
 XGDS_PLANNER2_CREATE_URL = "/xgds_planner2/plan/create"

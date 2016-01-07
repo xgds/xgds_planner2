@@ -636,7 +636,9 @@ def schedulePlans(request):
                     pe.flight = flight
                     pe.plan = plan
                     
-                    # TODO register and call method to add extras to plan execution
+                    if settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD:
+                        pe = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, pe)
+                        
                     pe.save()
         except:
             pass
