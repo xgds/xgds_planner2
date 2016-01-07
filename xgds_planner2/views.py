@@ -63,6 +63,7 @@ from xgds_map_server.forms import MapSearchForm
 
 _template_cache = None
 
+PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
 
 def get_plan_model():
     return getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
@@ -239,18 +240,16 @@ def plan_editor_app(request, plan_id=None, editable=True):
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
     if plan.executions.count() > 0:
-        pe = modelToJson(plan.executions.all()[0], encoder=DatetimeJsonEncoder)
+        pe = json.dumps(plan.executions.all()[0].toSimpleDict(), cls=DatetimeJsonEncoder)
     else:
         pe = None
 
-#     print planSchema.getJsonSchema();
-    return render_to_response(
-        'xgds_planner2/planner_app.html',
-        RequestContext(request, {
+    context = {
             'templates': templates,
             'app': 'xgds_planner2/js/plannerApp.js',
             'saveSearchForm': MapSearchForm(),
             'searchForms': getSearchForms(),
+            'flight_names': json.dumps(getAllFlightNames()),
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
             'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
             'plan_json': json.dumps(plan_json),
@@ -273,10 +272,19 @@ def plan_editor_app(request, plan_id=None, editable=True):
                 staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png')
             ),
             'plan_links_json': json.dumps(plan.getLinks())
-        }),
-        # context_instance=RequestContext
+        }
+
+    return render_to_response(
+        'xgds_planner2/planner_app.html',
+        RequestContext(request, getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context)),
     )
 
+
+def addToEditorContext(context):
+    '''Override and register your method in XGDS_PLANNER2_EDITOR_CONTEXT_METHOD if you want to add to the context
+    Must add a json dictionary called extras; contents of this dictionary will be inserted into appOptions.
+    '''
+    return context
 
 def planIndex(request):
     """
@@ -623,10 +631,12 @@ def schedulePlans(request):
                 plans = PlanModel.objects.filter(id__in=planIds)
 
                 for plan in plans:
-                    pe = models.PlanExecution()
+                    pe = PLAN_EXECUTION_MODEL.get()()
                     pe.planned_start_time = schedule_date
                     pe.flight = flight
                     pe.plan = plan
+                    
+                    # TODO register and call method to add extras to plan execution
                     pe.save()
         except:
             pass
@@ -638,7 +648,7 @@ def schedulePlans(request):
 def startPlan(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(pk=pe_id)
+        pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
         pe.start_time = datetime.datetime.utcnow()
         pe.end_time = None
         pe.save()
@@ -651,7 +661,7 @@ def startPlan(request, pe_id):
 def stopPlan(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(pk=pe_id)
+        pe = models.PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
         if pe.start_time:
             pe.end_time = datetime.datetime.utcnow()
             pe.save()
@@ -666,7 +676,7 @@ def stopPlan(request, pe_id):
 def deletePlanExecution(request, pe_id):
     errorString = ""
     try:
-        pe = models.PlanExecution.objects.get(pk=pe_id)
+        pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
         pe.delete()
     except:
         errorString = "Plan Execution not found"

@@ -1323,28 +1323,6 @@ app.views.PlanLinksView = Backbone.View.extend({
     }
 });
 
-app.views.ScheduleView = Backbone.View.extend({
-    template: '#template-schedule',
-    initialize: function() {
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
-        }
-    },
-    render: function() {
-        this.$el.html(this.template({
-            test: 'hi',
-            planExecution: app.options.planExecution,
-            planUuid: app.currentPlan.get('uuid')
-        }));
-    }
-});
-
-
 app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     template: '#template-tabnav',
     serializeData: function() {

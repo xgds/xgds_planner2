@@ -85,6 +85,7 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'xgds_planner2/js/plannerApp.js',
                              'xgds_planner2/js/plannerModels.js',
                              'xgds_planner2/js/olPlannerStyles.js',
+                             'xgds_planner2/js/plannerScheduleViews.js',
                              'xgds_planner2/js/plannerViews.js',
                              'xgds_planner2/js/map_viewer/olMapViews.js',
                              'xgds_planner2/js/olPlanViews.js',
@@ -157,6 +158,10 @@ XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
 XDGS_PLANNER2_FLIGHT_MONIKER = "Flight"
 XGDS_PLANNER2_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
+
+# Method to add stuff to context for plan editor, override and register your own method if you need it.
+# It must add a json dictionary called extras
+XGDS_PLANNER2_EDITOR_CONTEXT_METHOD = 'xgds_planner2.views.addToEditorContext'
 
 
 # OVERRIDE this in your sitesettings to have a custom plan create, note that since it's in site settings you can't have a reverse lookup.

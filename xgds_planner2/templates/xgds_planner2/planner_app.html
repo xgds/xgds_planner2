@@ -13,7 +13,6 @@
   @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
   @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
   @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
-                             
   @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
   @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
@@ -84,6 +83,7 @@
     <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/forms.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerModels.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlannerStyles.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerScheduleViews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerViews.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
   
@@ -139,6 +139,18 @@
         schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
         planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %}
     };
+    
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    	appOptions['flight_names'] = {{flight_names|safe}};
+    {% endif %}
+    
+    {% if extras %}
+        var extras = {{ extras|safe }};
+        for (var key in extras) {
+        	appOptions[key] = extras[key];
+        }
+    {% endif %}
+    
 	$(function(){
     	app.start(appOptions);
 	});

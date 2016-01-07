@@ -1,10 +1,29 @@
 <div class="schedule" id="schedule">
-  <form name='ScheduleForm' id="scheduleForm" action="#" method="post">
-		<input type="hidden" name="planIds" id="id_planIds"></input>
+  <form name='ScheduleForm' id="scheduleForm" action="/xgds_planner2/schedulePlans/" method="post">
+		<input type="hidden" name="planIds" id="id_planIds" value="{{planId}}"></input>
+		<input type="hidden" id="id_flight" value="0"></input>
+		<input type="hidden" id="id_test" value="0"></input>
 		<table>
 		<tr>
 			<td><label for="id_schedule_date">Start</label></td>
 			<td><input type="text" name="schedule_date" id="id_schedule_date" {{#if planExecution}}value="{{ planExecution.planned_start_time }}"{{/if}}</input></td>
+		</tr>
+		<tr>
+			<td><label for="id_flight">Flight</label></td>
+			<td><select name="flight" id="id_flight"> {{#each flight_names}}
+		        <option value="{{this}}" {{#if ../planExecution}}{{flightSelected this ../planExecution.flight}}{{/if}}>{{this}}</option>
+		        {{/each}}
+		        </select>
+		    </td>
+		</tr>
+		<tr>
+			<td><label for="id_schedule_ev">EV</label></td>
+			<td>
+			<select name="ev" id="id_ev">
+    			{{#each evList}}
+    				<option value="{{pk}}" >{{name}}</option>
+    			{{/each}}
+  			</select>
 		</tr>
 		</table>
 		<input class="mybutton small" type="submit" value="Save">

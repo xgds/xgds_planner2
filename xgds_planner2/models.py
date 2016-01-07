@@ -31,6 +31,7 @@ from geocamUtil.models.ExtrasDotField import ExtrasDotField
 from geocamUtil.modelJson import modelToDict
 
 from xgds_planner2 import xpjson, statsPlanExporter
+
 # from geocamUtil.loader import getModelByName
 
 # pylint: disable=C1001,E1101
@@ -67,7 +68,7 @@ class Vehicle(AbstractVehicle):
     pass
 
 
-class AbstractPlanExecution(models.Model):
+class PlanExecution(models.Model):
     """
     Relationship table for managing
     flight to plan's many to many relationship.
@@ -79,16 +80,31 @@ class AbstractPlanExecution(models.Model):
     flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="plans")
     plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL, related_name="executions")
 
-    class Meta:
-        ordering = ['planned_start_time']
-        abstract=True
-
+    def toSimpleDict(self):
+        result = {}
+        result['start_time'] = self.start_time
+        result['planned_start_time'] = self.planned_start_time
+        result['end_time'] = self.end_time
+        if self.plan:    
+            result['plan'] = self.plan.pk
+        else:
+            result['plan'] = None
+        if self.flight:
+            result['flight'] = self.flight.name
+        else:
+            result['flight'] = None
+        return result
+    
     def __unicode__(self):
         return str(self.pk)
+    
+    class Meta:
+        ordering = ['planned_start_time']
 
 
-class PlanExecution(AbstractPlanExecution):
-    pass
+
+# class PlanExecution(AbstractPlanExecution):
+#     pass
 
 
 class AbstractFlight(models.Model):
