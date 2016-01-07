@@ -269,7 +269,6 @@ XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
     'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
 )
 
-XGDS_PLANNER2_SITE_MONIKER = 'Site'
 
 # If you have callbacks to be connected to the planner, register them as follows
 # XGDS_PLANNER2_CALLBACK = [(MODIFY,'my.planner.modify.callback', PYTHON),
