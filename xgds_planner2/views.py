@@ -294,13 +294,13 @@ def planIndex(request):
     clients.
     """
     Plan = get_plan_model()
+    context = {'plans': Plan.objects.filter(deleted=False),
+               'flight_names': getAllFlightNames(),
+               'exporters': choosePlanExporter.PLAN_EXPORTERS
+               }
     return render_to_response(
         'xgds_planner2/planIndex.html',
-        {
-            'plans': Plan.objects.filter(deleted=False),
-            'flight_names': getAllFlightNames(),
-            'exporters': choosePlanExporter.PLAN_EXPORTERS
-        },
+        getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context),
         context_instance=RequestContext(request))
 
 
