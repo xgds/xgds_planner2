@@ -128,7 +128,8 @@ def handleCallbacks(request, plan, mode):
         if callback_mode==mode and callback_type==settings.PYTHON:
             foundMethod = getClassByName(methodName)
             if foundMethod:
-                foundMethod(request, plan)
+                plan = foundMethod(request, plan)
+    return plan
 
 
 @login_required
@@ -148,7 +149,7 @@ def plan_REST(request, plan_id, jsonPlanId):
 #         print json.dumps(data, indent=4, sort_keys=True)
         plan.extractFromJson(overWriteDateModified=True)
         plan.save()
-        handleCallbacks(request, plan, settings.SAVE)
+        plan = handleCallbacks(request, plan, settings.SAVE)
 
     elif request.method == "POST":
         # we are doing a save as

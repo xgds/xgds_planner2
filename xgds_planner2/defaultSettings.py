@@ -88,6 +88,8 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'xgds_planner2/js/plannerScheduleViews.js',
                              'xgds_planner2/js/plannerViews.js',
                              'xgds_planner2/js/map_viewer/olMapViews.js',
+                             'xgds_planner2/js/olStationViews.js',
+                             'xgds_planner2/js/olSegmentViews.js',
                              'xgds_planner2/js/olPlanViews.js',
                              'xgds_planner2/js/simulatorDriver.js'
                              ),
