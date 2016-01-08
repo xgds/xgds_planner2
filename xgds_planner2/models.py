@@ -76,7 +76,7 @@ class PlanExecution(models.Model):
     planned_start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="plans")
+    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL) #, related_name="plans")
     plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL) # , related_name="executions")
 
     def toSimpleDict(self):
@@ -134,6 +134,10 @@ class AbstractFlight(models.Model):
                            }
                   }
         return result
+    
+    @property
+    def plans(self):
+        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(flight=self)
 
     class Meta:
         abstract = True
@@ -203,7 +207,6 @@ class AbstractPlan(models.Model):
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
     stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
-#     flights = models.ManyToManyField(settings.XGDS_PLANNER2_FLIGHT_MODEL, through='FlightToPlan', symmetrical=False)
 
     class Meta:
         ordering = ['-dateModified']
@@ -347,6 +350,11 @@ class AbstractPlan(models.Model):
                            }
                   }
         return result
+    
+    @property
+    def executions(self):
+        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(plan=self)
+
 
     def __unicode__(self):
         if self.name:
@@ -356,10 +364,7 @@ class AbstractPlan(models.Model):
 
 
 class Plan(AbstractPlan):
-    
-    @property
-    def executions(self):
-        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(plan=self)
+    pass
 
 
 # PlanSchema used to be a database model, but is now a normal Python
