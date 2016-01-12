@@ -68,15 +68,14 @@ $(function() {
                                                model: this.model,
                                                iconStyle: this.iconStyle,
                                                selectedIconStyle: this.selectedIconStyle,
-                                               textStyle: this.textStyle
-//                                               'styles': this.getStyles(),
-//                                               'selectedStyles': this.getSelectedStyles()
+                                               textStyle: this.textStyle,
+                                               style: this.getStationStyles
                                             });
-                this.feature.set('styles', this.getStyles());
-                this.feature.set('selectedStyles', this.getSelectedStyles());
-                this.feature.setStyle([this.iconStyle, this.textStyle]);
+                this.feature.setStyle(this.getStationStyles);
+                this.feature.set('selectedIconStyle', this.selectedIconStyle);
+                this.feature.set('iconStyle', this.iconStyle);
+                this.feature.set('textStyle', this.textStyle);
                 
-//                this.listenTo(this.model, 'geometryChanged', this.geometryChanged, this);
                 this.geometry.on('change', this.geometryChanged, this);
 
                 this.model['feature'] = this.feature;
@@ -108,26 +107,9 @@ $(function() {
                     (coords[1] != existingCoords[1])) {
                     this.geometry.setCoordinates(coords);
                 }
-                if (!_.isEqual(this.getLabel(), this.textStyle.getText().getText())){
-                	
-                	var selected = false;
-                    if (this.feature.getStyle()[0] === this.getSelectedStyles()[0]){
-                    	selected = true;
-                    }
-                    
-                    // You can't change text of an existing style, you have to make a new one.
-                    // https://github.com/openlayers/ol3/pull/2678
-//                    textInStyle.set('text',name);
-                    delete this.textStyle; // for garbage collection
-                    this.initTextStyle();
-                    
-                    this.feature.set('selectedStyles', this.getSelectedStyles());
-                    this.feature.set('styles', this.getStyles())
-                    if (selected){
-                    	this.feature.setStyle(this.getSelectedStyles());
-                    } else {
-                    	this.feature.setStyle(this.getStyles());
-                    }
+                var newLabel = this.getLabel()
+                if (!_.isEqual(newLabel, this.textStyle.getText().getText())){
+                	this.textStyle.getText().setText(newLabel);
                 }
                 this.updateHeadingStyle();
 
@@ -141,6 +123,7 @@ $(function() {
                         commandView.update();
                     });
                 }
+                this.feature.changed();
                 app.Actions.enable();
             },
 
@@ -182,29 +165,44 @@ $(function() {
             
             getLabel: function() {
                 var name = '' + this.model._sequenceLabel;
-                if (!_.isUndefined(this.model.get('name'))) {
-                    name += ' ' + this.model.get('name');
+                var modelname = this.model.get('name');
+                if (!_.isUndefined(modelname) && !_.isEmpty(modelname)){
+                    name += ' ' + modelname;
                 }
                 return name;
             },
             
             initTextStyle: function() {
-                var name = this.getLabel();
                 var theText = new ol.style.Text(olStyles.styles['stationText']);
-                theText.setText(name);
+                theText.setText(this.getLabel());
                 this.textStyle = new ol.style.Style({
                     text: theText
                 });
+                if (!_.isUndefined(this.feature)){
+                	this.feature.set('textStyle', this.textStyle);
+                }
             },
             
-            getStyles: function() {
-                return [this.iconStyle, this.textStyle];
+            getStationStyles: function(feature, resolution){
+            	result = [];
+            	var model = this.model;
+            	var selectedIconStyle = this.selectedIconStyle;
+            	var iconStyle = this.iconStyle;
+            	var textStyle = this.textStyle;
+            	if (_.isUndefined(model)){
+            		// this is the feature
+            		model = this.get('model');
+            		selectedIconStyle = this.get('selectedIconStyle');
+                	iconStyle = this.get('iconStyle');
+                	textStyle = this.get('textStyle');
+            	}
+            	if (app.State.stationSelected === model){
+            		return [selectedIconStyle, textStyle];
+            	} else {
+            		return [iconStyle, textStyle];
+            	}
             },
             
-            getSelectedStyles: function() {
-                return [this.selectedIconStyle, this.textStyle];
-            },
-
             close: function() {
                 this.stopListening();
             }

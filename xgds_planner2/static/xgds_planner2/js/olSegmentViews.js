@@ -48,6 +48,7 @@ $(function() {
                     this.segmentsVector.removeFeature(this.feature);
                 }
             }, this);
+            this.initTextStyle();
             this.render();
         },
         
@@ -79,9 +80,9 @@ $(function() {
                 this.otherStation[this.fromStation.cid] = this.toStation;
                 // for debugging
                 if (DEBUG_SEGMENTS){
-                    if (!_.isEqual(this.getLabel(), this.textStyle.getText().getText())){
-                        delete this.textStyle; // for garbage collection
-                        this.feature.setStyle(this.getStyles());
+                	var newLabel = this.getLabel();
+                    if (!_.isEqual(newLabel, this.textStyle.getText().getText())){
+                    	this.textStyle.getText().setText(newLabel);
                     }
                 }
             }
@@ -93,21 +94,28 @@ $(function() {
         addChangeListener: function(station) {
             this.listenTo(station, 'change:geometry', this.updateGeometry);
         },
-        getStyles: function() {
-            if (DEBUG_SEGMENTS){
-                this.initTextStyle();
-                return [olStyles.styles['segment'], this.textStyle]
-            } else {
-                return [olStyles.styles['segment']];
-            }
-        },
-        getSelectedStyles: function() {
-            if (DEBUG_SEGMENTS){
-                this.initTextStyle();
-                return [olStyles.styles['selectedSegment'], this.textStyle]
-            } else {
-                return [olStyles.styles['selectedSegment']];
-            }
+        getSegmentStyles: function(feature, resolution){
+        	result = [];
+        	var model = this.model;
+        	
+        	if (_.isUndefined(model)){
+        		// this is the feature
+        		model = this.get('model');
+        	}
+        	var result;
+        	if (app.State.segmentSelected === model){
+        		result = [olStyles.styles['selectedSegment']];
+        	} else {
+        		result = [olStyles.styles['segment']];
+        	}
+        	if (DEBUG_SEGMENTS){
+        		var textStyle = this.textStyle;
+        		if (_.isUndefined(textStyle)){
+        			textStyle = this.get('textStyle');
+        		}
+        		result.push(textStyle);
+        	}
+        	return result;
         },
         render: function() {
             this.coords = _.map([this.fromStation, this.toStation],
@@ -120,14 +128,9 @@ $(function() {
                                            id: this.fromStation.attributes['id'],
                                            name: this.fromStation.attributes['id'],
                                            model: this.model
-//                                                 'styles': this.getStyles(),
-//                                                 'selectedStyles': this.getSelectedStyles()
                                                  });
-            this.feature.set('selectedStyles', this.getSelectedStyles());
-            this.feature.set('styles', this.getStyles());
-            
-            // for some reason you have to set the style this way
-            this.feature.setStyle(this.getStyles());
+            this.feature.setStyle(this.getSegmentStyles);
+            this.feature.set('textStyle', this.textStyle);
             
             this.listenTo(this.model, 'splitSegment', this.handleSplitSegment, this);
             this.model['feature'] = this.feature;

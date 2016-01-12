@@ -103,7 +103,7 @@ $(function() {
                     source: this.segmentsVector,
                     style: (function() {
                       return function(feature, resolution) {
-                  	return feature.getStyle();
+                    	  return feature.getStyle();
                       };
                     })()
                     });
@@ -113,7 +113,7 @@ $(function() {
                     zIndex: 2,
                     style: (function() {
                         return function(feature, resolution) {
-                    	return feature.getStyle();
+                        	return feature.getStyle();
                         };
                       })()
                     });
@@ -295,14 +295,12 @@ $(function() {
                                 case 'Station':
                                     app.State.stationSelected = feature.get('model');
                                     app.State.segmentSelected = undefined;
-                                    var selectedStyles = feature.get('selectedStyles');
-                                    feature.setStyle(selectedStyles);
+                                    feature.changed();
                                     break;
                                 case 'Segment':
                                     app.State.segmentSelected = feature.get('model');
                                     app.State.stationSelected = undefined;
-                                    var selectedStyles = feature.get('selectedStyles');
-                                    feature.setStyle(selectedStyles);
+                                    feature.changed();
                                     break;
                             }
                             
@@ -317,8 +315,7 @@ $(function() {
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
                             var feature = e.element;
-                            var styles = feature.get('styles');
-                            feature.setStyle(styles);
+                            feature.changed();
                         });
                         this.listenTo(app.vent, 'itemSelected:station', function() {
                             var selectedItem = app.State.stationSelected;
