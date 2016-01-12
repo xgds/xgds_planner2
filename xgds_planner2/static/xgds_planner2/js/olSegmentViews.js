@@ -80,7 +80,7 @@ $(function() {
                 this.otherStation[this.fromStation.cid] = this.toStation;
                 // for debugging
                 if (DEBUG_SEGMENTS){
-                	var newLabel = this.getLabel();
+                    var newLabel = this.getLabel();
                     if (!_.isEqual(newLabel, this.textStyle.getText().getText())){
                     	this.textStyle.getText().setText(newLabel);
                     }
