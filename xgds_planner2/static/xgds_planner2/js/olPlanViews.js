@@ -95,30 +95,32 @@ $(function() {
                 this.map = this.options.map
 
                 this.segmentsFeatures = new ol.Collection();
-                this.stationsFeatures = new ol.Collection();
-
                 this.segmentsVector = new ol.source.Vector({features:this.segmentsFeatures});
-                this.stationsVector = new ol.source.Vector({features:this.stationsFeatures});
                 this.segmentsLayer = new ol.layer.Vector({name:'segments',
-                    source: this.segmentsVector,
-                    style: (function() {
-                      return function(feature, resolution) {
-                    	  return feature.getStyle();
-                      };
-                    })()
-                    });
-
-                this.stationsLayer = new ol.layer.Vector({name:'stations',
-                    source: this.stationsVector,
-                    zIndex: 2,
-                    style: (function() {
-                        return function(feature, resolution) {
-                        	return feature.getStyle();
-                        };
-                      })()
+                    source: this.segmentsVector
                     });
                 this.map.addLayer(this.segmentsLayer);
+                
+                this.segmentsDecorators = new ol.Collection();
+                this.segmentsDecoratorsLayer = new ol.layer.Vector({name:'segmentsDecorators',
+                    source:  new ol.source.Vector({features:this.segmentsDecorators})
+                    });
+                this.map.addLayer(this.segmentsDecoratorsLayer);
+                
+                
+                this.stationsFeatures = new ol.Collection();
+                this.stationsVector = new ol.source.Vector({features:this.stationsFeatures});
+                this.stationsLayer = new ol.layer.Vector({name:'stations',
+                    source: this.stationsVector,
+                    zIndex: 2
+                    });
                 this.map.addLayer(this.stationsLayer);
+                this.stationsDecorators = new ol.Collection();
+                this.stationsDecoratorsLayer = new ol.layer.Vector({name:'stationsDecorators',
+                    source:  new ol.source.Vector({features:this.stationsDecorators})
+                    });
+                this.map.addLayer(this.stationsDecoratorsLayer);
+                
 
 
                 app.vent.on('mapmode', this.setMode, this);
@@ -138,8 +140,13 @@ $(function() {
         	    redraw = true;
         	    this.segmentsVector.clear();
         	    this.segmentsFeatures.clear();
+        	    this.segmentsDecorators.clear();
+        	    this.segmentsDecoratorsLayer.getSource().clear();
+        	    
         	    this.stationsVector.clear();
         	    this.stationsFeatures.clear();
+        	    this.stationsDecorators.clear();
+        	    this.stationsDecoratorsLayer.getSource().clear();
         	}
         	
                 if (this.currentMode) {
@@ -161,7 +168,8 @@ $(function() {
             drawStation: function(station) {
                 var stationPointView = new app.views.StationPointView({
                     model: station,
-                    stationsVector: this.stationsVector
+                    stationsVector: this.stationsVector,
+                    stationsDecoratorsVector: this.stationsDecoratorsLayer.getSource()
                 });
 
                 return stationPointView;
@@ -187,6 +195,7 @@ $(function() {
                     fromStation: fromStation,
                     toStation: toStation,
                     segmentsVector: this.segmentsVector,
+                    segmentsDecoratorsVector: this.segmentsDecoratorsLayer.getSource(),
                     planLayerView: this
                 });
                 return segmentLineView;
@@ -426,10 +435,6 @@ $(function() {
                         this.stationDeleter = new ol.interaction.Select({
                         	name: "stationDeleter",
                         	layers: [this.stationsLayer],
-//                        	addCondition: function(event) {
-//                        	    return ol.events.condition.shiftKeyOnly(event)
-//                        	    && ol.events.condition.singleClick(event);
-//                        	},
                         	condition: function(event){
                         	    return ol.events.condition.shiftKeyOnly(event)
                         	    && ol.events.condition.singleClick(event);
