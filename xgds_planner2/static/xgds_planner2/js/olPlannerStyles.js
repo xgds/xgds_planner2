@@ -17,6 +17,11 @@ olStyles.buildPlannerStyles = function() {
             width: app.options.planLineWidthPixels
           })
         });
+    olStyles.styles['tolerance'] = new ol.style.Style({
+          fill: new ol.style.Fill({
+	          color: [255, 255, 0, 0.3]
+	        })
+        });
     olStyles.styles['selectedSegment'] = new ol.style.Style({
         stroke: new ol.style.Stroke({
             color: 'cyan',
