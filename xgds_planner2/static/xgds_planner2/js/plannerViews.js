@@ -942,7 +942,9 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         this.foot.setElement(this.$el.find('.add-commands'));
         this.head.render();
         this.foot.render();
-        this.$el.find('.command-list').sortable();
+	if (!this.isEmpty()){
+	        this.$el.find('.command-list').sortable();
+	}
         this.restoreExpanded();
         if (app.hasHandler('selectedCommands') &&
                 !_.isEmpty(app.request('selectedCommands'))) {
