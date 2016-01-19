@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 # pylint: disable=W0702
 import sys
 import collections
@@ -580,7 +579,7 @@ def stopFlight(request, uuid):
 
 
 @login_required
-def schedulePlans(request):
+def schedulePlans(request, redirect=True):
     flight = None
     if request.method == 'POST':
         try:
@@ -642,9 +641,15 @@ def schedulePlans(request):
                         
                     pe.save()
         except:
+            traceback.print_exc()
+            return HttpResponse(json.dumps({'Success':"False", 'msg': 'Plan not scheduled'}), content_type='application/json', status=406)
             pass
-
-    return HttpResponseRedirect(reverse('planner2_index'))
+    if redirect:
+        return HttpResponseRedirect(reverse('planner2_index'))
+    else:
+        response = {}
+        response["msg"] = "Plan Scheduled"
+        return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 @login_required

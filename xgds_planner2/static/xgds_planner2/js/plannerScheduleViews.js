@@ -19,7 +19,7 @@ app.views = app.views || {};
 app.views.ScheduleView = Backbone.View.extend({
     template: '#template-schedule',
     initialize: function() {
-	Handlebars.registerHelper('flightSelected', function (input, flightName) {
+    	Handlebars.registerHelper('flightSelected', function (input, flightName) {
             return input === flightName ? 'selected' : '';
         });
         var source = $(this.template).html();
@@ -32,6 +32,8 @@ app.views.ScheduleView = Backbone.View.extend({
         }
     },
     render: function() {
+    	$('#schedule_message').empty();
+
         this.$el.html(this.template({
             planExecution: app.options.planExecution,
             planId: app.planJson.serverId,
@@ -42,6 +44,28 @@ app.views.ScheduleView = Backbone.View.extend({
             'showTimezone': false,
             'timezone': '-0000'
            });
+        this.$el.find('#submit_button').click(function(event)
+		    {
+        	event.preventDefault();
+            var theForm = $("#scheduleForm");
+        	var postData = theForm.serializeArray();
+            $.ajax(
+            {
+                url: "/xgds_planner2/schedulePlan/",
+                type: "POST",
+                dataType: 'json',
+                data: postData,
+                success: function(data)
+                {
+                	$('#schedule_message').text(data['msg']);
+                },
+                error: function(data)
+                {
+                	$('#schedule_message').text(data['msg']);
+                }
+            });
+        });
+        
     }
 });
 
