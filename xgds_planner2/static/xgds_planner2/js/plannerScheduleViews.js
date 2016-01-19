@@ -22,6 +22,9 @@ app.views.ScheduleView = Backbone.View.extend({
     	Handlebars.registerHelper('flightSelected', function (input, flightName) {
             return input === flightName ? 'selected' : '';
         });
+    	Handlebars.registerHelper('evSelected', function (input, evID) {
+            return input.pk === evID ? 'selected' : '';
+        });
         var source = $(this.template).html();
         if (_.isUndefined(source)) {
             this.template = function() {
@@ -36,6 +39,7 @@ app.views.ScheduleView = Backbone.View.extend({
 
         this.$el.html(this.template({
             planExecution: app.options.planExecution,
+            evList: app.options.evList,
             planId: app.planJson.serverId,
             flight_names: app.options.flight_names
         }));
@@ -57,11 +61,11 @@ app.views.ScheduleView = Backbone.View.extend({
                 data: postData,
                 success: function(data)
                 {
-                	$('#schedule_message').text(data['msg']);
+                	$('#schedule_message').text(data.responseJSON.msg);
                 },
                 error: function(data)
                 {
-                	$('#schedule_message').text(data['msg']);
+                	$('#schedule_message').text(data.responseJSON.msg);
                 }
             });
         });

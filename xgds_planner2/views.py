@@ -647,9 +647,7 @@ def schedulePlans(request, redirect=True):
     if redirect:
         return HttpResponseRedirect(reverse('planner2_index'))
     else:
-        response = {}
-        response["msg"] = "Plan Scheduled"
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
 
 @login_required
