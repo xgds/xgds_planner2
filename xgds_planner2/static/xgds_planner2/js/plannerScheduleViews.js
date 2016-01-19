@@ -61,7 +61,7 @@ app.views.ScheduleView = Backbone.View.extend({
                 data: postData,
                 success: function(data)
                 {
-                	$('#schedule_message').text(data.responseJSON.msg);
+                	$('#schedule_message').text(data.msg);
                 },
                 error: function(data)
                 {
