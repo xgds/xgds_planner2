@@ -410,6 +410,7 @@ var app = (function($, _, Backbone) {
             });
             return obj;
         },
+        /*
         HMSToMinutes: function(hms) {
             // given a time in hh:mm:ss return the decimal minutes
             var splits = hms.split(":");
@@ -459,7 +460,7 @@ var app = (function($, _, Backbone) {
                 second: ss
             });
             return output;
-        },
+        },*/
         HMSToSeconds: function(hms) {
             // given a time in hh:mm:ss return the seconds
         	var duration = moment.duration(hms);

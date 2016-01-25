@@ -585,9 +585,9 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     serializeData: function() {
         var data = app.views.SequenceListItemView.prototype.serializeData.call(this, arguments);
         if (this.model.get('type') == 'Station') {
-            data.timing = app.util.minutesToHMS(this.model.getCumulativeDuration());
+            data.timing = app.util.secondsToHMS(this.model.getCumulativeDuration());
         } else {
-            data.timing = '+' + app.util.minutesToHMS(this.model.getDuration());
+            data.timing = '+' + app.util.secondsToHMS(this.model.getDuration());
         }
         return data;
     }
@@ -704,7 +704,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data) {
         var displayName = data.name || data.presetName || data.presetCode;
-        var timing = app.util.minutesToHMS(data.duration);
+        var timing = app.util.secondsToHMS(data.duration);
         return '<input class="select" type="checkbox" id="id_' + displayName + '"/></i>&nbsp;<label style="display:inline-block;" for="id_' + displayName + '">' + displayName + '</label><span class="duration">' + timing + '</span><i/>';
     },
     events: function() {
@@ -1158,7 +1158,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
         // add timing info in HMS format
         _.each(presets, function(command) {
             if (_.has(command, 'duration')) {
-                command.timing = app.util.minutesToHMS(command.duration);
+                command.timing = app.util.secondsToHMS(command.duration);
             }
         });
         return presets;
@@ -1298,30 +1298,6 @@ app.views.PlanToolsView = Backbone.View.extend({
     disableForReadOnly: function() {
         this.$('#btn-reverse').attr('disabled', 'true');
         this.$('#ok-button').attr('disabled', 'true');
-    }
-});
-
-app.views.PlanLinksView = Backbone.View.extend({
-    template: '#template-plan-links',
-    initialize: function() {
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
-        }
-    },
-    render: function() {
-        this.$el.html(this.template({
-            planLinks: app.planLinks,
-            planUuid: app.currentPlan.get('uuid')
-        }));
-        var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
-        if (callback != null) {
-            callback(this.$el);
-        }
     }
 });
 
