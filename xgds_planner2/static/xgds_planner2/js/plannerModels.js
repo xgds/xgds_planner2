@@ -329,7 +329,7 @@ app.models = app.models || {};
             // actually use the simulator
             if (this._simInfo == undefined) app.simulatePlan();
             if (this._simInfo == undefined) return undefined;
-            return this._simInfo.deltaTimeSeconds / 60;
+            return this._simInfo.deltaTimeSeconds;
         },
 
         getCumulativeDuration: function(collection) {
@@ -347,7 +347,7 @@ app.models = app.models || {};
             if (this._simInfo == undefined) return undefined;
             var addme = 0;
             if (this._simInfo.elapsedTimeSeconds > 0){
-                addme = this._simInfo.elapsedTimeSeconds / 60;
+                addme = this._simInfo.elapsedTimeSeconds;
             }
             return addme + this.getDuration();
         },
