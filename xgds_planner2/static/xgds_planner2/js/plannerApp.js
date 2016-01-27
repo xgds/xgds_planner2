@@ -233,9 +233,6 @@ var app = (function($, _, Backbone) {
             this.mapRotationHandles = (_.isBoolean(this.options.mapRotationHandles)) ?
                 this.options.mapRotationHandles : true;
 
-            // temporarily define ge so that we don't get a reference error later
-//            window.ge = undefined;
-
             /*
              * Initialize the plan schema, and build easy-access indecies.
              * The plan schema is global to the planner deployment
