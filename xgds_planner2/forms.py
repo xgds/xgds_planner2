@@ -22,8 +22,8 @@ from xgds_planner2.models import getPlanSchema
 
 
 class CreatePlanForm(forms.Form):
-    planNumber = forms.IntegerField(label='Plan number')
-    planVersion = forms.CharField(label='Plan version', max_length=1, initial='A')
+    planNumber = forms.IntegerField(label=settings.XGDS_PLANNER2_PLAN_MONIKER + ' number')
+    planVersion = forms.CharField(label=settings.XGDS_PLANNER2_PLAN_MONIKER + ' version', max_length=1, initial='A')
     platform = forms.ChoiceField(choices=[], required=True)
     site = forms.ChoiceField(choices=[], required=False, label=settings.XGDS_MAP_SERVER_SITE_MONIKER)
 

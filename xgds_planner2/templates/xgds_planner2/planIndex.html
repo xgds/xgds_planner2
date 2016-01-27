@@ -17,7 +17,7 @@ table.planIndex td.exportFormat a {
 </style>
 {% endblock cssExtras %}
 
-{% block siteSection %}Planner Index{% endblock siteSection %}
+{% block siteSection %}{{ settings.XGDS_PLANNER2_PLAN_MONIKER }} Index{% endblock siteSection %}
 
 {% block sitemenu-content-secondary %}
 {% include "xgds_planner2/planner2_subnav.html" %}
@@ -32,7 +32,7 @@ table.planIndex td.exportFormat a {
 {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <input class="mybutton right" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 {% endif %}
-<a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create Plan</a>
+<a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="mybutton" style="float:right; margin-bottom:3px;"> Create {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</a>
 <table id="dataTable" class="planIndex">
 <thead class="table_header">
   <tr>
@@ -90,7 +90,7 @@ table.planIndex td.exportFormat a {
 			<td><span class="planlist"></span></td>
 		</tr>
 		<tr>
-			<td><label for="id_flight">{{settings.XDGS_PLANNER2_FLIGHT_MONIKER}}</label></td>
+			<td><label for="id_flight">{{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}</label></td>
 			<td><select name="flight" id="id_flight"> {% for flight in flight_names %} 
 		        <option value="{{ flight }}">{{ flight }} </option>
 		        {% endfor %}

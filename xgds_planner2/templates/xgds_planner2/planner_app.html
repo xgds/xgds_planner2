@@ -140,7 +140,8 @@
         readOnly: {{ editable|yesno:"false,true" }},
         searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
         schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
-        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %}
+        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
+        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}'
     };
     
     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}

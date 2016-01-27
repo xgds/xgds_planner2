@@ -155,11 +155,12 @@ XGDS_PLANNER2_LINE_WIDTH_PIXELS = 3
 
 
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
+XGDS_PLANNER2_PLAN_MONIKER = "Plan"
 XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
 XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL = "xgds_planner2.AbstractFlight"
 XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
-XDGS_PLANNER2_FLIGHT_MONIKER = "Flight"
+XGDS_PLANNER2_FLIGHT_MONIKER = "Flight"
 XGDS_PLANNER2_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
 
 # Method to add stuff to context for plan editor, override and register your own method if you need it.

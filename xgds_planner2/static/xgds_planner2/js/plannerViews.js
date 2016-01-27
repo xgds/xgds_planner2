@@ -115,10 +115,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     updateSaveStatus: function(eventName) {
         var msgMap = {
             'change': 'Unsaved changes.',
-            'sync': 'Plan saved.',
+            'sync': app.options.planMoniker + ' saved.',
             'error': 'Save error.',
             'clear': '',
-            'readOnly': 'Plan is LOCKED.'
+            'readOnly': app.options.planMoniker + ' is LOCKED.'
         };
         if (app.options.readOnly) {
             eventName = 'readOnly';
@@ -1193,7 +1193,8 @@ app.views.PlanToolsView = Backbone.View.extend({
     },
     render: function() {
         this.$el.html(this.template({
-            planIndex: app.planIndex
+            planIndex: app.planIndex,
+            moniker: app.options.planMoniker
         }));
     },
     afterRender: function() {
