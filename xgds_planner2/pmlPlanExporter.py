@@ -16,15 +16,17 @@
 
 # pylint: disable=W0612, W0702
 import datetime
+import logging
 import os
 import re
+
 
 from django.conf import settings
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2.models import getPlanSchema
+from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
 
 from geocamUtil.geomath import calculateDiffMeters, getLength
-
 
 class PmlPlanExporter(TreeWalkPlanExporter):
     """
@@ -36,6 +38,24 @@ class PmlPlanExporter(TreeWalkPlanExporter):
     segmentCounter = 0
 
     startTime = None
+    vehicle = None
+    
+    def exportDbPlan(self, dbPlan):
+        try:
+            platform = dbPlan.jsonPlan['platform']
+            planSchema = getPlanSchema(platform["name"])
+            plan = dbPlan.toXpjson()
+            try:
+                if dbPlan.planexecution_set:
+                    pe = dbPlan.planexecution_set.all()[0]
+                    self.startTime = pe.planned_start_time
+                    self.vehicle = str(pe.flight.vehicle.name)
+            except:
+                pass
+            return self.exportPlan(plan, planSchema.getSchema())
+        except:
+            logging.warning('exportDbPlan: could not save plan %s', dbPlan.name)
+            raise  # FIX
 
     def initPlan(self, plan, context):
         if not self.startTime:
@@ -93,7 +113,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         durationString = "P%dDT%dH%dM%.0fS" % (days, hrs, mins, secs)
         return durationString
 
-    def makeActivity(self, activityType, activityId, name, durationSeconds, notes):
+    def makeActivity(self, activityType, activityId, name, durationSeconds, notes, color):
         return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)sZ">
                 <SharedProperties>
                     <Property name="location">
@@ -108,15 +128,29 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                     <Property name="notes">
                         <String>%(notes)s</String>
                     </Property>
+                    <Property name="flexible">
+                        <Boolean>true</Boolean>
+                    </Property>
+                    <Property name="customColor">
+                        <String>%(color)s</String>
+                    </Property>
+                    <Property name="crewMembers">
+                        <List>
+                            <String>%(vehicle)s</String>
+                        </List>
+                    </Property>
                 </SharedProperties>
             </Activity>
 """ % {
-                'activityType': activityType,
+                'activityType': "Activity",
                 'activityId': '' if activityId is None else activityId,
                 'name': '' if name is None else name,
                 'duration': self.getDurationString(durationSeconds),
                 'startTime': self.startTime.replace(microsecond=0).isoformat(),
-                'notes': '' if notes is None else notes})
+                'notes': '' if notes is None else notes,
+                'color': 'ff0080' if color is None else color,
+                'vehicle': '' if self.vehicle is None else self.vehicle,
+                })
 
     def transformStation(self, station, tsequence, context):
         """
@@ -130,7 +164,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             name = "%02d" % self.stationCounter
 
         name = "Station %s%s" % (name, '' if station.name is None else ' ' + station.name)
-        result = self.makeActivity("Station", station.id, name, 0, station.notes)
+        result = self.makeActivity("Station", station.id, name, 0, station.notes, None)
         self.stationCounter = self.stationCounter + 1
         return result
 
@@ -147,7 +181,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         segmentDuration = self.DRIVE_TIME_MULTIPLIER * (meters / speed) + self.ROTATION_ADDITION
 
         name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name)
-        activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes)
+        activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes, 'ffa300')
         self.startTime = self.startTime + datetime.timedelta(seconds=segmentDuration)
         self.segmentCounter = self.segmentCounter + 1
         return activity
@@ -157,7 +191,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         name = command.name
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
-        activity = self.makeActivity(command.type, command.id, name, duration, command.notes)
+        color = None
+        if command.color:
+            color = command.color[1:]
+        activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
 
@@ -166,7 +203,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         name = command.name
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
-        activity = self.makeActivity(command.type, command.id, name, duration, command.notes)
+        color = None
+        if command.color:
+            color = command.color[1:]
+        activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
         return activity
 
@@ -179,7 +219,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         """
         tsequence = []
         tsequence.append(self.transformStation(station, tsequence, context))
-        for i, cmd in enumerate(station.sequence):
+        for i, cmd in enumerate(convertToDotDictRecurse(station.commands)):
             ctx = context.copy()
             ctx.command = cmd
             ctx.commandIndex = i
@@ -191,7 +231,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         For a segment, the activities come first and then the timing for the drive.
         """
         tsequence = []
-        for i, cmd in enumerate(segment.sequence):
+        for i, cmd in enumerate(convertToDotDictRecurse(segment.commands)):
             ctx = context.copy()
             ctx.command = cmd
             ctx.commandIndex = i

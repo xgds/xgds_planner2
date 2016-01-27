@@ -65,7 +65,7 @@ _template_cache = None
 PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
 
 def get_plan_model():
-    return getModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL).get()
 
 
 def plan_help(request):
