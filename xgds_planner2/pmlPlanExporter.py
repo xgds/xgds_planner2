@@ -126,7 +126,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                         <String></String>
                     </Property>
                     <Property name="notes">
-                        <String>%(notes)s</String>
+                        <String>"%(notes)s"</String>
                     </Property>
                     <Property name="flexible">
                         <Boolean>true</Boolean>
@@ -148,7 +148,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 'duration': self.getDurationString(durationSeconds),
                 'startTime': self.startTime.replace(microsecond=0).isoformat(),
                 'notes': '' if notes is None else notes,
-                'color': 'ff0080' if color is None else color,
+                'color': '4db8ff' if color is None else color,
                 'vehicle': '' if self.vehicle is None else self.vehicle,
                 })
 
