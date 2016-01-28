@@ -58,11 +58,13 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return result
 
     def transformSegment(self, segment, tsequence, context):
-        plon, plat = context.prevStation.geometry['coordinates']
-        nlon, nlat = context.nextStation.geometry['coordinates']
-        # mlon = 0.5 * (plon + nlon)
-        # mlat = 0.5 * (plat + nlat)
-        return ('''
+        coords = [context.prevStation.geometry['coordinates']]
+        if segment.geometry and segment.geometry['coordinates']:
+            coords = coords[:0]
+            coords.extend(segment.geometry['coordinates'])
+        coords.append(context.nextStation.geometry['coordinates'])
+
+        result = '''
 <Placemark>
   <name>%(name)s</name>
   <styleUrl>segment</styleUrl>
@@ -70,18 +72,16 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     <LineString>
       <tessellate>1</tessellate>
       <coordinates>
-        %(plon)s,%(plat)s
-        %(nlon)s,%(nlat)s
+''' % {'name': segment.id }
+        for coord in coords:
+            result = result + str(coord[0]) + ',' + str(coord[1]) + '\n'
+        result = result + '''
       </coordinates>
     </LineString>
   </MultiGeometry>
 </Placemark>
-''' %
-                {'name': segment.id,
-                 'plon': plon,
-                 'plat': plat,
-                 'nlon': nlon,
-                 'nlat': nlat})
+'''
+        return result
 
     def makeStyles(self):
         waypointStyle = KmlUtil.makeStyle("station", "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
