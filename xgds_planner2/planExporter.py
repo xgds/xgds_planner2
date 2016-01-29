@@ -13,13 +13,13 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import json
 import logging
 
 from django.http import HttpResponse
 
-from geocamUtil.dotDict import DotDict
+from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
+
 import models
 
 # pylint: disable=W0223
@@ -138,6 +138,7 @@ class TreeWalkPlanExporter(PlanExporter):
 
     def exportStation(self, station, context):
         tsequence = []
+        station.sequence = convertToDotDictRecurse(station.commands)
         for i, cmd in enumerate(station.sequence):
             ctx = context.copy()
             ctx.command = cmd
@@ -147,6 +148,7 @@ class TreeWalkPlanExporter(PlanExporter):
 
     def exportSegment(self, segment, context):
         tsequence = []
+        segment.sequence = convertToDotDictRecurse(segment.commands)
         for i, cmd in enumerate(segment.sequence):
             ctx = context.copy()
             ctx.command = cmd
