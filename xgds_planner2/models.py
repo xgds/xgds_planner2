@@ -29,6 +29,7 @@ from django.core.urlresolvers import reverse
 from geocamUtil.models.UuidField import UuidField, makeUuid
 from geocamUtil.models.ExtrasDotField import ExtrasDotField
 from geocamUtil.modelJson import modelToDict
+from geocamUtil.dotDict import DotDict
 
 from xgds_planner2 import xpjson, statsPlanExporter
 from geocamUtil.loader import LazyGetModelByName
@@ -201,9 +202,9 @@ class AbstractPlan(models.Model):
     readOnly = models.BooleanField(blank=True, default=False)
 
     # cache commonly used stats derived from the plan (relatively expensive to calculate)
-    numStations = models.PositiveIntegerField(null=True, blank=True)
-    numSegments = models.PositiveIntegerField(null=True, blank=True)
-    numCommands = models.PositiveIntegerField(null=True, blank=True)
+    numStations = models.PositiveIntegerField(default=0)
+    numSegments = models.PositiveIntegerField(default=0)
+    numCommands = models.PositiveIntegerField(default=0)
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
     stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
@@ -247,8 +248,7 @@ class AbstractPlan(models.Model):
             stats = exporter.exportDbPlan(self)
             for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters'):
                 setattr(self, f, stats[f])
-            for f in ('numCommandsByType',):
-                setattr(self.stats, f, stats[f])
+            self.stats.numCommandsByType = stats["numCommandsByType"]
             self.summary = statsPlanExporter.getSummary(stats)
         except:
             logging.warning('extractFromJson: could not extract stats from plan %s',

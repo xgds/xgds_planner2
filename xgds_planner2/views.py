@@ -130,7 +130,6 @@ def handleCallbacks(request, plan, mode):
                 plan = foundMethod(request, plan)
     return plan
 
-
 @login_required
 def plan_REST(request, plan_id, jsonPlanId):
     """

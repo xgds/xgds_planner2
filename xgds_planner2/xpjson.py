@@ -838,7 +838,7 @@ def transformTopDown(obj, func):
     elif isinstance(obj, (int, float, str, unicode, bool, long)) or obj is None:
         return obj
     else:
-        return dict(((k, transformTopDown(v, func))
+        return DotDict(((k, transformTopDown(v, func))
                      for k, v in func(obj).iteritems()))
 
 
@@ -904,6 +904,10 @@ def dumpDictToPath(path, obj):
 def dumpDocumentToString(doc):
     docDict = transformTopDown(doc, encodeWithClassName)
     return dumpDictToString(docDict)
+
+
+def dumpDocumentToDotDict(doc):
+    return transformTopDown(doc, encodeWithClassName)
 
 
 def dumpDocumentToPath(path, doc):

@@ -100,13 +100,12 @@ class PlanImporter(object):
         importer.setDefaultMeta(meta, path, planSchema)
 
         planDoc = importer.importPlanFromBuffer(buf, meta, planSchema)
-        planText = xpjson.dumpDocumentToString(planDoc)
 
         dbPlan = PLAN_MODEL()
 
-        dbPlan.jsonPlan = planText
+        dbPlan.jsonPlan = xpjson.dumpDocumentToDotDict(planDoc)
         dbPlan.extractFromJson(overWriteDateModified=False)
-
+        
         return dbPlan
 
     def importPlanFromBuffer(self, buf, meta, planSchema):

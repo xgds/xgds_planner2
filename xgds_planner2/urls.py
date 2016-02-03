@@ -18,9 +18,7 @@ from django.conf.urls import url, patterns
 
 from xgds_planner2 import views
 
-urlpatterns = patterns(
-    '',
-
+urlpatterns = [
     # url(r'^$', direct_to_template, {'template': 'planner_app.html'}, name='planner2'),
     url(r'^planIndex\.kml$', views.getPlanIndexKml, {'readOnly': True, 'loginRequired': False, 'securityTags': ['readOnly']}, name='planner2_planIndexKml'),
     url(r'^index/$', views.planIndex, {}, name='planner2_index'),
@@ -50,8 +48,5 @@ urlpatterns = patterns(
     url(r'activeFlightsTreeNodes$', views.activeFlightsTreeNodes, {'loginRequired': True}, 'planner2_activeFlightsTreeNodes'),
     url(r'completedFlightsTreeNodes$', views.completedFlightsTreeNodes, {'loginRequired': True}, 'planner2_completedFlightsTreeNodes'),
     url(r'mapJsonPlan/(?P<uuid>[\w-]+)$', views.mapJsonPlan, {'loginRequired': True}, 'planner2_mapJsonPlan'),
-    url(r'^import/xpjson/$', views.planImport, {'loginRequired': True}, name='planner2_planImport_xpjson'),
-    
-
-
-)
+    url(r'^import/xpjson/$', views.planImport, {'loginRequired': True}, name='planner2_planImport_xpjson')
+    ]
