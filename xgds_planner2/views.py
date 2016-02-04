@@ -122,6 +122,7 @@ def aggregate_handlebars_templates(request):
     """
     return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)), content_type='application/json')
 
+
 def handleCallbacks(request, plan, mode):
     for callback_mode, methodName, callback_type in settings.XGDS_PLANNER2_CALLBACK:
         if callback_mode==mode and callback_type==settings.PYTHON:
@@ -129,6 +130,7 @@ def handleCallbacks(request, plan, mode):
             if foundMethod:
                 plan = foundMethod(request, plan)
     return plan
+
 
 @login_required
 def plan_REST(request, plan_id, jsonPlanId):
