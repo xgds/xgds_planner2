@@ -54,7 +54,7 @@ from xgds_planner2 import (models,
                            forms,
                            planImporter,
                            fillIdsPlanExporter)
-from xgds_planner2.forms import GroupFlightForm, UploadXPJsonForm
+from xgds_planner2.forms import UploadXPJsonForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
@@ -692,6 +692,7 @@ def deletePlanExecution(request, pe_id):
 
 @login_required
 def addGroupFlight(request):
+    from xgds_planner2.forms import GroupFlightForm
     errorString = None
 
     if request.method != 'POST':
