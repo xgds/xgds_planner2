@@ -28,12 +28,12 @@ one of the steps is "prepapps", which calls
 management/appCommands/prep.py command for each app (if it exists).
 """
 
-from django.core.management.base import NoArgsCommand
+from django.core.management.base import BaseCommand
 
 from xgds_planner2 import compileXpjson
 
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
     help = 'Prep xgds_planner2'
 
     def handle_noargs(self, **options):
