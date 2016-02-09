@@ -51,7 +51,6 @@ from geocamUtil.modelJson import modelToJson
 
 from xgds_planner2 import (models,
                            choosePlanExporter,
-                           forms,
                            planImporter,
                            fillIdsPlanExporter)
 from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm
