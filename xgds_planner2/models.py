@@ -102,11 +102,6 @@ class PlanExecution(models.Model):
         ordering = ['planned_start_time']
 
 
-
-# class PlanExecution(AbstractPlanExecution):
-#     pass
-
-
 class AbstractFlight(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
