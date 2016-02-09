@@ -54,7 +54,7 @@ from xgds_planner2 import (models,
                            forms,
                            planImporter,
                            fillIdsPlanExporter)
-from xgds_planner2.forms import UploadXPJsonForm
+from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms, get_handlebars_templates
@@ -365,9 +365,9 @@ def planExport(request, uuid, name, time=None, outputDirectory=None):
 @login_required
 def planCreate(request):
     if request.method == 'GET':
-        form = forms.CreatePlanForm()
+        form = CreatePlanForm()
     elif request.method == 'POST':
-        form = forms.CreatePlanForm(request.POST)
+        form = CreatePlanForm(request.POST)
         if form.is_valid():
             # add plan entry to database
             meta = dict([(f, form.cleaned_data[f])
