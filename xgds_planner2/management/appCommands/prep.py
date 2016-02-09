@@ -36,5 +36,5 @@ from xgds_planner2 import compileXpjson
 class Command(BaseCommand):
     help = 'Prep xgds_planner2'
 
-    def handle_noargs(self, **options):
+    def handle(self, *args, **options):
         compileXpjson.compileXpjson()
