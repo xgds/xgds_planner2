@@ -50,6 +50,11 @@ class CreatePlanForm(forms.Form):
         self.fields['site'].choices = [(site.id, site.name) for site in sites]
 
 
+class UploadXPJsonForm(forms.Form):
+    file = forms.FileField(required=True)
+    planUuid = forms.CharField(required=True)
+
+
 # form for creating a flight group, flights, and all sorts of other stuff needed for our overly complex system.
 class GroupFlightForm(forms.Form):
     year = None
@@ -61,19 +66,11 @@ class GroupFlightForm(forms.Form):
                              required=True,
                              initial='A')
 
-    CHOICES = []
-    VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
-    if (VEHICLE_MODEL.get().objects.count() > 0):
-        for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
-            CHOICES.append((vehicle.name, vehicle.name))
-
-    if len(CHOICES) == 1:
-        initial = [c[0] for c in CHOICES]
-    else:
-        initial = None
-    vehicles = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial=initial)
-
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(GroupFlightForm, self).__init__(*args, **kwargs)
+        self.fields['vehicles'] = self.initializeVehicleChoices()
     
     def initialize(self, timeinfo):
         self.year = timeinfo['year']
@@ -81,8 +78,17 @@ class GroupFlightForm(forms.Form):
         self.day = timeinfo['day']
         self.date = datetime.date(int(self.year), int(self.month), int(self.day))
         self.month = int(timeinfo['month']) - 1  # apparently 0 is january
-
-
-class UploadXPJsonForm(forms.Form):
-    file = forms.FileField(required=True)
-    planUuid = forms.CharField(required=True)
+    
+    def initializeVehicleChoices(self):
+        CHOICES = []
+        VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+        if (VEHICLE_MODEL.get().objects.count() > 0):
+            for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
+                CHOICES.append((vehicle.name, vehicle.name))
+    
+        if len(CHOICES) == 1:
+            initial = [c[0] for c in CHOICES]
+        else:
+            initial = None
+        result = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial=initial)
+        return result
