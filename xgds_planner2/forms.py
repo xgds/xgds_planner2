@@ -63,8 +63,9 @@ class GroupFlightForm(forms.Form):
 
     CHOICES = []
     VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
-    for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
-        CHOICES.append((vehicle.name, vehicle.name))
+    if (VEHICLE_MODEL.get().objects.count() > 0):
+        for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
+            CHOICES.append((vehicle.name, vehicle.name))
 
     if len(CHOICES) == 1:
         initial = [c[0] for c in CHOICES]
