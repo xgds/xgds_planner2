@@ -101,6 +101,7 @@ $(function() {
         setSimInfo(sim, plan, prePlanSimState);
         app.Actions.enable();
         app.State.disableSimulate = false;
+        app.vent.trigger('updatePlanDuration', app.currentPlan._simInfo.deltaTimeSeconds);
     };
 
     function renderSimState(plan) {

@@ -43,11 +43,15 @@ app.views.ScheduleView = Backbone.View.extend({
             planId: app.planJson.serverId,
             flight_names: app.options.flight_names
         }));
-        this.$el.find("#id_schedule_date").datetimepicker({'controlType': 'select',
+        var scheduleDate = this.$el.find("#id_schedule_date");
+        scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,
             'showTimezone': false,
             'timezone': '-0000'
            });
+        if (app.options.planExecution){
+        	scheduleDate.val(moment(app.options.planExecution.planned_start_time).format('MM/DD/YYYY hh:mm'));
+        }
         this.$el.find('#submit_button').click(function(event)
 		    {
         	event.preventDefault();
@@ -61,7 +65,18 @@ app.views.ScheduleView = Backbone.View.extend({
                 data: postData,
                 success: function(data)
                 {
-                	$('#schedule_message').text(data.msg);
+                	var flightName = data['flight'];
+                	if ($("#id_flight option[value='" + flightName + "']").length == 0){
+                		$("#id_flight").append("<option value=" + flightName + " selected>" + flightName +"</option>");
+                	}
+                	$("#id_flight").val(flightName);
+                	scheduleDate.val(moment(data['planned_start_time']).format('MM/DD/YYYY hh:mm'));
+                	$("#id_planExecutionId").val(data['pk']);
+                	$('#schedule_message').text("Plan scheduled for " + scheduleDate.val());
+                	app.options.planExecution = data;
+                	var startMoment = moment(data['planned_start_time']);
+                	playback.updateStartTime(startMoment);
+                	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
                 },
                 error: function(data)
                 {

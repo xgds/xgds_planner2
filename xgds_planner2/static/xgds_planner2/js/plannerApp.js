@@ -287,7 +287,6 @@ var app = (function($, _, Backbone) {
                 if (!_.isUndefined(app.map.planView)){
                     app.map.planView.render();
                 }
-                    
                 app.vent.trigger('updatePlan');
             };
 
@@ -312,6 +311,33 @@ var app = (function($, _, Backbone) {
             app.vent.trigger('clearSaveStatus');
             if (this.options.readOnly == true){
                 app.vent.trigger('readOnly');
+            }
+            
+            app.vent.on('updatePlanDuration', function(newDuration) {
+            	playback.updateEndTime(app.getEndTime(newDuration));
+            }),
+            app.getStartTime = function() {
+            	if (app.options.planExecution) {
+            		return moment(app.options.planExecution.planned_start_time);
+            	} else {
+            		if (!app.startTime){
+            			app.startTime = moment().utc();
+            		}
+            		return app.startTime;
+            	}
+            }
+            
+            app.getEndTime = function(newDuration) {
+            	var theStartTime = app.getStartTime();
+            	if (app.currentPlan._simInfo === undefined){
+            		app.simulatePlan();
+            	}
+            	var duration = newDuration;
+            	if (duration === undefined){
+            		duration = app.currentPlan._simInfo.deltaTimeSeconds;
+            	}
+            	var theEndTime = moment(theStartTime).add(duration, 's');
+            	return theEndTime;
             }
         });
 
@@ -497,7 +523,7 @@ var app = (function($, _, Backbone) {
         }
 
     };
-
+    
     return app;
 
 }(jQuery, _, Backbone));

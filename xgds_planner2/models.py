@@ -82,6 +82,7 @@ class PlanExecution(models.Model):
 
     def toSimpleDict(self):
         result = {}
+        result['pk'] = self.pk
         result['start_time'] = self.start_time
         result['planned_start_time'] = self.planned_start_time
         result['end_time'] = self.end_time
