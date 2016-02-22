@@ -16,6 +16,8 @@
 
 app.views = app.views || {};
 
+var DEFAULT_FORMAT = 'MM/DD/YYYY hh:mm'
+
 app.views.ScheduleView = Backbone.View.extend({
     template: '#template-schedule',
     initialize: function() {
@@ -47,16 +49,19 @@ app.views.ScheduleView = Backbone.View.extend({
         scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,
             'showTimezone': false,
+            //HERETAMAR fix the timezone in the picker to match the display timezone
             'timezone': '-0000'
            });
         if (app.options.planExecution){
-        	scheduleDate.val(moment(app.options.planExecution.planned_start_time).format('MM/DD/YYYY hh:mm'));
+        	scheduleDate.val(moment(app.options.planExecution.planned_start_time).format(DEFAULT_FORMAT));
         }
         this.$el.find('#submit_button').click(function(event)
 		    {
         	event.preventDefault();
             var theForm = $("#scheduleForm");
         	var postData = theForm.serializeArray();
+        	// correct the timezone 
+//        	postData[2].value = getUTCTime(postData[2].value, playback.displayTZ).format(DEFAULT_FORMAT);
             $.ajax(
             {
                 url: "/xgds_planner2/schedulePlan/",
@@ -70,11 +75,11 @@ app.views.ScheduleView = Backbone.View.extend({
                 		$("#id_flight").append("<option value=" + flightName + " selected>" + flightName +"</option>");
                 	}
                 	$("#id_flight").val(flightName);
-                	scheduleDate.val(moment(data['planned_start_time']).format('MM/DD/YYYY hh:mm'));
+                	var startMoment = moment(data['planned_start_time']).tz(playback.displayTZ);
+                	scheduleDate.val(getLocalTimeString(startMoment, playback.displayTZ));
                 	$("#id_planExecutionId").val(data['pk']);
                 	$('#schedule_message').text("Plan scheduled for " + scheduleDate.val());
                 	app.options.planExecution = data;
-                	var startMoment = moment(data['planned_start_time']);
                 	playback.updateStartTime(startMoment);
                 	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
                 },

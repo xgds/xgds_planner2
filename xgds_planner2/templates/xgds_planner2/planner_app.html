@@ -161,7 +161,8 @@
 	$(function(){
     	app.start(appOptions);
     	playback.initialize({getStartTime: app.getStartTime,
-    						 getEndTime: app.getEndTime
+    						 getEndTime: app.getEndTime,
+    						 displayTZ: app.getTimeZone(),
     						 });
 	});
 	$(window).bind('beforeunload', function() {

@@ -233,6 +233,16 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan_json.serverId = plan.pk
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
+        
+    # we added timezone to the site frame in the library but may have created plans without that -- patch them
+    try:
+        plan_timezone = plan_json.site.timezone
+    except AttributeError:
+        for key, sf in settings.XGDS_SITEFRAMES.iteritems():
+            if sf['name'] == plan_json.site.name:
+                plan_json.site.timezone = sf['timezone']
+                plan.save()
+                break;
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
     if plan.executions and plan.executions.count() > 0:
