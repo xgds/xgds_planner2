@@ -315,7 +315,7 @@ var app = (function($, _, Backbone) {
             
             app.vent.on('updatePlanDuration', function(newDuration) {
             	playback.updateEndTime(app.getEndTime(newDuration));
-            }),
+            });
             app.getStartTime = function() {
             	if (app.options.planExecution) {
             		return moment(app.options.planExecution.planned_start_time);
@@ -325,7 +325,7 @@ var app = (function($, _, Backbone) {
             		}
             		return app.startTime;
             	}
-            }
+            };
             
             app.getEndTime = function(newDuration) {
             	var theStartTime = app.getStartTime();
@@ -338,6 +338,14 @@ var app = (function($, _, Backbone) {
             	}
             	var theEndTime = moment(theStartTime).add(duration, 's');
             	return theEndTime;
+            };
+            
+            app.getTimeZone = function(){
+            	var thesite = app.currentPlan.get('site');
+            	if ('timezone' in thesite){
+            		return thesite['timezone'];
+            	}
+            	return 'Etc/UTC';
             }
         });
 
