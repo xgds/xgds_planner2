@@ -14,3 +14,4 @@ xgds_planner2/static/external/node_modules
 .pydevproject
 .project
 \#*\#
+/xgds_planner2/migrations/
