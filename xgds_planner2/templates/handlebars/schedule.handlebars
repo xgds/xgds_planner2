@@ -1,8 +1,7 @@
 <div class="schedule" id="schedule">
   <form name='ScheduleForm' id="scheduleForm" action="#" method="post">
 		<input type="hidden" name="planIds" id="id_planIds" value="{{planId}}"></input>
-		<input type="hidden" id="id_flight" value="0"></input>
-		<input type="hidden" id="id_test" value="0"></input>
+		<input type="hidden" id="id_planExecutionId" name="planExecutionId" value="{{#if planExecution}}{{planExecution.pk}}{{else}}{{/if}}"></input>
 		<table>
 		<tr>
 			<td><label for="id_schedule_date">Start</label></td>

@@ -16,6 +16,8 @@
 
 app.views = app.views || {};
 
+var DEFAULT_FORMAT = 'MM/DD/YYYY hh:mm'
+
 app.views.ScheduleView = Backbone.View.extend({
     template: '#template-schedule',
     initialize: function() {
@@ -43,16 +45,23 @@ app.views.ScheduleView = Backbone.View.extend({
             planId: app.planJson.serverId,
             flight_names: app.options.flight_names
         }));
-        this.$el.find("#id_schedule_date").datetimepicker({'controlType': 'select',
+        var scheduleDate = this.$el.find("#id_schedule_date");
+        scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,
             'showTimezone': false,
+            //HERETAMAR fix the timezone in the picker to match the display timezone
             'timezone': '-0000'
            });
+        if (app.options.planExecution){
+        	scheduleDate.val(moment(app.options.planExecution.planned_start_time).format(DEFAULT_FORMAT));
+        }
         this.$el.find('#submit_button').click(function(event)
 		    {
         	event.preventDefault();
             var theForm = $("#scheduleForm");
         	var postData = theForm.serializeArray();
+        	// correct the timezone 
+//        	postData[2].value = getUTCTime(postData[2].value, playback.displayTZ).format(DEFAULT_FORMAT);
             $.ajax(
             {
                 url: "/xgds_planner2/schedulePlan/",
@@ -61,7 +70,18 @@ app.views.ScheduleView = Backbone.View.extend({
                 data: postData,
                 success: function(data)
                 {
-                	$('#schedule_message').text(data.msg);
+                	var flightName = data['flight'];
+                	if ($("#id_flight option[value='" + flightName + "']").length == 0){
+                		$("#id_flight").append("<option value=" + flightName + " selected>" + flightName +"</option>");
+                	}
+                	$("#id_flight").val(flightName);
+                	var startMoment = moment(data['planned_start_time']).tz(playback.displayTZ);
+                	scheduleDate.val(getLocalTimeString(startMoment, playback.displayTZ));
+                	$("#id_planExecutionId").val(data['pk']);
+                	$('#schedule_message').text("Plan scheduled for " + scheduleDate.val());
+                	app.options.planExecution = data;
+                	playback.updateStartTime(startMoment);
+                	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
                 },
                 error: function(data)
                 {

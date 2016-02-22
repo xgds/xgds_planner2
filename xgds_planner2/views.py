@@ -44,7 +44,7 @@ from geocamUtil import timezone
 from geocamUtil.models.UuidField import makeUuid
 from geocamUtil.KmlUtil import wrapKmlDjango
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
-from geocamUtil.loader import getModelByName, LazyGetModelByName, getClassByName
+from geocamUtil.loader import LazyGetModelByName, getClassByName
 from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
 from geocamUtil.modelJson import modelToJson
@@ -61,11 +61,11 @@ from xgds_map_server.forms import MapSearchForm
 
 _template_cache = None
 
+PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
-
-def get_plan_model():
-    return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL).get()
-
+FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
 
 def plan_help(request):
     return render_to_response(
@@ -78,10 +78,9 @@ def plan_help(request):
 
 @login_required
 def plan_tests(request, plan_id, editable=True):
-    Plan = get_plan_model()
     templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
 
-    plan = Plan.objects.get(pk=plan_id)
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.pk
@@ -137,8 +136,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     Read and write plan JSON.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
-    Plan = get_plan_model()
-    plan = Plan.objects.get(pk=plan_id)
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     if request.method == "PUT":
         data = json.loads(request.body)
         for k, v in data.iteritems():
@@ -209,8 +207,7 @@ def updateAllUuids(planDict):
 
     
 def plan_detail_doc(request, plan_id=None):
-    Plan = get_plan_model()
-    plan = Plan.objects.get(pk=plan_id)
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.pk
@@ -228,15 +225,24 @@ def plan_detail_doc(request, plan_id=None):
 
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
-    Plan = get_plan_model()
     templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
 
-    plan = Plan.objects.get(pk=plan_id)
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
     if not plan_json.serverId:
         plan_json.serverId = plan.pk
     if "None" in plan_json.url:
         plan_json.url = plan.get_absolute_url()
+        
+    # we added timezone to the site frame in the library but may have created plans without that -- patch them
+    try:
+        plan_timezone = plan_json.site.timezone
+    except AttributeError:
+        for key, sf in settings.XGDS_SITEFRAMES.iteritems():
+            if sf['name'] == plan_json.site.name:
+                plan_json.site.timezone = sf['timezone']
+                plan.save()
+                break;
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
     if plan.executions and plan.executions.count() > 0:
@@ -293,8 +299,7 @@ def planIndex(request):
     complemented with a nice index API method for rich JavaScript
     clients.
     """
-    Plan = get_plan_model()
-    context = {'plans': Plan.objects.filter(deleted=False),
+    context = {'plans': PLAN_MODEL.get().objects.filter(deleted=False),
                'flight_names': getAllFlightNames(),
                'exporters': choosePlanExporter.PLAN_EXPORTERS
                }
@@ -305,8 +310,7 @@ def planIndex(request):
 
 
 def plan_index_json():
-    Plan = get_plan_model()
-    plan_objs = Plan.objects.filter(deleted=False)
+    plan_objs = PLAN_MODEL.get().objects.filter(deleted=False)
     plans_json = []
     for plan in plan_objs:
         plans_json.append({
@@ -319,8 +323,7 @@ def plan_index_json():
 
 
 def getDbPlan(uuid):
-    Plan = get_plan_model()
-    return get_object_or_404(Plan, uuid=uuid)
+    return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
 
 
 def planExport(request, uuid, name, time=None, outputDirectory=None):
@@ -420,10 +423,9 @@ def planCreate(request):
 
 @login_required
 def plan_delete(request):
-    PLAN = get_plan_model()
     picks = request.POST.getlist('picks')
     for i in picks:
-        plan = PLAN.objects.get(id=i)
+        plan = PLAN_MODEL.get().objects.get(id=i)
         if plan:
             plan.deleted = True
             plan.save()
@@ -436,8 +438,7 @@ def plan_delete(request):
 def getPlanIndexKml(request):
     out = StringIO()
     out.write('<Document>\n')
-    PLAN = get_plan_model()
-    plans = PLAN.objects.filter(deleted=False)
+    plans = PLAN_MODEL.get().objects.filter(deleted=False)
     plans = list(reversed(sorted(plans, key=lambda plan: (plan.getEscapedId(), plan.escapedName()))))
     for plan in plans:
         fname = '%s.kml' % plan.escapedName()
@@ -469,33 +470,31 @@ def processNameToDate(flight):
 
 
 def getGroupFlights():
-    GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
-    return GroupFlightModel.objects.exclude(name="").order_by('name')
+    return GROUP_FLIGHT_MODEL.get().objects.exclude(name="").order_by('name')
 
 
 def getAllFlights(today=False, reverseOrder=False):
     orderby = 'name'
     if reverseOrder:
         orderby = '-name'
-    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     if not today:
-        return FlightModel.objects.all().order_by(orderby)
+        return FLIGHT_MODEL.get().objects.all().order_by(orderby)
     else:
         now = timezone.localtime(datetime.datetime.utcnow())
         todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
-        return FlightModel.objects.filter(name__startswith=(todayname)).order_by(orderby)
+        return FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
 
 
 def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=False):
     orderby = 'name'
     if reverseOrder:
         orderby = '-name'
-    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-    flightList = FlightModel.objects.exclude(name="").order_by(orderby)
+    flightList = FLIGHT_MODEL.get().objects.exclude(name="").order_by(orderby)
     flightNames = ["-----"]
-    for flight in flightList:
-        if (flight.name):
-            flightNames.append(flight.name)
+    if flightList:
+        for flight in flightList:
+            if (flight.name):
+                flightNames.append(flight.name)
     return flightNames
 
 
@@ -530,13 +529,12 @@ def oltest(request):
 @login_required
 def startFlight(request, uuid):
     errorString = ""
-    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     try:
-        flight = FlightModel.objects.get(uuid=uuid)
+        flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
         flight.start_time = datetime.datetime.utcnow()
         flight.end_time = None
         flight.save()
-    except FlightModel.DoesNotExist:
+    except FLIGHT_MODEL.get().DoesNotExist:
         errorString = "Flight not found"
 
     if flight:
@@ -552,9 +550,8 @@ def startFlight(request, uuid):
 @login_required
 def stopFlight(request, uuid):
     errorString = ""
-    FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
     try:
-        flight = FlightModel.objects.get(pk=uuid)
+        flight = FLIGHT_MODEL.get().objects.get(pk=uuid)
         if not flight.start_time:
             errorString = "Flight has not been started"
         else:
@@ -577,10 +574,11 @@ def stopFlight(request, uuid):
         errorString = "Flight not found"
     return manageFlights(request, errorString)
 
-
 @login_required
 def schedulePlans(request, redirect=True):
     flight = None
+    lastPlanExecution = None
+    pe = None
     if request.method == 'POST':
         try:
             pids = request.POST['planIds']
@@ -588,35 +586,42 @@ def schedulePlans(request, redirect=True):
             for item in pids.split(","):
                 planIds.append(int(item))
 
+            if 'planExecutionId' in request.POST and request.POST['planExecutionId'] != '':
+                pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=int(request.POST['planExecutionId']))
+
             schedule_date_string = request.POST['schedule_date']
             original_schedule_date = None
+            prefix = None
             if schedule_date_string:
                 # convert to utc
                 original_schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
                 schedule_date = timezone.convertToUtc(original_schedule_date)
+                prefix = "%04d%02d%02d" % (original_schedule_date.year, original_schedule_date.month, original_schedule_date.day)
 
             flight_name = request.POST['flight']
-            FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+            
+            # see if flight name matches prefix, if not go by the date
+            if prefix and flight_name:
+                if not flight_name.startswith(prefix):
+                    flight_name = None
+                    
             try:
-                flight = FlightModel.objects.get(name=flight_name)
-            except FlightModel.DoesNotExist:
+                flight = FLIGHT_MODEL.get().objects.get(name=flight_name)
+            except FLIGHT_MODEL.get().DoesNotExist:
                 # see if we can look it up by date
                 if original_schedule_date:
-                    prefix = "%04d%02d%02d" % (original_schedule_date.year, original_schedule_date.month, original_schedule_date.day)
-                    flights = FlightModel.objects.filter(name__startswith=prefix)
+                    flights = FLIGHT_MODEL.get().objects.filter(name__startswith=prefix)
                     if flights:
                         # pick the first one
                         flight = flights[0]
                     else:
                         # it does not exist we better make one
-                        GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
-                        groupFlight = GroupFlightModel()
+                        groupFlight = GROUP_FLIGHT_MODEL.get()()
                         prefix = prefix + "A"
                         groupFlight.name = prefix
                         groupFlight.save()
-                        VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
-                        for vehicle in VehicleModel.objects.all():
-                            newFlight = FlightModel()
+                        for vehicle in VEHICLE_MODEL.get().objects.all():
+                            newFlight = FLIGHT_MODEL.get()()
                             newFlight.group = groupFlight
                             newFlight.vehicle = vehicle
                             newFlight.name = prefix + "_" + vehicle.name
@@ -627,11 +632,11 @@ def schedulePlans(request, redirect=True):
                                 flight = newFlight
 
             if flight:
-                PlanModel = get_plan_model()
-                plans = PlanModel.objects.filter(id__in=planIds)
+                plans = PLAN_MODEL.get().objects.filter(id__in=planIds)
 
                 for plan in plans:
-                    pe = PLAN_EXECUTION_MODEL.get()()
+                    if not pe:
+                        pe = PLAN_EXECUTION_MODEL.get()()
                     pe.planned_start_time = schedule_date
                     pe.flight = flight
                     pe.plan = plan
@@ -640,6 +645,7 @@ def schedulePlans(request, redirect=True):
                         pe = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, pe)
                         
                     pe.save()
+                    lastPlanExecution = pe
         except:
             traceback.print_exc()
             return HttpResponse(json.dumps({'Success':"False", 'msg': 'Plan not scheduled'}), content_type='application/json', status=406)
@@ -647,6 +653,10 @@ def schedulePlans(request, redirect=True):
     if redirect:
         return HttpResponseRedirect(reverse('planner2_index'))
     else:
+        if lastPlanExecution:
+            result =  json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder)
+            print result
+            return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
 
@@ -667,7 +677,7 @@ def startPlan(request, pe_id):
 def stopPlan(request, pe_id):
     errorString = ""
     try:
-        pe = models.PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
+        pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
         if pe.start_time:
             pe.end_time = datetime.datetime.utcnow()
             pe.save()
@@ -708,8 +718,7 @@ def addGroupFlight(request):
     if request.method == 'POST':
         form = GroupFlightForm(request.POST)
         if form.is_valid():
-            GroupFlightModel = getModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
-            groupFlight = GroupFlightModel()
+            groupFlight = GROUP_FLIGHT_MODEL.get()()
             groupFlight.name = form.cleaned_data['date'].strftime('%Y%m%d') + form.cleaned_data['prefix']
             groupFlight.notes = form.cleaned_data['notes']
             try:
@@ -723,12 +732,10 @@ def addGroupFlight(request):
                                           context_instance=RequestContext(request))
 
             for vehicle in form.cleaned_data['vehicles']:
-                FlightModel = getModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-                newFlight = FlightModel()
+                newFlight = FLIGHT_MODEL.get()()
                 newFlight.group = groupFlight
 
-                VehicleModel = getModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
-                newFlight.vehicle = VehicleModel.objects.get(name=vehicle)
+                newFlight.vehicle = VEHICLE_MODEL.get().objects.get(name=vehicle)
                 newFlight.name = groupFlight.name + "_" + vehicle
 
                 newFlight.locked = False
@@ -818,11 +825,9 @@ def toggleReadOnly(request):
     """ Toggle the read only state of plans"""
     if request.method == 'POST':
         pids = request.POST.getlist('pids[]')
-        Plan = get_plan_model()
         for item in pids:
             try:
-                id = int(item)
-                plan = Plan.objects.get(id=id)
+                plan = PLAN_MODEL.get().objects.get(id=int(item))
                 plan.readOnly = not plan.readOnly
                 plan.save()
             except:
