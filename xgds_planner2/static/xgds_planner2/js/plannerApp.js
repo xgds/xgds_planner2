@@ -344,9 +344,13 @@ var app = (function($, _, Backbone) {
             	var thesite = app.currentPlan.get('site');
             	if ('timezone' in thesite){
             		return thesite['timezone'];
+            	} else if ('alternateCrs' in thesite){
+            		if ('timezone' in thesite['alternateCrs'].properties){
+            			return thesite['alternateCrs'].properties.timezone
+            		}
             	}
             	return 'Etc/UTC';
-            }
+            };
         });
 
     app.router = new Backbone.Router({

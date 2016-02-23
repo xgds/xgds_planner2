@@ -654,8 +654,6 @@ def schedulePlans(request, redirect=True):
         return HttpResponseRedirect(reverse('planner2_index'))
     else:
         if lastPlanExecution:
-            result =  json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder)
-            print result
             return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 

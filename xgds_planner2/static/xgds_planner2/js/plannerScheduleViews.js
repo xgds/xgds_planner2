@@ -24,9 +24,6 @@ app.views.ScheduleView = Backbone.View.extend({
     	Handlebars.registerHelper('flightSelected', function (input, flightName) {
             return input === flightName ? 'selected' : '';
         });
-    	Handlebars.registerHelper('evSelected', function (input, evID) {
-            return input.pk === evID ? 'selected' : '';
-        });
         var source = $(this.template).html();
         if (_.isUndefined(source)) {
             this.template = function() {
@@ -41,7 +38,6 @@ app.views.ScheduleView = Backbone.View.extend({
 
         this.$el.html(this.template({
             planExecution: app.options.planExecution,
-            evList: app.options.evList,
             planId: app.planJson.serverId,
             flight_names: app.options.flight_names
         }));
@@ -49,8 +45,7 @@ app.views.ScheduleView = Backbone.View.extend({
         scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,
             'showTimezone': false,
-            //HERETAMAR fix the timezone in the picker to match the display timezone
-            'timezone': '-0000'
+            'timezone': moment.tz(app.getTimeZone()).utcOffset()
            });
         if (app.options.planExecution){
         	scheduleDate.val(moment(app.options.planExecution.planned_start_time).format(DEFAULT_FORMAT));
@@ -60,8 +55,10 @@ app.views.ScheduleView = Backbone.View.extend({
         	event.preventDefault();
             var theForm = $("#scheduleForm");
         	var postData = theForm.serializeArray();
-        	// correct the timezone 
-//        	postData[2].value = getUTCTime(postData[2].value, playback.displayTZ).format(DEFAULT_FORMAT);
+        	// update the date to be in utc
+        	var tzified = moment.tz(postData[1].value, app.getTimeZone());
+        	var theUtc = tzified.format('MM/DD/YY hh:mm');
+        	postData[1].value = theUtc;
             $.ajax(
             {
                 url: "/xgds_planner2/schedulePlan/",
