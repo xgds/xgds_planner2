@@ -75,13 +75,14 @@ app.views.ScheduleView = Backbone.View.extend({
                 		$("#id_flight").append("<option value=" + flightName + " selected>" + flightName +"</option>");
                 	}
                 	$("#id_flight").val(flightName);
-                	var startMoment = moment(data['planned_start_time']).tz(playback.displayTZ);
+                	var startMoment = moment.utc(data['planned_start_time']).tz(playback.displayTZ);
                 	scheduleDate.val(getLocalTimeString(startMoment, playback.displayTZ));
                 	$("#id_planExecutionId").val(data['pk']);
                 	$('#schedule_message').text("Plan scheduled for " + scheduleDate.val());
                 	app.options.planExecution = data;
                 	playback.updateStartTime(startMoment);
                 	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
+                	playback.setCurrentTime(startMoment);
                 },
                 error: function(data)
                 {

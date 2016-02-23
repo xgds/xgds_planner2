@@ -318,7 +318,7 @@ var app = (function($, _, Backbone) {
             });
             app.getStartTime = function() {
             	if (app.options.planExecution) {
-            		return moment(app.options.planExecution.planned_start_time);
+            		return moment.utc(app.options.planExecution.planned_start_time);
             	} else {
             		if (!app.startTime){
             			app.startTime = moment().utc();
