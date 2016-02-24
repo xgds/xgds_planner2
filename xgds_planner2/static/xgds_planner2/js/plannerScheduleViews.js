@@ -16,7 +16,7 @@
 
 app.views = app.views || {};
 
-var DEFAULT_FORMAT = 'MM/DD/YYYY hh:mm'
+var DEFAULT_FORMAT = 'MM/DD/YYYY HH:mm'
 
 app.views.ScheduleView = Backbone.View.extend({
     template: '#template-schedule',
@@ -35,8 +35,13 @@ app.views.ScheduleView = Backbone.View.extend({
     },
     render: function() {
     	$('#schedule_message').empty();
-
+    	var planned_start_time = "";
+    	if (app.options.planExecution !== null){
+    		moment.tz.setDefault('Etc/UTC');
+    		planned_start_time = moment(app.options.planExecution.planned_start_time).tz(app.getTimeZone()).format('MM/DD/YYYY HH:mm');
+    	}
         this.$el.html(this.template({
+        	planned_start_time: planned_start_time,
             planExecution: app.options.planExecution,
             planId: app.planJson.serverId,
             flight_names: app.options.flight_names
@@ -57,8 +62,8 @@ app.views.ScheduleView = Backbone.View.extend({
         	var postData = theForm.serializeArray();
         	// update the date to be in utc
         	moment.tz.setDefault(app.getTimeZone());
-        	var tzified = moment.tz(postData[1].value, 'MM/DD/YY hh:mm', app.getTimeZone());
-        	var theUtc = tzified.utc().format('MM/DD/YY hh:mm');
+        	var tzified = moment.tz(postData[1].value, 'MM/DD/YYYY HH:mm', app.getTimeZone());
+        	var theUtc = tzified.utc().format('MM/DD/YYYY HH:mm');
         	postData[1].value = theUtc;
             $.ajax(
             {

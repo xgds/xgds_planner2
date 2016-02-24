@@ -180,8 +180,8 @@ $("#deleteButton").click(function() {
 	                $("#id_planIds").val(planIds);
 	                //TODO validate
 	                moment.tz.setDefault(defaultTimeZone);
-	                var tzified = moment.tz($('#id_schedule_date').val(), 'MM/DD/YY hh:mm', defaultTimeZone);
-	                var theUtc = tzified.utc().format('MM/DD/YY hh:mm');
+	                var tzified = moment.tz($('#id_schedule_date').val(), 'MM/DD/YYYY HH:mm', defaultTimeZone);
+	                var theUtc = tzified.utc().format('MM/DD/YYYY HH:mm');
     				$('#id_schedule_date').val(theUtc);
 	                $( "#scheduleForm" ).submit();
 	            }
