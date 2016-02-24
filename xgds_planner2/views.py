@@ -552,7 +552,7 @@ def startFlight(request, uuid):
 def stopFlight(request, uuid):
     errorString = ""
     try:
-        flight = FLIGHT_MODEL.get().objects.get(pk=uuid)
+        flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
         if not flight.start_time:
             errorString = "Flight has not been started"
         else:
