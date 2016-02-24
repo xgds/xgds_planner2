@@ -49,6 +49,7 @@ from geocamUtil.loader import LazyGetModelByName, getClassByName
 from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
 from geocamUtil.modelJson import modelToJson
+from geocamUtil.TimeUtil import utcToTimeZone
 
 from xgds_planner2 import (models,
                            choosePlanExporter,
@@ -586,6 +587,7 @@ def schedulePlans(request, redirect=True):
             planIds = []
             for item in pids.split(","):
                 planIds.append(int(item))
+            plans = PLAN_MODEL.get().objects.filter(id__in=planIds)
 
             if 'planExecutionId' in request.POST and request.POST['planExecutionId'] != '':
                 pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=int(request.POST['planExecutionId']))
@@ -594,11 +596,15 @@ def schedulePlans(request, redirect=True):
             original_schedule_date = None
             prefix = None
             if schedule_date_string:
-                # convert to utc
+                # read the date; it comes in as UTC
                 original_schedule_date = dateparser(schedule_date_string)
-                #datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
-                schedule_date = original_schedule_date #timezone.convertToUtc(original_schedule_date)
-                prefix = "%04d%02d%02d" % (original_schedule_date.year, original_schedule_date.month, original_schedule_date.day)
+                schedule_date = original_schedule_date
+                if pe:
+                    firstPlan = pe.plan
+                else:
+                    firstPlan = plans[0]
+                local_date = utcToTimeZone(original_schedule_date, str(firstPlan.jsonPlan.site.alternateCrs.properties.timezone))
+                prefix = "%04d%02d%02d" % (local_date.year, local_date.month, local_date.day)
 
             flight_name = request.POST['flight']
             
@@ -634,8 +640,6 @@ def schedulePlans(request, redirect=True):
                                 flight = newFlight
 
             if flight:
-                plans = PLAN_MODEL.get().objects.filter(id__in=planIds)
-
                 for plan in plans:
                     if not pe:
                         pe = PLAN_EXECUTION_MODEL.get()()
