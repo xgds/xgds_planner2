@@ -62,9 +62,9 @@ app.views.ScheduleView = Backbone.View.extend({
         	var postData = theForm.serializeArray();
         	// update the date to be in utc
         	moment.tz.setDefault(app.getTimeZone());
-        	var tzified = moment.tz(postData[1].value, 'MM/DD/YYYY HH:mm', app.getTimeZone());
+        	var tzified = moment.tz(postData[2].value, 'MM/DD/YYYY HH:mm', app.getTimeZone());
         	var theUtc = tzified.utc().format('MM/DD/YYYY HH:mm');
-        	postData[1].value = theUtc;
+        	postData[2].value = theUtc;
             $.ajax(
             {
                 url: "/xgds_planner2/schedulePlan/",

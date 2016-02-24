@@ -15,6 +15,7 @@
 #__END_LICENSE__
 # pylint: disable=W0702
 import sys
+import pytz
 import collections
 import os
 from cStringIO import StringIO
@@ -598,6 +599,7 @@ def schedulePlans(request, redirect=True):
             if schedule_date_string:
                 # read the date; it comes in as UTC
                 original_schedule_date = dateparser(schedule_date_string)
+                original_schedule_date = pytz.utc.localize(original_schedule_date)
                 schedule_date = original_schedule_date
                 if pe:
                     firstPlan = pe.plan
