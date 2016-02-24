@@ -56,8 +56,9 @@ app.views.ScheduleView = Backbone.View.extend({
             var theForm = $("#scheduleForm");
         	var postData = theForm.serializeArray();
         	// update the date to be in utc
-        	var tzified = moment.tz(postData[1].value, app.getTimeZone());
-        	var theUtc = tzified.format('MM/DD/YY hh:mm');
+        	moment.tz.setDefault(app.getTimeZone());
+        	var tzified = moment.tz(postData[1].value, 'MM/DD/YY hh:mm', app.getTimeZone());
+        	var theUtc = tzified.utc().format('MM/DD/YY hh:mm');
         	postData[1].value = theUtc;
             $.ajax(
             {

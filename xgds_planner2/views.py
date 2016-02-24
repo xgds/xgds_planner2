@@ -22,6 +22,7 @@ import datetime
 import json
 import traceback
 from uuid import uuid4
+from dateutil.parser import parse as dateparser
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -594,8 +595,9 @@ def schedulePlans(request, redirect=True):
             prefix = None
             if schedule_date_string:
                 # convert to utc
-                original_schedule_date = datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
-                schedule_date = timezone.convertToUtc(original_schedule_date)
+                original_schedule_date = dateparser(schedule_date_string)
+                #datetime.datetime.strptime(schedule_date_string, '%m/%d/%Y %H:%M')
+                schedule_date = original_schedule_date #timezone.convertToUtc(original_schedule_date)
                 prefix = "%04d%02d%02d" % (original_schedule_date.year, original_schedule_date.month, original_schedule_date.day)
 
             flight_name = request.POST['flight']

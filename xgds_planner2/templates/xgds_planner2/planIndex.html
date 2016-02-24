@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load tz_convert %}
+{% load tz %}
 
 {% block cssExtras %}
 {{ block.super }}
@@ -57,13 +57,13 @@ table.planIndex td.exportFormat a {
   	<td>{% if plan.readOnly %}<img src="{{ STATIC_URL }}xgds_planner2/images/lock.png" alt="Read Only">{% endif %}</td>
   	<td ><label for="pick_{{plan.id}}"><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></label></td>
   	<td>{{ plan.creator }}</td>
-    <td>{{ plan.dateModified|utc_to_django|date:"Y-m-d H:i e" }}</td>
+    <td>{% timezone TIME_ZONE %}{{ plan.dateModified|date:"Y-m-d H:i e" }}{% endtimezone %}</td>
     <td>{{ plan.jsonPlan.site.name }}</td>
     <td class="right">{{ plan.lengthMeters|floatformat }}</td>
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-    <td style="width:150px;">{% for execution in plan.executions.all %} {{ execution.planned_start_time|utc_to_django|date:"Y-m-d H:i"}}<br/>{% endfor %}</td>
+    <td style="width:150px;">{% for execution in plan.executions.all %} {% timezone TIME_ZONE %}{{ execution.planned_start_time|date:"Y-m-d H:i"}}{% endtimezone %}<br/>{% endfor %}</td>
     {% endif %}
     <td class="exportFormat">
       {% for exporter in plan.getExporters %}
@@ -107,12 +107,17 @@ table.planIndex td.exportFormat a {
 
 {% block scripts %}
   {{ block.super }}
-  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
-  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
-	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
-	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+  	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
+  	<script type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
+	<script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}moment/moment.js"></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}moment-timezone/moment-timezone.js"></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/timezoneDefs.js'></script>
 
 <script type="text/javascript">
+var defaultTimeZone = '{{settings.TIME_ZONE}}';
+
 $( "#PlanForm" ).submit(function( event ) {
 	  event.preventDefault();
 	});
@@ -174,6 +179,10 @@ $("#deleteButton").click(function() {
 	                var flight = $('#id_flight').val();
 	                $("#id_planIds").val(planIds);
 	                //TODO validate
+	                moment.tz.setDefault(defaultTimeZone);
+	                var tzified = moment.tz($('#id_schedule_date').val(), 'MM/DD/YY hh:mm', defaultTimeZone);
+	                var theUtc = tzified.utc().format('MM/DD/YY hh:mm');
+    				$('#id_schedule_date').val(theUtc);
 	                $( "#scheduleForm" ).submit();
 	            }
 	        },
@@ -191,7 +200,7 @@ $("#deleteButton").click(function() {
 	     $( "#id_schedule_date" ).datetimepicker({'controlType': 'select',
 	            'oneLine': true,
 	            'showTimezone': false,
-	            'timezone': '-0000'
+	            'timezone': moment.tz(defaultTimeZone).utcOffset()
 	           });
 	     {% endif %}
 	   
