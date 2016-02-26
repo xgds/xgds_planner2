@@ -120,8 +120,6 @@ $(function() {
                     source:  new ol.source.Vector({features:this.stationsDecorators})
                     });
                 this.map.addLayer(this.stationsDecoratorsLayer);
-                
-
 
                 app.vent.on('mapmode', this.setMode, this);
                 app.vent.trigger('mapmode', 'navigate');
@@ -130,6 +128,16 @@ $(function() {
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
 
                 app.State.planLoaded = true;
+            },
+            createVehicle: function() {
+            	if (this.vehicleView === undefined){
+            		if (this.stationsFeatures.getLength() > 0){
+	            		var vehicleJson = {name:app.currentPlan.get('platform').name,
+	                                       startPoint:this.getFirstStationCoords()};
+	            		this.vehicleView = new app.views.OLVehicleView({featureJson:vehicleJson});
+	            		this.map.addLayer(this.vehicleView.vectorLayer);
+            		}
+            	}
             },
             clear: function() {
         	
@@ -162,6 +170,8 @@ $(function() {
                 	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
                     }
                 }
+                
+                this.createVehicle();
 
             },
 
@@ -236,6 +246,14 @@ $(function() {
                 }
             },
 
+            getFirstStationCoords: function() {
+                var startStation = this.collection.at(0);
+                if (!_.isUndefined(startStation)) {
+                    return transform(startStation.get('geometry').coordinates);
+                }
+                return undefined;
+            },
+            
             getLastStationCoords: function() {
                 var endStation = this.collection.at(this.collection.length - 1);
                 if (!_.isUndefined(endStation)) {
