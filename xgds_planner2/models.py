@@ -16,6 +16,8 @@
 
 import re
 import datetime
+import pytz
+
 import copy
 import logging
 import os
@@ -220,7 +222,7 @@ class AbstractPlan(models.Model):
             self.jsonPlan.serverId = self.pk
         if overWriteDateModified:
             self.jsonPlan.dateModified = (datetime.datetime
-                                          .utcnow()
+                                          .now(pytz.utc)
                                           .replace(microsecond=0)
                                           .isoformat()
                                           + 'Z')

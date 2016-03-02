@@ -16,6 +16,8 @@
 
 # pylint: disable=W0612, W0702
 import datetime
+import pytz
+
 import logging
 import os
 import re
@@ -62,7 +64,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             if context.startTime:
                 self.startTime = context.startTime
             else:
-                self.startTime = datetime.datetime.now()
+                self.startTime = datetime.datetime.now(pytz.utc)
         try:
             fullPlanSchema = getPlanSchema(plan.platform.name)
             simulatorPath = fullPlanSchema.simulatorUrl

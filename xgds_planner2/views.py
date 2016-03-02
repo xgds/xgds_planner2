@@ -154,7 +154,7 @@ def plan_REST(request, plan_id, jsonPlanId):
     elif request.method == "POST":
         # we are doing a save as
         plan.jsonPlan.creator = request.user.username
-        plan.creationDate = datetime.datetime.utcnow()
+        plan.creationDate = datetime.datetime.now(pytz.utc)
         plan.uuid = None
         plan.pk = None
         data = json.loads(request.body)
@@ -492,7 +492,7 @@ def getAllFlights(today=False, reverseOrder=False):
     if not today:
         return FLIGHT_MODEL.get().objects.all().order_by(orderby)
     else:
-        now = timezone.localtime(datetime.datetime.utcnow())
+        now = timezone.localtime(datetime.datetime.now(pytz.utc))
         todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
         return FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
 
@@ -543,7 +543,7 @@ def startFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
-        flight.start_time = datetime.datetime.utcnow()
+        flight.start_time = datetime.datetime.now(pytz.utc)
         flight.end_time = None
         flight.save()
     except FLIGHT_MODEL.get().DoesNotExist:
@@ -567,7 +567,7 @@ def stopFlight(request, uuid):
         if not flight.start_time:
             errorString = "Flight has not been started"
         else:
-            flight.end_time = datetime.datetime.utcnow()
+            flight.end_time = datetime.datetime.now(pytz.utc)
             flight.save()
             flight.stopFlightExtras(request)
 
@@ -680,7 +680,7 @@ def startPlan(request, pe_id):
     errorString = ""
     try:
         pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
-        pe.start_time = datetime.datetime.utcnow()
+        pe.start_time = datetime.datetime.now(pytz.utc)
         pe.end_time = None
         pe.save()
     except:
@@ -694,7 +694,7 @@ def stopPlan(request, pe_id):
     try:
         pe = PLAN_EXECUTION_MODEL.get().objects.get(pk=pe_id)
         if pe.start_time:
-            pe.end_time = datetime.datetime.utcnow()
+            pe.end_time = datetime.datetime.now(pytz.utc)
             pe.save()
         else:
             errorString = "Plan has not been started."
@@ -722,7 +722,7 @@ def addGroupFlight(request):
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
 
-        today = datetime.datetime.utcnow()
+        today = datetime.datetime.now(pytz.utc)
         groupFlightForm.year = today.year
         groupFlightForm.month = today.month - 1
         groupFlightForm.day = today.day
