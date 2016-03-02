@@ -17,12 +17,12 @@
 import re
 import datetime
 import pytz
+from dateutil.parser import parse as dateparser
 
 import copy
 import logging
 import os
 
-import iso8601
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -224,15 +224,13 @@ class AbstractPlan(models.Model):
             self.jsonPlan.dateModified = (datetime.datetime
                                           .now(pytz.utc)
                                           .replace(microsecond=0)
-                                          .isoformat()
-                                          + 'Z')
+                                          .isoformat())
+            self.jsonPlan.dateModified = self.jsonPlan.dateModified[:-6]+'Z'
 
         self.name = self.jsonPlan.name
         self.jsonPlan.url = self.get_absolute_url()
-#         print 'name is now ' + self.name
         self.jsonPlan.serverId = self.pk
-        self.dateModified = (iso8601.parse_date(self.jsonPlan.dateModified)
-                             .replace(tzinfo=None))
+        self.dateModified = dateparser(self.jsonPlan.dateModified).replace(tzinfo=pytz.UTC)
         plannerUsers = User.objects.filter(username=self.jsonPlan.creator)
         if plannerUsers:
             self.creator = plannerUsers[0]
