@@ -878,7 +878,13 @@ def activeFlightsTreeNodes(request):
 
 
 def completedFlightsTreeNodes(request):
-    pass
+    flights = FLIGHT_MODEL.get().objects.exclude(end_time__isnull=True)
+    result = []
+    for f in flights:
+        result.append(f.getTreeJson())
+    json_data = json.dumps(result, indent=4)
+    return HttpResponse(content=json_data,
+                        content_type="application/json")
 
 
 def validateJson(newJsonObj):
