@@ -230,7 +230,7 @@ class AbstractPlan(models.Model):
         self.name = self.jsonPlan.name
         self.jsonPlan.url = self.get_absolute_url()
         self.jsonPlan.serverId = self.pk
-        self.dateModified = dateparser(self.jsonPlan.dateModified).replace(tzinfo=pytz.UTC)
+        self.dateModified = dateparser(self.jsonPlan.dateModified).replace(tzinfo=pytz.utc)
         plannerUsers = User.objects.filter(username=self.jsonPlan.creator)
         if plannerUsers:
             self.creator = plannerUsers[0]
