@@ -66,6 +66,7 @@ _template_cache = None
 
 PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
 FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
 GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
 VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
@@ -968,3 +969,4 @@ def planImport(request):
         traceback.print_exc()
         exc_type, exc_value, exc_traceback = sys.exc_info()
         return HttpResponse(json.dumps({'Success':"False", 'responseText': exc_value['message']}), content_type='application/json', status=406)
+
