@@ -110,10 +110,10 @@ table.planIndex td.exportFormat a {
   	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
   	<script type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
 	<script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
-	<script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
-	<script type="text/javascript" src="{{ EXTERNAL_URL }}moment/moment.js"></script>
-	<script type="text/javascript" src="{{ EXTERNAL_URL }}moment-timezone/moment-timezone.js"></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/timezoneDefs.js'></script>
+	{% include "xgds_core/timeJS.html" %}
+	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	
 
 <script type="text/javascript">
 var defaultTimeZone = '{{settings.TIME_ZONE}}';
@@ -179,9 +179,7 @@ $("#deleteButton").click(function() {
 	                var flight = $('#id_flight').val();
 	                $("#id_planIds").val(planIds);
 	                //TODO validate
-	                moment.tz.setDefault(defaultTimeZone);
-	                var tzified = moment.tz($('#id_schedule_date').val(), 'MM/DD/YYYY HH:mm', defaultTimeZone);
-	                var theUtc = tzified.utc().format('MM/DD/YYYY HH:mm');
+	                var theUtc = getUtcTime("id_schedule_date", defaultTimeZone);
     				$('#id_schedule_date').val(theUtc);
 	                $( "#scheduleForm" ).submit();
 	            }
@@ -197,11 +195,7 @@ $("#deleteButton").click(function() {
 
 	 $(document).ready( function () {
 	     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-	     $( "#id_schedule_date" ).datetimepicker({'controlType': 'select',
-	            'oneLine': true,
-	            'showTimezone': false,
-	            'timezone': moment.tz(defaultTimeZone).utcOffset()
-	           });
+	     addDateTimePicker("id_schedule_date", defaultTimeZone);
 	     {% endif %}
 	   
 		var dataTable = $('#dataTable').dataTable( defaultOptions);
