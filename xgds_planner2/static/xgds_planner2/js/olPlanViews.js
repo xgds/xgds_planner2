@@ -350,7 +350,7 @@ $(function() {
                         });
                         
                         this.listenTo(app.vent, 'itemSelected:segment', function() {
-                            var selectedItem = app.State.stationSelected;
+                            var selectedItem = app.State.segmentSelected;
                             this.mapSelect(selectedItem);
                         });
                         

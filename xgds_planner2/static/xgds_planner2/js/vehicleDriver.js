@@ -17,6 +17,7 @@
 $.extend(playback, {
 	vehicleDriver : {
 		lastUpdate: undefined,
+		paused: false,
 		invalid: false,
 		ranges: [],
 		elements: [],
@@ -52,7 +53,6 @@ $.extend(playback, {
 			if (bearing < 0){
 				bearing = bearing + 2*Math.PI;
 			}
-//			bearing = bearing * (180/Math.PI);
 			
 			return {location:transform(newcoordinates), rotation:bearing};
 		},
@@ -117,10 +117,33 @@ $.extend(playback, {
 		},
 		initialize: function() {
 			moment.tz.setDefault(app.getTimeZone());
+			var _this = this;
+			app.listenTo(app.vent, 'itemSelected:station', function() {
+                _this.setCurrentTime(app.State.stationSelected);
+            });
+            
+            app.listenTo(app.vent, 'itemSelected:segment', function() {
+                _this.setCurrentTime(app.State.segmentSelected);
+            });
+            app.listenTo(app.vent, 'updatePlanDuration', function() {
+            	_this.pause();
+            	_this.analyze();
+            	_this.start(playback.getCurrentTime());
+            });
 			this.analyze();
+		},
+		setCurrentTime: function(element) {
+			// set the current time to the start time of this element
+			var index = this.elements.indexOf(element);
+			if (index >= 0){
+				playback.setCurrentTime(this.ranges[index].start);
+			}
 		},
 		doSetTime: function(currentTime){
 			this.lastUpdate = moment(currentTime);
+			if (this.paused){
+				return;
+			}
 			var newPositionRotation = this.lookupTransform(this.lastUpdate);
 			if (newPositionRotation != null){
 				app.vent.trigger('vehicle:change',newPositionRotation);
@@ -128,6 +151,7 @@ $.extend(playback, {
 		},
 		start: function(currentTime){
 			this.doSetTime(currentTime);
+			this.paused = false;
 		},
 		update: function(currentTime){
 			if (this.lastUpdate === undefined){
@@ -140,7 +164,7 @@ $.extend(playback, {
 			}
 		},
 		pause: function() {
-			// noop
+			this.paused = true;
 		}
 	}
 });
