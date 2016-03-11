@@ -23,13 +23,18 @@ ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MO
 FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
 
 def getFlight(event_time, vehicle):
+    """ Returns the flight that contains that event_time """
     if vehicle:
         found_flights = FLIGHT_MODEL.get().objects.exclude(end_time__isnull=True).filter(vehicle=vehicle, start_time__lte=event_time, end_time__gte=event_time)
     else:
         found_flights = FLIGHT_MODEL.get().objects.exclude(end_time__isnull=True).filter(start_time__lte=event_time, end_time__gte=event_time)
         
     if found_flights.count() == 0:
-        return getActiveFlight(vehicle)
+        found_active_flight =  getActiveFlight(vehicle)
+        if found_active_flight:
+            if event_time >= found_active_flight.start_time:
+                return found_active_flight;
+        return None
     else:
         return found_flights[0]
     
