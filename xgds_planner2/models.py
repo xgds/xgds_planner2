@@ -70,7 +70,11 @@ class Vehicle(AbstractVehicle):
     pass
 
 
-class PlanExecution(models.Model):
+DEFAULT_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.Flight', null=True, blank=True)  #, related_name="plans")
+DEFAULT_PLAN_FIELD = lambda: models.ForeignKey('xgds_planner2.Plan', null=True, blank=True)  #, related_name="executions")
+
+
+class AbstractPlanExecution(models.Model):
     """
     Relationship table for managing
     flight to plan's many to many relationship.
@@ -79,8 +83,8 @@ class PlanExecution(models.Model):
     planned_start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
 
-    flight = models.ForeignKey(settings.XGDS_PLANNER2_FLIGHT_MODEL) #, related_name="plans")
-    plan = models.ForeignKey(settings.XGDS_PLANNER2_PLAN_MODEL) # , related_name="executions")
+    flight = 'set to DEFAULT_FLIGHT_FIELD() or similar in derived classes'
+    plan = 'set to DEFAULT_PLAN_FIELD() or similar in derived classes'
 
     def toSimpleDict(self):
         result = {}
@@ -102,7 +106,17 @@ class PlanExecution(models.Model):
         return str(self.pk)
     
     class Meta:
+        abstract = True
         ordering = ['planned_start_time']
+
+
+class PlanExecution(AbstractPlanExecution):
+    flight = DEFAULT_FLIGHT_FIELD()
+    plan = DEFAULT_PLAN_FIELD()
+
+
+DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey(Vehicle, null=True, blank=True)
+DEFAULT_GROUP_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.GroupFlight', null=True, blank=True)
 
 
 class AbstractFlight(models.Model):
@@ -111,9 +125,9 @@ class AbstractFlight(models.Model):
     locked = models.BooleanField(blank=True, default=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
-    vehicle = models.ForeignKey(settings.XGDS_PLANNER2_VEHICLE_MODEL, null=True, blank=True)
+    vehicle = 'set to DEFAULT_VEHICLE_FIELD() or similar in derived classes'
     notes = models.TextField(blank=True)
-    group = models.ForeignKey(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL, null=True, blank=True)
+    group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'
 
     def startFlightExtras(self, request):
         pass
@@ -144,11 +158,15 @@ class AbstractFlight(models.Model):
 
 
 class Flight(AbstractFlight):
-    pass
+    vehicle = DEFAULT_VEHICLE_FIELD()
+    group = DEFAULT_GROUP_FLIGHT_FIELD()
+
+
+DEFAULT_ONE_TO_ONE_FLIGHT_FIELD = lambda: models.OneToOneField(Flight, related_name="active", null=True, blank=True)
 
 
 class AbstractActiveFlight(models.Model):
-    flight = models.OneToOneField(settings.XGDS_PLANNER2_FLIGHT_MODEL, related_name="active")
+    flight = 'set to DEFAULT_ONE_TO_ONE_FLIGHT_FIELD() or similar in derived classes'
 
     def __unicode__(self):
         return (u'ActiveFlight(%s, %s)' %
@@ -159,7 +177,7 @@ class AbstractActiveFlight(models.Model):
 
 
 class ActiveFlight(AbstractActiveFlight):
-    pass
+    flight = DEFAULT_ONE_TO_ONE_FLIGHT_FIELD()
 
 
 class AbstractGroupFlight(models.Model):
