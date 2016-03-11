@@ -33,9 +33,9 @@ $.extend(playback, {
 			var percentage = currentDuration / fullDuration;
 			
 			var prevStation = this.elements[index - 1];
-			var prev = transform(prevStation.get('geometry').coordinates);
+			var prev = prevStation.get('geometry').coordinates;
 			var nextStation = this.elements[index + 1];
-			var next = transform(nextStation.get('geometry').coordinates);
+			var next = nextStation.get('geometry').coordinates;
 			
 			var newx = prev[0] + ( percentage * (next[0] - prev[0]));
 			var newy = prev[1] + ( percentage * (next[1] - prev[1]));
@@ -46,15 +46,15 @@ $.extend(playback, {
 //			var x = Math.cos(prev[0])*Math.sin(next[0]) -
 //			        Math.sin(prev[0])*Math.cos(next[0])*Math.cos(next[1]-prev[1]);
 //			var bearing = Math.atan2(y, x);
-			var dx = next[0] - prev[0];
-			var dy = next[1] - prev[1];
+			var dx = next[1] - prev[1];
+			var dy = next[0] - prev[0];
 			var bearing = Math.atan2(dy, dx);
 			if (bearing < 0){
 				bearing = bearing + 2*Math.PI;
 			}
 //			bearing = bearing * (180/Math.PI);
 			
-			return {location:newcoordinates, rotation:bearing};
+			return {location:transform(newcoordinates), rotation:bearing};
 		},
 		getPosition: function(currentTime, lastIndex) {
 			var pathElement = this.elements[this.lastIndex];
