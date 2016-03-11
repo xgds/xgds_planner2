@@ -22,7 +22,7 @@ $.extend(playback, {
 		elements: [],
 		lastIndex: 0,
 		getStationTransform: function(currentTime, station) {
-			return {location:transform(station.get('geometry').coordinates), rotation:0};
+			return {location:transform(station.get('geometry').coordinates), rotation:null};
 		},
 		getSegmentTransform: function(currentTime, segment, index){
 			// interpolate along straight line
@@ -33,14 +33,28 @@ $.extend(playback, {
 			var percentage = currentDuration / fullDuration;
 			
 			var prevStation = this.elements[index - 1];
-			var prev = prevStation.get('geometry').coordinates;
+			var prev = transform(prevStation.get('geometry').coordinates);
 			var nextStation = this.elements[index + 1];
-			var next = nextStation.get('geometry').coordinates;
+			var next = transform(nextStation.get('geometry').coordinates);
 			
 			var newx = prev[0] + ( percentage * (next[0] - prev[0]));
 			var newy = prev[1] + ( percentage * (next[1] - prev[1]));
 			var newcoordinates = [newx, newy];
-			return {location:transform(newcoordinates), rotation:0};
+			
+			// http://www.movable-type.co.uk/scripts/latlong.html
+//			var y = Math.sin(next[1]-prev[1]) * Math.cos(next[0]);
+//			var x = Math.cos(prev[0])*Math.sin(next[0]) -
+//			        Math.sin(prev[0])*Math.cos(next[0])*Math.cos(next[1]-prev[1]);
+//			var bearing = Math.atan2(y, x);
+			var dx = next[0] - prev[0];
+			var dy = next[1] - prev[1];
+			var bearing = Math.atan2(dy, dx);
+			if (bearing < 0){
+				bearing = bearing + 2*Math.PI;
+			}
+//			bearing = bearing * (180/Math.PI);
+			
+			return {location:newcoordinates, rotation:bearing};
 		},
 		getPosition: function(currentTime, lastIndex) {
 			var pathElement = this.elements[this.lastIndex];
@@ -57,6 +71,17 @@ $.extend(playback, {
 			if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
 				return this.getPosition(currentTime, this.lastIndex);
 			} else {
+				// see if we went back
+				if (currentTime.unix() < this.ranges[this.lastIndex].start.unix()){
+					// iterate back
+					while (this.lastIndex > 0) {
+						this.lastIndex = this.lastIndex -1;
+						if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
+							return this.getPosition(currentTime, this.lastIndex);
+						}
+					}
+					return null;
+				}
 				while (this.lastIndex < this.ranges.length){
 					this.lastIndex = this.lastIndex + 1;
 					if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
@@ -83,7 +108,7 @@ $.extend(playback, {
 			var seq = plan.get('sequence').toArray();
 			for (var i=0; i<seq.length; i++){
 				var pathElement = seq[i];
-				var startTime = moment(moment.analysisTime);
+				var startTime = moment(analysisTime);
 				analysisTime.add(pathElement.getDuration(), 's');
 				var endTime = moment(analysisTime);
 				this.ranges.push(moment.range(startTime, endTime))
