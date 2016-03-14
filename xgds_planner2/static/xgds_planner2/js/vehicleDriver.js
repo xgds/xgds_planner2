@@ -17,7 +17,6 @@
 $.extend(playback, {
 	vehicleDriver : {
 		lastUpdate: undefined,
-		paused: false,
 		invalid: false,
 		ranges: [],
 		elements: [],
@@ -29,7 +28,7 @@ $.extend(playback, {
 			// interpolate along straight line
 			var range = this.ranges[this.lastIndex];
 			var newRange = moment.range(range.start, currentTime);
-			var currentDuration = newRange.diff('seconds');
+			var currentDuration = newRange.diff('milliseconds') / 1000;
 			var fullDuration = segment.getDuration();
 			var percentage = currentDuration / fullDuration;
 			
@@ -68,7 +67,10 @@ $.extend(playback, {
 			if (this.elements.length == 0){
 				return null;
 			}
-			if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
+			if (this.lastIndex > this.ranges.length){
+				this.lastIndex = this.ranges.length - 1;
+			}
+			if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
 				return this.getPosition(currentTime, this.lastIndex);
 			} else {
 				// see if we went back
@@ -76,7 +78,7 @@ $.extend(playback, {
 					// iterate back
 					while (this.lastIndex > 0) {
 						this.lastIndex = this.lastIndex -1;
-						if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
+						if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
 							return this.getPosition(currentTime, this.lastIndex);
 						}
 					}
@@ -84,7 +86,7 @@ $.extend(playback, {
 				}
 				while (this.lastIndex < this.ranges.length){
 					this.lastIndex = this.lastIndex + 1;
-					if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || currentTime.within(this.ranges[this.lastIndex])){
+					if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
 						return this.getPosition(currentTime, this.lastIndex);
 					}
 				}
@@ -103,7 +105,7 @@ $.extend(playback, {
 				this.invalid = false;
 			}
 
-			var analysisTime = moment(app.getStartTime());
+			var analysisTime = moment(app.getStartTime()).tz(app.getTimeZone());
 			var _this = this;
 			var seq = plan.get('sequence').toArray();
 			for (var i=0; i<seq.length; i++){
@@ -141,9 +143,6 @@ $.extend(playback, {
 		},
 		doSetTime: function(currentTime){
 			this.lastUpdate = moment(currentTime);
-			if (this.paused){
-				return;
-			}
 			var newPositionRotation = this.lookupTransform(this.lastUpdate);
 			if (newPositionRotation != null){
 				app.vent.trigger('vehicle:change',newPositionRotation);
@@ -151,20 +150,19 @@ $.extend(playback, {
 		},
 		start: function(currentTime){
 			this.doSetTime(currentTime);
-			this.paused = false;
 		},
 		update: function(currentTime){
-			if (this.lastUpdate === undefined){
+		    if (this.lastUpdate === undefined){
 				this.doSetTime(currentTime);
 				return;
 			}
 			var delta = currentTime.diff(this.lastUpdate);
-			if (Math.abs(delta) >= 1000) {
+			if (Math.abs(delta) >= 100) {
 				this.doSetTime(currentTime);
 			}
 		},
 		pause: function() {
-			this.paused = true;
+			// noop
 		}
 	}
 });
