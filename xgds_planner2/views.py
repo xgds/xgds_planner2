@@ -364,7 +364,8 @@ def planExport(request, uuid, name, time=None, outputDirectory=None):
     exporter = exporterClass()
     if time:
         try:
-            context = DotDict({'startTime': datetime.datetime.strptime(time, '%Y-%m-%d-%H-%M')})
+            thetime = dateparser(time)
+            context = DotDict({'startTime': thetime.astimezone(pytz.utc)})
             exporter.initPlan(dbPlan, context)
         except:
             pass

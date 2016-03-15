@@ -125,6 +125,8 @@ class AbstractFlight(models.Model):
     locked = models.BooleanField(blank=True, default=False)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
+    timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
+
     vehicle = 'set to DEFAULT_VEHICLE_FIELD() or similar in derived classes'
     notes = models.TextField(blank=True)
     group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'

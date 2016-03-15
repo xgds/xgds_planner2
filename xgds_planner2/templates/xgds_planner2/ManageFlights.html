@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load nav %}
-{% load tz_convert %}
+{% load tz %}
 
 {% block siteSection %} Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }} {% endblock %}
 
@@ -45,17 +45,17 @@
 	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
 		<td >{{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}: {{ flight.name }}</td>
 		<td></td>
-		<td>{% if flight.start_time %} {{flight.start_time|utc_to_django|date:"Y-m-d H:i"}} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
-		<td>{% if flight.end_time %} {{flight.end_time|utc_to_django|date:"Y-m-d H:i"}} {% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
+		<td>{% if flight.start_time %}{% timezone flight.timezone %} {{flight.start_time|date:"Y-m-d H:i e"}}{% endtimezone %} {% else %} <a href="{% url 'planner2_startFlight' flight.uuid %}">Start</a>{% endif %}</td>
+		<td>{% if flight.end_time %} {% timezone flight.timezone %}{{flight.end_time|date:"Y-m-d H:i e"}}{% endtimezone %}{% elif flight.start_time %} <a href="{% url 'planner2_stopFlight' flight.uuid %}">Stop</a>{% endif %}</td>
 		<td></td>
 	</tr>
 	{% for pe in flight.plans.all %}
 	{% with pe.plan.escapedName|add:".pml" as filename %} 
 	<tr {% if not pe.end_time and pe.start_time %} style="background:lightgreen;" {% endif %}>
 		<td>&nbsp;&nbsp;<a href="{% url 'planner2_edit' pe.plan.id %}">{{ pe.plan.escapedName }}</a></td>
-		<td>{% if pe.planned_start_time %}{{ pe.planned_start_time|utc_to_django|date:"Y-m-d H:i"}} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.planned_start_time|date:'Y-m-d-H-i' %}">PML</a>{% endif %}</td>
-		<td>{% if pe.start_time %} {{pe.start_time|utc_to_django|date:"Y-m-d H:i"}} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.start_time|date:'Y-m-d-H-i' %}">PML</a>{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
-		<td>{% if pe.end_time %} {{pe.end_time|utc_to_django|date:"Y-m-d H:i"}}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
+		<td>{% if pe.planned_start_time %}{% timezone flight.timezone %} {{ pe.planned_start_time|date:"Y-m-d H:i e"}}{% endtimezone %} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.planned_start_time|date:'c' %}">PML</a>{% endif %}</td>
+		<td>{% if pe.start_time %}{% timezone flight.timezone %}  {{pe.start_time|date:"Y-m-d H:i e"}}{% endtimezone %} <a href="{% url 'planner2_planExportTime' pe.plan.uuid filename pe.start_time|date:'c' %}">PML</a>{% else %} <a href="{% url 'planner2_startPlan' pe.id %}">Start</a>  {% endif %}</td>
+		<td>{% if pe.end_time %} {% timezone flight.timezone %} {{pe.end_time|date:"Y-m-d H:i e"}}{% endtimezone %}{% elif pe.start_time %} <a href="{% url 'planner2_stopPlan' pe.id %}">Stop</a> {% endif %}</td>
 		<td>{% if not pe.start_time %}<a href="{% url 'planner2_deletePlanExecution' pe.id %}">Delete</a>{% endif %}</td>
 	</tr> 
 	{% endwith %}

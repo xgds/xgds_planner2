@@ -22,7 +22,6 @@ import logging
 import os
 import re
 
-
 from django.conf import settings
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2.models import getPlanSchema
@@ -48,8 +47,8 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             planSchema = getPlanSchema(platform["name"])
             plan = dbPlan.toXpjson()
             try:
-                if dbPlan.planexecution_set:
-                    pe = dbPlan.planexecution_set.all()[0]
+                if dbPlan.executions.count():
+                    pe = dbPlan.executions.first()
                     self.startTime = pe.planned_start_time
                     self.vehicle = str(pe.flight.vehicle.name)
             except:
@@ -189,27 +188,29 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         return activity
 
     def transformStationCommand(self, command, context):
-        duration = 60 * command.duration
+        duration = command.duration
         name = command.name
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
         color = None
-        if command.color:
-            color = command.color[1:]
+        if color in command:
+            if command.color:
+                color = command.color[1:]
         activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
-        self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
+        self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
 
     def transformSegmentCommand(self, command, context):
-        duration = 60 * command.duration
+        duration = command.duration
         name = command.name
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
         color = None
-        if command.color:
-            color = command.color[1:]
+        if color in command:
+            if command.color:
+                color = command.color[1:]
         activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
-        self.startTime = self.startTime + datetime.timedelta(seconds=60 * command.duration)
+        self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
 
     def transformPlan(self, plan, tsequence, context):
