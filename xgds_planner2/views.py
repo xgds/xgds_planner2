@@ -258,10 +258,12 @@ def plan_editor_app(request, plan_id=None, editable=True):
         plan.save()
 
     planSchema = models.getPlanSchema(plan.jsonPlan.platform.name)
-    if plan.executions and plan.executions.count() > 0:
-        pe = json.dumps(plan.executions.all()[0].toSimpleDict(), cls=DatetimeJsonEncoder)
-    else:
-        pe = None
+    pe = None
+    try:
+        if plan.executions and plan.executions.count() > 0:
+            pe = json.dumps(plan.executions.all()[0].toSimpleDict(), cls=DatetimeJsonEncoder)
+    except:
+        pass
 
     context = {
             'templates': templates,
