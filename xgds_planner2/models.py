@@ -139,14 +139,43 @@ class AbstractFlight(models.Model):
     def __unicode__(self):
         return self.name
 
+    def getTreeJsonChildren(self):
+        children = []
+        if self.track:
+            children.append({"title": "Track", 
+                             "selected": False, 
+                             "tooltip": "Tracks for " + self.name, 
+                             "key": self.uuid + "_tracks", 
+                             "data": {"json": reverse('geocamTrack_mapJsonTrack', kwargs={'uuid': str(self.track.uuid)}),
+                                     "sseUrl": "", 
+                                     "type": 'MapLink', 
+                                     }
+                            })
+        if self.plans:
+            myplan = self.plans[0].plan
+            children.append({"title": "Plan", 
+                             "selected": False, 
+                             "tooltip": "Plan for " + self.name, 
+                             "key": self.uuid + "_plan", 
+                             "data": {"json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(myplan.uuid)}),
+                                     "sseUrl": "", 
+                                     "type": 'MapLink', 
+                                     }
+                             })
+        return children
+    
     def getTreeJson(self):
         result = {"title": self.name,
                   "key": self.uuid,
                   "tooltip": self.notes,
+                  "folder": True, 
                   "data": {"type": self.__class__.__name__,
-                           "vehicle": self.vehicle.name
-                           }
+                           "vehicle": self.vehicle.name,
+                           "href": '', # TODO add url to the flight summary page when it exists
+                           },
+                  "children": self.getTreeJsonChildren()
                   }
+        
         return result
     
     @property
