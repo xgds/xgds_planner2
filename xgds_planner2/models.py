@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import re
 import datetime
 import pytz
@@ -350,8 +349,10 @@ class AbstractPlan(models.Model):
                 sta = {}
                 sta['id'] = el.id
                 sta['coords'] = el.geometry.coordinates
-                if el.notes:
-                    sta['notes'] = el.notes
+                sta['notes'] = ''
+                if hasattr(el, 'notes'):
+                    if el.notes:
+                        sta['notes'] = el.notes
                 stations.append(sta)
         result['stations'] = stations
         return result
@@ -359,10 +360,10 @@ class AbstractPlan(models.Model):
     def getTreeJson(self):
         result = {"title": self.name,
                   "key": self.uuid,
-                  "tooltip": self.summary,
+                  "tooltip": self.jsonPlan.notes,
                   "data": {"type": "MapLink",  # we cheat so this will be 'live'
                            "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
-                           "url": reverse('planner2_edit', kwargs={'plan_id': str(self.pk)})
+                           "href": reverse('planner2_edit', kwargs={'plan_id': str(self.pk)})
                            }
                   }
         return result

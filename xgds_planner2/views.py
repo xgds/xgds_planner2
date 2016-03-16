@@ -890,6 +890,15 @@ def completedFlightsTreeNodes(request):
     return HttpResponse(content=json_data,
                         content_type="application/json")
 
+def plansTreeNodes(request):
+    plans = PLAN_MODEL.get().objects.filter(deleted=False)
+    result = []
+    for plan in plans:
+        result.append(plan.getTreeJson())
+    json_data = json.dumps(result, indent=4)
+    return HttpResponse(content=json_data,
+                        content_type="application/json")
+
 
 def validateJson(newJsonObj):
     ''' Validate input json against defined schema
