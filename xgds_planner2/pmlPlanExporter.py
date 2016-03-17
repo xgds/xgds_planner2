@@ -193,9 +193,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
         color = None
-        if color in command:
-            if command.color:
-                color = command.color[1:]
+        allCommandSpecs = context.schema.commandSpecsLookup[command.type]
+        if hasattr(allCommandSpecs, 'color'):
+            if allCommandSpecs.color:
+                color = allCommandSpecs.color[1:]
         notes = None
         if hasattr(command, 'notes'):
             notes = command.notes
@@ -209,10 +210,11 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         if not name:
             name = "%s%s" % (str(command.type), '' if command.id is None else ' ' + command.id)
         color = None
-        if color in command:
-            if command.color:
-                color = command.color[1:]
-        notes = Note
+        allCommandSpecs = context.schema.commandSpecsLookup[command.type]
+        if hasattr(allCommandSpecs, 'color'):
+            if allCommandSpecs.color:
+                color = allCommandSpecs.color[1:]
+        notes = None
         if hasattr(command, 'notes'):
             notes = command.notes
         activity = self.makeActivity(command.type, command.id, name, duration, notes, color)
