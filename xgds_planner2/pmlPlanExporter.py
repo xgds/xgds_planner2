@@ -127,7 +127,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                         <String></String>
                     </Property>
                     <Property name="notes">
-                        <String>"%(notes)s"</String>
+                        <String>%(notes)s</String>
                     </Property>
                     <Property name="flexible">
                         <Boolean>true</Boolean>
