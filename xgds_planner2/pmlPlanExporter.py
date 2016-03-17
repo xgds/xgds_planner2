@@ -165,7 +165,11 @@ class PmlPlanExporter(TreeWalkPlanExporter):
             name = "%02d" % self.stationCounter
 
         name = "Station %s%s" % (name, '' if station.name is None else ' ' + station.name)
-        result = self.makeActivity("Station", station.id, name, 0, station.notes, None)
+        notes = station.notes
+        if notes:
+            notes = '"' + notes + '"'
+        
+        result = self.makeActivity("Station", station.id, name, 0, notes, None)
         self.stationCounter = self.stationCounter + 1
         return result
 
@@ -182,7 +186,11 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         segmentDuration = self.DRIVE_TIME_MULTIPLIER * (meters / speed) + self.ROTATION_ADDITION
 
         name = "Segment %02d%s" % (self.segmentCounter, '' if segment.name is None else ' ' + segment.name)
-        activity = self.makeActivity("Segment", segment.id, name, segmentDuration, segment.notes, 'ffa300')
+        notes = segment.notes
+        if notes:
+            notes = '"' + notes + '"'
+
+        activity = self.makeActivity("Segment", segment.id, name, segmentDuration, notes, 'ffa300')
         self.startTime = self.startTime + datetime.timedelta(seconds=segmentDuration)
         self.segmentCounter = self.segmentCounter + 1
         return activity
@@ -199,7 +207,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 color = allCommandSpecs.color[1:]
         notes = None
         if hasattr(command, 'notes'):
-            notes = command.notes
+            notes = '"' + command.notes + '"'
         activity = self.makeActivity(command.type, command.id, name, duration, notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
@@ -216,7 +224,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 color = allCommandSpecs.color[1:]
         notes = None
         if hasattr(command, 'notes'):
-            notes = command.notes
+            notes = '"' + command.notes + '"'
         activity = self.makeActivity(command.type, command.id, name, duration, notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
