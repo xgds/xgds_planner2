@@ -203,9 +203,9 @@ def updateAllUuids(planDict):
     planDict.uuid = makeUuid()
     for element in planDict.sequence:
         element.uuid = makeUuid()
-        if element.sequence:
+	if hasattr(element, 'sequence'):
             for child in element.sequence:
-                if child.uuid:
+                if hasattr(child, 'uuid'):
                     child.uuid = makeUuid()
     return planDict
 

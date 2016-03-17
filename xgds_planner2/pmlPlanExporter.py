@@ -115,7 +115,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         return durationString
 
     def makeActivity(self, activityType, activityId, name, durationSeconds, notes, color):
-        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)sZ">
+        return ("""            <Activity activityType="%(activityType)s" duration="%(duration)s" id="%(activityId)s" name="%(name)s" scheduled="true" startTime="%(startTime)s">
                 <SharedProperties>
                     <Property name="location">
                         <String></String>
@@ -147,7 +147,7 @@ class PmlPlanExporter(TreeWalkPlanExporter):
                 'activityId': '' if activityId is None else activityId,
                 'name': '' if name is None else name,
                 'duration': self.getDurationString(durationSeconds),
-                'startTime': self.startTime.replace(microsecond=0).isoformat(),
+                'startTime': self.startTime.replace(microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ'),
                 'notes': '' if notes is None else notes,
                 'color': '4db8ff' if color is None else color,
                 'vehicle': '' if self.vehicle is None else self.vehicle,
@@ -196,7 +196,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         if color in command:
             if command.color:
                 color = command.color[1:]
-        activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
+        notes = None
+        if hasattr(command, 'notes'):
+            notes = command.notes
+        activity = self.makeActivity(command.type, command.id, name, duration, notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
 
@@ -209,7 +212,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
         if color in command:
             if command.color:
                 color = command.color[1:]
-        activity = self.makeActivity(command.type, command.id, name, duration, command.notes, color)
+        notes = Note
+        if hasattr(command, 'notes'):
+            notes = command.notes
+        activity = self.makeActivity(command.type, command.id, name, duration, notes, color)
         self.startTime = self.startTime + datetime.timedelta(seconds=command.duration)
         return activity
 
