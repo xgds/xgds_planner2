@@ -14,6 +14,7 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
+from geocamUtil.SettingsUtil import getOrCreateArray
 """
 This app may define some new parameters that can be modified in the
 Django settings module.  Let's say one such parameter is FOO.  The
@@ -56,6 +57,7 @@ PIPELINE_CSS.update(plannerSettings.XGDS_PLANNER_PIPELINE_CSS)
 """
 
 import os
+from geocamUtil.SettingsUtil import getOrCreateDict
 
 XGDS_PLANNER_OFFLINE = False  # Don't load google earth if this is true
 XGDS_PLANNER_MAP_ROTATION_HANDLES = True
@@ -244,36 +246,46 @@ XGDS_PLANNER2_LINKS_LOADED_CALLBACK = 'null'
 # It is initialized by calling views.getSiteFrames().
 XGDS_PLANNER2_SITE_FRAMES = []
 
-XGDS_MAP_SERVER_JS_MAP = {}
+XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
                                   'model': XGDS_PLANNER2_PLAN_MODEL,
-                                  'hiddenColumns': ['stations', 'type', 'id']
-                                  }
-
-# include this in your siteSettings.py BOWER_INSTALLED_APPS
-XGDS_PLANNER2_BOWER_INSTALLED_APPS = (
-    'jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
-    'lodash#3.10.0',
-    'backbone#1.1.2',
-    'marionette=marionette',
-    'backbone-relational',
-    'backbone-forms',
-    'handlebars=git://github.com/components/handlebars.js.git',
-    'string-format=git://github.com/tamarmot/string-format.git',
-    'proj4',
-    'usng=git://github.com/codice/usng.js.git',
-    'qunit',
-    'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.14.0/v3.14.0-dist.zip',
-    'ol3-popup',
-    'fancytree=fancytree',
-    'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
-    'uuid4',
-    'moment',
-    'moment-duration-format',
-    'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
-)
+                                  'hiddenColumns': ['stations', 'type', 'id']}
 
 
+BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
+BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
+                         'lodash#3.10.0',
+                         'backbone#1.1.2',
+                         'marionette=marionette',
+                         'backbone-relational',
+                         'backbone-forms',
+                         'handlebars=git://github.com/components/handlebars.js.git',
+                         'string-format=git://github.com/tamarmot/string-format.git',
+                         'proj4',
+                         'usng=git://github.com/codice/usng.js.git',
+                         'qunit',
+                         'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.14.0/v3.14.0-dist.zip',
+                         'ol3-popup',
+                         'fancytree=fancytree',
+                         'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
+                         'uuid4',
+                         'moment',
+                         'moment-duration-format',
+                         'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
+                         ]
+
+XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
+XGDS_DATA_MASKED_FIELDS['xgds_planner2'] = {'Plan': ['uuid',
+                                                     'dateModified',
+                                                     'jsonPlan',
+                                                     'deleted',
+                                                     'readOnly',
+                                                     'numStations',
+                                                     'numSegments',
+                                                     'numCommands',
+                                                     'stats'
+                                                     ]
+                                            }
 # If you have callbacks to be connected to the planner, register them as follows
 # XGDS_PLANNER2_CALLBACK = [(MODIFY,'my.planner.modify.callback', PYTHON),
 #                           (SAVE,'my.planner.save.callback', JAVASCRIPT)] 
