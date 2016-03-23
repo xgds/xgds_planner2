@@ -55,14 +55,19 @@ class StatsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         self.numCommands = 0
         self.numCommandsByType = {}
         self.lengthMeters = 0
+        self.estimatedDurationSeconds = 0
 
+    def initPlan(self, plan, context):
+        self.defaultSpeed = plan.defaultSpeed
+        
     def transformPlan(self, plan, tsequence, context):
         return {
             'numStations': self.numStations,
             'numSegments': self.numSegments,
             'numCommands': self.numCommands,
             'numCommandsByType': self.numCommandsByType,
-            'lengthMeters': self.lengthMeters
+            'lengthMeters': self.lengthMeters,
+            'estimatedDurationSeconds': self.estimatedDurationSeconds
         }
 
     def transformStation(self, station, tsequence, context):
@@ -70,14 +75,26 @@ class StatsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
 
     def transformSegment(self, segment, tsequence, context):
         self.numSegments += 1
-        self.lengthMeters += getDistanceMeters(context.prevStation.geometry['coordinates'],
+        segmentLength = getDistanceMeters(context.prevStation.geometry['coordinates'],
                                                context.nextStation.geometry['coordinates'])
+        self.lengthMeters += segmentLength
+        if hasattr(segment, "hintedSpeed"):
+                speed = float(segment.hintedSpeed)
+        else:
+                speed = float(self.defaultSpeed)
+        segmentDuration = segmentLength/speed
+        if "totalTime" in segment.derivedInfo:  # "totalTime" is the SEXTANT computed time for the segment.
+            segmentDuration = float(segment.derivedInfo["totalTime"])
+        self.estimatedDurationSeconds += segmentDuration
+        
 
     def transformStationCommand(self, command, context):
         self.numCommands += 1
 
         n = self.numCommandsByType.get(command.type, 0)
         self.numCommandsByType[command.type] = n + 1
+        
+        self.estimatedDurationSeconds += float(command.duration)
 
     def transformSegmentCommand(self, command, context):
         self.transformStationCommand(command, context)

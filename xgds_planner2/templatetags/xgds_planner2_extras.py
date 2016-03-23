@@ -14,10 +14,20 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
+import math
 from django import template
 
 register = template.Library()
 
+@register.filter(name='secstohms')
+def secstohms(value):
+    try:
+        durationSeconds = int(math.ceil(value))
+        minutes, seconds = divmod(durationSeconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        return "%02d:%02d:%02d" % (hours, minutes, seconds)
+    except:  # Just return None if conversion errors
+        return None
 
 @register.tag(name="nest")
 def do_context_aware(parser, token):

@@ -290,7 +290,7 @@ class AbstractPlan(models.Model):
             exporter = statsPlanExporter.StatsPlanExporter()
 #             print ' about to do stats'
             stats = exporter.exportDbPlan(self)
-            for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters'):
+            for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters', 'estimatedDurationSeconds'):
                 setattr(self, f, stats[f])
             self.stats.numCommandsByType = stats["numCommandsByType"]
             self.summary = statsPlanExporter.getSummary(stats)
