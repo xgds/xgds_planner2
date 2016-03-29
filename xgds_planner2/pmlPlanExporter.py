@@ -22,6 +22,7 @@ import logging
 import os
 import re
 
+from xml.sax.saxutils import escape
 from django.conf import settings
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2.models import getPlanSchema
@@ -145,10 +146,10 @@ class PmlPlanExporter(TreeWalkPlanExporter):
 """ % {
                 'activityType': "Activity",
                 'activityId': '' if activityId is None else activityId,
-                'name': '' if name is None else name,
+                'name': '' if name is None else escape(name),
                 'duration': self.getDurationString(durationSeconds),
                 'startTime': self.startTime.replace(microsecond=0).strftime('%Y-%m-%dT%H:%M:%SZ'),
-                'notes': '' if notes is None else notes,
+                'notes': '' if notes is None else escape(notes),
                 'color': '4db8ff' if color is None else color,
                 'vehicle': '' if self.vehicle is None else self.vehicle,
                 })
