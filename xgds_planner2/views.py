@@ -59,7 +59,9 @@ from xgds_planner2 import (models,
 from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
-from xgds_map_server.views import getSearchForms, get_handlebars_templates
+from xgds_map_server.views import getSearchForms
+from xgds_core.views import get_handlebars_templates
+
 from xgds_map_server.forms import MapSearchForm
 
 _template_cache = None
