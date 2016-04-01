@@ -32,7 +32,13 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         lon, lat = station.geometry['coordinates']
         name = station.name
         if not name:
-            name = station.id
+            # use the number from the id
+            sindex = station.id.find('STN')
+            if sindex >=0:
+                name = station.id.substring[sindex+3:]
+            else:
+                name = station.id
+        name = "___" + name
         directionStyle = None
         styleUrl = 'station'
         result = ""
