@@ -84,7 +84,7 @@ def plan_help(request):
 
 @login_required
 def plan_tests(request, plan_id, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -124,7 +124,7 @@ def aggregate_handlebars_templates(request):
     Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)), content_type='application/json')
+    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS), 'XGDS_PLANNER2_HANDLEBARS_DIRS'), content_type='application/json')
 
 
 def handleCallbacks(request, plan, mode):
@@ -245,7 +245,7 @@ def fixTimezonesInPlans():
     
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     dirty = False
