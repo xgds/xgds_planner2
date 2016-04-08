@@ -35,10 +35,10 @@ class KmlPlanExporter(TreeWalkPlanExporter):
             # use the number from the id
             sindex = station.id.find('STN')
             if sindex >=0:
-                name = station.id.substring[sindex+3:]
+                name = station.id[sindex+3:]
             else:
                 name = station.id
-        name = "___" + name
+        name = "__" + name
         directionStyle = None
         styleUrl = 'station'
         result = ""
