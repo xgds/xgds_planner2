@@ -51,6 +51,7 @@ from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
 from geocamUtil.modelJson import modelToJson
 from geocamUtil.TimeUtil import utcToTimeZone
+from geocamUtil.models import SiteFrame
 
 from xgds_planner2 import (models,
                            choosePlanExporter,
@@ -59,7 +60,9 @@ from xgds_planner2 import (models,
 from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
-from xgds_map_server.views import getSearchForms, get_handlebars_templates
+from xgds_map_server.views import getSearchForms
+from xgds_core.views import get_handlebars_templates
+
 from xgds_map_server.forms import MapSearchForm
 
 _template_cache = None
@@ -82,7 +85,7 @@ def plan_help(request):
 
 @login_required
 def plan_tests(request, plan_id, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -122,7 +125,7 @@ def aggregate_handlebars_templates(request):
     Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)), content_type='application/json')
+    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS), 'XGDS_PLANNER2_HANDLEBARS_DIRS'), content_type='application/json')
 
 
 def handleCallbacks(request, plan, mode):
@@ -234,16 +237,15 @@ def fixTimezonesInPlans():
             plan_timezone = plan.jsonPlan.site.alternateCrs.properties.timezone
         except AttributeError:
             print 'no timezone for ' + str(plan.id)
-            for key, sf in settings.XGDS_SITEFRAMES.iteritems():
-                if sf['name'] == str(plan.jsonPlan.site.name):
-                    print 'found timezone ' + sf['timezone'] 
-                    plan.jsonPlan.site.alternateCrs.properties.timezone = sf['timezone']
+            for sf in SiteFrame.objects.all():
+                if sf.name == str(plan.jsonPlan.site.name):
+                    plan.jsonPlan.site.alternateCrs.properties.timezone = sf.timezone
                     plan.save()
                     break;
     
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS)
+    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     dirty = False
