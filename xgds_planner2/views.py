@@ -51,6 +51,7 @@ from geocamUtil.usng.usng import LLtoUTM
 from geocamUtil.geomath import calculateUTMDiffMeters
 from geocamUtil.modelJson import modelToJson
 from geocamUtil.TimeUtil import utcToTimeZone
+from geocamUtil.models import SiteFrame
 
 from xgds_planner2 import (models,
                            choosePlanExporter,
@@ -236,10 +237,9 @@ def fixTimezonesInPlans():
             plan_timezone = plan.jsonPlan.site.alternateCrs.properties.timezone
         except AttributeError:
             print 'no timezone for ' + str(plan.id)
-            for key, sf in settings.XGDS_SITEFRAMES.iteritems():
-                if sf['name'] == str(plan.jsonPlan.site.name):
-                    print 'found timezone ' + sf['timezone'] 
-                    plan.jsonPlan.site.alternateCrs.properties.timezone = sf['timezone']
+            for sf in SiteFrame.objects.all():
+                if sf.name == str(plan.jsonPlan.site.name):
+                    plan.jsonPlan.site.alternateCrs.properties.timezone = sf.timezone
                     plan.save()
                     break;
     
