@@ -90,5 +90,5 @@ class GroupFlightForm(forms.Form):
             initial = [c[0] for c in CHOICES]
         else:
             initial = None
-        result = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(), required=False, initial=initial)
+        result = forms.MultipleChoiceField(choices=CHOICES, widget=forms.CheckboxSelectMultiple(attrs={"checked":""}), required=False, initial=initial)
         return result
