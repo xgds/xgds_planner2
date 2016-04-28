@@ -535,6 +535,15 @@ def manageFlights(request, errorString=""):
                               context_instance=RequestContext(request))
 
 
+@login_required
+def listFlownFlights(request, errorString=""):
+    today = request.session.get('today', False)
+    return render_to_response("xgds_planner2/ListFlownFlights.html",
+                              {'flights': getAllFlights(today=today),
+                               "errorstring": errorString},
+                              context_instance=RequestContext(request))
+
+
 def manageHelp(request):
     return render_to_response("xgds_planner2/ManageFlightHelp.html", {},
                               context_instance=RequestContext(request))
