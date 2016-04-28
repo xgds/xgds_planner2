@@ -130,6 +130,14 @@ class AbstractFlight(models.Model):
     notes = models.TextField(blank=True)
     group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'
 
+    def hasStarted(self):
+        return (self.start_time != None)
+    
+    def hasEnded(self):
+        if self.hasStarted():
+            return (self.end_time != None)
+        return False
+
     def startFlightExtras(self, request):
         pass
 
