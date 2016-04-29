@@ -598,6 +598,7 @@ def stopFlight(request, uuid):
                 errorString = 'Flight IS NOT ACTIVE'
 
     except:
+	traceback.print_exc()
         errorString = "Flight not found"
     return manageFlights(request, errorString)
 
