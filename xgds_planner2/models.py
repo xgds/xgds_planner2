@@ -198,6 +198,7 @@ class AbstractFlight(models.Model):
 class Flight(AbstractFlight):
     vehicle = DEFAULT_VEHICLE_FIELD()
     group = DEFAULT_GROUP_FLIGHT_FIELD()
+    summary = models.CharField(max_length=1024, blank=True, null=True)
 
 
 DEFAULT_ONE_TO_ONE_FLIGHT_FIELD = lambda: models.OneToOneField(Flight, related_name="active", null=True, blank=True)

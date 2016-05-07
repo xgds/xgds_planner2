@@ -42,6 +42,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
+        this.template = Handlebars.compile($(this.template).html());
     },
 
     onShow: function() {
@@ -63,7 +64,10 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
             app.vent.trigger('doMapResize');
         }
     },
-
+    render: function() {
+        this.$el.html(this.template({stationMoniker:app.options.stationMoniker,
+        							 stationMonikerPlural: app.options.stationMonikerPlural}));
+    },
     onRender: function() {
         if (app.Actions.undoEmpty()) {
             this.disableUndo();
@@ -250,11 +254,27 @@ app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
 });
 
 app.views.PlanSequenceHeaderView = Backbone.Marionette.ItemView.extend({
-    template: '#template-plan-sequence-header'
+    template: '#template-plan-sequence-header',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+    	var options = {stationMoniker: app.options.stationMoniker,
+ 			   		   segmentMoniker: app.options.segmentMoniker,
+ 			   		   stationMonikerPlural: app.options.stationMonikerPlural,
+			   		   segmentMonikerPlural: app.options.segmentMonikerPlural};
+        this.$el.html(this.template(options));
+    }
 });
 
 app.views.StationSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     template: '#template-station-sequence-header',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({stationMoniker: app.options.stationMoniker}));
+    },
     serializeData: function() {
         var data = this.model.toJSON();
         data.label = this.model._sequenceLabel;
@@ -268,17 +288,33 @@ app.views.SegmentSequenceHeaderView = Backbone.Marionette.ItemView.extend({
         var data = this.model.toJSON();
         data.label = this.model._sequenceLabel;
         return data;
+    },
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({segmentMoniker: app.options.segmentMoniker}));
     }
 });
 
 app.views.StationPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
-    template: '#template-station-properties-header'
-    
+    template: '#template-station-properties-header',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({stationMoniker: app.options.stationMoniker}));
+    }
 });
 
 app.views.SegmentPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
-    template: '#template-segment-properties-header'
-    
+    template: '#template-segment-properties-header',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({segmentMoniker: app.options.segmentMoniker}));
+    }
 });
 
 app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
@@ -287,11 +323,24 @@ app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
         var data = this.model.toJSON();
         data.label = this.model._commandLabel;
         return data;
+    },
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({commandMoniker: app.options.commandMoniker}));
     }
 });
 
 app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
-    template: '#template-command-presets-header'
+    template: '#template-command-presets-header',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({commandMoniker: app.options.commandMoniker,
+        							 commandMonikerPlural: app.options.commandMonikerPlural}));
+    }
 });
 
 app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
@@ -554,10 +603,14 @@ app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
         return data;
     },
     attributes: function() {
-        return {
-            'data-item-id': this.model.cid,
-            'class': this.model.get('type').toLowerCase() + '-sequence-item'
-        };
+    	try {
+	        return {
+	            'data-item-id': this.model.cid,
+	            'class': this.model.get('type').toLowerCase() + '-sequence-item'
+	        };
+    	} catch (err){
+    		return {};
+    	}
     },
     events: {
         click: function() {
@@ -594,7 +647,14 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
 });
 
 app.views.NoStationsView = Backbone.Marionette.ItemView.extend({
-    template: '#template-no-stations'
+    template: '#template-no-stations',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({stationMoniker: app.options.stationMoniker,
+        	                         stationMonikerPlural: app.options.stationMonikerPlural}));
+    }
 });
 
 app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
@@ -748,12 +808,11 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
     tagName: 'li',
     initialize: function(options) {
         this.options = options || {};
-        var options = this.options;
-        if (options.extraClass) {
-            this.className = this.className ? this.className + ' ' + options.extraClass : options.extraClass;
+        if (this.options.extraClass) {
+            this.className = this.className ? this.className + ' ' + this.options.extraClass : this.options.extraClass;
         }
         this.on('click', function() {this.trigger('expand', this, this.options.expandClass);}, this);
-        if (options.click) {
+        if (this.options.click) {
             this.on('click', this.options.click, this);
         }
         app.views.makeExpandable(this, this.options.expandClass);
@@ -764,7 +823,14 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
 });
 
 app.views.NoCommandsView = Backbone.Marionette.ItemView.extend({
-    template: '#template-no-commands'
+    template: '#template-no-commands',
+    initialize: function() {
+        this.template = Handlebars.compile($(this.template).html());
+    },
+    render: function() {
+        this.$el.html(this.template({commandMoniker: app.options.commandMoniker,
+        	                         commandMonikerPlural: app.options.commandMonikerPlural}));
+    }
 });
 
 app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
@@ -808,6 +874,14 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //'change': 'close' // it's really stupid that we actually have to do this
     },
     initialize: function() {
+    	if (this.model != undefined){
+	    	this.model.attributes.commandMonikerPlural = app.options.commandMonikerPlural;
+	    	if (this.model.attributes.type == 'Station'){
+	    		this.model.attributes.itemMoniker = app.options.stationMoniker;
+	    	} else {
+	    		this.model.attributes.itemMoniker = app.options.segmentMoniker;
+	    	}
+    	}
         this.head = new app.views.MiscItemView({
             model: this.model,
             expandClass: 'col2',
@@ -848,7 +922,11 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
     },
-    
+//    render: function() {
+//        this.$el.html(this.template({stationMoniker: app.options.stationMoniker,
+//        							 commandMoniker: app.options.commandMoniker,
+//        							 commandMonikerPlural: app.options.commandMonikerPlural}));
+//    },
     onItemSelected: function() {
         if (this.itemsSelected) return;
         if (!_.isEmpty(this.getSelectedCommands())) {
@@ -938,10 +1016,10 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
         //var container = this.$el.find('.sequence-list');
         //container.prepend(this.head.el);
         //container.append(this.foot.el);
-        this.head.setElement(this.$el.find('.edit-meta'));
-        this.foot.setElement(this.$el.find('.add-commands'));
-        this.head.render();
-        this.foot.render();
+//        this.head.setElement(this.$el.find('.edit-meta'));
+//        this.foot.setElement(this.$el.find('.add-commands'));
+//        this.head.render();
+//        this.foot.render();
 	if (!this.isEmpty()){
 	        this.$el.find('.command-list').sortable();
 	}

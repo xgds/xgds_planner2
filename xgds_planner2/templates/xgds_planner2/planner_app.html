@@ -147,7 +147,13 @@
         searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
         schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
         planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
-        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}'
+        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
+        stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
+        segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
+        commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
+        stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
+        segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
+        commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}'
     };
     
     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}

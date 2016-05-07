@@ -22,8 +22,8 @@ var DEBUG_EVENTS = false;
 ** rendering templates so that it will use Handlebars.
 */
 Backbone.Marionette.TemplateCache.prototype.compileTemplate = function(
-    rawTemplate) {
-    return Handlebars.compile(rawTemplate);
+    rawTemplate, options) {
+    return Handlebars.compile(rawTemplate, options);
 };
 
 /*

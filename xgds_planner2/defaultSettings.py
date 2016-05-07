@@ -164,6 +164,13 @@ XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
 XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
 XGDS_PLANNER2_FLIGHT_MONIKER = "Flight"
 XGDS_PLANNER2_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
+XGDS_PLANNER2_STATION_MONIKER = "Station"
+XGDS_PLANNER2_STATION_MONIKER_PLURAL = "Stations"
+XGDS_PLANNER2_SEGMENT_MONIKER = "Segment"
+XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL = "Segments"
+XGDS_PLANNER2_COMMAND_MONIKER = "Command"
+XGDS_PLANNER2_COMMAND_MONIKER_PLURAL = "Commands"
+
 
 # Method to add stuff to context for plan editor, override and register your own method if you need it.
 # It must add a json dictionary called extras

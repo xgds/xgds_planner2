@@ -680,8 +680,8 @@ app.models = app.models || {};
         model: models.Command,
 
         initialize: function() {
-            this.on('add', this.updateCommandIds, this);
-            this.on('remove', this.updateCommandIds, this);
+//            this.on('add', this.updateCommandIds, this);
+//            this.on('remove', this.updateCommandIds, this);
             this.on('change', this.updateCommandIds, this);
         },
 
