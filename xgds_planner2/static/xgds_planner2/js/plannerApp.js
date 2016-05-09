@@ -241,6 +241,11 @@ var app = (function($, _, Backbone) {
             this.planLibrary = JSON.parse($('#plan_library_json').html());
             this.planIndex = JSON.parse($('#plan_index_json').html());
             this.planLinks = JSON.parse($('#plan_links_json').html());
+            try {
+            	this.planNamedURLs = JSON.parse($('#plan_namedURLs_json').html());
+            } catch (err) {
+            	this.planNamedURLs = [];
+            } 
 
             // Indexes to make command types easier to retrieve.
             this.commandSpecs = this.util.indexBy(

@@ -114,7 +114,8 @@ def plan_tests(request, plan_id, editable=True):
             'placemark_circle_highlighted_url': request.build_absolute_uri(
                 staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
             ),
-            'plan_links_json': json.dumps(plan.getLinks())
+            'plan_links_json': json.dumps(plan.getLinks()),
+            'plan_namedURLs_json': json.dumps(plan.namedURLs),
         }),
         # context_instance=RequestContext
     )

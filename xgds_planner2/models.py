@@ -22,6 +22,7 @@ import copy
 import logging
 import os
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -34,6 +35,7 @@ from geocamUtil.dotDict import DotDict
 
 from xgds_planner2 import xpjson, statsPlanExporter
 from geocamUtil.loader import LazyGetModelByName
+from xgds_core.models import NamedURL
 
 # pylint: disable=C1001,E1101
 
@@ -263,6 +265,7 @@ class AbstractPlan(models.Model):
     lengthMeters = models.FloatField(null=True, blank=True)
     estimatedDurationSeconds = models.FloatField(null=True, blank=True)
     stats = ExtrasDotField()  # a place for richer stats such as numCommandsByType
+    namedURLs = GenericRelation(NamedURL)
 
     class Meta:
         ordering = ['-dateModified']
@@ -355,6 +358,7 @@ class AbstractPlan(models.Model):
         for exporter in self.getExporters():
             result[exporter.label] = exporter.url
         return result
+    
 
     def getEscapedId(self):
         if self.jsonPlan and self.jsonPlan.id:

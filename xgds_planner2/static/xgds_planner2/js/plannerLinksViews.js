@@ -31,6 +31,7 @@ app.views.PlanLinksView = Backbone.View.extend({
     render: function() {
         this.$el.html(this.template({
             planLinks: app.planLinks,
+            planNamedURLs: app.planNamedURLs,
             planUuid: app.currentPlan.get('uuid'),
             planId: app.currentPlan.get('serverId')
         }));
