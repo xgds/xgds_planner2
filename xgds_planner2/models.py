@@ -152,7 +152,7 @@ class AbstractFlight(models.Model):
     def getTreeJsonChildren(self):
         children = []
         if self.track:
-            children.append({"title": "Track", 
+            children.append({"title": settings.GEOCAM_TRACK_TRACK_MONIKIER, 
                              "selected": False, 
                              "tooltip": "Tracks for " + self.name, 
                              "key": self.uuid + "_tracks", 
@@ -163,7 +163,7 @@ class AbstractFlight(models.Model):
                             })
         if self.plans:
             myplan = self.plans[0].plan
-            children.append({"title": "Plan", 
+            children.append({"title": settings.XGDS_PLANNER2_PLAN_MONIKER, 
                              "selected": False, 
                              "tooltip": "Plan for " + self.name, 
                              "key": self.uuid + "_plan", 
