@@ -502,6 +502,17 @@ def getAllFlights(today=False, reverseOrder=False):
         now = timezone.localtime(datetime.datetime.now(pytz.utc))
         todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
         return FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
+    
+def getAllGroupFlights(today=False, reverseOrder=False):
+    orderby = 'name'
+    if reverseOrder:
+        orderby = '-name'
+    if not today:
+        return GROUP_FLIGHT_MODEL.get().objects.all().order_by(orderby)
+    else:
+        now = timezone.localtime(datetime.datetime.now(pytz.utc))
+        todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
+        return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
 
 
 def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=False):
@@ -531,7 +542,7 @@ def updateTodaySession(request):
 def manageFlights(request, errorString=""):
     today = request.session.get('today', False)
     return render_to_response("xgds_planner2/ManageFlights.html",
-                              {'flights': getAllFlights(today=today),
+                              {'groups': getAllGroupFlights(today=today),
                                "errorstring": errorString},
                               context_instance=RequestContext(request))
 
@@ -540,7 +551,7 @@ def manageFlights(request, errorString=""):
 def listFlownFlights(request, errorString=""):
     today = request.session.get('today', False)
     return render_to_response("xgds_planner2/ListFlownFlights.html",
-                              {'flights': getAllFlights(today=today),
+                              {'groups': getAllGroupFlights(today=today),
                                "errorstring": errorString},
                               context_instance=RequestContext(request))
 

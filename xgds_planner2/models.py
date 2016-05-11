@@ -229,6 +229,11 @@ class AbstractGroupFlight(models.Model):
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
     notes = models.TextField(blank=True)
 
+    @property
+    def flights(self):
+        #TODO implement
+        return None
+
     class Meta:
         abstract = True
 
@@ -237,7 +242,9 @@ class AbstractGroupFlight(models.Model):
 
 
 class GroupFlight(AbstractGroupFlight):
-    pass
+    @property
+    def flights(self):
+        return self.flight_set.all()
 
 
 class AbstractPlan(models.Model):
