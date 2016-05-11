@@ -146,6 +146,10 @@ class AbstractFlight(models.Model):
     def stopFlightExtras(self, request):
         pass
 
+    @property
+    def view_url(self):
+        return ''
+    
     def __unicode__(self):
         return self.name
 
@@ -228,6 +232,10 @@ class AbstractGroupFlight(models.Model):
     """
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
     notes = models.TextField(blank=True)
+
+    @property
+    def view_url(self):
+        return ''
 
     @property
     def flights(self):

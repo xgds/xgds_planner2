@@ -44,7 +44,7 @@
 	</thead>
 	{% for group in groups %}
 	<tr>
-		<td><a href="{% url 'xgds_video_recorded'  group.name %}">{{ group.name }}</a></td>
+		<td><a href="{{ group.view_url }}">{{ group.name }}</a></td>
 		<td></td>
 		<td></td>
 		<td></td>
@@ -52,7 +52,7 @@
 	</tr>
 	{% for flight in group.flights %}	
 	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
-		<td >&nbsp;&nbsp;&nbsp;{% if flight.start_time %} <a href="{% url 'xgds_video_recorded'  flight.name %}">{{ flight.name }}</a>{% else %}{{ flight.name }}{% endif %}</td>
+		<td >&nbsp;&nbsp;&nbsp;{% if flight.start_time %} <a href="{{ flight.view_url }}">{{ flight.name }}</a>{% else %}{{ flight.name }}{% endif %}</td>
 		<td></td>
 		<td>{% if flight.start_time %}{% timezone flight.timezone %} {{flight.start_time|date:"Y-m-d H:i e"}}{% endtimezone %} {% endif %}</td>
 		<td>{% if flight.end_time %} {% timezone flight.timezone %}{{flight.end_time|date:"Y-m-d H:i e"}}{% endtimezone %}{% endif %}</td>
