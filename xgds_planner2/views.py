@@ -580,17 +580,19 @@ def startFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
-        flight.start_time = datetime.datetime.now(pytz.utc)
-        flight.end_time = None
-        flight.save()
+        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+            flight.start_time = datetime.datetime.now(pytz.utc)
+            flight.end_time = None
+            flight.save()
     except FLIGHT_MODEL.get().DoesNotExist:
         errorString = "Flight not found"
 
     if flight:
         foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
         if not foundFlight:
-            newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
-            newlyActive.save()
+            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+                newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
+                newlyActive.save()
 
         flight.startFlightExtras(request)
     return manageFlights(request, errorString)
