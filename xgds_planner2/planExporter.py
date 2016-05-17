@@ -13,13 +13,17 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import json
 import logging
+import traceback
 
 from django.http import HttpResponse
+from django.conf import settings
 
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
-
+from geocamUtil import geomath
+from geocamUtil.UserUtil import getUserName
 import models
 
 # pylint: disable=W0223
@@ -49,7 +53,7 @@ class PlanExporter(object):
 
     def serializeExportedObject(self, obj):
         return obj
-
+    
     def getHttpResponse(self, dbPlan, attachmentName=None):
         obj = self.exportDbPlan(dbPlan)
         text = self.serializeExportedObject(obj)
@@ -231,3 +235,97 @@ class XpjsonPlanExporter(JsonPlanExporter):
 
     def exportDbPlan(self, dbPlan):
         return dbPlan.jsonPlan
+
+
+class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
+    """
+    Returns json of the plan including durations, bearings and distances
+    """
+
+    label = 'bdJson'
+
+    def transformPlan(self, plan, tsequence, context):
+        return {'creator': plan.creator, # TODO the actual user is stored in the db plan
+                'dateCreated': plan.dateCreated,
+                'dateModified': plan.dateModified,
+                'name': plan.name,
+                'notes': plan.notes,
+                'url': plan.url,
+                'id': plan.id, 
+                'sequence': tsequence,
+                'site': plan.site._objDict,
+                'subject': plan.subject,
+                'targets': plan.targets}
+
+    def transformStation(self, station, tsequence, context):
+        bearing = 0
+        if context.nextStation:
+            plon, plat = station.geometry['coordinates']
+            nlon, nlat = context.nextStation.geometry['coordinates']
+            diff = geomath.calculateDiffMeters([nlon, nlat], [plon, plat])
+            bearing = geomath.getBearingDegrees(diff)
+        derivedInfo = station.derivedInfo; 
+        durationSeconds = 0 #TODO calculate
+        if derivedInfo:
+            durationSeconds = derivedInfo['durationSeconds']
+        station.id = station.id[-(len(station.id)-station.id.rfind('_')-1):]
+        
+        return {'id': station.id, 
+                'name': station.name,
+                'type': settings.XGDS_PLANNER2_STATION_MONIKER,
+                'commands': tsequence,
+                'geometry': station.geometry,
+                'notes': station.notes,
+                'tolerance': station.tolerance,
+                'userDuration': station.userDuration,
+                'durationSeconds': durationSeconds,
+                'bearing': bearing}
+
+    def transformSegment(self, segment, tsequence, context):
+        derivedInfo = segment.derivedInfo; 
+        if derivedInfo:
+            distanceMeters = derivedInfo['distanceMeters']
+            durationSeconds = derivedInfo['durationSeconds']
+        else:
+            plon, plat = context.prevStation.geometry['coordinates']
+            nlon, nlat = context.nextStation.geometry['coordinates']
+            distanceMeters = geomath.getLength(geomath.calculateDiffMeters([plon, plat], [nlon, nlat]))
+            speed = context.plan._objDict['defaultSpeed']
+            try:
+                speed = segment._objDict['hintedSpeed']
+            except:
+                pass
+            durationSeconds = (distanceMeters / speed)
+        
+        segment.id = segment.id[-(len(segment.id)-segment.id.rfind('_')-1):]
+        return {'id': segment.id, 
+                'name': segment.name,
+                'type': settings.XGDS_PLANNER2_SEGMENT_MONIKER,
+                'commands': tsequence,
+                'notes': segment.notes, 
+                'distanceMeters': distanceMeters, 
+                'durationSeconds': durationSeconds}
+
+    def transformStationCommand(self, command, context):
+        command.type = settings.XGDS_PLANNER2_COMMAND_MONIKER
+        command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
+        return command
+
+    def transformSegmentCommand(self, command, context):
+        command.type = settings.XGDS_PLANNER2_COMMAND_MONIKER
+        command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
+        return command
+
+        
+    def exportDbPlan(self, dbPlan):
+        try:
+            platform = dbPlan.jsonPlan['platform']
+            planSchema = models.getPlanSchema(platform["name"])
+            plan = dbPlan.toXpjson()
+            changedPlan =  self.exportPlan(plan, planSchema.getSchema())
+            result = changedPlan
+            return result
+        except:
+            traceback.print_exc()
+            logging.warning('exportDbPlan: could not save plan %s', dbPlan.name)
+            raise  # FIX

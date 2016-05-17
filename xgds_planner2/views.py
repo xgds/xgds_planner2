@@ -243,6 +243,14 @@ def fixTimezonesInPlans():
                     plan.jsonPlan.site.alternateCrs.properties.timezone = sf.timezone
                     plan.save()
                     break;
+
+def plan_bearing_distance_view(request, plan_id):
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
+    return render_to_response(
+        'xgds_planner2/bearingDistancePlan.html',
+        RequestContext(request,
+                       {'plan_uuid': plan.uuid,
+                        'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH}))
     
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
@@ -344,7 +352,7 @@ def getDbPlan(uuid):
     return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
 
 
-def planExport(request, uuid, name, time=None, outputDirectory=None):
+def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=False):
     """
     Normally plan export urls are built up by the planExporter.url
     but some exporters (pml) can take a time.
@@ -379,8 +387,10 @@ def planExport(request, uuid, name, time=None, outputDirectory=None):
         # output the exported file to a directory
         exporter.exportDbPlanToPath(dbPlan, os.path.join(outputDirectory, name))
         return True
-    else:
+    elif not isAjax:
         return exporter.getHttpResponse(dbPlan, attachmentName=name)
+    else:
+        return exporter.getHttpResponse(dbPlan, attachmentName=None)
 
 
 @login_required

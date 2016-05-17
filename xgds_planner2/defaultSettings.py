@@ -245,6 +245,7 @@ XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
 XGDS_PLANNER2_HANDLEBARS_DIRS = [os.path.join('xgds_planner2', 'templates', 'handlebars'),
                                  os.path.join('xgds_map_server', 'templates', 'handlebars', 'search')]
 
+XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH = 'xgds_planner2/templates/xgds_planner2/bearingDistancePlan.handlebars'
 # XGDS_PLANNER2_LINKS_LOADED_CALLBACK: The fully qualified name of an
 # extra JavaScript callback to call after the links tab is loaded.
 XGDS_PLANNER2_LINKS_LOADED_CALLBACK = 'null'
