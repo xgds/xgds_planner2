@@ -38,8 +38,8 @@
 <table class="wiki" id="stable">
  <thead>
     <th id="colhead1" scope="col">Name</th>
-    <th id="colhead2" scope="col">Distance or Lat/Long</th>
-    <th id="colhead4" scope="col">Heading</th>
+    <th id="colhead2" scope="col">Lat/Long</th>
+    <th id="colhead4" scope="col">Heading/Distance</th>
     <th id="colhead7" scope="col">Notes</th>
     <th id="colhead5" scope="col">Duration(hh:mm:ss)</th>
     <th id="colhead6" scope="col">Total(hh:mm:ss)</th>
@@ -48,8 +48,8 @@
    {{#each plan.sequence}}
     <tr style='page-break-inside:avoid;'>
 	  	<td>{{type}}&nbsp;{{id}}: {{#if name}}{{name}}{{/if}}</td>
-	    <td align="right">{{#if geometry.coordinates}}{{vsprintf '%2$.06f, %1$.06f' geometry.coordinates}}{{/if}}{{#if distanceMeters}}{{totalDistance distanceMeters}} m{{/if}}</td>
-	    <td align="right">{{#if bearing}}{{ sprintf '%.02f' bearing}}°{{/if}}</td>
+	    <td align="right">{{#if geometry.coordinates}}{{vsprintf '%2$.06f, %1$.06f' geometry.coordinates}}{{/if}}</td>
+	    <td align="right">{{#if bearing}}{{ sprintf '%.02f' bearing}}°{{/if}}{{#if distanceMeters}}{{totalDistance distanceMeters}} m{{/if}}</td>
 	    <td>{{notes}}</td>
 	    <td align="right">{{#if durationSeconds}}+ {{formatDuration durationSeconds}}{{/if}}</td>
 	    <td align="right">{{#if durationSeconds}}{{totalDuration durationSeconds}}{{/if}}</td>
