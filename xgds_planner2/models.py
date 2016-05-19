@@ -147,6 +147,18 @@ class AbstractFlight(models.Model):
         pass
 
     @property
+    def thumbnail_time_url(self, event_time):
+        return self.thumbnail_url()
+
+    @property
+    def thumbnail_url(self):
+        return ''
+
+    @property
+    def view_time_url(self, event_time):
+        return self.view_url()
+    
+    @property
     def view_url(self):
         return ''
     
@@ -234,8 +246,16 @@ class AbstractGroupFlight(models.Model):
     notes = models.TextField(blank=True)
 
     @property
+    def thumbnail_time_url(self, event_time):
+        return self.thumbnail_url()
+
+    @property
+    def view_time_url(self, event_time):
+        return '' #TODO implement
+    
+    @property
     def view_url(self):
-        return ''
+        return '' #TODO implement
 
     @property
     def flights(self):
