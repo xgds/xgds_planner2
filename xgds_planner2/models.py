@@ -146,19 +146,15 @@ class AbstractFlight(models.Model):
     def stopFlightExtras(self, request):
         pass
 
-    @property
     def thumbnail_time_url(self, event_time):
         return self.thumbnail_url()
 
-    @property
     def thumbnail_url(self):
         return ''
 
-    @property
     def view_time_url(self, event_time):
         return self.view_url()
     
-    @property
     def view_url(self):
         return ''
     
@@ -245,15 +241,15 @@ class AbstractGroupFlight(models.Model):
     name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
     notes = models.TextField(blank=True)
 
-    @property
+    def thumbnail_url(self):
+        return ''
+
     def thumbnail_time_url(self, event_time):
         return self.thumbnail_url()
 
-    @property
     def view_time_url(self, event_time):
         return '' #TODO implement
     
-    @property
     def view_url(self):
         return '' #TODO implement
 
