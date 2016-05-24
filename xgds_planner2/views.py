@@ -581,7 +581,8 @@ def startFlight(request, uuid):
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-            flight.start_time = datetime.datetime.now(pytz.utc)
+            if not flight.start_time:
+                flight.start_time = datetime.datetime.now(pytz.utc)
             flight.end_time = None
             flight.save()
     except FLIGHT_MODEL.get().DoesNotExist:
