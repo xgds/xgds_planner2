@@ -24,11 +24,12 @@ import json
 import traceback
 from uuid import uuid4
 from dateutil.parser import parse as dateparser
-
+from django.contrib import messages 
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
+from django.shortcuts import redirect
 from django.conf import settings
 
 from django.db.utils import IntegrityError
@@ -576,27 +577,29 @@ def oltest(request):
                               context_instance=RequestContext(request))
 
 
-def startFlightTracking(request, pk):
-    errorString = ""
+def startFlightTracking(request, flightName):
     try:
-        flight = FLIGHT_MODEL.get().objects.get(pk=pk)
+        flight = FLIGHT_MODEL.get().objects.get(name=flightName)
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             flight.startTracking()
-            errorString = "Tracking started"
+            messages.info(request, "Tracking started: " + flightName)
+        else:
+            messages.error(request, "This server is not a tracking provider")
     except FLIGHT_MODEL.get().DoesNotExist:
-        errorString = "Flight not found"
-    return manageFlights(request, errorString)
+        messages.error(request, 'Flight not found: ' + flightName)
+    return redirect(reverse('error'))
 
-def stopFlightTracking(request, pk):
-    errorString = ""
+def stopFlightTracking(request, flightName):
     try:
-        flight = FLIGHT_MODEL.get().objects.get(pk=pk)
+        flight = FLIGHT_MODEL.get().objects.get(name=flightName)
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             flight.stopTracking()
-            errorString = "Tracking stopped"
+            messages.info(request, "Tracking stopped: " + flightName)
+        else:
+            messages.error(request, "This server is not a tracking provider")
     except FLIGHT_MODEL.get().DoesNotExist:
-        errorString = "Flight not found"
-    return manageFlights(request, errorString)
+        messages.error(request, 'Flight not found: ' + flightName)
+    return redirect(reverse('error'))
 
 @login_required
 def startFlight(request, uuid):
