@@ -38,6 +38,8 @@ urlpatterns = [
     url(r'^updateToday/$', views.updateTodaySession, {}, "planner2_updateToday"),
     url(r'startFlight/(?P<uuid>[\w-]+)$', views.startFlight, {'loginRequired': True}, 'planner2_startFlight'),
     url(r'stopFlight/(?P<uuid>[\w-]+)$', views.stopFlight, {'loginRequired': True}, 'planner2_stopFlight'),
+    url(r'startTracking/(?P<pk>[\d]+)$', views.startFlightTracking, {'loginRequired': True}, 'planner2_startFlightTracking'),
+    url(r'stopTracking/(?P<pk>[\d-]+)$', views.stopFlightTracking, {'loginRequired': True}, 'planner2_stopFlightTracking'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     url(r'^schedulePlan/$', views.schedulePlans, {'redirect': False}, "planner2_schedulePlan_ajax"),

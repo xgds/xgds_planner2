@@ -575,6 +575,29 @@ def oltest(request):
     return render_to_response("xgds_planner2/oltest.html", {},
                               context_instance=RequestContext(request))
 
+
+def startFlightTracking(request, pk):
+    errorString = ""
+    try:
+        flight = FLIGHT_MODEL.get().objects.get(pk=pk)
+        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+            flight.startTracking()
+            errorString = "Tracking started"
+    except FLIGHT_MODEL.get().DoesNotExist:
+        errorString = "Flight not found"
+    return manageFlights(request, errorString)
+
+def stopFlightTracking(request, pk):
+    errorString = ""
+    try:
+        flight = FLIGHT_MODEL.get().objects.get(pk=pk)
+        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+            flight.stopTracking()
+            errorString = "Tracking stopped"
+    except FLIGHT_MODEL.get().DoesNotExist:
+        errorString = "Flight not found"
+    return manageFlights(request, errorString)
+
 @login_required
 def startFlight(request, uuid):
     errorString = ""
@@ -623,7 +646,7 @@ def stopFlight(request, uuid):
                 errorString = 'Flight IS NOT ACTIVE'
 
     except:
-	traceback.print_exc()
+        traceback.print_exc()
         errorString = "Flight not found"
     return manageFlights(request, errorString)
 

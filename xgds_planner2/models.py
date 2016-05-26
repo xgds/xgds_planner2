@@ -35,6 +35,8 @@ from geocamUtil.dotDict import DotDict
 
 from xgds_planner2 import xpjson, statsPlanExporter
 from geocamUtil.loader import LazyGetModelByName
+from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
+
 from xgds_core.models import NamedURL
 
 # pylint: disable=C1001,E1101
@@ -203,6 +205,17 @@ class AbstractFlight(models.Model):
     @property
     def plans(self):
         return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(flight=self)
+
+    def stopTracking(self):
+        if settings.PYRAPTORD_SERVICE is True:
+            pyraptord = getPyraptordClient()
+            serviceName = self.vehicle.name + "TrackListener"
+            stopPyraptordServiceIfRunning(pyraptord, serviceName)
+            #TODO remove the current position for that track
+
+    def startTracking(self):
+        #TODO define
+        pass
 
     class Meta:
         abstract = True
