@@ -14,27 +14,9 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
-import re
-
-from geocamUtil.xml2json import xml2struct
+import csv
 
 from xgds_planner2.planImporter import PlanImporter, planDocFromPlanDict
-
-
-def parseCoordinateTuple(s):
-    return [float(v) for v in s.split(',')]
-
-
-def parseCoordinateTuples(s):
-    s = s.strip()
-    return [parseCoordinateTuple(s)[:2]
-            for s in re.split(r'\s+', s)]
-
-
-def coordsFromBuf(buf):
-    xml = xml2struct(buf, True)
-    mark = xml.kml.Document.Placemark
-    return parseCoordinateTuples(mark.LineString.coordinates.text)
 
 
 def planDictFromCoords(coords, meta):
@@ -56,16 +38,20 @@ def planDictFromCoords(coords, meta):
     return plan
 
 
-class KmlLineStringPlanImporter(PlanImporter):
+class CSVPlanImporter(PlanImporter):
     """
-    Creates a plan skeleton from a KML LineString. Stations are placed
-    at the vertices of the LineString.
+    Creates a plan skeleton from a CSV File. 
+    Must have column headers indicating latitude and longitude.
     """
-    label = 'KML LineString'
+    label = 'CSV'
 
-    # TODO set up plan schema
     def importPlanFromBuffer(self, buf, meta, schema):
-        coords = coordsFromBuf(buf)
+        csvReader = csv.DictReader(buf.splitlines())
+        coords = []
+        for row in list(csvReader):
+            longitude = float(row['longitude'])
+            latitude = float(row['latitude'])
+            coords.append([longitude, latitude])
         planDict = planDictFromCoords(coords, meta)
         planDoc = planDocFromPlanDict(planDict, schema.schema)
         return planDoc

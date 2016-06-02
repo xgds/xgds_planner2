@@ -142,22 +142,28 @@ class TreeWalkPlanExporter(PlanExporter):
 
     def exportStation(self, station, context):
         tsequence = []
-        station.sequence = convertToDotDictRecurse(station.commands)
-        for i, cmd in enumerate(station.sequence):
-            ctx = context.copy()
-            ctx.command = cmd
-            ctx.commandIndex = i
-            tsequence.append(self.transformStationCommand(cmd, ctx))
+        if hasattr(station, 'commands'):
+            station.sequence = convertToDotDictRecurse(station.commands)
+            for i, cmd in enumerate(station.sequence):
+                ctx = context.copy()
+                ctx.command = cmd
+                ctx.commandIndex = i
+                tsequence.append(self.transformStationCommand(cmd, ctx))
+        else:
+            station.sequence = []
         return self.transformStation(station, tsequence, context)
 
     def exportSegment(self, segment, context):
         tsequence = []
-        segment.sequence = convertToDotDictRecurse(segment.commands)
-        for i, cmd in enumerate(segment.sequence):
-            ctx = context.copy()
-            ctx.command = cmd
-            ctx.commandIndex = i
-            tsequence.append(self.transformSegmentCommand(cmd, ctx))
+        if hasattr(segment, 'commands'):
+            segment.sequence = convertToDotDictRecurse(segment.commands)
+            for i, cmd in enumerate(segment.sequence):
+                ctx = context.copy()
+                ctx.command = cmd
+                ctx.commandIndex = i
+                tsequence.append(self.transformSegmentCommand(cmd, ctx))
+        else:
+            segment.sequence = []
         return self.transformSegment(segment, tsequence, context)
 
     def exportPlan(self, plan, schema):

@@ -148,6 +148,7 @@ XGDS_PLANNER_PLAN_EXPORTERS = (
 # list of (formatCode, extension, importerClass)
 XGDS_PLANNER_PLAN_IMPORTERS = (
     ('kml', '.kml', 'xgds_planner2.kmlPlanImporter.KmlLineStringPlanImporter'),
+    ('csv', '.csv', 'xgds_planner2.csvPlanImporter.CSVPlanImporter'),
 )
 
 # kml root from xgds_map_server

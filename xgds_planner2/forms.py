@@ -18,6 +18,8 @@ import datetime
 from django import forms
 from django.conf import settings
 from geocamUtil.loader import LazyGetModelByName
+from geocamUtil.extFileField import ExtFileField
+
 from xgds_planner2.models import getPlanSchema
 
 
@@ -53,6 +55,14 @@ class CreatePlanForm(forms.Form):
 class UploadXPJsonForm(forms.Form):
     file = forms.FileField(required=True)
     planUuid = forms.CharField(required=True)
+
+class ImportPlanForm(CreatePlanForm):
+    sourceFile = ExtFileField(ext_whitelist=(), required=True)
+    
+    def __init__(self, *args, **kwargs):
+        super(ImportPlanForm, self).__init__(*args, **kwargs)
+        importers = settings.XGDS_PLANNER_PLAN_IMPORTERS
+        self.fields['sourceFile'].ext_whitelist = (e for (n, e, c) in importers)
 
 
 # form for creating a flight group, flights, and all sorts of other stuff needed for our overly complex system.

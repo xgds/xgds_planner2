@@ -56,9 +56,10 @@ from geocamUtil.models import SiteFrame
 
 from xgds_planner2 import (models,
                            choosePlanExporter,
+                           choosePlanImporter,
                            planImporter,
                            fillIdsPlanExporter)
-from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm
+from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
@@ -208,7 +209,7 @@ def updateAllUuids(planDict):
     planDict.uuid = makeUuid()
     for element in planDict.sequence:
         element.uuid = makeUuid()
-	if hasattr(element, 'sequence'):
+        if hasattr(element, 'sequence'):
             for child in element.sequence:
                 if hasattr(child, 'uuid'):
                     child.uuid = makeUuid()
@@ -448,8 +449,68 @@ def planCreate(request):
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
     return render_to_response('xgds_planner2/planCreate.html',
-                              RequestContext(request,{'form': form}))
+                              RequestContext(request,{'form': form,
+                                                      'siteLabel':'Create'}))
 
+
+@login_required
+def planImport(request):
+    if request.method == 'GET':
+        form = ImportPlanForm()
+    elif request.method == 'POST':
+        form = ImportPlanForm(request.POST, request.FILES)
+        if form.is_valid():
+            # add plan entry to database
+            meta = dict([(f, form.cleaned_data[f])
+                         for f in ('planNumber', 'planVersion')])
+            meta['creator'] = request.user.username
+            planSchema = models.getPlanSchema(form.cleaned_data['platform'])
+            
+            # set the site
+            siteID = form.cleaned_data['site']
+            if siteID:
+                sites = planSchema.getLibrary().sites
+                for site in sites:
+                    if site.id == siteID:
+                        # TODO FIX this has all sorts of formatting problems /n inserted.
+                        # meta['site'] = xpjson.dumpDocumentToString(site)
+
+                        hackSite = {"type": "Site",
+                                    "name": site.name,
+                                    "id": site.id,
+                                    "notes": site.notes}
+                        if site.bbox:
+                            hackSite["bbox"] = site.bbox
+                        if site.alternateCrs:
+                            hackSite["alternateCrs"] = site.alternateCrs
+                        meta['site'] = hackSite
+                        break
+
+            importer = choosePlanImporter.chooseImporter(form.cleaned_data['sourceFile'].name)
+            f = request.FILES['sourceFile']
+            buf = ''.join([chunk for chunk in f.chunks()])
+    
+            dbPlan = importer.importPlan('tempName',
+                                         buf=buf,
+                                         meta=meta,
+                                         planSchema=planSchema)
+
+            # bit of a hack, setting the name from the id
+            planId = dbPlan.jsonPlan.id
+            dbPlan.jsonPlan["name"] = planId
+            dbPlan.jsonPlan["uuid"] = dbPlan.uuid # makeUuid()
+            dbPlan.name = planId
+
+            dbPlan.save()
+            handleCallbacks(request, dbPlan, settings.SAVE)
+
+            # redirect to plan editor on newly created plan
+            return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
+    else:
+        return HttpResponseNotAllowed(['GET', 'POST'])
+    return render_to_response('xgds_planner2/planCreate.html',
+                              RequestContext(request,{'form': form,
+                                                      'siteLabel': 'Import'}))
 
 @login_required
 def plan_delete(request):
@@ -1015,7 +1076,7 @@ def updateJson(plan, newJsonObj):
     # does not call the callbacks here; this is probably called DURING a callback
     
     
-def planImport(request):
+def planImportXPJson(request):
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
     try:
         form = UploadXPJsonForm(request.POST, request.FILES)

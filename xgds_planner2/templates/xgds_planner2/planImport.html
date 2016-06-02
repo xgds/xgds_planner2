@@ -9,10 +9,9 @@
 {% block content %}
 {{ block.super }}
 
-<h2>{{siteLabel}} {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</h2>
+<h2>Create {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</h2>
 
-<form action="." method="post" enctype="multipart/form-data">
-{% csrf_token %}
+<form action="." method="post">{% csrf_token %}
 <table>
 {{ form.as_table }}
 </table>

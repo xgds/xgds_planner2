@@ -54,5 +54,6 @@ urlpatterns = [
     url(r'activeFlightsTreeNodes$', views.activeFlightsTreeNodes, {'loginRequired': True}, 'planner2_activeFlightsTreeNodes'),
     url(r'completedFlightsTreeNodes$', views.completedFlightsTreeNodes, {'loginRequired': True}, 'planner2_completedFlightsTreeNodes'),
     url(r'mapJsonPlan/(?P<uuid>[\w-]+)$', views.mapJsonPlan, {'loginRequired': True}, 'planner2_mapJsonPlan'),
-    url(r'^import/xpjson/$', views.planImport, {'loginRequired': True}, name='planner2_planImport_xpjson')
+    url(r'^import/xpjson/$', views.planImportXPJson, {'loginRequired': True}, name='planner2_planImport_xpjson'),
+    url(r'^import/$', views.planImport, {'loginRequired': True}, name='planner2_planImport'),
     ]
