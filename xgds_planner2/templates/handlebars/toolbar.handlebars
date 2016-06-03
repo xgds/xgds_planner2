@@ -10,6 +10,10 @@
     <div id="tab-buttons" class="eight columns">
     	<div class="row">
 	        <div class="four columns">
+	        {{#if simInfo}}
+	        <strong>Duration: </strong><span id="totalDuration">{{formatDuration simInfo.deltaTimeSeconds}}</span><br/>
+	        <strong>Distance: </strong><span id="totalDistance">{{formatDistance simInfo.deltaDistanceMeters}}</span>
+	        {{/if}}
 			</div>
 			<div class="three columns">
 		    	<!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->

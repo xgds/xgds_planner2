@@ -15,6 +15,18 @@
 //__END_LICENSE__
 
 app.views = app.views || {};
+var printedDuration = function(seconds){
+		var duration = moment.duration(seconds, 'seconds');
+  	return sprintf('%02d:%02d:%02d', duration.hours(), duration.minutes(), duration.seconds());
+};
+
+Handlebars.registerHelper('formatDuration', function(seconds){
+		return printedDuration(seconds);
+	});
+
+Handlebars.registerHelper('formatDistance', function(distance){
+	return sprintf('%0.2f m', distance);
+});
 
 app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
     template: '#template-toolbar',
@@ -42,6 +54,9 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
         this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
+        this.listenTo(app.vent, 'updatePlanDuration', function() {
+        	this.updateDurationDistance();
+        });
         this.template = Handlebars.compile($(this.template).html());
     },
 
@@ -65,8 +80,18 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
         }
     },
     render: function() {
+    	var simInfo = null;
+    	if (app.currentPlan) {
+    		simInfo = app.currentPlan._simInfo;
+    	}
         this.$el.html(this.template({stationMoniker:app.options.stationMoniker,
-        							 stationMonikerPlural: app.options.stationMonikerPlural}));
+        							 stationMonikerPlural: app.options.stationMonikerPlural,
+        							 simInfo: simInfo}));
+    },
+    updateDurationDistance: function() {
+    	var simInfo = app.currentPlan._simInfo;
+    	$("#totalDuration").text(printedDuration(simInfo.deltaTimeSeconds));
+    	$("#totalDistance").text(sprintf('%0.2f m', simInfo.deltaDistanceMeters));
     },
     onRender: function() {
         if (app.Actions.undoEmpty()) {
