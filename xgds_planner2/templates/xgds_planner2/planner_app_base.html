@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load pipeline %}
+
+{% block sitemenu-content-secondary %}
+{% include "xgds_planner2/planner2_subnav.html" %}
+{% endblock %}
+
+{% block siteSection %}Edit {{ plan_name }}{% endblock %}
+
+{% block content %}
+<style scoped>
+  {# stylesheet 'planner_app' #}
+  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
+  @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
+  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+  @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
+  /* for some reason compressing this in the css does not work so it's separate in the planner_app */
+  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
+  @import url('{{ EXTERNAL_URL }}openlayers3/ol.css');
+  @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
+  @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
+  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
+      .map {
+        height: 400px;
+        width: 100%;
+      }
+</style>
+
+<div id="application" >
+    <div id="toolbar" class="row">
+    </div>
+    <div id="controllers" class="row">
+    	{% include "xgds_core/playback_controller.html" %}
+    </div>
+
+    <div class="row" id="mapContainer">
+    	<div id="map" class="five columns"></div>
+        <div id="tabs" class="seven columns"></div>
+    </div>
+    <div class="row">
+		<div id="postmap" ></div>
+	</div>
+    <div id="saveAsDialog" style="display:none; background:white !important;">
+		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
+		<table>
+		<tr>
+			<td><label for="saveAsName">Name</label></td>
+			<td><input type="text" id="saveAsName"></td>
+		</tr>
+		<tr>
+			<td><label for="saveAsVersion">Version</label></td>
+			<td><input type="text" id="saveAsVersion"></td>
+		</tr>
+		<tr>
+			<td><label for="saveAsNotes">Notes</label></td>
+			<td><input type="text" id="saveAsNotes"></td>
+		</tr>
+		<tr></tr>
+		</table>
+	</div>
+	{% include "xgds_map_server/MapSearchDialog.html" with saveSearchForm=saveSearchForm %}
+	
+</div>
+{% endblock content %}
+  
+
+{% block scripts %}
+    {# javascript 'compiled_planner_app' #}
+    {{ block.super }}
+    {% include "xgds_core/playbackJS.html" %}
+    {% include "MapJS.html" %}
+     <script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
+     <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
+     <script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+     <script type="text/javascript" src="{{ EXTERNAL_URL }}datatables-sorting-datetime-moment/index.js"></script>
+    
+     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
+    
+ 	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/lib/string-format.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}uuid4/lib/browser/index.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-fileDownload/src/Scripts/jquery.fileDownload.js'></script>
+    
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/handlebars-helpers.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/geo.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/forms.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerModels.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlannerStyles.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerLinksViews.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerScheduleViews.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerViews.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
+    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/vehicleDriver.js'></script>
+  
+      {% javascript 'simulator' %}
+      {% javascript 'custom_map' %}
+    
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olStationViews.js'></script>
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olSegmentViews.js'></script>
+   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlanViews.js'></script>
+     
+    <!-- 
+    <script type="text/javascript" src="{# planner_appUrl #}"></script>
+    <script type="text/javascript" src="{# simulatorUrl#}"></script>
+    -->
+    {% for template_name, template in templates.items %}
+	<script type="text/handlebars" id="template-{{template_name}}">
+		{{template|safe}}
+	</script>
+    {% endfor %}
+    <script id="plan_schema_json" type="application/json">{{ plan_schema_json|safe }}</script>
+    <script id="plan_library_json" type="application/json">{{ plan_library_json|safe }}</script>
+    <script id="plan_index_json" type="application/json">{{ plan_index_json|safe }}</script>
+    <script id="plan_links_json" type="application/json">{{ plan_links_json|safe }}</script>
+    {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
+   	{% include "xgds_map_server/SearchForms.html" with searchForms=searchForms %}
+   	
+   	{% block extraScripts %}
+   	{% endblock extraScripts %}
+{% endblock scripts %}
+
+{% block jsInit %}
+    var appOptions = {
+    	BODY_RADIUS_METERS: {{ settings.XGDS_MAP_SERVER_BODY_RADIUS_METERS }},
+    	DEFAULT_COORD_SYSTEM: "{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}",
+    	SETUP_COORD_SYSTEM: {{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }},
+        DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
+		DEFAULT_ZOOM: {{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }},
+		DEFAULT_ROTATION: {{ settings.XGDS_MAP_SERVER_DEFAULT_ROTATION }},
+		SHOW_COMPASS: {{ settings.XGDS_MAP_SERVER_SHOW_COMPASS}},
+		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
+        planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
+       	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",
+        layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
+        dataUrl: "{{ settings.DATA_URL }}",
+        simulator: {{ simulator }},
+        directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
+        mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }},
+        placemarkCircleUrl: "{{ placemark_circle_url }}",
+        placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
+        placemarkDirectionalUrl: "{{ placemark_directional_url }}",
+        placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
+        XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
+        XGDS_PLANNER2_LINKS_LOADED_CALLBACK: {{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }},
+        commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
+        readOnly: {{ editable|yesno:"false,true" }},
+        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
+        schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
+        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
+        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
+        stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
+        segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
+        commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
+        stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
+        segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
+        commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}'
+    };
+    
+    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    	appOptions['flight_names'] = {{flight_names|safe}};
+    {% endif %}
+    
+    {% if extras %}
+        var extras = {{ extras|safe }};
+        for (var key in extras) {
+        	appOptions[key] = extras[key];
+        }
+    {% endif %}
+    
+	$(function(){
+    	app.start(appOptions);
+    	playback.initialize({getStartTime: app.getStartTime,
+    						 getEndTime: app.getEndTime,
+    						 displayTZ: app.getTimeZone(),
+    						 });
+    	playback.addListener(playback.vehicleDriver);
+    	{% block plannerInitializers %}
+    	{% endblock plannerInitializers %}
+	});
+	$(window).bind('beforeunload', function() {
+        if (app.dirty) {
+            return 'Unsaved changes, are you sure you want to exit?';
+        }
+    }); 
+{% endblock jsInit %}
+  
