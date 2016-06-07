@@ -763,10 +763,8 @@ def schedulePlans(request, redirect=True):
                         flight = flights[0]
                     else:
                         # it does not exist we better make one
-                        groupFlight = GROUP_FLIGHT_MODEL.get()()
                         prefix = prefix + "A"
-                        groupFlight.name = prefix
-                        groupFlight.save()
+                        groupFlight, created = GROUP_FLIGHT_MODEL.get().objects.get_or_create(name=prefix)
                         for vehicle in VEHICLE_MODEL.get().objects.all():
                             newFlight = FLIGHT_MODEL.get()()
                             newFlight.group = groupFlight
