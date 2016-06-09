@@ -97,27 +97,33 @@ $(function() {
                 this.segmentsFeatures = new ol.Collection();
                 this.segmentsVector = new ol.source.Vector({features:this.segmentsFeatures});
                 this.segmentsLayer = new ol.layer.Vector({name:'segments',
-                    source: this.segmentsVector
+                    source: this.segmentsVector,
+                    zIndex: 100
                     });
                 this.map.addLayer(this.segmentsLayer);
+                this.segmentsLayer.setZIndex(100);
                 
                 this.segmentsDecorators = new ol.Collection();
                 this.segmentsDecoratorsLayer = new ol.layer.Vector({name:'segmentsDecorators',
-                    source:  new ol.source.Vector({features:this.segmentsDecorators})
+                    source:  new ol.source.Vector({features:this.segmentsDecorators}),
+                    zIndex:95
                     });
                 this.map.addLayer(this.segmentsDecoratorsLayer);
+                this.segmentsDecoratorsLayer.setZIndex(95);
+                
                 
                 
                 this.stationsFeatures = new ol.Collection();
                 this.stationsVector = new ol.source.Vector({features:this.stationsFeatures});
                 this.stationsLayer = new ol.layer.Vector({name:'stations',
                     source: this.stationsVector,
-                    zIndex: 2
+                    zIndex: 200
                     });
                 this.map.addLayer(this.stationsLayer);
                 this.stationsDecorators = new ol.Collection();
                 this.stationsDecoratorsLayer = new ol.layer.Vector({name:'stationsDecorators',
-                    source:  new ol.source.Vector({features:this.stationsDecorators})
+                    source:  new ol.source.Vector({features:this.stationsDecorators}),
+                	zIndex: 195
                     });
                 this.map.addLayer(this.stationsDecoratorsLayer);
 
