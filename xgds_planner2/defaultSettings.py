@@ -273,7 +273,7 @@ BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1
                          'proj4',
                          'usng=git://github.com/codice/usng.js.git',
                          'qunit',
-                         'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.14.0/v3.14.0-dist.zip',
+                         'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.16.0/v3.16.0-dist.zip',
                          'ol3-popup',
                          'fancytree=fancytree',
                          'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
