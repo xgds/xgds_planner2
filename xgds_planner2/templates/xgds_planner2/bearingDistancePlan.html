@@ -52,6 +52,24 @@
     	    	runningTotalDistance = runningTotalDistance + distance;
   	      		return sprintf('%.02f',distance);
   	       	});
+    	    Handlebars.registerHelper('wrapURL', function(str) {
+    	        str = Handlebars.Utils.escapeExpression(str);
+    	        // line breaks too
+    	        str = str.replace(/(\r\n|\n|\r)/gm, '<br>'); 
+    	        
+    	        var matches = str.match(/http\S+/);
+    	        var wrapped = matches.map(function(v, i, a) {
+    	        	v = v.replace(/<br>/gm, ''); 
+    	            return '<a target="_blank" href="' + v + '">' + v + '</a>';
+    	        });
+
+    	        for (var i = 0; i < matches.length; i++) {
+    	            str = str.replace(matches[i], wrapped[i]);
+    	        }
+
+    	        return new Handlebars.SafeString(str)
+    	    });
+
 
   	      	Handlebars.registerHelper('prettyTime', function( sourceTime, timeZone ){
   	      		return getLocalTimeString(sourceTime, timeZone);
