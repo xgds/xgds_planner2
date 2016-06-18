@@ -39,6 +39,17 @@ def getFlight(event_time, vehicle):
         return found_flights[0]
     
     
+def getNextAlphabet(character):
+    """
+    For getting the next letter of the alphabet for prefix.
+    """
+    # a is '97' and z is '122'. There are 26 letters total
+    nextChar = ord(character) + 1
+    if nextChar > 122:
+        nextChar = (nextChar - 97) % 26 + 97
+    return chr(nextChar)
+    
+    
 def getActiveFlight(vehicle):
     if vehicle:
         foundFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle = vehicle)

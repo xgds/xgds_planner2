@@ -20,7 +20,7 @@ from django.conf import settings
 from geocamUtil.loader import LazyGetModelByName
 from geocamUtil.extFileField import ExtFileField
 
-from xgds_planner2.models import getPlanSchema
+from xgds_planner2.models import getPlanSchema, GroupFlight
 
 
 class CreatePlanForm(forms.Form):
@@ -81,6 +81,7 @@ class GroupFlightForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(GroupFlightForm, self).__init__(*args, **kwargs)
         self.fields['vehicles'] = self.initializeVehicleChoices()
+        # TODO: get the latest GroupFlight, and increment the prefix
     
     def initialize(self, timeinfo):
         self.year = timeinfo['year']
