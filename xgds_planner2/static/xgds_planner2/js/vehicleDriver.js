@@ -70,6 +70,9 @@ $.extend(playback, {
 			if (this.lastIndex > this.ranges.length){
 				this.lastIndex = this.ranges.length - 1;
 			}
+			if (currentTime === null or currentTime === undefined){
+				return null;
+			}
 			if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
 				return this.getPosition(currentTime, this.lastIndex);
 			} else {
