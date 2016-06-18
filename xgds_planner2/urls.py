@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^doc/(?P<plan_id>[^/]+)$', views.plan_detail_doc, {}, name='planner2_doc'),
     url(r'^plan/(?P<plan_id>[^/]+)/(?P<jsonPlanId>[^/\.]+)\.json$', views.plan_REST, {}, name="planner2_planREST"),
     url(r'^plan/bearingDistance/(?P<plan_id>[^/]+)$', views.plan_bearing_distance_view, {}, name='plan_bearing_distance'),
+    url(r'^plan/bearingDistanceTop/(?P<plan_id>[^/]+)$', views.plan_bearing_distance_top_view, {}, name='plan_bearing_distance_top'),
     url(r'^plan/export/ajax/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {'readOnly': True, 'loginRequired': False, 'isAjax': True, 'securityTags': ['readOnly']}, name='planner2_planExport_ajax'),
     url(r'^plan/export/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {'readOnly': True, 'loginRequired': False, 'securityTags': ['readOnly']}, name='planner2_planExport'),
     url(r'^plan/export/(?P<uuid>[\w-]+)/(?P<name>[^/]+)/(?P<time>([\w-]+([\w]+[:]+)+[\w]+)*)$', views.planExport, {'readOnly': True, 'loginRequired': False, 'securityTags': ['readOnly']}, name='planner2_planExportTime'),

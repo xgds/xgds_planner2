@@ -253,6 +253,14 @@ def plan_bearing_distance_view(request, plan_id):
         RequestContext(request,
                        {'plan_uuid': plan.uuid,
                         'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH}))
+
+def plan_bearing_distance_top_view(request, plan_id):
+    plan = PLAN_MODEL.get().objects.get(pk=plan_id)
+    return render_to_response(
+        'xgds_planner2/bearingDistancePlanTop.html',
+        RequestContext(request,
+                       {'plan_uuid': plan.uuid,
+                        'handlebar_path': 'xgds_planner2/templates/xgds_planner2/bearingDistancePlanTop.handlebars'}))
     
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):

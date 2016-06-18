@@ -1,0 +1,46 @@
+<div> <strong>{{plan_moniker}}: {{plan.name}}</strong></div>
+
+	<table class="wiki">
+		<tr>
+			<th><label>Name:</label></th>
+			<td>{{plan.name}}</td>
+		</tr>
+		<tr>
+			<th><label>ID:</label></th>
+			<td>{{plan.id}}</td>
+		</tr>
+		<tr>
+			<th><label>Author:</label></th>
+			<td>{{plan.creator}}</td>
+		</tr>
+		<tr>
+			<th><label>Created:</label></th>
+			<td>{{prettyTime plan.dateCreated defaultTimeZone}}</td>
+		</tr>
+		<tr>
+			<th><label>Modified:</label></th>
+			<td>{{prettyTime plan.dateModified defaultTimeZone}}</td>
+		</tr>
+		<tr>
+			<th><label>Notes:</label></th>
+			<td>{{wrapURL plan.notes}}</td>
+		</tr>
+		<tr>
+			<th><label>Duration:</label></th>
+			<td id="plan_duration_value"></td>
+		</tr>
+		<tr>
+			<th><label>Distance:</label></th>
+			<td id="plan_distance_value"></td>
+		</tr>
+	</table>
+
+	<div hidden>
+	{{#each plan.sequence}}
+	    {{#if distanceMeters}}{{totalDistance distanceMeters}} m{{/if}}
+	    {{#if durationSeconds}}{{totalDuration durationSeconds}}{{/if}}
+	  {{#each commands}}
+	    {{#if duration}}{{totalDuration duration}}{{/if}}
+	  {{/each}}
+    {{/each}}
+    </div>
