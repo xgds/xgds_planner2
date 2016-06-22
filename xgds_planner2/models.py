@@ -55,9 +55,9 @@ PLAN_SCHEMA_CACHE = {}
 
 
 class AbstractVehicle(models.Model):
-    name = models.CharField(max_length=192, blank=True)
+    name = models.CharField(max_length=192, blank=True, db_index=True)
     notes = models.TextField(blank=True)
-    type = models.CharField(max_length=16)
+    type = models.CharField(max_length=16, db_index=True)
 
     class Meta:
         abstract = True
@@ -82,9 +82,9 @@ class AbstractPlanExecution(models.Model):
     Relationship table for managing
     flight to plan's many to many relationship.
     """
-    start_time = models.DateTimeField(null=True, blank=True)
-    planned_start_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
+    start_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    planned_start_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    end_time = models.DateTimeField(null=True, blank=True, db_index=True)
 
     flight = 'set to DEFAULT_FLIGHT_FIELD() or similar in derived classes'
     plan = 'set to DEFAULT_PLAN_FIELD() or similar in derived classes'
@@ -124,10 +124,10 @@ DEFAULT_GROUP_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.GroupFligh
 
 class AbstractFlight(models.Model):
     uuid = UuidField(unique=True, db_index=True)
-    name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV')
+    name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV', db_index=True)
     locked = models.BooleanField(blank=True, default=False)
-    start_time = models.DateTimeField(null=True, blank=True)
-    end_time = models.DateTimeField(null=True, blank=True)
+    start_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    end_time = models.DateTimeField(null=True, blank=True, db_index=True)
     timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
 
     vehicle = 'set to DEFAULT_VEHICLE_FIELD() or similar in derived classes'
@@ -251,7 +251,7 @@ class AbstractGroupFlight(models.Model):
     This GroupFlight model represents the overall coordinated
     operation.
     """
-    name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A')
+    name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A', db_index=True)
     notes = models.TextField(blank=True)
 
     def thumbnail_url(self):
@@ -286,9 +286,9 @@ class GroupFlight(AbstractGroupFlight):
 
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
-    name = models.CharField(max_length=256)
-    dateModified = models.DateTimeField()
-    creator = models.ForeignKey(User, null=True, blank=True)
+    name = models.CharField(max_length=256, db_index=True)
+    dateModified = models.DateTimeField(db_index=True)
+    creator = models.ForeignKey(User, null=True, blank=True, db_index=True)
 
     # the canonical serialization of the plan exchanged with javascript clients
     jsonPlan = ExtrasDotField()
