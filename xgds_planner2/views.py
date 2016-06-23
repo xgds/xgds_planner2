@@ -855,11 +855,6 @@ def addGroupFlight(request):
 
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
-
-        today = datetime.datetime.now(pytz.utc)
-        groupFlightForm.year = today.year
-        groupFlightForm.month = today.month - 1
-        groupFlightForm.day = today.day
         return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
                                                                         'groupFlights': getGroupFlights(),
                                                                         'errorstring': errorString},

@@ -13,10 +13,11 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import datetime
 from django import forms
 from django.conf import settings
+from django.utils import timezone
+
 from geocamUtil.loader import LazyGetModelByName
 from geocamUtil.extFileField import ExtFileField
 
@@ -73,15 +74,30 @@ class GroupFlightForm(forms.Form):
     date = forms.DateField(required=True)
     prefix = forms.CharField(widget=forms.TextInput(attrs={'size': 4}),
                              label="Prefix",
-                             required=True,
-                             initial='A')
+                             required=True)
 
     notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
 
     def __init__(self, *args, **kwargs):
         super(GroupFlightForm, self).__init__(*args, **kwargs)
         self.fields['vehicles'] = self.initializeVehicleChoices()
-        # TODO: get the latest GroupFlight, and increment the prefix
+        today = timezone.localtime(timezone.now()).date()
+            
+        self.year = today.year
+        self.month = today.month - 1
+        self.day = today.day
+        self.initializeLetter(today.strftime('%Y%m%d'))
+        
+        
+    #get the latest GroupFlight, and increment the prefix
+    def initializeLetter(self, dateprefix):
+        GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+        try:
+            last = GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=dateprefix).order_by('name').last()
+            self.fields['prefix'].initial = chr(ord(last.name[-1]) + 1)
+        except:
+            self.fields['prefix'].initial = 'A'
+        
     
     def initialize(self, timeinfo):
         self.year = timeinfo['year']
