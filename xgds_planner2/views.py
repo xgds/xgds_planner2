@@ -1107,3 +1107,6 @@ def planImportXPJson(request):
         exc_type, exc_value, exc_traceback = sys.exc_info()
         return HttpResponse(json.dumps({'Success':"False", 'responseText': exc_value['message']}), content_type='application/json', status=406)
 
+def getTodaysGroupFlights():
+    today = timezone.localtime(timezone.now()).date()
+    return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=today.strftime('%Y%m%d'))
