@@ -15,7 +15,7 @@
 #__END_LICENSE__
 
 from geocamUtil import KmlUtil
-
+from xml.sax.saxutils import escape
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2 import xpjson
 
@@ -53,7 +53,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         result = result + ('''
 <Placemark>
   <name>%s</name>
-  <styleUrl>%s</styleUrl>''' % (name, styleUrl))
+  <styleUrl>%s</styleUrl>''' % (escape(name), styleUrl))
         if directionStyle:
             result = result + directionStyle
         result = result + ('''
@@ -78,7 +78,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
     <LineString>
       <tessellate>1</tessellate>
       <coordinates>
-''' % {'name': segment.id }
+''' % {'name': escape(segment.id) }
         for coord in coords:
             result = result + str(coord[0]) + ',' + str(coord[1]) + '\n'
         result = result + '''
@@ -96,9 +96,9 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return waypointStyle + directionStyle + segmentStyle
 
     def transformPlan(self, plan, tsequence, context):
-        name = plan.get("name")
+        name = escape(plan.get("name"))
         if not name:
-            name = plan.get("id", "")
+            name = escape(plan.get("id", ""))
         return KmlUtil.wrapKmlDocument(self.makeStyles() + '\n'.join(tsequence), name)
 
 
