@@ -134,6 +134,10 @@ class AbstractFlight(models.Model):
     notes = models.TextField(blank=True)
     group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'
 
+    @classmethod
+    def cls_type(cls):
+        return 'Flight'
+    
     def hasStarted(self):
         return (self.start_time != None)
     
