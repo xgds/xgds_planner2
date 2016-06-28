@@ -538,7 +538,7 @@ def getPlanIndexKml(request):
     out = StringIO()
     out.write('<Document>\n')
     plans = PLAN_MODEL.get().objects.filter(deleted=False)
-    plans = list(reversed(sorted(plans, key=lambda plan: (plan.getEscapedId(), plan.escapedName()))))
+    plans = list(reversed(sorted(plans, key=lambda plan: (plan.escapedName(),))))
     for plan in plans:
         fname = '%s.kml' % plan.escapedName()
         relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
@@ -553,7 +553,7 @@ def getPlanIndexKml(request):
   </Link>
 </NetworkLink>
 """
-                  % dict(name=plan.getEscapedId() + ' - ' + plan.escapedName(), url=url))
+                  % dict(name=plan.escapedName(), url=url))
     out.write('</Document>')
     return wrapKmlDjango(out.getvalue())
 
