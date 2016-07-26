@@ -31,20 +31,16 @@ LIBRARY_PATH = os.path.join(THIS_DIR, 'xpjsonSpec', 'examplePlanLibrary.json')
 
 
 class XpjsonTest(unittest.TestCase):
-    def test_resolve(self):
-        schemaDict = xpjson.loadDocument(SCHEMA_PATH)
-        xpjson.resolveSchemaInheritance(schemaDict)
-
     def test_schema(self):
-        _schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
+        _schema = xpjson.loadDocument(SCHEMA_PATH)
 
     def test_plan(self):
-        schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
-        _plan = xpjson.Plan(xpjson.loadDocument(PLAN_PATH), schema=schema)
+        schema = xpjson.loadDocument(SCHEMA_PATH)
+        _plan = xpjson.loadDocument(PLAN_PATH, schema=schema)
 
     def test_library(self):
-        schema = xpjson.PlanSchema(xpjson.loadDocument(SCHEMA_PATH))
-        _plan = xpjson.PlanLibrary(xpjson.loadDocument(LIBRARY_PATH), schema=schema)
+        schema = xpjson.loadDocument(SCHEMA_PATH)
+        _library = xpjson.loadDocument(LIBRARY_PATH, schema=schema)
 
 
 if __name__ == '__main__':
