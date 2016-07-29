@@ -15,20 +15,22 @@
     {
       "type": "ParamSpec",
       "id": "speed",
-      "name": "speed (m/s)",
+      "name": "speed",
       "valueType": "number",
+      "unit": "m/s",
       "minimum": 0,
       "default": 0.4,
-      "notes": "Estimated mean speed of drive (m/s)"
+      "notes": "Estimated mean speed of drive"
     },
     {
       "type": "ParamSpec",
       "id": "tolerance",
-      "name": "tolerance (m)",
+      "name": "tolerance",
       "valueType": "number",
+      "unit": "meters",
       "minimum": 0,
       "default": 1.0,
-      "notes": "How close we need to get to the target coordinates (meters)"
+      "notes": "How close we need to get to the target coordinates"
     }
   ],
 
@@ -37,8 +39,9 @@
       "type": "ParamSpec",
       "id": "duration",
       "valueType": "number",
+      "unit": "minutes",
       "minimum": 0,
-      "notes": "Estimated time required to execute command (minutes)",
+      "notes": "Estimated time required to execute command",
       "required": false
     }
   ],
@@ -58,6 +61,7 @@
         {
           "type": "ParamSpec",
           "id": "presetCode",
+          "name": "Preset code",
           "valueType": "string",
           "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
         }
@@ -84,8 +88,9 @@
         {
           "type": "ParamSpec",
           "id": "focalLengthMm",
-          "name": "Focal length (mm)",
+          "name": "Focal length",
           "valueType": "number",
+          "unit": "mm",
           "minimum": 7.4,
           "maximum": 44,
           "notes": "Actual (not 35 mm-equivalent) focal length of camera."
@@ -95,6 +100,7 @@
     {
       "type": "CommandSpec",
       "id": "MicroImage",
+      "notes": "Acquire an image with the down-pointing microscopic imager.",
       "parent": "Image",
       "params": [
         {
@@ -108,15 +114,25 @@
     {
       "type": "CommandSpec",
       "id": "PeriodicPancam",
+      "notes": "Initiate periodic imaging with the PanCam imager. This command is non-blocking; images will continue to be collected as the rest of the plan executes, until explicitly stopped.",
       "parent": "Image",
       "blocking": false,
       "params": [
         {
           "type": "ParamSpec",
           "id": "intervalSeconds",
-          "name": "Interval between images (seconds)",
+          "name": "Interval between images",
           "valueType": "number",
+          "unit": "seconds",
           "minimum": 2
+        },
+        {
+          "type": "ParamSpec",
+          "id": "duration",
+          "parent": "duration",
+          "default": 0,
+          "visible": false,
+          "editable": false
         }
       ]
     }
@@ -130,5 +146,33 @@
 
   "segmentSequenceCommands": [
     "PeriodicPancam"
+  ],
+
+  "unitSpecs": [
+    {
+      "type": "UnitSpec",
+      "name": "length",
+      "units": {
+        "meters": 1.0,
+        "mm": 0.001,
+        "inches": 0.0254
+      }
+    },
+    {
+      "type": "UnitSpec",
+      "name": "duration",
+      "units": {
+        "seconds": 1.0,
+        "minutes": 60
+      }
+    },
+    {
+      "type": "UnitSpec",
+      "name": "speed",
+      "units": {
+        "m/s": 1.0,
+        "mph": 2.2369363
+      }
+    }
   ]
 }
