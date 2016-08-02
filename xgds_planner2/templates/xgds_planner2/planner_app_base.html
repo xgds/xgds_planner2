@@ -10,13 +10,14 @@
 {% block content %}
 <style scoped>
   {# stylesheet 'planner_app' #}
-  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
-  @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
-  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
-  @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
-  /* for some reason compressing this in the css does not work so it's separate in the planner_app */
-  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
-  @import url('{{ EXTERNAL_URL }}openlayers3/ol.css');
+  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.min.css');
+   @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
+   @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+   @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
+   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
+   @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
+   @import url('{{ EXTERNAL_URL }}openlayers3/ol.css');
+   @import url('{{ STATIC_URL}}geocamUtil/css/datatable.css');
   @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
   @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
   @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
