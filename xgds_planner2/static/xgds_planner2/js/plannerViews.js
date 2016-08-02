@@ -67,14 +67,21 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                 parseFloat(this.$el.parent().css('margin-bottom')) +
                 10; // this exact number is needed because jquery ui uses
             // elements with absolute positioning for the resize handles
-            var pageContentElement = $('#page-content');
-            var oldMapHeight = app.map.$el.height();
-            var initialHeight = oldMapHeight - offset;
-            app.map.$el.height(initialHeight);
-            app.map.$el.css('max-height', initialHeight + 'px');
-            $(window).bind('resize', function() {
-                app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
-            });
+        	
+//            var pageContentElement = $('#page-content');
+//            var oldMapHeight = app.map.$el.height();
+//            var initialHeight = oldMapHeight - offset;
+//            app.map.$el.height(initialHeight);
+//            app.map.$el.css('max-height', initialHeight + 'px');
+////            $(window).bind('resize', function() {
+////                app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
+////            });
+            //HERETAMAR
+            // new stuff
+//            var mgic = $("#map-gridstack-item-content");
+//        	this.$el.height(mgic.height());
+        	// end new stuff
+
             app.State.mapHeightSet = true;
             app.vent.trigger('doMapResize');
         }

@@ -2,8 +2,28 @@ input[type="checkbox"].select {
     vertical-align: top;
 }
 
+i.pinDiv {
+	float: right;
+}
+      
 #map{
-    height: 600px;
+    //height: 80%;
+}
+#postmap{
+    height: 30px;
+}
+
+#map-gridstack-item-content {
+/*   	min-height: 200px;
+  	height: 400px;
+ */  }
+
+#tabs {
+  //width: 90%;
+}
+#tabs-gridstack-item-content {
+	height: 400px;
+	//width: 100%;
 }
 
 .nav-tabs li:hover{

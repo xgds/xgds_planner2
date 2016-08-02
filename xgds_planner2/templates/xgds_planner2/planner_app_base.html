@@ -10,20 +10,23 @@
 {% block content %}
 <style scoped>
   {# stylesheet 'planner_app' #}
-  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.css');
+  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.min.css');
   @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
   @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
   @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
   @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
   @import url('{{ EXTERNAL_URL }}openlayers3/ol.css');
+  @import url('{{ STATIC_URL}}geocamUtil/css/datatable.css');
   @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
   @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
   @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
-      .map {
-        height: 400px;
-        width: 100%;
-      }
+  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.css');
+  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack-extra.min.css');
+  .grid-stack-item-content {
+    display: block;
+    margin: 20px 0 10px;
+    }
 </style>
 
 <div id="application" >
@@ -33,13 +36,22 @@
     	{% include "xgds_core/playback_controller.html" %}
     </div>
 
-    <div class="row" id="mapContainer">
-    	<div id="map" class="five columns"></div>
-        <div id="tabs" class="seven columns"></div>
+    <div class="grid-stack grid-stack-6" id="container">
+    	<div id="map-gridstack-item" class="grid-stack-item"  data-gs-x="0" data-gs-y="0" data-gs-width="2" data-gs-height="4" >
+			<div id="map-gridstack-item-content"  class="grid-stack-item-content" >
+				<i class="icon-lock pinDiv warning"></i>
+    			<div id="map"></div>
+    			<div id="postmap" ></div>
+    		</div>
+    	</div>
+    	<div id="tabs-gridstack-item" class="grid-stack-item"  data-gs-x="2" data-gs-y="0" data-gs-width="4" data-gs-height="4" >
+    		<div id="tabs-gridstack-item-content" class="grid-stack-item-content" >
+    		<i class="icon-lock pinDiv warning"></i>
+		        <div id="tabs"></div>
+		    </div>
+		</div>
     </div>
-    <div class="row">
-		<div id="postmap" ></div>
-	</div>
+	
     <div id="saveAsDialog" style="display:none; background:white !important;">
 		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
 		<table>
@@ -82,6 +94,8 @@
     <script type="text/javascript" src='{{ EXTERNAL_URL }}usng/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}uuid4/lib/browser/index.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-fileDownload/src/Scripts/jquery.fileDownload.js'></script>
+    <script type="text/javascript" src="{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.js" ></script>
+	<script type="text/javascript" src="{{ STATIC_URL }}xgds_core/js/gridstackUtils.js"></script>
     
     <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/handlebars-helpers.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/geo.js'></script>
@@ -178,6 +192,22 @@
     	playback.addListener(playback.vehicleDriver);
     	{% block plannerInitializers %}
     	{% endblock plannerInitializers %}
+    	xgds_gridstack.initializeGridstack();
+    	
+    	// gridstack does not play nice with handlebars. 
+    	var tabsdiv = $('#tabs');
+    	var tgi = $("#tabs-gridstack-item");
+    	var tgic = $("#tabs-gridstack-item-content");
+    	var newheight = $(window).height() - 200;
+    	tgi.height(newheight);
+    	//tgic.height(newheight-10);  
+    	tabsdiv.width(tgic.width() - 10);
+    	
+    	var mgic = $("#map-gridstack-item-content");
+    	var mgi = $("#map-gridstack-item");
+    	mgi.height(newheight); 
+    	//mgic.height(newheight-10);  
+    	
 	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
