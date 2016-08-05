@@ -464,6 +464,8 @@ def planCreate(request):
 @login_required
 def planImport(request):
     if request.method == 'GET':
+        messages.info(request, 'You can create a ' +  settings.XGDS_PLANNER2_PLAN_MONIKER + ' by importing a kml file containing a LineString.')
+        messages.info(request, 'Alternately you can import a csv file, which must have column headers of latitude and longitude.')
         form = ImportPlanForm()
     elif request.method == 'POST':
         form = ImportPlanForm(request.POST, request.FILES)
