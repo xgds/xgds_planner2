@@ -1016,6 +1016,12 @@ def completedFlightsTreeNodes(request):
     json_data = json.dumps(result, indent=4)
     return HttpResponse(content=json_data,
                         content_type="application/json")
+    
+def flightTreeNodes(request, flight_id):
+    flight = FLIGHT_MODEL.get().objects.get(id=flight_id)
+    json_data = json.dumps(flight.getTreeJsonChildren(), indent=4)
+    return HttpResponse(content=json_data,
+                        content_type="application/json")
 
 def plansTreeNodes(request):
     plans = PLAN_MODEL.get().objects.filter(deleted=False)

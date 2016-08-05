@@ -194,14 +194,16 @@ class AbstractFlight(models.Model):
     
     def getTreeJson(self):
         result = {"title": self.name,
+                  "lazy": True,
                   "key": self.uuid,
                   "tooltip": self.notes,
                   "folder": True, 
                   "data": {"type": self.__class__.__name__,
                            "vehicle": self.vehicle.name,
                            "href": '', # TODO add url to the flight summary page when it exists
-                           },
-                  "children": self.getTreeJsonChildren()
+                           "childNodesUrl": reverse('planner2_flightTreeNodes', kwargs={'flight_id': self.id})
+                           }
+                  #"children": self.getTreeJsonChildren()
                   }
         
         return result
