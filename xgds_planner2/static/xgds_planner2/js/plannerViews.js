@@ -706,7 +706,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
     onItemExpand: function(childView) {
         app.State.stationSelected = childView.model;
-        app.vent.trigger('itemSelected:station', this.model);
+        app.vent.trigger('itemSelected:station', childView.model);
     },
 
     restoreExpanded: function() {

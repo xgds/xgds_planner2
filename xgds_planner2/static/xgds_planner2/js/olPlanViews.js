@@ -295,9 +295,13 @@ $(function() {
                                 this.drawSegment(newSegment, sequence.at(segIndex - 1), station);
                             }
 
-                            // set time and location for added station
+                            // set location for added station
                             app.State.addStationLocation = coords;
-                            app.State.addStationTime = Date.now();
+                            app.vent.trigger('simulatePlan');
+                            
+                            app.State.stationSelected = station;
+                            app.vent.trigger('itemSelected:station', station);
+                            
                         }, this);
                     }
                     this.stationAdder.setActive(true);
@@ -348,15 +352,15 @@ $(function() {
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
                             var feature = e.element;
-                            feature.changed();
+                            if (feature != undefined){
+                            	feature.changed();
+                            }
                         });
-                        this.listenTo(app.vent, 'itemSelected:station', function() {
-                            var selectedItem = app.State.stationSelected;
+                        this.listenTo(app.vent, 'itemSelected:station', function(selectedItem) {
                             this.mapSelect(selectedItem);
                         });
                         
-                        this.listenTo(app.vent, 'itemSelected:segment', function() {
-                            var selectedItem = app.State.segmentSelected;
+                        this.listenTo(app.vent, 'itemSelected:segment', function(selectedItem) {
                             this.mapSelect(selectedItem);
                         });
                         
@@ -389,12 +393,13 @@ $(function() {
                     }
                     
                     features.push(foundFeature);
-                    this.selectNavigate.changed();
                     
                 }  else {
-                    features.removeAt(0);
-                    this.selectNavigate.changed();
+                	if (features.getLength() > 0){
+                		features.removeAt(0);
+                	}
                 }
+                this.selectNavigate.changed();
             },
             
             deleteStation: function(e) {
@@ -430,52 +435,52 @@ $(function() {
                     app.State.popupsEnabled = false;
                     
                     if (_.isUndefined(this.stationRepositioner)){
-                	this.stationRepositioner = new ol.interaction.Modify({
-                        	name: "stationRepositioner",
-                        	features: this.stationsFeatures
-                        });
-                	this.stationRepositioner.on('modifystart', function(event){
-                            app.Actions.disable();
-                        }, this);
-                	this.stationRepositioner.on('modifyend', function(event){
-                            app.Actions.enable();
-                            app.Actions.action();
-                        }, this);
-                        this.segmentModifier = new ol.interaction.Modify({
-                        	name: "segmentModifier",
-                        	features: this.segmentsFeatures
-                        });
-                        this.segmentModifier.on('modifyend', function(event){
-                            event.features.forEach(function(element, index, array) {
-                        	var geom = element.getGeometry();
-                        	var coords = geom.getCoordinates();
-                        	if (coords.length > 2){
-                        	    var model = element.get('model')
-                        	    model.trigger('splitSegment');
-                        	}
-                            }, this);
-                    	
-                        }, this);
-                        this.stationDeleter = new ol.interaction.Select({
-                        	name: "stationDeleter",
-                        	layers: [this.stationsLayer],
-                        	condition: function(event){
-                        	    return ol.events.condition.shiftKeyOnly(event)
-                        	    && ol.events.condition.singleClick(event);
-                        	}
-                            });
-                        
-                        
-                        this.listenTo(app.vent, 'station:remove', function(killedStation) {
-                            if (!_.isUndefined(killedStation)){
-                                var feature = killedStation.feature;
-                                if (!_.isUndefined(feature)){
-                                    this.stationDeleter.getFeatures().clear();
-                                }
-                            }
-                        }, this);
-                        app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);
-                	app.vent.on('activateStationRepositioner', this.activateStationRepositioner, this);
+	                	this.stationRepositioner = new ol.interaction.Modify({
+	                        	name: "stationRepositioner",
+	                        	features: this.stationsFeatures
+	                        });
+	                	this.stationRepositioner.on('modifystart', function(event){
+	                            app.Actions.disable();
+	                        }, this);
+	                	this.stationRepositioner.on('modifyend', function(event){
+	                            app.Actions.enable();
+	                            app.Actions.action();
+	                        }, this);
+	                    this.segmentModifier = new ol.interaction.Modify({
+	                    	name: "segmentModifier",
+	                    	features: this.segmentsFeatures
+	                    });
+	                    this.segmentModifier.on('modifyend', function(event){
+	                        event.features.forEach(function(element, index, array) {
+	                    	var geom = element.getGeometry();
+	                    	var coords = geom.getCoordinates();
+	                    	if (coords.length > 2){
+	                    	    var model = element.get('model')
+	                    	    model.trigger('splitSegment');
+	                    	}
+	                        }, this);
+	                	
+	                    }, this);
+	                    this.stationDeleter = new ol.interaction.Select({
+	                    	name: "stationDeleter",
+	                    	layers: [this.stationsLayer],
+	                    	condition: function(event){
+	                    	    return ol.events.condition.shiftKeyOnly(event)
+	                    	    && ol.events.condition.singleClick(event);
+	                    	}
+	                        });
+	                    
+	                    
+	                    this.listenTo(app.vent, 'station:remove', function(killedStation) {
+	                        if (!_.isUndefined(killedStation)){
+	                            var feature = killedStation.feature;
+	                            if (!_.isUndefined(feature)){
+	                                this.stationDeleter.getFeatures().clear();
+	                            }
+	                        }
+	                    }, this);
+	                    app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);
+	                	app.vent.on('activateStationRepositioner', this.activateStationRepositioner, this);
                     } 
                     
                     this.segmentModifier.setActive(true);

@@ -50,7 +50,6 @@ var app = (function($, _, Backbone) {
             this.addStationOnMouseUp = false;
             this.mouseDownLocation = undefined;
             this.addStationLocation = undefined;
-            this.addStationTime = undefined;
             this.planLoaded = false;
             this.disableAddStation = false;
             this.pageInnerWidth = undefined;
@@ -288,10 +287,7 @@ var app = (function($, _, Backbone) {
                 if (!_.isUndefined(planJSON)) {
                     app.currentPlan.set(planJSON);
                 }
-                app.simulatePlan();
-                if (!_.isUndefined(app.map.planView)){
-                    app.map.planView.render();
-                }
+                app.vent.trigger('simulatePlan');
                 app.vent.trigger('updatePlan');
             };
 
@@ -321,6 +317,11 @@ var app = (function($, _, Backbone) {
             app.vent.on('updatePlanDuration', function(newDuration) {
             	playback.updateEndTime(app.getEndTime(newDuration));
             });
+            
+            var context = this;
+            app.vent.on('simulatePlan', _.debounce(context.simulatePlan, 10));
+            app.vent.on('updatePlan', _.debounce(context.rerender, 10));
+            
             app.getStartTime = function() {
             	if (app.options.planExecution) {
             		return moment.utc(app.options.planExecution.planned_start_time);
@@ -357,6 +358,12 @@ var app = (function($, _, Backbone) {
             	return 'Etc/UTC';
             };
         });
+    
+    app.rerender = function() {
+        if (!_.isUndefined(app.map.planView)){
+            app.map.planView.render();
+        }
+    };
 
     app.router = new Backbone.Router({
         routes: {
@@ -393,7 +400,7 @@ var app = (function($, _, Backbone) {
         } else if (eventname == 'actionOcurred') {
             if (_.isUndefined(app.currentPlan))
                 return;
-            app.simulatePlan();
+            app.vent.trigger('simulatePlan');
         }
     });
 

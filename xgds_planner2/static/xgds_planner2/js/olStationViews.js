@@ -83,6 +83,12 @@ $(function() {
             },
             
             geometryChanged: function(event) {
+            	
+            	// select it if need be
+            	if (app.State.stationSelected != this.model){
+            		app.State.stationSelected = this.model;
+            		app.vent.trigger('itemSelected:station', this.model);
+            	}
             	 var coords = inverseTransform(this.geometry.getCoordinates());
             	 var oldCoords = this.model.getPoint();
 //            	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
@@ -91,7 +97,7 @@ $(function() {
                          lat: coords[1]
                      });
 //            	 }
-                 
+                 console.log("GEOMETRY CHANGED " + this.model.name);
             },
             
             redraw: function() {

@@ -379,6 +379,7 @@ app.models = app.models || {};
             geom.coordinates = [coords.lng, coords.lat];
             this.set('geometry', geom);
             this.trigger('change:geometry');
+            app.vent.trigger('simulatePlan');
         },
         /*
          * * Relevant to stations only... * A convenience mainly to keep details
@@ -582,7 +583,7 @@ app.models = app.models || {};
             options.id = _.uniqueId('station_');
         }
         
-        options.uuid = UUID4.generate();
+        options.uuid = new UUID(4).format();
 
         return new models.PathElement(options);
 
@@ -612,7 +613,7 @@ app.models = app.models || {};
             options.id = _.uniqueId('segment_');
         }
         
-        options.uuid = UUID4.generate();
+        options.uuid = new UUID(4).format();
 
         return new models.PathElement(options);
 
@@ -660,7 +661,7 @@ app.models = app.models || {};
                 commandLabel = "";
             }
             this._commandLabel = commandLabel;
-            this.uuid = UUID4.generate();
+            this.uuid = new UUID(4).format();
         },
 
         hasParam: function(paramName) {
