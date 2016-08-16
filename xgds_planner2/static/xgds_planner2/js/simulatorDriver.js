@@ -47,6 +47,7 @@ $(function() {
     app.simulatePlan = function() {
         if (app.State.disableSimulate)
             return; // don't simulate while we simulate
+        
         app.State.disableSimulate = true;
         app.Actions.disable();
         var sim = new app.Simulator();
@@ -102,6 +103,10 @@ $(function() {
         app.Actions.enable();
         app.State.disableSimulate = false;
         app.vent.trigger('updatePlanDuration', app.currentPlan._simInfo.deltaTimeSeconds);
+        if (app.State.stationSelected != undefined){
+        	var stationStartTime = app.getStartTime().add(app.State.stationSelected._simInfo.elapsedTimeSeconds, 's');
+        	app.vent.trigger('playback:setCurrentTime', stationStartTime);
+        }
     };
 
     function renderSimState(plan) {

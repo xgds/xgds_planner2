@@ -123,17 +123,16 @@ $.extend(playback, {
 		initialize: function() {
 			moment.tz.setDefault(app.getTimeZone());
 			var _this = this;
-			app.listenTo(app.vent, 'itemSelected:station', function() {
-                _this.setCurrentTime(app.State.stationSelected);
+			app.listenTo(app.vent, 'itemSelected:station', function(selected) {
+                _this.setCurrentTime(selected); //app.State.stationSelected);
             });
-            
-            app.listenTo(app.vent, 'itemSelected:segment', function() {
-                _this.setCurrentTime(app.State.segmentSelected);
+            app.listenTo(app.vent, 'itemSelected:segment', function(selected) {
+                _this.setCurrentTime(selected); //app.State.segmentSelected);
             });
             app.listenTo(app.vent, 'updatePlanDuration', function() {
             	_this.pause();
             	_this.analyze();
-            	_this.start(playback.getCurrentTime());
+            	//_this.start(playback.getCurrentTime());
             });
 			this.analyze();
 		},

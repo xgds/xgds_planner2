@@ -17,7 +17,12 @@
 app.views = app.views || {};
 var printedDuration = function(seconds){
 		var duration = moment.duration(seconds, 'seconds');
-  	return sprintf('%02d:%02d:%02d', duration.hours(), duration.minutes(), duration.seconds());
+    if (duration.asDays() > 1.0) {
+  	return sprintf('%02dd %02d:%02d:%02d (days hh:mm:ss)', duration.days(), duration.hours(), duration.minutes(), duration.seconds());
+     }
+     else {
+  	return sprintf('%02d:%02d:%02d (hh:mm:ss)', duration.hours(), duration.minutes(), duration.seconds());
+     }
 };
 
 Handlebars.registerHelper('formatDuration', function(seconds){
@@ -706,7 +711,7 @@ app.views.StationSequenceCollectionView = Backbone.Marionette.CollectionView.ext
 
     onItemExpand: function(childView) {
         app.State.stationSelected = childView.model;
-        app.vent.trigger('itemSelected:station', this.model);
+        app.vent.trigger('itemSelected:station', childView.model);
     },
 
     restoreExpanded: function() {

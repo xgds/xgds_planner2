@@ -277,7 +277,7 @@ BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1
                          'ol3-popup',
                          'fancytree=fancytree',
                          'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
-                         'uuid4',
+                         'pure-uuid',
                          'moment',
                          'moment-duration-format',
                          'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
