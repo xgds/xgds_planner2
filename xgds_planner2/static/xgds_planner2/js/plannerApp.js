@@ -433,6 +433,34 @@ var app = (function($, _, Backbone) {
         return color;
     });
 
+    app.getStations = function() {
+    	result = [];
+    	app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {
+    		if (pathElement.attributes.type == 'Station'){
+    			result.push(pathElement);
+    		}
+    	});
+    	return result;
+    };
+    
+    app.getPathElementByUuid = function(uuid) {
+    	var sequence = app.currentPlan.get('sequence');
+    	for (var i=0; i<sequence.models.length; i++){
+    		if (sequence.models[i].attributes.uuid == uuid){
+    			return sequence.models[i];
+    		}
+    	}
+    	return null;
+    };
+    
+    app.getDepartureTime = function(station){
+    	if (app.options.planExecution){
+    		var startTime = moment(app.options.planExecution.planned_start_time);
+    		return startTime.add(station._simInfo.elapsedTimeSeconds, 's');
+    	}
+    	return null;
+    }
+    
     /*
     ** Global utility functions
     */
