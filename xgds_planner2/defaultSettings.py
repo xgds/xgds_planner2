@@ -282,6 +282,7 @@ BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1
                          'moment',
                          'moment-duration-format',
                          'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
+                         'datatables-sorting-datetime-moment=https://cdn.datatables.net/plug-ins/1.10.11/sorting/datetime-moment.js',
                          ]
 
 XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
