@@ -266,7 +266,7 @@ BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
 BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
                          'lodash#3.10.0',
                          'backbone#1.1.2',
-                         'marionette=marionette',
+                         'marionette=marionette#2.4.7',
                          'backbone-relational',
                          'backbone-forms',
                          'handlebars=git://github.com/components/handlebars.js.git',
