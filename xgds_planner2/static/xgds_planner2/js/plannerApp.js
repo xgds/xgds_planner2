@@ -453,6 +453,19 @@ var app = (function($, _, Backbone) {
     	return null;
     };
     
+    app.getPreviousPathElementByUuid = function(uuid) {
+    	// return the path element prior to the given uuid
+    	var sequence = app.currentPlan.get('sequence');
+    	var previous = null;
+    	for (var i=0; i<sequence.models.length; i++){
+    		if (sequence.models[i].attributes.uuid == uuid){
+    			return previous;
+    		}
+    		previous = sequence.models[i];
+    	}
+    	return null;
+    };
+    
     app.getDepartureTime = function(station){
     	if (app.options.planExecution){
     		var startTime = moment(app.options.planExecution.planned_start_time);
