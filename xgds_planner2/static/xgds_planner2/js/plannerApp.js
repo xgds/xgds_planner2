@@ -469,6 +469,9 @@ var app = (function($, _, Backbone) {
     app.getDepartureTime = function(station){
     	if (app.options.planExecution){
     		var startTime = moment(app.options.planExecution.planned_start_time);
+    		if (station._simInfo === undefined){
+    			app.simulatePlan();
+    		}
     		return startTime.add(station._simInfo.elapsedTimeSeconds, 's');
     	}
     	return null;
