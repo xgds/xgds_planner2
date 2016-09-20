@@ -472,7 +472,8 @@ var app = (function($, _, Backbone) {
     		if (station._simInfo === undefined){
     			app.simulatePlan();
     		}
-    		return startTime.add(station._simInfo.elapsedTimeSeconds, 's');
+    		var result = startTime.add(station._simInfo.elapsedTimeSeconds + station._simInfo.deltaTimeSeconds, 's');
+    		return result;
     	}
     	return null;
     }
