@@ -478,6 +478,18 @@ var app = (function($, _, Backbone) {
     	return null;
     }
     
+    app.getArrivalTime = function(station){
+    	if (app.options.planExecution){
+    		var startTime = moment(app.options.planExecution.planned_start_time);
+    		if (station._simInfo === undefined){
+    			app.simulatePlan();
+    		}
+    		var result = startTime.add(station._simInfo.elapsedTimeSeconds, 's');
+    		return result;
+    	}
+    	return null;
+    }
+    
     /*
     ** Global utility functions
     */
