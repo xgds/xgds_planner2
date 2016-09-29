@@ -8,7 +8,7 @@ i.pinDiv {
       
 #map{
     //height: 85%;
-    height:500px; // if you make this a percentage it messes up openlayers
+    height:500px; // if you make this a percentage it messes up openlayers and does not focus on the plan.
 }
 
 #postmap{
