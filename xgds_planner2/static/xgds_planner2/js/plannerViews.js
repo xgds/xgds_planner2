@@ -1311,8 +1311,25 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
             this.setTab(tabId);
         });
         this.layersView = null;
+        var context = this;
+        $('#tabs-gridstack-item').on('resizestop', function(event, ui) {
+        	setTimeout(function(){
+        		context.handleGridstackResize();
+        	}, 105);
+        });
     },
 
+    handleGridstackResize: function() {
+    	if (!_.isUndefined(app.State.tabsContainer)){
+    		var tabsDiv = this.$el.parent();
+    		var grandpa = this.$el.parent().parent();
+    		tabsDiv.width(grandpa.width());
+//            app.State.tabsContainer.width(app.State.pageInnerWidth -
+//                                          app.map.$el.outerWidth() -
+//                                          app.State.tabsLeftMargin);
+        }
+    },
+    
     onRender: function() {
         if (! this.options.initialTab) {
             this.options.initialTab = 'meta';

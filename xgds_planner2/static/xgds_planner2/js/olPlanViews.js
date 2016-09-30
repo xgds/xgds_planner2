@@ -26,7 +26,7 @@ $(function() {
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
                 app.on('recenterMap', this.updateBbox);
             },
-            
+
             handleResize: function() {
                 app.views.OLMapView.prototype.handleResize.call(this);
 //                if (!_.isUndefined(app.State.tabsContainer)){
