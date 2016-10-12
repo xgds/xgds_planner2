@@ -26,9 +26,13 @@ import re
 import logging
 
 import iso8601
-import pyproj
-
-from django.core.validators import URLValidator
+try:
+    import pyproj
+except ImportError:
+    # pyproj is only needed if you're doing geospatial coordinate
+    # transforms.  let's avoid requiring the dependency if you're only
+    # doing plan validation.
+    pass
 
 from geocamUtil import dotDict
 from geocamUtil.dotDict import DotDict
@@ -52,8 +56,6 @@ CRS84 = dotDict.DotDict({
 })
 X_REGEX = re.compile(r'\+x_0=([^\s]+)')
 Y_REGEX = re.compile(r'\+y_0=([^\s]+)')
-
-URL_VALIDATOR = URLValidator()
 
 GEOMETRY_TYPE_CHOICES = (
     'Point',
@@ -926,7 +928,7 @@ def getCrsTransformRoversw(crs):
     lon, lat = xform(x, y, inverse=True)
     """
 #     projString = crs['properties']['projection']
-
+    assert pyproj, 'did pyproj import silently fail?'
     proj = pyproj.Proj('+proj=utm +ellps=WGS84 +zone=%(zone)s +north' % crs['properties'])
     x0 = crs['properties']['originEasting']
     y0 = crs['properties']['originNorthing']
@@ -952,6 +954,7 @@ def getCrsTransformProj4(crs):
     x, y = xform(lon, lat)
     lon, lat = xform(x, y, inverse=True)
     """
+    assert pyproj, 'did pyproj import silently fail?'
     projString = crs['properties']['projection']
 
     # x_0 and y_0 (false easting, false northing) args to pyproj don't
