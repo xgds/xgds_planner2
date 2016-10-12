@@ -364,11 +364,19 @@ Definitions
    document are to be interpreted as described in `IETF RFC 2119`_.
 
  * JavaScript Object Notation (JSON), and the terms "object", "name", "value",
-   "array", and "number", are defined in `IETF RTC 4627`_.  XPJSON
+   "array", and "number", are defined in `IETF RFC 4627`_.  XPJSON
    documents have the standard JSON MIME type, "application/json".
 
+ * `GeoJSON 2008`_ is a dialect of JSON used for geospatial data
+   interchange.  Although the 2008 version has been superseded by `IETF
+   RFC 7946`_, XPJSON references the older version because XPJSON users
+   rely on its capability to specify coordinate reference systems other
+   than WGS84.
+
 .. _IETF RFC 2119: http://www.ietf.org/rfc/rfc2119.txt
-.. _IETF RTC 4627: http://www.ietf.org/rfc/rfc4627.txt
+.. _IETF RFC 4627: http://www.ietf.org/rfc/rfc4627.txt
+.. _GeoJSON 2008: http://geojson.org/geojson-spec.html
+.. _IETF RFC 7946: https://tools.ietf.org/html/rfc7946
 
 Class Hierarchy
 ===============
@@ -907,7 +915,7 @@ Inherits from:
 |                  |                +------------------------+------------------------------------+
 |                  |                |``"boolean"``           |Parameter has boolean value.        |
 |                  |                +------------------------+------------------------------------+
-|                  |                |``"Point"``,            |Parameter value is a `GeoJSON       |
+|                  |                |``"Point"``,            |Parameter value is a `GeoJSON 2008  |
 |                  |                |``"MultiPoint"``,       |geometry`_ object whose ``type``    |
 |                  |                |``"LineString"``,       |field is set to the specified value,|
 |                  |                |``"MultiLineString"``,  |with coordinates that make sense in |
@@ -1579,8 +1587,8 @@ Inherits from:
 |``geometry``      |LineString  |optional        |For many applications this field is |
 |                  |(see        |                |always unspecified and the implicit |
 |                  |`GeoJSON    |                |geometry of the Segment is the      |
-|                  |geometry`_) |                |LineString connecting the Stations  |
-|                  |            |                |that bracket the segment.           |
+|                  |2008        |                |LineString connecting the Stations  |
+|                  |geometry`_) |                |that bracket the segment.           |
 |                  |            |                |                                    |
 |                  |            |                |In some domains, the user may want  |
 |                  |            |                |to specify a detailed path between  |
@@ -1640,7 +1648,7 @@ Inherits from:
 |``crs``           |CRS object |optional        |Geometry coordinates in the plan are|
 |                  |           |                |expressed in this coordinate        |
 |                  |           |                |reference system.  See the `GeoJSON |
-|                  |           |                |CRS specification`_.                |
+|                  |           |                |2008 CRS specification`_.           |
 |                  |           |                |                                    |
 |                  |           |                |The default CRS is OGC CRS84, a     |
 |                  |           |                |geographic coordinate reference     |
@@ -1677,7 +1685,7 @@ Inherits from:
 |``bbox``          |array of   |optional        |A bounding box around the site that |
 |                  |numbers    |                |can also serve as the initial map   |
 |                  |           |                |view when creating a new plan.      |
-|                  |           |                |Format defined by the `GeoJSON      |
+|                  |           |                |Format defined by the `GeoJSON 2008 |
 |                  |           |                |bounding box specification`_.       |
 +------------------+-----------+----------------+------------------------------------+
 
@@ -1727,7 +1735,7 @@ Inherits from:
 +===================+================+=================+====================================+
 |``geometry``       |Point geometry  |required         |The location of the station.        |
 |                   |(see `GeoJSON   |                 |                                    |
-|                   |geometry`_)     |                 |                                    |
+|                   |2008 geometry`_)|                 |                                    |
 +-------------------+----------------+-----------------+------------------------------------+
 
 Example
@@ -1777,7 +1785,7 @@ Inherits from:
 |Member             |Type            |Values           |Meaning                             |
 +===================+================+=================+====================================+
 |``geometry``       |Point (see      |required         |The location of the Target.         |
-|                   |`GeoJSON        |                 |                                    |
+|                   |`GeoJSON 2008   |                 |                                    |
 |                   |geometry`_)     |                 |                                    |
 +-------------------+----------------+-----------------+------------------------------------+
 
@@ -1987,11 +1995,11 @@ The resulting Plan_ might have these auto-generated ``id`` values::
     ]
   }
 
-.. _GeoJSON CRS specification: http://geojson.org/geojson-spec.html#coordinate-reference-system-objects
+.. _GeoJSON 2008 CRS specification: http://geojson.org/geojson-spec.html#coordinate-reference-system-objects
 
-.. _GeoJSON bounding box specification: http://geojson.org/geojson-spec.html#bounding-boxes
+.. _GeoJSON 2008 bounding box specification: http://geojson.org/geojson-spec.html#bounding-boxes
 
-.. _GeoJSON geometry: http://geojson.org/geojson-spec.html#geometry-objects
+.. _GeoJSON 2008 geometry: http://geojson.org/geojson-spec.html#geometry-objects
 
 .. _ISO 8601: http://www.w3.org/TR/NOTE-datetime
 
