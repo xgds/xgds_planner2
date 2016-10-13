@@ -67,6 +67,26 @@ GEOMETRY_TYPE_CHOICES = (
     'GeometryCollection',
 )
 
+# meaning of these numeric fields is given for example here http://community.rti.com/rti-doc/500/ndds/doc/html/api_cpp/group__DDSCdrTypesModule.html
+
+DETAILED_INTEGER_TYPE_CHOICES = (
+    'char',
+    'wchar',
+    'octet',
+    'short',
+    'unsigned short',
+    'long',
+    'unsigned long',
+    'long long',
+    'unsigned long long',
+)
+
+DETAILED_REAL_TYPE_CHOICES = (
+    'float',
+    'double',
+    'long double',
+)
+
 VALUE_TYPE_CHOICES = (
     'string',
     'integer',
@@ -74,14 +94,30 @@ VALUE_TYPE_CHOICES = (
     'boolean',
     'date-time',
     'targetId',
-) + GEOMETRY_TYPE_CHOICES
+    'quaternion',
+) + GEOMETRY_TYPE_CHOICES + DETAILED_INTEGER_TYPE_CHOICES + DETAILED_REAL_TYPE_CHOICES
 
 # TypedObject subclasses register themselves in this set
 TYPED_OBJECT_CLASSES = set()
 
+# callers can change this global to disable unknown field checks. bit of a hack.
+CHECK_UNKNOWN_FIELDS = True
+
 
 class UnknownParentError(Exception):
     pass
+
+
+def parseArrayType(arrayType):
+    m = re.search(r'^array(\[(?P<arrayLength>\d+)\])?\.(?P<elementType>.*)$', arrayType)
+    if not m:
+        return None
+    elementType = m.group('elementType')
+    if m.group('arrayLength'):
+        arrayLength = int(m.group('arrayLength'))
+    else:
+        arrayLength = None
+    return elementType, arrayLength
 
 
 def isValueOfType(val, valueType):
@@ -95,9 +131,9 @@ def isValueOfType(val, valueType):
         return True  # skip validation
     elif valueType == 'string':
         return isinstance(val, (str, unicode))
-    elif valueType == 'integer':
+    elif valueType in ('integer',) + DETAILED_INTEGER_TYPE_CHOICES:
         return isinstance(val, int)
-    elif valueType == 'number':
+    elif valueType in ('number',) + DETAILED_REAL_TYPE_CHOICES:
         return isinstance(val, (int, float))
     elif valueType == 'boolean':
         return isinstance(val, bool)
@@ -114,12 +150,17 @@ def isValueOfType(val, valueType):
             return False
     elif valueType == 'targetId':
         return isinstance(val, (str, unicode))
-    elif valueType.startswith('array.'):
+    elif valueType.startswith('array'):
         # for example, 'array.integer' -> array of integer
+        parseResult = parseArrayType(valueType)
+        assert parseResult, 'invalid array valueType %s' % valueType
+
         if not isinstance(val, (list, tuple)):
             return False
-        eltType = re.sub(r'^array\.', '', valueType)
-        return all((isValueOfType(elt, eltType) for elt in val))
+        elementType, arrayLength = parseResult
+        if arrayLength is not None and len(val) != arrayLength:
+            return False
+        return all((isValueOfType(elt, elementType) for elt in val))
     elif valueType in ('url',):
         if not isinstance(val, (str, unicode)):
             return False
@@ -139,6 +180,11 @@ def isValueOfType(val, valueType):
         # could do a better job with this...
         # return val['type'] in ('name', 'proj4')
         return 'type' in val and 'properties' in val
+    elif valueType == 'quaternion':
+        # could do a better job with this...
+        return (isinstance(val, list)
+                and len(val) == 4
+                and all([isinstance(elt, (int, float)) for elt in val]))
     else:
         if isinstance(val, (dict, dotDict.DotDict)):
             # for example, 'ParamSpec' -> DotDict with 'type' member equal
@@ -478,10 +524,11 @@ class TypedObject(object):
                 self._objDict[fieldName] = val
 
         # warn about unknown fields
-        for k in self._objDict.iterkeys():
-            if k not in self.fields and k not in self._schemaParams:
-                logging.warning('unknown field %s in object %s',
-                                k, self._objDict)
+        if CHECK_UNKNOWN_FIELDS:
+            for k in self._objDict.iterkeys():
+                if k not in self.fields and k not in self._schemaParams:
+                    logging.warning('unknown field %s in object %s',
+                                    k, self._objDict)
 
 
 class UnitSpec(TypedObject):
@@ -528,7 +575,8 @@ class ParamSpec(TypedObject):
             self.enum = [c[0] for c in self.choices]
 
     def isValidValueType(self, val):
-        return val in VALUE_TYPE_CHOICES
+        return (val in VALUE_TYPE_CHOICES
+                or parseArrayType(val))
 
     def matchesValueType(self, val):
         return isValueOfType(val, self.get('valueType'))

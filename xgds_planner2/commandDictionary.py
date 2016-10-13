@@ -326,7 +326,7 @@ def getCommandSpecInfo(settings, commandSpec):
         }
         params = [nameParam] + params
 
-    if settings['includeCommandSpecNotesField']:
+    if settings['includeCommandSpecNotesField'] and 'notes' not in paramIds:
         notesParam = {
             'parameter': 'Notes',
             'type': 'string',
@@ -364,6 +364,7 @@ def writeCommandDictionary(inSchemaPath, outHtmlPath, **kwargs):
     """
     settings = copy.deepcopy(DEFAULT_DICTIONARY_SETTINGS)
     settings.update(kwargs)
+    xpjson.CHECK_UNKNOWN_FIELDS = False  # suppress some warnings
     schema = xpjson.loadDocument(inSchemaPath)
     hlist = []
 
