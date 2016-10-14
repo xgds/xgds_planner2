@@ -103,6 +103,10 @@ TYPED_OBJECT_CLASSES = set()
 # callers can change this global to disable unknown field checks. bit of a hack.
 CHECK_UNKNOWN_FIELDS = True
 
+# normally the 'paramSpecs' field of PlanSchema is deleted after
+# resolving schema inheritance, since it's not needed anymore for plan
+# validation. callers can change this global to inhibit the deletion.
+KEEP_PARAM_SPECS = False
 
 class UnknownParentError(Exception):
     pass
@@ -351,7 +355,8 @@ def resolveSchemaInheritance(schemaDict):
         schemaDict[f] = [resolveInheritanceLookup(p, paramSpecLookup)
                          for p in schemaDict.get(f, [])]
 
-    schemaDict.pop('paramSpecs', None)
+    if not KEEP_PARAM_SPECS:
+        schemaDict.pop('paramSpecs', None)
     schemaDict.commandSpecs = commandSpecs
 
 
