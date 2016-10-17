@@ -129,8 +129,10 @@ DEFAULT_DICTIONARY_SETTINGS = {
     'docTemplateHtml': DOC_TEMPLATE_HTML,
     'commandSpecTemplateHtml': COMMAND_SPEC_TEMPLATE_HTML,
     'includeIndex': True,
-    'includeCommandSpecNameField': True,
-    'includeCommandSpecNotesField': True,
+    # 'includeCommandSpecNameField': True,
+    # 'includeCommandSpecNotesField': True,
+    'includeCommandSpecNameField': False,
+    'includeCommandSpecNotesField': False,
 }
 
 
@@ -254,7 +256,7 @@ def getParamInfo(p):
     if p.default is not None:
         result['default'] = '<span style="font-family: \'Courier\';">' + htmlRepr(p.default) + '</span>'
 
-    if p.required is True:
+    if p.default is None and p.required is True:
         result['default'] = 'required'
     if p.visible is False:
         appendField(result, 'other', 'hidden')
