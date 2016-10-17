@@ -193,6 +193,13 @@ def prettify(s):
     return s
 
 
+def prettifySuperscript(s):
+    if isinstance(s, basestring):
+        return re.sub(r'\^(\-?\d+)', lambda m: ('<sup>%s</sup>' % m.group(1)), s)
+    else:
+        return s
+
+
 def getParamInfo(p):
     """
     Convert an XPJSON ParamSpec into an intermediate representation prior
@@ -206,7 +213,7 @@ def getParamInfo(p):
 
     result['type'] = p.valueType
     result['notes'] = p.notes
-    result['unit'] = p.unit
+    result['unit'] = prettifySuperscript(p.unit)
 
     if p.name is not None:
         result['parameter'] = p.name
