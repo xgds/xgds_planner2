@@ -180,7 +180,9 @@ $(function() {
                 this.createVehicle();
 
             },
-            
+            getPlanExtens: function() {
+            	return this.segmentsVector.getExtent();
+            },
             fitPlan: function() {
             	if (!_.isEmpty(this.segmentsVector.getFeatures())){
                 	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
