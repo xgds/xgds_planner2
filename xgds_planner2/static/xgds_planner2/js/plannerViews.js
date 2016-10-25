@@ -72,14 +72,21 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
                 parseFloat(this.$el.parent().css('margin-bottom')) +
                 10; // this exact number is needed because jquery ui uses
             // elements with absolute positioning for the resize handles
-            var pageContentElement = $('#page-content');
-            var oldMapHeight = app.map.$el.height();
-            var initialHeight = oldMapHeight - offset;
-            app.map.$el.height(initialHeight);
-            app.map.$el.css('max-height', initialHeight + 'px');
-            $(window).bind('resize', function() {
-                app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
-            });
+        	
+//            var pageContentElement = $('#page-content');
+//            var oldMapHeight = app.map.$el.height();
+//            var initialHeight = oldMapHeight - offset;
+//            app.map.$el.height(initialHeight);
+//            app.map.$el.css('max-height', initialHeight + 'px');
+////            $(window).bind('resize', function() {
+////                app.map.$el.css('max-height', (pageContentElement.height() - offset) + 'px');
+////            });
+            //HERETAMAR
+            // new stuff
+//            var mgic = $("#map-gridstack-item-content");
+//        	this.$el.height(mgic.height());
+        	// end new stuff
+
             app.State.mapHeightSet = true;
             app.vent.trigger('doMapResize');
         }
@@ -1304,8 +1311,25 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
             this.setTab(tabId);
         });
         this.layersView = null;
+        var context = this;
+        $('#tabs-gridstack-item').on('resizestop', function(event, ui) {
+        	setTimeout(function(){
+        		context.handleGridstackResize();
+        	}, 105);
+        });
     },
 
+    handleGridstackResize: function() {
+    	if (!_.isUndefined(app.State.tabsContainer)){
+    		var tabsDiv = this.$el.parent();
+    		var grandpa = this.$el.parent().parent();
+    		tabsDiv.width(grandpa.width());
+//            app.State.tabsContainer.width(app.State.pageInnerWidth -
+//                                          app.map.$el.outerWidth() -
+//                                          app.State.tabsLeftMargin);
+        }
+    },
+    
     onRender: function() {
         if (! this.options.initialTab) {
             this.options.initialTab = 'meta';

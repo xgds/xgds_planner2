@@ -24,27 +24,28 @@ $(function() {
                 // set up tabs
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
+                app.on('recenterMap', this.updateBbox);
             },
-            
+
             handleResize: function() {
                 app.views.OLMapView.prototype.handleResize.call(this);
-                if (!_.isUndefined(app.State.tabsContainer)){
-                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-                                                  app.map.$el.outerWidth() -
-                                                  app.State.tabsLeftMargin);
-                }
+//                if (!_.isUndefined(app.State.tabsContainer)){
+//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
+//                                                  app.map.$el.outerWidth() -
+//                                                  app.State.tabsLeftMargin);
+//                }
             },
             
             handleWindowResize: function() {
                 // window size changed, so variables need to be reset
                 if (_.isUndefined(app.tabs.currentView)) {return;}
                 var shouldResize = app.views.OLMapView.prototype.handleWindowResize.call(this);
-                if (shouldResize){
-                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-                                                  app.map.$el.outerWidth() -
-                                                  app.State.tabsLeftMargin);
-                }
+//                if (shouldResize){
+//                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
+//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
+//                                                  app.map.$el.outerWidth() -
+//                                                  app.State.tabsLeftMargin);
+//                }
             },
             
             buildStyles: function() {
@@ -132,8 +133,9 @@ $(function() {
                 
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.listenTo(app.currentPlan, 'sync', this.render, this);
-
                 app.State.planLoaded = true;
+                app.on('recenterMap', this.fitPlan);
+                
             },
             createVehicle: function() {
             	if (this.vehicleView === undefined){
@@ -172,13 +174,19 @@ $(function() {
                 
                 if (!redraw){
                     // scale map to focus on plan
-                    if (!_.isEmpty(this.segmentsVector.getFeatures())){
-                	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
-                    }
+                    this.fitPlan();
                 }
                 
                 this.createVehicle();
 
+            },
+            getPlanExtens: function() {
+            	return this.segmentsVector.getExtent();
+            },
+            fitPlan: function() {
+            	if (!_.isEmpty(this.segmentsVector.getFeatures())){
+                	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
+                }
             },
 
             drawStation: function(station) {
