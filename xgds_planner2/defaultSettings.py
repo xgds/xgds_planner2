@@ -173,6 +173,9 @@ XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL = "Segments"
 XGDS_PLANNER2_COMMAND_MONIKER = "Command"
 XGDS_PLANNER2_COMMAND_MONIKER_PLURAL = "Commands"
 
+#TODO to have a default site frame in the creation form, set this to the site id from your plan library.
+XGDS_PLANNER2_DEFAULT_SITE = None
+
 
 # Method to add stuff to context for plan editor, override and register your own method if you need it.
 # It must add a json dictionary called extras
