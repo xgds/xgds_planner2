@@ -14,14 +14,6 @@
 <style type="text/css" title="currentStyle">
 	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.min.css";
 </style>
-<style>
-.startButton {
-	background: #4fb346;
- }
- .stopButton {
- 	background: #b34646;
- }
-</style>
 {% endblock cssExtras %}
 
 {% block sitemenu-content-secondary %}
@@ -61,8 +53,8 @@
 	<tr {% if not flight.end_time and flight.start_time %} style="background:lightgreen;" {% endif %}>
 		<td >&nbsp;&nbsp;&nbsp;{{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}: {{ flight.name }}</td>
 		<td></td>
-		<td>{% if flight.start_time %}{% timezone flight.timezone %} {{flight.start_time|date:"Y-m-d H:i e"}}{% endtimezone %}{%endif%} <a href="{% url 'planner2_startFlight' flight.uuid %}" class="button small startButton">{% if flight.start_time %}re{%endif%}start</a></td>
-		<td>{% if flight.end_time %} {% timezone flight.timezone %}{{flight.end_time|date:"Y-m-d H:i e"}}{% endtimezone %}{% endif %}<a href="{% url 'planner2_stopFlight' flight.uuid %}" class="button small stopButton">stop</a></td>
+		<td>{% if flight.start_time %}{% timezone flight.timezone %} {{flight.start_time|date:"Y-m-d H:i e"}}{% endtimezone %}{%endif%} <a href="{% url 'planner2_startFlight' flight.uuid %}">{% if flight.start_time %}re{%endif%}start</a></td>
+		<td>{% if flight.end_time %} {% timezone flight.timezone %}{{flight.end_time|date:"Y-m-d H:i e"}}{% endtimezone %}{% endif %}<a href="{% url 'planner2_stopFlight' flight.uuid %}">stop</a></td>
 		<td></td>
 	</tr>
 	{% for pe in flight.plans.all %}
