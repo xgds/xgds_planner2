@@ -272,6 +272,9 @@ class AbstractGroupFlight(models.Model):
     def view_url(self):
         return '' #TODO implement
 
+    def summary_url(self):
+        return self.view_url()
+
     @property
     def flights(self):
         #TODO implement

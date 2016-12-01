@@ -57,4 +57,6 @@ urlpatterns = [
     url(r'mapJsonPlan/(?P<uuid>[\w-]+)$', views.mapJsonPlan, {'loginRequired': True}, 'planner2_mapJsonPlan'),
     url(r'^import/xpjson/$', views.planImportXPJson, {'loginRequired': True}, name='planner2_planImport_xpjson'),
     url(r'^import/$', views.planImport, {'loginRequired': True}, name='planner2_planImport'),
+    url(r'^summary/(?P<groupFlightName>\w+)$', views.getGroupFlightSummary, name="group_flight_summary"),
+
     ]

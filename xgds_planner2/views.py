@@ -23,6 +23,7 @@ import datetime
 import json
 import traceback
 from uuid import uuid4
+
 from dateutil.parser import parse as dateparser
 from django.contrib import messages 
 from django.contrib.auth.decorators import login_required
@@ -35,6 +36,7 @@ from django.conf import settings
 from django.db.utils import IntegrityError
 from django.http import (HttpResponseRedirect,
                          HttpResponse,
+                         Http404,
                          HttpResponseNotAllowed,
                          HttpResponseBadRequest)
 from django.shortcuts import render_to_response, get_object_or_404
@@ -1118,3 +1120,12 @@ def planImportXPJson(request):
 def getTodaysGroupFlights():
     today = timezone.localtime(timezone.now()).date()
     return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=today.strftime('%Y%m%d'))
+
+def getGroupFlightSummary(request, groupFlightName):
+    try:
+        group = GROUP_FLIGHT_MODEL.get().objects.get(name=groupFlightName)
+        return render_to_response("xgds_planner2/groupFlightSummary.html",
+                                  {'groupFlight': group},
+                                  context_instance=RequestContext(request))
+    except:
+        raise Http404("%s %s does not exist" % (settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER, groupFlightName))
