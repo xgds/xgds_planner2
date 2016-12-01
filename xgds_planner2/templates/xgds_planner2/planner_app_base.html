@@ -29,7 +29,10 @@
     margin: 20px 0 10px;
     }
 </style>
+{% if 'xgds_notes2' in settings.INSTALLED_APPS %}
 {% include "xgds_notes2/NoteCSS.html" %}
+{% endif %}
+
 
 <div id="application" >
     <div id="toolbar" class="row">
@@ -83,7 +86,9 @@
     {{ block.super }}
     {% include "xgds_core/playbackJS.html" %}
     {% include "MapJS.html" %}
-    {% include "xgds_notes2/NoteJS.html" %}
+    {% if 'xgds_notes2' in settings.INSTALLED_APPS %}
+	    {% include "xgds_notes2/NoteJS.html" %}
+	{% endif %}
      <script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
      <script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
