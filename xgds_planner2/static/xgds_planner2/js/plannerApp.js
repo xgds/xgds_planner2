@@ -454,6 +454,34 @@ var app = (function($, _, Backbone) {
     	return null;
     };
     
+    app.getCoordinateList = function(startUuid, endUuid) {
+    	var sequence = app.currentPlan.get('sequence');
+    	var result = [];
+    	var start = undefined;
+    	var current = undefined;
+    	for (var i=0; i<sequence.models.length; i += 2){
+    		if (start == undefined) {
+    			if (sequence.models[i].attributes.uuid == startUuid){
+    				start = sequence.models[i];
+    				current=start;
+    			}
+    		} else {
+    			if (sequence.models[i].attributes.type == 'Station') {
+    				current = sequence.models[i];
+    				if (current.attributes.uuid == endUuid) {
+    					i = sequence.models.length;
+    				}
+    			} else {
+    				current = undefined;
+    			}
+    		}
+    		if (current !== undefined){
+    			result.push(current.attributes.geometry.coordinates);
+    		}
+    	}
+    	return result;
+    }
+    
     app.getPreviousPathElementByUuid = function(uuid) {
     	// return the path element prior to the given uuid
     	var sequence = app.currentPlan.get('sequence');
@@ -467,6 +495,56 @@ var app = (function($, _, Backbone) {
     	return null;
     };
     
+    app.getNextPathElementByUuid = function(uuid) {
+    	// return the path element after the given uuid
+    	var sequence = app.currentPlan.get('sequence');
+    	for (var i=0; i<sequence.models.length; i++){
+    		if (sequence.models[i].attributes.uuid == uuid){
+    			if (i+1 < sequence.models.length){
+    				return sequence.models[i+1];
+    			}
+    			return null;
+    		}
+    	}
+    	return null;
+    };
+    
+    app.getNextPathElementSameType = function(pathElement){
+    	var sequence = app.currentPlan.get('sequence');
+    	var index = sequence.indexOf(pathElement);
+    	if (index >= 0){
+    		index += 2;
+    		if (index < sequence.length){
+    			return sequence.models[index];
+    		}
+    	}
+    	return null;
+    }
+    
+    app.getNextPathElement = function(pathElement){
+    	var sequence = app.currentPlan.get('sequence');
+    	var index = sequence.indexOf(pathElement);
+    	if (index >= 0){
+    		index += 1;
+    		if (index < sequence.length){
+    			return sequence.models[index];
+    		}
+    	}
+    	return null;
+    }
+    
+    app.getLastStation = function() {
+    	try {
+	    	var sequence = app.currentPlan.get('sequence');
+	    	var last = sequence[sequence.length - 1];
+	    	if (last.attributes.type == 'Station'){
+	    		return last;
+	    	}
+    	} catch (err){
+    		
+    	}
+    	return null;
+    }
     app.getDepartureTime = function(station){
     	if (app.options.planExecution){
     		var startTime = moment(app.options.planExecution.planned_start_time);
@@ -477,6 +555,22 @@ var app = (function($, _, Backbone) {
     		return result;
     	}
     	return null;
+    }
+    
+    app.getDurations = function(startStation, endStation){
+    	var sequence = app.currentPlan.get('sequence');
+    	var durations = [];
+    	durations.push(startStation._simInfo.deltaTimeSeconds);
+    	var startIndex = sequence.indexOf(startStation) + 2;
+    	for (var i = startIndex; i< sequence.length; i+= 2){
+    		var station = sequence.models[i];
+    		durations.push(station._simInfo.deltaTimeSeconds);
+    		if (station.attributes.uuid == endStation.attributes.uuid){
+    			i = sequence.length;
+    		}
+    	}
+    	return durations;
+    	
     }
     
     app.getArrivalTime = function(station){
