@@ -1393,8 +1393,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	plotOptions: { 
         series: {
 			lines: { show: true },
-			points: { show: false },
-			rectangle: {show: true}
+			points: { show: false }
 		},
 		clickable: true,
         grid: {
@@ -1417,18 +1416,51 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
             max: 5, // set a manual maximum to allow for labels
             ticks: 0 // this line removes the y ticks
         },
-        },
+    },
+    getTickSize: function(durationSeconds) {
+    	if (durationSeconds > 12){
+    		var twelfth = moment.duration(durationSeconds/12, 'seconds');
+    		var m_12 = twelfth.minutes();
+    		var h_12 = twelfth.hours();
+    		var d_12 = twelfth.days();
+    		if (d_12 > 0){
+    			return [d_12, 'day'];
+    		} else if (h_12 > 0){
+    			if (m_12 > 30) {
+    				h_12++;
+    			}
+    			return [h_12, 'hour'];
+    		} else if (m_12 > 0) {
+    			if (twelfth.seconds() > 30) {
+    				m_12++;
+    			}
+    			return [m_12, 'minute'];
+    		}
+    	}
+    	return [1, 'minute'];
+    		
+    },
+    getXAxisOptions: function() {
+    	var durationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
+    	var mduration = moment.duration(durationSeconds, 'seconds');
+    	timeformat = "%H:%M";
+    	if (mduration.days() > 0){
+    		timeformat = "%m/%d %H:%M";
+    	}
+    	var tickSize = this.getTickSize(durationSeconds);
+    	return { mode: "time",
+			  	tickSize: tickSize,
+			  	timeformat: timeformat,
+			  	timezone: app.getTimeZone()
+				 };
+    },
 	initialize: function() {
 		var context = this;
 		this.plotOptions['grid'] = {'markings': context.getStationMarkings};
-		this.plotOptions['xaxis'] = { mode: "time",
-									  minTickSize: [1, 'hour'], //todo automate getting this size
-									  tickSize: [4, 'hour'],
-									  timeformat: "%m/%d %H:%M",
-									  timezone: app.getTimeZone()
-		 							 };
-		this.listenTo(app.vent, 'change:plan', function(model) {this.render()});
-        
+		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
+		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.render()});
+		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
+		
 	},
 	
     getStationMarkings: function() {
@@ -1448,26 +1480,42 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	// draw labels
 		var context = this;
 		var index = 0;
-		app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {
+		var sequence = app.currentPlan.get('sequence');
+		var saveUs = [];
+		var deathRow = []
+		sequence.each(function(pathElement, i, sequence) {
     		if (pathElement.attributes.type == 'Station'){
     			startEndTime = startEndTimes[index];
     			o = context.plot.pointOffset({ x: startEndTime.start.toDate().getTime(), y: 0 });
-    			if (pathElement in context.plotLabels){
-    				context.plotLabels[pathElement].text(pathElement._sequenceLabel);
-    				context.plotLabels[pathElement].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
+    			if (pathElement.attributes.uuid in context.plotLabels){
+    				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
+    				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
     			} else {
     				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#666;font-size:smaller;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
     				el.appendTo(plotDiv);
-    				//plotDiv.append(el);
-    				context.plotLabels[pathElement] = el;
+    				context.plotLabels[pathElement.attributes.uuid] = el;
     			}
+        		saveUs.push(pathElement.attributes.uuid);
     			index++;
     		}
 		});
+//		_.each(Object.keys(context.plotLabels), function(key){
+//			if (saveUs.indexOf(key) < 0){
+//				deathRow.push(key);
+//			}
+//		});
+//		_.each(deathRow, function(key){
+//			context.plotLabels[key].remove();
+//			delete context.plotLabels[key];
+//		});
     },
 	onRender: function() {
 		var stationData = [];
     	var startEndTimes = app.getStationStartEndTimes();
+    	if (_.isEmpty(startEndTimes)){
+    		return;
+    	}
+
     	for (var i=0; i<startEndTimes.length; i++){
     		stationData.push([startEndTimes[i].start.toDate().getTime(), 0]);
     		stationData.push([startEndTimes[i].end.toDate().getTime(), 0]);
@@ -1480,6 +1528,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     		this.drawStationLabels(startEndTimes);
     	} else {
     		this.plot.setupGrid();
+    		this.plot.setData([stationData]);
     	    this.plot.draw();
     		this.drawStationLabels(startEndTimes);
     	}

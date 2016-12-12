@@ -597,10 +597,14 @@ var app = (function($, _, Backbone) {
     	var result = [];
     	app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {
     		if (pathElement.attributes.type == 'Station'){
-        		endTime = startTime.clone().add(pathElement._simInfo.deltaTimeSeconds, 's');
-        		result.push({start: moment(startTime), end: moment(endTime)});
+    			if (pathElement._simInfo != undefined){
+    				endTime = startTime.clone().add(pathElement._simInfo.deltaTimeSeconds, 's');
+    				result.push({start: moment(startTime), end: moment(endTime)});
+    			}
     		}
-    		startTime = startTime.add(pathElement._simInfo.deltaTimeSeconds, 's');
+    		if (pathElement._simInfo != undefined){
+    			startTime = startTime.add(pathElement._simInfo.deltaTimeSeconds, 's');
+    		}
     	});
     	return result;
     }
