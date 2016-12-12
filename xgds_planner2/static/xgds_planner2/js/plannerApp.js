@@ -36,7 +36,9 @@ var app = (function($, _, Backbone) {
     app.dirty = false;
     app.addRegions({
         toolbar: '#toolbar',
-        tabs : '#tabs'
+        tabs: '#tabs',
+        plot: '#plot-container'
+        	
     });
 
     app.module('State', function(options) {
@@ -309,6 +311,8 @@ var app = (function($, _, Backbone) {
             app.vent.trigger('onMapSetup');
             app.toolbar.show(new app.views.ToolbarView());
             app.tabs.show(new app.views.TabNavView());
+            new app.views.PlanPlotView().render();
+            
             
             app.vent.trigger('clearSaveStatus');
             if (this.options.readOnly == true){
@@ -323,41 +327,7 @@ var app = (function($, _, Backbone) {
             app.vent.on('simulatePlan', _.debounce(context.simulatePlan, 10));
             app.vent.on('updatePlan', _.debounce(context.rerender, 10));
             
-            app.getStartTime = function() {
-            	if (app.options.planExecution) {
-            		return moment.utc(app.options.planExecution.planned_start_time);
-            	} else {
-            		if (!app.startTime){
-            			app.startTime = moment().utc();
-            		}
-            		return app.startTime;
-            	}
-            };
             
-            app.getEndTime = function(newDuration) {
-            	var theStartTime = app.getStartTime();
-            	if (app.currentPlan._simInfo === undefined){
-            		app.simulatePlan();
-            	}
-            	var duration = newDuration;
-            	if (duration === undefined){
-            		duration = app.currentPlan._simInfo.deltaTimeSeconds;
-            	}
-            	var theEndTime = moment(theStartTime).add(duration, 's');
-            	return theEndTime;
-            };
-            
-            app.getTimeZone = function(){
-            	var thesite = app.currentPlan.get('site');
-            	if ('timezone' in thesite){
-            		return thesite['timezone'];
-            	} else if ('alternateCrs' in thesite){
-            		if ('timezone' in thesite['alternateCrs'].properties){
-            			return thesite['alternateCrs'].properties.timezone
-            		}
-            	}
-            	return 'Etc/UTC';
-            };
         });
     
     app.rerender = function() {
@@ -585,6 +555,55 @@ var app = (function($, _, Backbone) {
     	return null;
     }
     
+    app.getStartTime = function() {
+    	if (app.options.planExecution) {
+    		return moment.utc(app.options.planExecution.planned_start_time);
+    	} else {
+    		if (!app.startTime){
+    			app.startTime = moment().utc();
+    		}
+    		return app.startTime;
+    	}
+    };
+    
+    app.getEndTime = function(newDuration) {
+    	var theStartTime = app.getStartTime();
+    	if (app.currentPlan._simInfo === undefined){
+    		app.simulatePlan();
+    	}
+    	var duration = newDuration;
+    	if (duration === undefined){
+    		duration = app.currentPlan._simInfo.deltaTimeSeconds;
+    	}
+    	var theEndTime = moment(theStartTime).add(duration, 's');
+    	return theEndTime;
+    };
+    
+    app.getTimeZone = function(){
+    	var thesite = app.currentPlan.get('site');
+    	if ('timezone' in thesite){
+    		return thesite['timezone'];
+    	} else if ('alternateCrs' in thesite){
+    		if ('timezone' in thesite['alternateCrs'].properties){
+    			return thesite['alternateCrs'].properties.timezone
+    		}
+    	}
+    	return 'Etc/UTC';
+    };
+    
+    app.getStationStartEndTimes = function() {
+    	var startTime = app.getStartTime();
+    	var endTime = undefined;
+    	var result = [];
+    	app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {
+    		if (pathElement.attributes.type == 'Station'){
+        		endTime = startTime.clone().add(pathElement._simInfo.deltaTimeSeconds, 's');
+        		result.push({start: moment(startTime), end: moment(endTime)});
+    		}
+    		startTime = startTime.add(pathElement._simInfo.deltaTimeSeconds, 's');
+    	});
+    	return result;
+    }
     /*
     ** Global utility functions
     */

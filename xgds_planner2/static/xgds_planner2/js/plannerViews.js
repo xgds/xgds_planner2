@@ -1385,3 +1385,104 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
     }
 
 });
+
+app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
+	el: '#plot-container',
+	template: false,
+	plotLabels : {},
+	plotOptions: { 
+        series: {
+			lines: { show: true },
+			points: { show: false },
+			rectangle: {show: true}
+		},
+		clickable: true,
+        grid: {
+        	backgroundColor: '#FFFFFF',
+            hoverable: true,
+            clickable: true,
+            autoHighlight: true
+        },
+        shadowSize: 0,
+        zoom: {
+            interactive: true
+        },
+        pan: {
+            interactive: true
+        },
+        axisLabels: {
+            show: false
+        },
+        yaxis: {
+            max: 5, // set a manual maximum to allow for labels
+            ticks: 0 // this line removes the y ticks
+        },
+        },
+	initialize: function() {
+		var context = this;
+		this.plotOptions['grid'] = {'markings': context.getStationMarkings};
+		this.plotOptions['xaxis'] = { mode: "time",
+									  minTickSize: [1, 'hour'], //todo automate getting this size
+									  tickSize: [4, 'hour'],
+									  timeformat: "%m/%d %H:%M",
+									  timezone: app.getTimeZone()
+		 							 };
+		this.listenTo(app.vent, 'change:plan', function(model) {this.render()});
+        
+	},
+	
+    getStationMarkings: function() {
+    	if (app.currentPlan._simInfo === undefined){
+    		app.simulatePlan();
+    	}
+    	var result = [];
+    	var startEndTimes = app.getStationStartEndTimes();
+    	for (var i=0; i<startEndTimes.length; i++){
+    		result.push({xaxis: {from:startEndTimes[i].start.toDate().getTime(),
+    							 to: startEndTimes[i].end.toDate().getTime()},
+    							 color:'#FFE4B5'});
+    	}
+    	return result;
+    },
+    drawStationLabels: function(startEndTimes) {
+    	// draw labels
+		var context = this;
+		var index = 0;
+		app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {
+    		if (pathElement.attributes.type == 'Station'){
+    			startEndTime = startEndTimes[index];
+    			o = context.plot.pointOffset({ x: startEndTime.start.toDate().getTime(), y: 0 });
+    			if (pathElement in context.plotLabels){
+    				context.plotLabels[pathElement].text(pathElement._sequenceLabel);
+    				context.plotLabels[pathElement].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
+    			} else {
+    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#666;font-size:smaller;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
+    				el.appendTo(plotDiv);
+    				//plotDiv.append(el);
+    				context.plotLabels[pathElement] = el;
+    			}
+    			index++;
+    		}
+		});
+    },
+	onRender: function() {
+		var stationData = [];
+    	var startEndTimes = app.getStationStartEndTimes();
+    	for (var i=0; i<startEndTimes.length; i++){
+    		stationData.push([startEndTimes[i].start.toDate().getTime(), 0]);
+    		stationData.push([startEndTimes[i].end.toDate().getTime(), 0]);
+    		stationData.push(null);
+    	}
+		
+    	var plotDiv = this.$el.find("#plotDiv");
+    	if (this.plot == undefined) {
+    		this.plot = $.plot(plotDiv, [stationData], this.plotOptions);
+    		this.drawStationLabels(startEndTimes);
+    	} else {
+    		this.plot.setupGrid();
+    	    this.plot.draw();
+    		this.drawStationLabels(startEndTimes);
+    	}
+		 
+	}
+});

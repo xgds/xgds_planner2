@@ -40,6 +40,10 @@
     <div id="controllers" class="row">
     	{% include "xgds_core/playback_controller.html" %}
     </div>
+    <div id="plot-container" class="plot-container">
+		<div id="plotDiv" class="plot-div"></div>
+		<div id="plotLegend" ></div>
+	</div>
 
     <div class="grid-stack grid-stack-6" id="container">
     	<div id="map-gridstack-item" class="grid-stack-item"  data-gs-x="0" data-gs-y="0" data-gs-width="2" data-gs-height="4" >
@@ -103,6 +107,8 @@
      <script type="text/javascript" src='{{ EXTERNAL_URL }}pure-uuid/uuid.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-fileDownload/src/Scripts/jquery.fileDownload.js'></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.js" ></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}Flot/jquery.flot.js" ></script>
+	<script type="text/javascript" src="{{ EXTERNAL_URL }}Flot/jquery.flot.time.js" ></script>
 	<script type="text/javascript" src="{{ STATIC_URL }}xgds_core/js/gridstackUtils.js"></script>
     
     <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/handlebars-helpers.js'></script>
