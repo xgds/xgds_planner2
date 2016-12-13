@@ -1400,7 +1400,16 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
         	backgroundColor: '#FFFFFF',
             hoverable: true,
             clickable: true,
-            autoHighlight: true
+            autoHighlight: true,
+            margin: {
+                top: 5,
+                left: 0,
+                bottom: 5,
+                right: 0
+            },
+            axisMargin: 0,
+            borderWidth: 1,
+            borderColor: '#C0C0C0'
         },
         shadowSize: 0,
         zoom: {
@@ -1443,24 +1452,29 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     getXAxisOptions: function() {
     	var durationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
     	var mduration = moment.duration(durationSeconds, 'seconds');
-    	timeformat = "%H:%M";
-    	if (mduration.days() > 0){
+    	var tickSize = this.getTickSize(durationSeconds);
+    	var timeformat = "%H:%M";
+    	if (tickSize[1] == 'day'){
+    		timeformat = "%m/%d";
+    	} else if (mduration.days() > 0){
     		timeformat = "%m/%d %H:%M";
     	}
-    	var tickSize = this.getTickSize(durationSeconds);
     	return { mode: "time",
 			  	tickSize: tickSize,
 			  	timeformat: timeformat,
-			  	timezone: app.getTimeZone()
+			  	timezone: app.getTimeZone(),
+			  	reserveSpace: false
 				 };
     },
 	initialize: function() {
 		var context = this;
-		this.plotOptions['grid'] = {'markings': context.getStationMarkings};
+		this.plotOptions['grid']['markings'] = context.getStationMarkings;
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
 		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.render()});
 		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
-		
+		$('#plot-container').resize(function() {
+			context.drawStationLabels();
+		});
 	},
 	
     getStationMarkings: function() {
@@ -1468,16 +1482,19 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     		app.simulatePlan();
     	}
     	var result = [];
-    	var startEndTimes = app.getStationStartEndTimes();
+    	this.startEndTimes = app.getStationStartEndTimes();
     	for (var i=0; i<startEndTimes.length; i++){
-    		result.push({xaxis: {from:startEndTimes[i].start.toDate().getTime(),
-    							 to: startEndTimes[i].end.toDate().getTime()},
-    							 color:'#FFE4B5'});
+    		result.push({xaxis: {from:this.startEndTimes[i].start.toDate().getTime(),
+    							 to: this.startEndTimes[i].end.toDate().getTime()},
+    							 color:'#FFA500'});
     	}
     	return result;
     },
     drawStationLabels: function(startEndTimes) {
     	// draw labels
+    	if (startEndTimes === undefined){
+    		startEndTimes = this.startEndTimes;
+    	}
 		var context = this;
 		var index = 0;
 		var sequence = app.currentPlan.get('sequence');
@@ -1491,7 +1508,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
     				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
     			} else {
-    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#666;font-size:smaller;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
+    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#FF4500;font-size:smaller;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
     				el.appendTo(plotDiv);
     				context.plotLabels[pathElement.attributes.uuid] = el;
     			}
@@ -1511,26 +1528,26 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     },
 	onRender: function() {
 		var stationData = [];
-    	var startEndTimes = app.getStationStartEndTimes();
-    	if (_.isEmpty(startEndTimes)){
+    	this.startEndTimes = app.getStationStartEndTimes();
+    	if (_.isEmpty(this.startEndTimes)){
     		return;
     	}
 
-    	for (var i=0; i<startEndTimes.length; i++){
-    		stationData.push([startEndTimes[i].start.toDate().getTime(), 0]);
-    		stationData.push([startEndTimes[i].end.toDate().getTime(), 0]);
+    	for (var i=0; i<this.startEndTimes.length; i++){
+    		stationData.push([this.startEndTimes[i].start.toDate().getTime(), 0]);
+    		stationData.push([this.startEndTimes[i].end.toDate().getTime(), 0]);
     		stationData.push(null);
     	}
 		
     	var plotDiv = this.$el.find("#plotDiv");
     	if (this.plot == undefined) {
     		this.plot = $.plot(plotDiv, [stationData], this.plotOptions);
-    		this.drawStationLabels(startEndTimes);
+    		this.drawStationLabels(this.startEndTimes);
     	} else {
     		this.plot.setupGrid();
     		this.plot.setData([stationData]);
     	    this.plot.draw();
-    		this.drawStationLabels(startEndTimes);
+    		this.drawStationLabels(this.startEndTimes);
     	}
 		 
 	}
