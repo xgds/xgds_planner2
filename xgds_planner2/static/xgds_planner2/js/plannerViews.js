@@ -1456,7 +1456,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	var timeformat = "%H:%M";
     	if (tickSize[1] == 'day'){
     		timeformat = "%m/%d";
-    	} else if (mduration.days() > 0){
+    	} else if (mduration.hours() > 12){
     		timeformat = "%m/%d %H:%M";
     	}
     	return { mode: "time",
