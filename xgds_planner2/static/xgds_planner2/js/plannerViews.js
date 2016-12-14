@@ -1390,6 +1390,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	el: '#plot-container',
 	template: false,
 	plotLabels : {},
+	intervalSeconds: 5,
 	plotOptions: { 
         series: {
 			lines: { show: true },
@@ -1422,13 +1423,14 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
             show: false
         },
         yaxis: {
-            max: 5, // set a manual maximum to allow for labels
+            max: 100, // set a manual maximum to allow for labels
             ticks: 0 // this line removes the y ticks
-        },
+        }
     },
     getTickSize: function(durationSeconds) {
     	if (durationSeconds > 12){
     		var twelfth = moment.duration(durationSeconds/12, 'seconds');
+    		this.intervalSeconds = twelfth.asSeconds()/25;
     		var m_12 = twelfth.minutes();
     		var h_12 = twelfth.hours();
     		var d_12 = twelfth.days();
@@ -1445,6 +1447,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			}
     			return [m_12, 'minute'];
     		}
+    	} else {
+    		this.intervalSeconds = 5;
     	}
     	return [1, 'minute'];
     		
@@ -1468,8 +1472,11 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     },
 	initialize: function() {
 		var context = this;
+		this.plotColors = this.getPlotColors();
 		this.plotOptions['grid']['markings'] = context.getStationMarkings;
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
+		this.plotOptions['colors'] = context.plotColors;
+		this.startEndTimes = app.getStationStartEndTimes();
 		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.render()});
 		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
 		$('#plot-container').resize(function() {
@@ -1526,26 +1533,60 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 //			delete context.plotLabels[key];
 //		});
     },
-	onRender: function() {
-		var stationData = [];
-    	this.startEndTimes = app.getStationStartEndTimes();
-    	if (_.isEmpty(this.startEndTimes)){
-    		return;
-    	}
-
+    initializePlots: function(startMoment, endMoment){
+    	$.each( app.options.plots, function(key,value){
+    		$.executeFunctionByName(value + '.initialize', window, [startMoment, 
+    																endMoment]);
+    		});
+    },
+    getPlotColors: function(){
+    	var result = [];
+    	$.each( app.options.plots, function(key,value){
+    		result.push($.executeFunctionByName(value + '.getLineColor', window));
+    		});
+    	return result;
+    },
+    getPlotData: function(startMoment, endMoment){
+    	var context = this;
+    	var result = [];
+    	$.each( app.options.plots, function(key,value){
+    		var dataValues = $.executeFunctionByName(value + '.getDataValues', window, [startMoment, 
+																					    endMoment,
+																					    context.intervalSeconds]);
+    		result.push({'label': key,
+    					 'data': dataValues});
+    		});
+    	return result;
+    },
+    getStationData: function() {
+    	var stationData = [];
     	for (var i=0; i<this.startEndTimes.length; i++){
     		stationData.push([this.startEndTimes[i].start.toDate().getTime(), 0]);
     		stationData.push([this.startEndTimes[i].end.toDate().getTime(), 0]);
     		stationData.push(null);
     	}
+    	return [stationData];
+    },
+	onRender: function() {
+		
+    	this.startEndTimes = app.getStationStartEndTimes();
+    	if (_.isEmpty(this.startEndTimes)){
+    		return;
+    	}
 		
     	var plotDiv = this.$el.find("#plotDiv");
     	if (this.plot == undefined) {
-    		this.plot = $.plot(plotDiv, [stationData], this.plotOptions);
+    		this.initializePlots(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end);
+    		plotData = this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
+    		if (_.isEmpty(plotData)){
+    			plotData = this.getStationData();
+    		}
+    		this.plot = $.plot(plotDiv, plotData, this.plotOptions);
     		this.drawStationLabels(this.startEndTimes);
     	} else {
     		this.plot.setupGrid();
     		this.plot.setData([stationData]);
+    		this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
     	    this.plot.draw();
     		this.drawStationLabels(this.startEndTimes);
     	}

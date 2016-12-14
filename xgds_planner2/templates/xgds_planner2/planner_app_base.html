@@ -124,6 +124,9 @@
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
     <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/vehicleDriver.js'></script>
   
+  	<!--  uncomment the below to test sample plot -->
+  <!-- <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plot/plannerSamplePlot.js'></script>  -->
+  
       {% javascript 'simulator' %}
       {% javascript 'custom_map' %}
     
@@ -186,7 +189,8 @@
         stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
         segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
         commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}',
-        settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:"true,false" }}
+        settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:"true,false" }},
+        plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }}
     };
     
     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}

@@ -316,3 +316,12 @@ JAVASCRIPT = 'JavaScript'
 PYTHON = 'Python'
 EXEC = 'Exec'
 XGDS_PLANNER2_CALLBACK = []
+
+# If you will be plotting values in the flot plot chart, register functions here.
+# You must also then include the javascript library that has that function implemented.
+# Dictionary should be: legible name: namespace of library
+
+XGDS_PLANNER2_PLOTS = {}
+
+# Uncomment the below to see plannerSamplePlot.js, and include it in planner_app_base
+# XGDS_PLANNER2_PLOTS['Sample'] = 'sample_plot'
