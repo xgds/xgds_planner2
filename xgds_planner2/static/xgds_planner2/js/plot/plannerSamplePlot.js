@@ -37,7 +37,8 @@ $.extend(sample_plot, {
 	getIntervalSeconds: function(intervalSeconds) {
 		// in case you want specific control over this.
 		return intervalSeconds;
-	}
+	},
+	usesPosition: false // for plots that require map position instead of time.
 	
 	
 });

@@ -21,12 +21,13 @@ $.extend(playback, {
 		ranges: [],
 		elements: [],
 		lastIndex: 0,
+		initialized: false,
 		getStationTransform: function(currentTime, station) {
 			return {location:transform(station.get('geometry').coordinates), rotation:null};
 		},
 		getSegmentTransform: function(currentTime, segment, index){
 			// interpolate along straight line
-			var range = this.ranges[this.lastIndex];
+			var range = this.ranges[index];
 			var newRange = moment.range(range.start, currentTime);
 			var currentDuration = newRange.diff('milliseconds') / 1000;
 			var fullDuration = segment.getDuration();
@@ -55,42 +56,49 @@ $.extend(playback, {
 			
 			return {location:transform(newcoordinates), rotation:bearing};
 		},
-		getPosition: function(currentTime, lastIndex) {
-			var pathElement = this.elements[this.lastIndex];
+		getPosition: function(currentTime, index) {
+			var pathElement = this.elements[index];
 			if (pathElement.get('type') == 'Station') {
 				return this.getStationTransform(currentTime, pathElement);
 			} else if (pathElement.get('type') == 'Segment') {
-				return this.getSegmentTransform(currentTime, pathElement, lastIndex);
+				return this.getSegmentTransform(currentTime, pathElement, index);
 			}
 		},
-		lookupTransform: function(currentTime){
+		lookupTransform: function(currentTime, indexReference){
+			// This will actually return the position and update the index.
+			// You have to pass the index reference this way: {indexVariable: this.lastIndex}
+			// because Javascript does not support passing objects by reference. 
+			// This way we can both use and update the index variable by reference.
+			var lastIndex = indexReference.indexVariable;
 			if (this.elements.length == 0){
 				return null;
 			}
-			if (this.lastIndex > this.ranges.length){
-				this.lastIndex = this.ranges.length - 1;
+			if (lastIndex > this.ranges.length){
+				lastIndex = this.ranges.length - 1;
 			}
 			if (currentTime === null || currentTime === undefined){
 				return null;
 			}
-			if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
-				return this.getPosition(currentTime, this.lastIndex);
+			if (currentTime.unix() == this.ranges[lastIndex].start.unix() || this.ranges[lastIndex].contains(currentTime)){
+				return this.getPosition(currentTime, lastIndex);
 			} else {
 				// see if we went back
-				if (currentTime.unix() < this.ranges[this.lastIndex].start.unix()){
+				if (currentTime.unix() < this.ranges[lastIndex].start.unix()){
 					// iterate back
-					while (this.lastIndex > 0) {
-						this.lastIndex = this.lastIndex -1;
-						if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
-							return this.getPosition(currentTime, this.lastIndex);
+					while (lastIndex > 0) {
+						lastIndex--;
+						indexReference.indexVariable = lastIndex;
+						if (currentTime.unix() == this.ranges[lastIndex].start.unix() || this.ranges[lastIndex].contains(currentTime)){
+							return this.getPosition(currentTime, lastIndex);
 						}
 					}
 					return null;
 				}
-				while (this.lastIndex < this.ranges.length){
-					this.lastIndex = this.lastIndex + 1;
-					if (currentTime.unix() == this.ranges[this.lastIndex].start.unix() || this.ranges[this.lastIndex].contains(currentTime)){
-						return this.getPosition(currentTime, this.lastIndex);
+				while (lastIndex < this.ranges.length){
+					lastIndex++;
+					indexReference.indexVariable = lastIndex
+					if (currentTime.unix() == this.ranges[lastIndex].start.unix() || this.ranges[lastIndex].contains(currentTime)){
+						return this.getPosition(currentTime, lastIndex);
 					}
 				}
 			}
@@ -121,20 +129,23 @@ $.extend(playback, {
 			}
 		},
 		initialize: function() {
+			if (this.initialized){
+				return;
+			}
 			moment.tz.setDefault(app.getTimeZone());
 			var _this = this;
 			app.listenTo(app.vent, 'itemSelected:station', function(selected) {
-                _this.setCurrentTime(selected); //app.State.stationSelected);
+                _this.setCurrentTime(selected); 
             });
             app.listenTo(app.vent, 'itemSelected:segment', function(selected) {
-                _this.setCurrentTime(selected); //app.State.segmentSelected);
+                _this.setCurrentTime(selected); 
             });
             app.listenTo(app.vent, 'updatePlanDuration', function() {
             	_this.pause();
             	_this.analyze();
-            	//_this.start(playback.getCurrentTime());
             });
 			this.analyze();
+			this.initialized = true;
 		},
 		setCurrentTime: function(element) {
 			// set the current time to the start time of this element
@@ -145,7 +156,7 @@ $.extend(playback, {
 		},
 		doSetTime: function(currentTime){
 			this.lastUpdate = moment(currentTime);
-			var newPositionRotation = this.lookupTransform(this.lastUpdate);
+			var newPositionRotation = this.lookupTransform(this.lastUpdate, {indexVariable: this.lastIndex});
 			if (newPositionRotation != null){
 				app.vent.trigger('vehicle:change',newPositionRotation);
 			}

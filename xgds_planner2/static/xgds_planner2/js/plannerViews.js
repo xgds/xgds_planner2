@@ -1391,6 +1391,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	template: false,
 	plotLabels : {},
 	intervalSeconds: 5,
+	needsCoordinates: false,
 	plotOptions: { 
         series: {
 			lines: { show: true },
@@ -1472,12 +1473,14 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     },
 	initialize: function() {
 		var context = this;
+		this.needsCoordinates = this.calculateNeedsCoordinates();
 		this.plotColors = this.getPlotColors();
 		this.plotOptions['grid']['markings'] = context.getStationMarkings;
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
 		this.plotOptions['colors'] = context.plotColors;
 		this.startEndTimes = app.getStationStartEndTimes();
 		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.render()});
+		this.listenTo(app.vent, 'drawPlot', function(key) {this.render()}); //TODO just render the specific plot
 		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
 		$('#plot-container').resize(function() {
 			context.drawStationLabels();
@@ -1539,6 +1542,15 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     																endMoment]);
     		});
     },
+    calculateNeedsCoordinates: function() {
+    	var result = false;
+    	$.each( app.options.plots, function(key,value){
+    		if (!result){
+    			result = $.getValueByName(value + '.usesPosition');
+    		}
+    	});
+    	return result;
+    },
     getPlotColors: function(){
     	var result = [];
     	$.each( app.options.plots, function(key,value){
@@ -1549,16 +1561,37 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     getPlotData: function(startMoment, endMoment){
     	var context = this;
     	var result = [];
+    	var coordinates = undefined;
+    	if (this.needsCoordinates){
+    		coordinates = this.getCoordinates(startMoment, endMoment);
+    	}
     	$.each( app.options.plots, function(key,value){
     		var dataValues = $.executeFunctionByName(value + '.getDataValues', window, [startMoment, 
-																					    endMoment,
-																					    context.intervalSeconds]);
+    			                                                                        endMoment,
+    			                                                                        context.intervalSeconds,
+    			                                                                        coordinates]);
     		result.push({'label': key,
     					 'data': dataValues});
     		});
     	return result;
     },
+    getCoordinates: function(startMoment, endMoment) {
+    	var result = {};
+    	var nowMoment = startMoment.clone();
+    	var index = 0;
+    	playback.vehicleDriver.initialize();
+    	while (nowMoment.isBefore(endMoment)){
+    		var position = playback.vehicleDriver.lookupTransform(nowMoment, {indexVariable: index});
+    		if (position !== null){
+    			result[nowMoment.toDate().getTime()] = position.location;
+    		}
+			nowMoment = nowMoment.add(this.intervalSeconds, 's');
+		}
+    	return result;
+    },
     getStationData: function() {
+    	// we have to have some data in the plot, so if there are no registered plots then
+    	// just use the station data
     	var stationData = [];
     	for (var i=0; i<this.startEndTimes.length; i++){
     		stationData.push([this.startEndTimes[i].start.toDate().getTime(), 0]);
@@ -1566,6 +1599,15 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     		stationData.push(null);
     	}
     	return [stationData];
+    },
+    buildPlotDataArray: function() {
+    	var plotData = this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
+		if (_.isEmpty(plotData)){
+			plotData = this.getStationData();
+		} else {
+			plotData.push({data:this.getStationData()[0]});
+		}
+		return plotData;
     },
 	onRender: function() {
 		
@@ -1577,16 +1619,11 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	var plotDiv = this.$el.find("#plotDiv");
     	if (this.plot == undefined) {
     		this.initializePlots(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end);
-    		plotData = this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
-    		if (_.isEmpty(plotData)){
-    			plotData = this.getStationData();
-    		}
-    		this.plot = $.plot(plotDiv, plotData, this.plotOptions);
+    		this.plot = $.plot(plotDiv, this.buildPlotDataArray(), this.plotOptions);
     		this.drawStationLabels(this.startEndTimes);
     	} else {
     		this.plot.setupGrid();
-    		this.plot.setData([stationData]);
-    		this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
+    		this.plot.setData(this.buildPlotDataArray());
     	    this.plot.draw();
     		this.drawStationLabels(this.startEndTimes);
     	}
