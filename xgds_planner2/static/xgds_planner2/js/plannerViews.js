@@ -1431,7 +1431,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     getTickSize: function(durationSeconds) {
     	if (durationSeconds > 12){
     		var twelfth = moment.duration(durationSeconds/12, 'seconds');
-    		this.intervalSeconds = twelfth.asSeconds()/25;
+    		this.intervalSeconds = twelfth.asSeconds()/40;
     		var m_12 = twelfth.minutes();
     		var h_12 = twelfth.hours();
     		var d_12 = twelfth.days();

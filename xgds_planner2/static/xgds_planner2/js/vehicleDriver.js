@@ -31,6 +31,10 @@ $.extend(playback, {
 			var newRange = moment.range(range.start, currentTime);
 			var currentDuration = newRange.diff('milliseconds') / 1000;
 			var fullDuration = segment.getDuration();
+			if (fullDuration == 0){
+				console.log('ERROR -- SEGMENT DURATION 0' + segment._sequenceLabel);
+				return null;
+			}
 			var percentage = currentDuration / fullDuration;
 			
 			var prevStation = this.elements[index - 1];
