@@ -308,7 +308,7 @@ var app = (function($, _, Backbone) {
             app.map = new app.views.OLPlanView({
                 el: '#map'
             });
-            app.vent.trigger('onMapSetup');
+            app.vent.trigger('onMapSetup', this);
             app.toolbar.show(new app.views.ToolbarView());
             app.tabs.show(new app.views.TabNavView());
             new app.views.PlanPlotView().render();
