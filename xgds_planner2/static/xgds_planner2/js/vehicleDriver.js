@@ -98,10 +98,14 @@ $.extend(playback, {
 					}
 					return null;
 				}
-				while (lastIndex < this.ranges.length){
+				while (lastIndex < (this.ranges.length - 1)){
 					lastIndex++;
 					indexReference.indexVariable = lastIndex
-					if (currentTime.unix() == this.ranges[lastIndex].start.unix() || this.ranges[lastIndex].contains(currentTime)){
+					var theRange = this.ranges[lastIndex];
+					if (theRange === undefined){
+						return null;
+					}
+					if (currentTime.unix() == theRange.start.unix() || theRange.contains(currentTime)){
 						return this.getPosition(currentTime, lastIndex);
 					}
 				}

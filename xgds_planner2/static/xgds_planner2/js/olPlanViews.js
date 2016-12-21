@@ -453,6 +453,7 @@ $(function() {
 	                	this.stationRepositioner.on('modifyend', function(event){
 	                            app.Actions.enable();
 	                            app.Actions.action();
+	                            app.vent.trigger('modifyEnd');
 	                        }, this);
 	                    this.segmentModifier = new ol.interaction.Modify({
 	                    	name: "segmentModifier",
@@ -466,6 +467,8 @@ $(function() {
 	                    	    var model = element.get('model')
 	                    	    model.trigger('splitSegment');
 	                    	}
+                            app.vent.trigger('modifyEnd');
+
 	                        }, this);
 	                	
 	                    }, this);
@@ -485,6 +488,7 @@ $(function() {
 	                            if (!_.isUndefined(feature)){
 	                                this.stationDeleter.getFeatures().clear();
 	                            }
+	                            app.vent.trigger('modifyEnd');
 	                        }
 	                    }, this);
 	                    app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);

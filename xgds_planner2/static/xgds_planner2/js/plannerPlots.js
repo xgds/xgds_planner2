@@ -14,10 +14,19 @@
 // specific language governing permissions and limitations under the License.
 //__END_LICENSE__
 
+
+UPDATE_ON = {
+		UpdatePlanDuration: 0,
+		ModifyEnd: 1,
+		Save: 2
+}
+
 var PlotDataModel = Backbone.Model.extend({
+	
 	defaults: {
 		'lineColor':     'blue',
-		'usesPosition':    false
+		'usesPosition':    false,
+	   	'update': UPDATE_ON.UpdatePlanDuration
 	},
 
 	initialize: function(startMoment, endMoment) {
@@ -40,7 +49,8 @@ var PlotDataModel = Backbone.Model.extend({
 var PlotDataTileModel = PlotDataModel.extend({
 	defaults: {
 		'lineColor':     'blue',
-		'usesPosition':    true
+		'usesPosition':    true,
+		'update': UPDATE_ON.ModifyEnd
 	},
 	initialize: function(startMoment, endMoment) {
 		this.initializeDataTileView();
@@ -90,6 +100,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	template: false,
 	plotLabels : {},
 	dataPlots: {},
+	plotDataCache: {},
 	intervalSeconds: 5,
 	needsCoordinates: false,
 	plotOptions: { 
@@ -176,36 +187,32 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		this.constructPlotDataModels();
 		this.needsCoordinates = this.calculateNeedsCoordinates();
 		//this.plotColors = this.getPlotColors();
-		this.plotOptions['grid']['markings'] = context.getStationMarkings;
+		this.plotOptions['grid']['markings'] = function() { return context.getStationMarkings()};
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
 		//this.plotOptions['colors'] = context.plotColors;
-		this.startEndTimes = app.getStationStartEndTimes();
-		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.render()});
-		this.listenTo(app.vent, 'drawPlot', function(key) {this.render()}); //TODO just render the specific plot
+		this.getStartEndMoments(true);
+		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
+		this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
+		this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
+		this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
 		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
-		$('#plot-container').resize(function() {
-			context.drawStationLabels();
-		});
 	},
 	
     getStationMarkings: function() {
     	if (app.currentPlan._simInfo === undefined){
     		app.simulatePlan();
+    		this.getStartEndMoments(true);
     	}
     	var result = [];
-    	this.startEndTimes = app.getStationStartEndTimes();
-    	for (var i=0; i<startEndTimes.length; i++){
+    	for (var i=0; i<this.startEndTimes.length; i++){
     		result.push({xaxis: {from:this.startEndTimes[i].start.toDate().getTime(),
     							 to: this.startEndTimes[i].end.toDate().getTime()},
     							 color:'#FFA500'});
     	}
     	return result;
     },
-    drawStationLabels: function(startEndTimes) {
+    drawStationLabels: function() {
     	// draw labels
-    	if (startEndTimes === undefined){
-    		startEndTimes = this.startEndTimes;
-    	}
 		var context = this;
 		var index = 0;
 		var sequence = app.currentPlan.get('sequence');
@@ -213,7 +220,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		var deathRow = []
 		sequence.each(function(pathElement, i, sequence) {
     		if (pathElement.attributes.type == 'Station'){
-    			startEndTime = startEndTimes[index];
+    			startEndTime = this.startEndTimes[index];
     			o = context.plot.pointOffset({ x: startEndTime.start.toDate().getTime(), y: 0 });
     			if (pathElement.attributes.uuid in context.plotLabels){
     				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
@@ -226,7 +233,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
         		saveUs.push(pathElement.attributes.uuid);
     			index++;
     		}
-		});
+		}, this);
 //		_.each(Object.keys(context.plotLabels), function(key){
 //			if (saveUs.indexOf(key) < 0){
 //				deathRow.push(key);
@@ -265,25 +272,16 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     		});
     	return result;
     },
-    getPlotData: function(startMoment, endMoment){
-    	var context = this;
-    	var result = [];
-    	var coordinates = undefined;
-    	if (this.needsCoordinates){
-    		coordinates = this.getCoordinates(startMoment, endMoment);
+    getStartEndMoments: function(refresh) {
+    	if (refresh){
+    		this.startEndTimes = app.getStationStartEndTimes();
     	}
-    	$.each( this.dataPlots, function(key,plotModel){
-    		var dataValues = plotModel.getDataValues(startMoment, 
-    												 endMoment,
-    												 context.intervalSeconds,
-    												 coordinates);
-    		if (!_.isEmpty(dataValues)) {
-    			result.push({'label': key,
-    					 	 'data': dataValues});
-    		}
-    		
-    		});
-    	return result;
+    	if (_.isEmpty(this.startEndTimes)){
+    		return undefined;
+    	}
+    	return {start: this.startEndTimes[0].start,
+    			end: this.startEndTimes[this.startEndTimes.length - 1].end}
+    	
     },
     getCoordinates: function(startMoment, endMoment) {
     	var result = {};
@@ -310,8 +308,40 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	}
     	return [stationData];
     },
+    cachePlotData: function(startMoment, endMoment, eventType){
+    	var context = this;
+    	var coordinates = undefined;
+    	if (this.needsCoordinates){
+    		coordinates = this.getCoordinates(startMoment, endMoment);
+    	}
+    	$.each( this.dataPlots, function(key,plotModel){
+    		if (eventType == plotModel.get('update') || !(key in context.plotDataCache)) {
+    			var dataValues = plotModel.getDataValues(startMoment, 
+    												 	endMoment,
+    												 	context.intervalSeconds,
+    												 	coordinates);
+    			if (!_.isEmpty(dataValues)) {
+    				context.plotDataCache[key] = dataValues;
+    			}
+    		}
+    	});
+    },
+    getPlotDataFromCache: function() {
+    	var result = [];
+    	var context = this;
+    	$.each( this.dataPlots, function(key,plotModel){
+    		if (key in context.plotDataCache){
+	    		var data = context.plotDataCache[key];
+	    		if (data != undefined && !_.isEmpty(data)){
+	    			result.push({'label': key,
+		 			 		 	'data': data});
+	    		}
+    		}
+    	});
+    	return result;
+    },
     buildPlotDataArray: function() {
-    	var plotData = this.getPlotData(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end, this.intervalSeconds);
+    	var plotData = this.getPlotDataFromCache();
 		if (_.isEmpty(plotData)){
 			plotData = this.getStationData();
 		} else {
@@ -319,23 +349,54 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		}
 		return plotData;
     },
+    updatePlot: function(key) {
+    	var plotModel = this.dataPlots[key];
+    	var startEnd = this.getStartEndMoments(false);
+    	if (startEnd === undefined){
+    		return;
+    	}
+    	var coordinates = undefined;
+    	if (this.needsCoordinates){
+    		coordinates = this.getCoordinates(startEnd.start, startEnd.end);
+    	}
+    	var dataValues = plotModel.getDataValues(startEnd.start, 
+    											 startEnd.end,
+    											 this.intervalSeconds,
+    											 coordinates);
+    	if (!_.isEmpty(dataValues)) {
+    		this.plotDataCache[key] = dataValues;
+    	}
+    	this.render();
+    },
+    updatePlots: function(eventType) {
+    	var startEnd = this.getStartEndMoments(true);
+    	if (startEnd === undefined){
+    		return;
+    	}
+    	this.cachePlotData(startEnd.start, startEnd.end, eventType);
+    	this.render();
+    },
 	onRender: function() {
 		
-    	this.startEndTimes = app.getStationStartEndTimes();
-    	if (_.isEmpty(this.startEndTimes)){
+		var startEnd = this.getStartEndMoments(false);
+    	if (startEnd === undefined){
     		return;
     	}
 		
     	var plotDiv = this.$el.find("#plotDiv");
     	if (this.plot == undefined) {
-    		this.initializePlots(this.startEndTimes[0].start, this.startEndTimes[this.startEndTimes.length - 1].end);
+    		this.initializePlots(startEnd.start, startEnd.end);
     		this.plot = $.plot(plotDiv, this.buildPlotDataArray(), this.plotOptions);
-    		this.drawStationLabels(this.startEndTimes);
+    		this.drawStationLabels();
+    		var context = this;
+    		$('#plot-container').resize(function() {
+    			context.drawStationLabels();
+    		});
     	} else {
     		this.plot.setupGrid();
     		this.plot.setData(this.buildPlotDataArray());
     	    this.plot.draw();
-    		this.drawStationLabels(this.startEndTimes);
+    		this.drawStationLabels();
     	}
 		 
 	}
