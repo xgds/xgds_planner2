@@ -21,6 +21,8 @@ UPDATE_ON = {
 		Save: 2
 }
 
+BLANKS = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+
 var PlotDataModel = Backbone.Model.extend({
 	
 	defaults: {
@@ -78,19 +80,26 @@ var PlotDataTileModel = PlotDataModel.extend({
 	
 	getDataValues: function(startMoment, endMoment, intervalSeconds, coordinates) {
 		var result = [];
+		var rawResult = [];
 		var loaded = this.initializeDataTileView();
 		if (!loaded){
 			return result;
 		}
+		var range = this.get('maxValue') - this.get('minValue');
 		var nowMoment = startMoment.clone();
 		while (nowMoment.isBefore(endMoment)){
 			var theTime = nowMoment.toDate().getTime();
 			var position = coordinates[theTime];
-			var value = this.dataTileView.getDataValue(position);
-			result.push([theTime, parseFloat(value)]);
+			var value = this.dataTileView.getRawDataValue(position);
+			rawResult.push([theTime, value]);
+			// convert to percentage
+			var percentValue = null;
+			if (value != null) {
+				percentValue = 100.0 * (value/range);
+			}
+			result.push([theTime, percentValue]);
 			nowMoment = nowMoment.add(intervalSeconds, 's');
 		}
-		//console.log(result);
 		return result;
 	}
 })
@@ -186,10 +195,10 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		var context = this;
 		this.constructPlotDataModels();
 		this.needsCoordinates = this.calculateNeedsCoordinates();
-		//this.plotColors = this.getPlotColors();
 		this.plotOptions['grid']['markings'] = function() { return context.getStationMarkings()};
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
-		//this.plotOptions['colors'] = context.plotColors;
+		this.plotColors = this.getPlotColors();
+		this.plotOptions['colors'] = context.plotColors;
 		this.getStartEndMoments(true);
 		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
 		this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
@@ -211,6 +220,16 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	}
     	return result;
     },
+    drawLegendLabels: function() {
+    	var keys = Object.keys(this.dataPlots);
+    	for (var i=0; i<keys.length; i++) {
+    		var label=keys[i];
+    		var underLabel = label.replace(' ','_');
+    		var theColor = this.dataPlots[label].getLineColor();
+    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 120px;"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
+    		$("#plotLegend").append(content);
+    	}
+    },
     drawStationLabels: function() {
     	// draw labels
 		var context = this;
@@ -226,7 +245,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
     				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
     			} else {
-    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#FF4500;font-size:smaller;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
+    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#FF4500;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
     				el.appendTo(plotDiv);
     				context.plotLabels[pathElement.attributes.uuid] = el;
     			}
@@ -376,6 +395,49 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	this.cachePlotData(startEnd.start, startEnd.end, eventType);
     	this.render();
     },
+    selectData: function(index) {
+    	this.plot.unhighlight();
+		var plotData = this.plot.getData();
+		var time = null;
+		var value = null;
+		var label = undefined;
+		for (var i=0; i<plotData.length; i++){
+			label = plotData[i].label;
+			if (label !== undefined){
+				var dataAtIndex = plotData[i].data[index];
+				this.plot.highlight(i, index);
+				
+				if (dataAtIndex != undefined) {
+					if (time == null){
+						time = dataAtIndex[0];
+						value = dataAtIndex[1];
+					} else if (time == dataAtIndex[0]) {
+						value = dataAtIndex[1];
+					}
+				}
+				
+				//TODO trigger event to draw it below plot
+				this.updateDataValue(label, value);
+			}
+			label = undefined;
+		}
+		this.updateTimeValue(time);
+    },
+    updateDataValue(label, value){
+    	// show the value from the plot below the plot.
+    	var labelValue = ('#' + label + '_value').replace(' ','_');
+    	if (value != null && value != undefined){
+			value = value.toFixed(2);
+			$(labelValue).text(value);
+	    	console.log(label + ": " + value);
+		} else {
+			$(labelValue).text(BLANKS);
+		}
+    	
+    },
+    updateTimeValue(newTime){
+    	//TODO update the time for the slider maybe
+    },
 	onRender: function() {
 		
 		var startEnd = this.getStartEndMoments(false);
@@ -387,8 +449,17 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	if (this.plot == undefined) {
     		this.initializePlots(startEnd.start, startEnd.end);
     		this.plot = $.plot(plotDiv, this.buildPlotDataArray(), this.plotOptions);
-    		this.drawStationLabels();
     		var context = this;
+    		plotDiv.bind("plotclick", function (event, pos, item) {
+    			context.selectData(item.dataIndex);
+    			});
+    		plotDiv.bind("plothover", function (event, pos, item) {
+    			if (item != null){
+    				context.selectData(item.dataIndex);
+    			}
+    			});
+    		this.drawStationLabels();
+    		this.drawLegendLabels();
     		$('#plot-container').resize(function() {
     			context.drawStationLabels();
     		});
