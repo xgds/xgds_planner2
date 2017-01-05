@@ -23,6 +23,54 @@ UPDATE_ON = {
 
 BLANKS = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
 
+$.extend(playback, {
+	plot : {
+	lastUpdate: undefined,
+	invalid: false,
+	initialized: false,
+	getTimeFromPathElement: function(pathElement) {
+		var startTime = app.getStartTime();
+		if (pathElement._simInfo == undefined){
+			app.simulatePlan();
+		}
+		return startTime.add(pathElement._simInfo.elapsedTimeSeconds, 's');
+	},
+	initialize: function() {
+		if (this.initialized){
+			return;
+		}
+		moment.tz.setDefault(app.getTimeZone());
+		var _this = this;
+		app.listenTo(app.vent, 'itemSelected:station', function(selected) {
+			_this.doSetTime(_this.getTimeFromPathElement(selected)); 
+        });
+        app.listenTo(app.vent, 'itemSelected:segment', function(selected) {
+			_this.doSetTime(_this.getTimeFromPathElement(selected)); 
+        });
+		this.initialized = true;
+	},
+	doSetTime: function(currentTime){
+		this.lastUpdate = moment(currentTime);
+		app.vent.trigger('updatePlotTime', this.lastUpdate.toDate().getTime());
+	},
+	start: function(currentTime){
+		this.doSetTime(currentTime);
+	},
+	update: function(currentTime){
+	    if (this.lastUpdate === undefined){
+			this.doSetTime(currentTime);
+			return;
+		}
+		var delta = currentTime.diff(this.lastUpdate);
+		if (Math.abs(delta) >= 100) {
+			this.doSetTime(currentTime);
+		}
+	},
+	pause: function() {
+		// noop
+	}
+}});
+
 var PlotDataModel = Backbone.Model.extend({
 	
 	defaults: {
@@ -204,7 +252,20 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
 		this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
 		this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
+		this.listenTo(app.vent, 'updatePlotTime', function(currentTime) {
+			var index = context.getPlotIndex(currentTime);
+			if (index != null){
+				context.selectData(index);
+			} else {
+				// todo clear
+			}
+        });
 		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
+		playback.addListener(playback.plot);
+	},
+	
+	getPlotIndex: function(currentTime){
+		return 20;
 	},
 	
     getStationMarkings: function() {
@@ -429,7 +490,6 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	if (value != null && value != undefined){
 			value = value.toFixed(2);
 			$(labelValue).text(value);
-	    	console.log(label + ": " + value);
 		} else {
 			$(labelValue).text(BLANKS);
 		}
@@ -472,3 +532,4 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		 
 	}
 });
+
