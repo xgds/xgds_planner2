@@ -216,11 +216,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			}
     			return [m_12, 'minute'];
     		}
-    	} else {
-    		this.intervalSeconds = 5;
     	}
     	return [1, 'minute'];
-    		
     },
     getXAxisOptions: function() {
     	var durationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
@@ -243,6 +240,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		var context = this;
 		this.constructPlotDataModels();
 		this.needsCoordinates = this.calculateNeedsCoordinates();
+		this.lastDataIndex = -1;
+		this.lastDataIndexTime = -1;
 		this.plotOptions['grid']['markings'] = function() { return context.getStationMarkings()};
 		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
 		this.plotColors = this.getPlotColors();
@@ -254,7 +253,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
 		this.listenTo(app.vent, 'updatePlotTime', function(currentTime) {
 			var index = context.getPlotIndex(currentTime);
-			if (index != null){
+			if (index > -1){
 				context.selectData(index);
 			} else {
 				// todo clear
@@ -265,7 +264,41 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	},
 	
 	getPlotIndex: function(currentTime){
-		return 20;
+		var timedeltaMS = Math.abs(this.lastDataIndexTime - currentTime);
+		if (timedeltaMS/1000 >= this.intervalSeconds){
+			// we should change it, find the next index.
+			var start = this.startEndTimes[0].start;
+			var planDurationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
+			var numDataBuckets = Math.round(planDurationSeconds/this.intervalSeconds);
+			var secondsFromStart = (currentTime - start.toDate().getTime())/1000;
+			var timePercentage = secondsFromStart / planDurationSeconds;
+			var suggestedBucket = Math.round(timePercentage * numDataBuckets);
+			var foundIndex = suggestedBucket;
+			
+			// verify time in data
+			// spot checked and the algorithm seems to always pick good buckets
+			/*
+			var plotData = this.plot.getData();
+			if (this.sampleData == undefined) {
+				for (var i=0; i<plotData.length; i++){
+					label = plotData[i].label;
+					if (label !== undefined){
+						this.sampleData = plotData[i];
+						i = plotData.length;
+					}
+				}
+			}
+			if (this.sampleData != undefined){
+				var dataAtIndex = this.sampleData.data[foundIndex];
+				// otherwise we would check the time of this one, check previous and next and see which is closest.
+			} */
+			
+			if (this.lastDataIndex != foundIndex){
+				this.lastDataIndex = foundIndex;
+				this.lastDataIndexTime = currentTime;
+			}
+		}
+		return this.lastDataIndex;
 	},
 	
     getStationMarkings: function() {
