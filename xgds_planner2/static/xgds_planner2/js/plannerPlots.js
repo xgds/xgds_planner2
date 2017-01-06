@@ -113,11 +113,17 @@ var PlotDataTileModel = PlotDataModel.extend({
 	
 	loadDataSource: function() {
 		// force load of data source
-		
+		var uuid = this.get('dataSourceUuid');
+		if (uuid != undefined){
+			app.vent.trigger('preloadNode', uuid);
+		}
 	},
 	
 	initializeDataTileView: function() {
-		if (this.dataTileView === undefined && app.dataTile !== undefined){
+		if (this.dataTileView === undefined){
+			if (app.dataTile === undefined) {
+				app.dataTile = {};
+			}
 			this.dataTileView = app.dataTile[this.get('dataFileUrl')];
 			if (this.dataTileView === undefined) {
 				this.loadDataSource();
