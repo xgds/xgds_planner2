@@ -50,7 +50,6 @@ $(function() {
         
         app.State.disableSimulate = true;
         app.Actions.disable();
-        console.log('----SIMULATING PLAN----');
         var sim = new app.Simulator();
         var plan = app.currentPlan;
         if (plan.get('sequence').length == 0) {
@@ -103,7 +102,6 @@ $(function() {
         setSimInfo(sim, plan, prePlanSimState);
         app.Actions.enable();
         app.State.disableSimulate = false;
-        console.log('----DONE SIMULATING PLAN----');
         app.vent.trigger('updatePlanDuration', app.currentPlan._simInfo.deltaTimeSeconds);
         if (app.State.stationSelected != undefined){
         	var stationStartTime = app.getStartTime().add(app.State.stationSelected._simInfo.elapsedTimeSeconds, 's');
