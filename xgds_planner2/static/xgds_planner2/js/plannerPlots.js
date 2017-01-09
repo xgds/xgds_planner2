@@ -21,7 +21,7 @@ UPDATE_ON = {
 		Save: 2
 }
 
-BLANKS = '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+BLANKS = '';
 
 $.extend(playback, {
 	plot : {
@@ -265,7 +265,11 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 				// todo clear
 			}
         });
-		app.currentPlan.get('sequence').on('remove', function(model){this.render()}, this);
+		app.currentPlan.get('sequence').on('remove', function(model){
+																	  this.removeStationLabel(model);
+																	  this.render()
+																	 }, this);
+		
 		playback.addListener(playback.plot);
 	},
 	
@@ -328,6 +332,18 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     		var theColor = this.dataPlots[label].getLineColor();
     		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 120px;"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
     		$("#plotLegend").append(content);
+    	}
+    },
+    removeStationLabel: function(model){
+    	try {
+    		if (model.get('type') == 'Station'){
+    			var stationUuid = model.get('uuid');
+    			var foundLabel = this.plotLabels[stationUuid];
+    			foundLabel.remove();
+    			delete foundLabel[stationUuid];
+    		}
+    	} catch (err){
+    		// skip
     	}
     },
     drawStationLabels: function() {

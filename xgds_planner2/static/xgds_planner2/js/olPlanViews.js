@@ -422,20 +422,20 @@ $(function() {
             },
             
             activateStationRepositioner: function() {
-        	this.stationRepositioner.setActive(true);
-        	this.stationDeleter.setActive(true);
-        	this.map.addInteraction(this.stationRepositioner);
-        	this.map.addInteraction(this.stationDeleter);
-        	this.stationDeleter.getFeatures().clear();
-        	this.stationDeleter.getFeatures().on('add', this.deleteStation, this);
+	        	this.stationRepositioner.setActive(true);
+	        	this.stationDeleter.setActive(true);
+	        	this.map.addInteraction(this.stationRepositioner);
+	        	this.map.addInteraction(this.stationDeleter);
+	        	this.stationDeleter.getFeatures().clear();
+	        	this.stationDeleter.getFeatures().on('add', this.deleteStation, this);
             },
             
             deactivateStationRepositioner: function() {
-        	this.map.removeInteraction(this.stationRepositioner);
-        	this.map.removeInteraction(this.stationDeleter);
-        	this.stationRepositioner.setActive(false);
-        	this.stationDeleter.setActive(false);
-        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
+	        	this.map.removeInteraction(this.stationRepositioner);
+	        	this.map.removeInteraction(this.stationDeleter);
+	        	this.stationRepositioner.setActive(false);
+	        	this.stationDeleter.setActive(false);
+	        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
             },
             
             repositionMode: {
