@@ -156,10 +156,6 @@ var PlotDataTileModel = PlotDataModel.extend({
 				if (value != null) {
 					percentValue = 100.0 * (value/range);
 				}
-				if (percentValue == 100){
-					debugger;
-					var value = this.dataTileView.getRawDataValue(position);
-				}
 				result.push([theTime, percentValue]);
 			}
 			nowMoment = nowMoment.add(intervalSeconds, 's');
