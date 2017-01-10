@@ -124,7 +124,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 			if (app.dataTile === undefined) {
 				app.dataTile = {};
 			}
-			this.dataTileView = app.dataTile[this.get('dataFileUrl')];
+			this.dataTileView = app.dataTile[this.get('name')];
 			if (this.dataTileView === undefined) {
 				this.loadDataSource();
 			}
@@ -336,9 +336,9 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	var keys = Object.keys(this.dataPlots);
     	for (var i=0; i<keys.length; i++) {
     		var label=keys[i];
-    		var underLabel = label.replace(' ','_');
+    		var underLabel = label.split(' ').join('_');
     		var theColor = this.dataPlots[label].getLineColor();
-    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 120px;"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
+    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 180px;"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
     		$("#plotLegend").append(content);
     	}
     },
@@ -561,7 +561,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     },
     updateDataValue(label, value){
     	// show the value from the plot below the plot.
-    	var labelValue = ('#' + label + '_value').replace(' ','_');
+    	var labelValue = ('#' + label + '_value');
+    	var labelValue = labelValue.split(' ').join('_');
     	if (value != null && value != undefined){
 			value = value.toFixed(2);
 			$(labelValue).text(value);
