@@ -144,17 +144,28 @@ var PlotDataTileModel = PlotDataModel.extend({
 		while (nowMoment.isBefore(endMoment)){
 			var theTime = nowMoment.toDate().getTime();
 			var position = coordinates[theTime];
-			var value = this.dataTileView.getRawDataValue(position);
-			rawResult.push([theTime, value]);
-			// convert to percentage
-			var percentValue = null;
-			if (value != null) {
-				percentValue = 100.0 * (value/range);
+			var badPosition = false;
+			if (position == null || position == undefined || position.length < 2){
+				badPosition = true;
 			}
-			result.push([theTime, percentValue]);
+			if (!badPosition){
+				var value = this.dataTileView.getRawDataValue(position);
+				rawResult.push([theTime, value]);
+				// convert to percentage
+				var percentValue = null;
+				if (value != null) {
+					percentValue = 100.0 * (value/range);
+				}
+				if (percentValue == 100){
+					debugger;
+					var value = this.dataTileView.getRawDataValue(position);
+				}
+				result.push([theTime, percentValue]);
+			}
 			nowMoment = nowMoment.add(intervalSeconds, 's');
 		}
-		return result;
+		return { 'percentValues': result,
+				 'rawValues': rawResult};
 	}
 })
 
@@ -164,6 +175,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	plotLabels : {},
 	dataPlots: {},
 	plotDataCache: {},
+	rawDataCache: {},
 	intervalSeconds: 5,
 	needsCoordinates: false,
 	plotOptions: { 
@@ -361,7 +373,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
     				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
     			} else {
-    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:#FF4500;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
+    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:black;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
     				el.appendTo(plotDiv);
     				context.plotLabels[pathElement.attributes.uuid] = el;
     			}
@@ -451,12 +463,18 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	}
     	$.each( this.dataPlots, function(key,plotModel){
     		if (eventType == plotModel.get('update') || !(key in context.plotDataCache)) {
+    			//TODO the below function should really update the cache itself.
     			var dataValues = plotModel.getDataValues(startMoment, 
     												 	endMoment,
     												 	context.intervalSeconds,
     												 	coordinates);
     			if (!_.isEmpty(dataValues)) {
-    				context.plotDataCache[key] = dataValues;
+    				try {
+    					context.plotDataCache[key] = dataValues.percentValues;
+    					context.rawDataCache[key] = dataValues.rawValues;
+    				}catch (err) {
+    					context.plotDataCache[key] = dataValues;
+    				}
     			}
     		}
     	});
@@ -499,8 +517,13 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     											 this.intervalSeconds,
     											 coordinates);
     	if (!_.isEmpty(dataValues)) {
-    		this.plotDataCache[key] = dataValues;
-    	}
+			try {
+				this.plotDataCache[key] = dataValues.percentValues;
+				this.rawDataCache[key] = dataValues.rawValues;
+			} catch (err) {
+				this.plotDataCache[key] = dataValues;
+			}
+		}
     	this.render();
     },
     updatePlots: function(eventType) {
@@ -524,11 +547,12 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 				this.plot.highlight(i, index);
 				
 				if (dataAtIndex != undefined) {
+					var rawDataCache = this.rawDataCache[label];
 					if (time == null){
 						time = dataAtIndex[0];
-						value = dataAtIndex[1];
+						value = rawDataCache[index][1];
 					} else if (time == dataAtIndex[0]) {
-						value = dataAtIndex[1];
+						value = rawDataCache[index][1];
 					}
 				}
 				
