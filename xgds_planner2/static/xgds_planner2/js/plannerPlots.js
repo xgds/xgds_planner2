@@ -273,10 +273,9 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 				// todo clear
 			}
         });
-		app.currentPlan.get('sequence').on('remove', function(model){
-																	  this.removeStationLabel(model);
-																	  this.render()
-																	 }, this);
+		this.listenTo(app.vent, 'station:remove',  function(model){ this.removeStationLabel(model);
+														 this.render()
+														}, this);
 		
 		playback.addListener(playback.plot);
 	},
@@ -451,27 +450,21 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	}
     	return [stationData];
     },
-    cachePlotData: function(startMoment, endMoment, eventType){
-    	var context = this;
+    cacheAllPlotData: function(eventType){
+    	var startEnd = this.getStartEndMoments(true);
+    	if (startEnd === undefined){
+    		return;
+    	}
+
     	var coordinates = undefined;
     	if (this.needsCoordinates){
-    		coordinates = this.getCoordinates(startMoment, endMoment);
+    		coordinates = this.getCoordinates(startEnd.start, startEnd.end);
     	}
-    	$.each( this.dataPlots, function(key,plotModel){
+    	var context = this;
+
+    	$.each( this.dataPlots, function(key, plotModel){
     		if (eventType == plotModel.get('update') || !(key in context.plotDataCache)) {
-    			//TODO the below function should really update the cache itself.
-    			var dataValues = plotModel.getDataValues(startMoment, 
-    												 	endMoment,
-    												 	context.intervalSeconds,
-    												 	coordinates);
-    			if (!_.isEmpty(dataValues)) {
-    				try {
-    					context.plotDataCache[key] = dataValues.percentValues;
-    					context.rawDataCache[key] = dataValues.rawValues;
-    				}catch (err) {
-    					context.plotDataCache[key] = dataValues;
-    				}
-    			}
+    			context.updatePlot(key, coordinates, plotModel);
     		}
     	});
     },
@@ -498,14 +491,17 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		}
 		return plotData;
     },
-    updatePlot: function(key) {
-    	var plotModel = this.dataPlots[key];
+    updatePlot: function(key, coordinates, plotModel) {
     	var startEnd = this.getStartEndMoments(false);
     	if (startEnd === undefined){
     		return;
     	}
-    	var coordinates = undefined;
-    	if (this.needsCoordinates){
+
+    	if (plotModel === undefined) {
+    		plotModel = this.dataPlots[key];
+    	}
+    	
+    	if (this.needsCoordinates && coordinates === undefined){
     		coordinates = this.getCoordinates(startEnd.start, startEnd.end);
     	}
     	var dataValues = plotModel.getDataValues(startEnd.start, 
@@ -523,11 +519,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	this.render();
     },
     updatePlots: function(eventType) {
-    	var startEnd = this.getStartEndMoments(true);
-    	if (startEnd === undefined){
-    		return;
-    	}
-    	this.cachePlotData(startEnd.start, startEnd.end, eventType);
+    	this.cacheAllPlotData( eventType);
     	this.render();
     },
     selectData: function(index) {
