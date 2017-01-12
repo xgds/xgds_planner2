@@ -27,7 +27,16 @@ $.extend(planPlots, {
     	var stationMarkings = [];
     	var lastSelectedIndex = -1;
     	if (planPlots.lastSelectedStation !== undefined){
-    		lastSelectedIndex = planPlots.lastSelectedStation.collection.indexOf(planPlots.lastSelectedStation)/2;
+    		try {
+    			lastSelectedIndex = planPlots.lastSelectedStation.collection.indexOf(planPlots.lastSelectedStation)/2;
+    		} catch (err){
+    			planPlots.lastSelectedStation = app.getPathElementByUuid(planPlots.lastSelectedStation.get('uuid'));
+    			if (planPlots.lastSelectedStation == null){
+    				planPlots.lastSelectedStation = undefined;
+    			} else {
+        			lastSelectedIndex = planPlots.lastSelectedStation.collection.indexOf(planPlots.lastSelectedStation)/2;
+    			}
+    		}
     	}
     	
     	for (var i=0; i<startEndTimes.length; i++){
