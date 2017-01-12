@@ -163,7 +163,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 		return { 'percentValues': result,
 				 'rawValues': rawResult};
 	}
-})
+});
 
 app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	el: '#plot-container',
@@ -174,6 +174,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	rawDataCache: {},
 	intervalSeconds: 5,
 	needsCoordinates: false,
+	defaultStationColor: '#FFA500',
+	selectedStationColor: '#FF4000',
 	plotOptions: { 
         series: {
 			lines: { show: true },
@@ -250,36 +252,68 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 			  	reserveSpace: false
 				 };
     },
-	initialize: function() {
-		var context = this;
-		this.constructPlotDataModels();
-		this.needsCoordinates = this.calculateNeedsCoordinates();
-		this.lastDataIndex = -1;
-		this.lastDataIndexTime = -1;
-		this.plotOptions['grid']['markings'] = function() { return context.getStationMarkings()};
-		this.plotOptions['xaxis'] = context.getXAxisOptions(); 
-		this.plotColors = this.getPlotColors();
-		this.plotOptions['colors'] = context.plotColors;
-		this.getStartEndMoments(true);
-		this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
-		this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
-		this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
-		this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
-		this.listenTo(app.vent, 'updatePlotTime', function(currentTime) {
-			var index = context.getPlotIndex(currentTime);
-			if (index > -1){
-				context.selectData(index);
-			} else {
-				// todo clear
-			}
-        });
-		this.listenTo(app.vent, 'station:remove',  function(model){ this.removeStationLabel(model);
-														 this.render()
-														}, this);
-		
-		playback.addListener(playback.plot);
-	},
+    initialize: function() {
+    	var context = this;
+    	this.constructPlotDataModels();
+    	this.needsCoordinates = this.calculateNeedsCoordinates();
+    	this.lastDataIndex = -1;
+    	this.lastDataIndexTime = -1;
+    	this.plotOptions['grid']['markings'] = function() {
+    		if (app.currentPlan._simInfo === undefined){
+        		app.simulatePlan();
+        		context.getStartEndMoments(true);
+        	}
+    		return planPlots.getStationMarkings(context.startEndTimes);
+    	};
+    	this.plotOptions['xaxis'] = context.getXAxisOptions(); 
+    	this.plotColors = this.getPlotColors();
+    	this.plotOptions['colors'] = context.plotColors;
+    	this.getStartEndMoments(true);
+    	this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
+    	this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
+    	this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
+    	this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
+    	this.listenTo(app.vent, 'updatePlotTime', function(currentTime) {
+    		var index = context.getPlotIndex(currentTime);
+    		if (index > -1){
+    			context.selectData(index);
+    		} else {
+    			// todo clear
+    		}
+    	});
+    	this.listenTo(app.vent, 'station:remove',  function(model){ this.removeStationLabel(model);
+    		this.render()
+    	}, this);
+    	this.listenTo(app.vent, 'itemSelected:station', function(selected) {
+    		this.selectStation(selected);
+        }, this);
+        this.listenTo(app.vent, 'itemSelected:segment', function(selected) {
+        	this.selectSegment(selected);
+        }, this);
+//    	this.listenTo(app.vent, 'showItem:station', function(station) {this.selectStation(station);}, this);
+//    	this.listenTo(app.vent, 'showItem:segment', function(segment) {this.selectSegment(segment);}, this);
+    	this.listenTo(app.vent, 'showItem:command', function(command) {this.selectCommand(command);}, this);
+    	this.listenTo(app.vent, 'showNothing', this.selectNothing, this);
+    	this.listenTo(app.vent, 'clearSelectedStation', this.selectNothing, this);
+
+    	playback.addListener(playback.plot);
+    },
 	
+    selectNothing: function() {
+    	planPlots.lastSelectedStation = undefined;
+    	this.plot.setupGrid();
+    	this.plot.draw();
+    },
+    selectStation: function(station){
+    	planPlots.lastSelectedStation = station;
+    	this.plot.setupGrid();
+    	this.plot.draw();
+
+    },
+    selectSegment: function(segment){
+    	// right now we do nothing
+    	this.selectNothing();
+    },
 	getPlotIndex: function(currentTime){
 		var timedeltaMS = Math.abs(this.lastDataIndexTime - currentTime);
 		if (timedeltaMS/1000 >= this.intervalSeconds){
@@ -318,19 +352,6 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		return this.lastDataIndex;
 	},
 	
-    getStationMarkings: function() {
-    	if (app.currentPlan._simInfo === undefined){
-    		app.simulatePlan();
-    		this.getStartEndMoments(true);
-    	}
-    	var result = [];
-    	for (var i=0; i<this.startEndTimes.length; i++){
-    		result.push({xaxis: {from:this.startEndTimes[i].start.toDate().getTime(),
-    							 to: this.startEndTimes[i].end.toDate().getTime()},
-    							 color:'#FFA500'});
-    	}
-    	return result;
-    },
     drawLegendLabels: function() {
     	var keys = Object.keys(this.dataPlots);
     	for (var i=0; i<keys.length; i++) {
