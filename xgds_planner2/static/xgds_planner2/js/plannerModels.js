@@ -482,7 +482,7 @@ app.models = app.models || {};
             }
             app.Actions.enable();
             app.Actions.action();
-            app.vent.trigger('station:change');
+            app.vent.trigger('station:change', stationModel);
             return segment;
         },
 
@@ -497,7 +497,7 @@ app.models = app.models || {};
             var seq = this.plan.get('sequence');
             var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
-            app.vent.trigger('station:change');
+            app.vent.trigger('station:change', stationModel);
             segmentAfter.trigger('alter:stations'); 
             return segmentBefore;
 

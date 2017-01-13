@@ -16,9 +16,9 @@
 
 
 UPDATE_ON = {
-		UpdatePlanDuration: 0,
+		UpdatePlanDuration: 2,
 		ModifyEnd: 1,
-		Save: 2
+		Save: 0
 }
 
 BLANKS = '';
@@ -104,8 +104,8 @@ var PlotDataTileModel = PlotDataModel.extend({
 	},
 	initialize: function(startMoment, endMoment) {
 		this.initializeDataTileView();
-		app.vent.on('dataTileLoaded', function(url){
-			if (url == this.get('dataFileUrl')){
+		app.vent.on('dataTileLoaded', function(uuid){
+			if (uuid == this.get('dataSourceUuid')){
 				app.vent.trigger('drawPlot',this.get('name'));
 			}
 		}, this);
@@ -140,9 +140,10 @@ var PlotDataTileModel = PlotDataModel.extend({
 			return result;
 		}
 		var range = this.get('maxValue') - this.get('minValue');
-		var nowMoment = startMoment.clone();
-		while (nowMoment.isBefore(endMoment)){
-			var theTime = nowMoment.toDate().getTime();
+		
+		var times = Object.keys(coordinates);
+		for (var i=0; i<times.length; i++){
+			var theTime = times[i];
 			var position = coordinates[theTime];
 			var badPosition = false;
 			if (position == null || position == undefined || position.length < 2){
@@ -158,7 +159,10 @@ var PlotDataTileModel = PlotDataModel.extend({
 				}
 				result.push([theTime, percentValue]);
 			}
-			nowMoment = nowMoment.add(intervalSeconds, 's');
+		}
+
+		if (_.isEmpty(result)){
+			return [];
 		}
 		return { 'percentValues': result,
 				 'rawValues': rawResult};
@@ -167,6 +171,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 
 app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	el: '#plot-container',
+	rendering: false,
 	template: false,
 	plotLabels : {},
 	dataPlots: {},
@@ -212,10 +217,20 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
             ticks: 0 // this line removes the y ticks
         }
     },
+    updatePlotDuration: function() {
+    	var newOptions = this.getXAxisOptions();
+    	if (newOptions != null){
+    		Object.assign(this.plotOptions['xaxis'], newOptions);
+    		this.cacheAllPlotData(UPDATE_ON.UpdatePlanDuration);
+    		this.render();
+    		return true;
+    	}
+    	return false;
+    },
     getTickSize: function(durationSeconds) {
     	if (durationSeconds > 12){
     		var twelfth = moment.duration(durationSeconds/12, 'seconds');
-    		this.intervalSeconds = twelfth.asSeconds()/40;
+    		this.intervalSeconds = Math.round(twelfth.asSeconds()/40);
     		var m_12 = twelfth.minutes();
     		var h_12 = twelfth.hours();
     		var d_12 = twelfth.days();
@@ -233,24 +248,39 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			return [m_12, 'minute'];
     		}
     	}
-    	return [1, 'minute'];
+    	return null; // auto scale
     },
     getXAxisOptions: function() {
     	var durationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
+    	if (this.lastDurationSeconds != undefined){
+    		if (this.lastDurationSeconds == durationSeconds){
+    			return null;
+    		}
+    		var delta = moment.duration(durationSeconds/12, 'seconds');
+    		if (Math.abs(durationSeconds - this.lastDurationSeconds) < delta.asSeconds()){
+    			return null;
+    		}
+    	}
+		this.lastDurationSeconds = durationSeconds;
     	var mduration = moment.duration(durationSeconds, 'seconds');
     	var tickSize = this.getTickSize(durationSeconds);
     	var timeformat = '%H:%M';
-    	if (tickSize[1] == 'day'){
+    	if (tickSize == null){
+    		timeformat = '%m/%d %H:%M';
+    	} else if (tickSize[1] == 'day'){
     		timeformat = '%m/%d';
     	} else if (mduration.hours() > 12){
     		timeformat = '%m/%d %H:%M';
     	}
-    	return { mode: 'time',
-			  	tickSize: tickSize,
-			  	timeformat: timeformat,
-			  	timezone: app.getTimeZone(),
-			  	reserveSpace: false
-				 };
+    	result =  { mode: 'time',
+			  		timeformat: timeformat,
+			  		timezone: app.getTimeZone(),
+			  		reserveSpace: false
+				   };
+    	if (tickSize != null){
+    		result['tickSize'] = tickSize;
+    	}
+    	return result;
     },
     initialize: function() {
     	var context = this;
@@ -271,6 +301,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	this.getStartEndMoments(true);
     	this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
     	this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
+    	this.listenTo(app.vent, 'station:change', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
     	this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
     	this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot
     	this.listenTo(app.vent, 'updatePlotTime', function(currentTime) {
@@ -301,14 +332,17 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 	
     selectNothing: function() {
     	planPlots.lastSelectedStation = undefined;
-    	this.plot.setupGrid();
-    	this.plot.draw();
+    	if (this.plot !== undefined){
+    		this.plot.setupGrid();
+    		this.plot.draw();
+    	}
     },
     selectStation: function(station){
     	planPlots.lastSelectedStation = station;
-    	this.plot.setupGrid();
-    	this.plot.draw();
-
+    	if (this.plot !== undefined){
+    		this.plot.setupGrid();
+    		this.plot.draw();
+    	}
     },
     selectSegment: function(segment){
     	// right now we do nothing
@@ -450,7 +484,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	var result = {};
     	var nowMoment = startMoment.clone();
     	var index = 0;
-    	playback.vehicleDriver.initialize();
+    	playback.vehicleDriver.analyze();
     	while (nowMoment.isBefore(endMoment)){
     		var position = playback.vehicleDriver.lookupTransform(nowMoment, {indexVariable: index});
     		if (position !== null){
@@ -465,8 +499,12 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	// just use the station data
     	var stationData = [];
     	for (var i=0; i<this.startEndTimes.length; i++){
-    		stationData.push([this.startEndTimes[i].start.toDate().getTime(), 0]);
-    		stationData.push([this.startEndTimes[i].end.toDate().getTime(), 0]);
+    		var stationStartTime = this.startEndTimes[i].start.toDate().getTime();
+    		stationData.push([stationStartTime, 0]);
+    		var stationEndTime = this.startEndTimes[i].end.toDate().getTime();
+    		if (stationStartTime != stationEndTime){
+    			stationData.push([stationEndTime, 0]);
+    		}
     		stationData.push(null);
     	}
     	return [stationData];
@@ -536,41 +574,48 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 			} catch (err) {
 				this.plotDataCache[key] = dataValues;
 			}
+	    	this.render();
 		}
-    	this.render();
     },
     updatePlots: function(eventType) {
-    	this.cacheAllPlotData( eventType);
-    	this.render();
+    	var updated = false;
+    	if (eventType == UPDATE_ON.UpdatePlanDuration){
+    		updated = this.updatePlotDuration();
+    	} 
+    	if (!updated){
+    		this.cacheAllPlotData( eventType);
+    		this.render();
+    	}
     },
     selectData: function(index) {
-    	this.plot.unhighlight();
-		var plotData = this.plot.getData();
-		var time = null;
-		var value = null;
-		var label = undefined;
-		for (var i=0; i<plotData.length; i++){
-			label = plotData[i].label;
-			if (label !== undefined){
-				var dataAtIndex = plotData[i].data[index];
-				this.plot.highlight(i, index);
-				
-				if (dataAtIndex != undefined) {
-					var rawDataCache = this.rawDataCache[label];
-					if (time == null){
-						time = dataAtIndex[0];
-						value = rawDataCache[index][1];
-					} else if (time == dataAtIndex[0]) {
-						value = rawDataCache[index][1];
+    	if (this.plot != undefined){
+	    	this.plot.unhighlight();
+			var plotData = this.plot.getData();
+			var time = null;
+			var value = null;
+			var label = undefined;
+			for (var i=0; i<plotData.length; i++){
+				label = plotData[i].label;
+				if (label !== undefined){
+					var dataAtIndex = plotData[i].data[index];
+					this.plot.highlight(i, index);
+					
+					if (dataAtIndex != undefined) {
+						var rawDataCache = this.rawDataCache[label];
+						if (time == null){
+							time = dataAtIndex[0];
+							value = rawDataCache[index][1];
+						} else if (time == dataAtIndex[0]) {
+							value = rawDataCache[index][1];
+						}
 					}
+					
+					this.updateDataValue(label, value);
 				}
-				
-				//TODO trigger event to draw it below plot
-				this.updateDataValue(label, value);
+				label = undefined;
 			}
-			label = undefined;
-		}
-		this.updateTimeValue(time);
+			this.updateTimeValue(time);
+    	}
     },
     updateDataValue(label, value){
     	// show the value from the plot below the plot.
@@ -588,9 +633,13 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	//TODO update the time for the slider maybe
     },
 	onRender: function() {
-		
+		if (this.rendering) {
+			return;
+		}
+		this.rendering = true;
 		var startEnd = this.getStartEndMoments(false);
     	if (startEnd === undefined){
+    		this.rendering = false;
     		return;
     	}
 		
@@ -613,11 +662,13 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			context.drawStationLabels();
     		});
     	} else {
+    		Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
     		this.plot.setupGrid();
     		this.plot.setData(this.buildPlotDataArray());
     	    this.plot.draw();
     		this.drawStationLabels();
     	}
+    	this.rendering = false;
 		 
 	}
 });
