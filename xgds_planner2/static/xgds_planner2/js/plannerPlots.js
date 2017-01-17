@@ -261,25 +261,28 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			return null;
     		}
     	}
+    	
+    	result =  { mode: 'time',
+		  			timeformat: DEFAULT_PLOT_TIME_FORMAT,
+		  			timezone: app.getTimeZone(),
+		  			reserveSpace: false
+			   	  };
 		this.lastDurationSeconds = durationSeconds;
     	var mduration = moment.duration(durationSeconds, 'seconds');
     	var tickSize = this.getTickSize(durationSeconds);
-    	var timeformat = '%H:%M';
-    	if (tickSize == null){
-    		timeformat = '%m/%d %H:%M';
-    	} else if (tickSize[1] == 'day'){
-    		timeformat = '%m/%d';
-    	} else if (mduration.hours() > 12){
-    		timeformat = '%m/%d %H:%M';
-    	}
-    	result =  { mode: 'time',
-			  		timeformat: timeformat,
-			  		timezone: app.getTimeZone(),
-			  		reserveSpace: false
-				   };
+    	var timeformat = DEFAULT_PLOT_TIME_FORMAT;
     	if (tickSize != null){
-    		result['tickSize'] = tickSize;
+    		if (tickSize[1] == 'day'){
+    			timeformat = '%m/%d';
+    		} else if (mduration.hours() > 12){
+    			timeformat = '%m/%d %H:%M';
+    		}
+    	} else {
+    		// for now let the plot auto-generate tick size it seems more reliable.
+    		//result['tickSize'] = tickSize;
     	}
+    	result['timeformat'] = timeformat;
+    	
     	return result;
     },
     initialize: function() {
@@ -321,8 +324,6 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'itemSelected:segment', function(selected) {
         	this.selectSegment(selected);
         }, this);
-//    	this.listenTo(app.vent, 'showItem:station', function(station) {this.selectStation(station);}, this);
-//    	this.listenTo(app.vent, 'showItem:segment', function(segment) {this.selectSegment(segment);}, this);
     	this.listenTo(app.vent, 'showItem:command', function(command) {this.selectCommand(command);}, this);
     	this.listenTo(app.vent, 'showNothing', this.selectNothing, this);
     	this.listenTo(app.vent, 'clearSelectedStation', this.selectNothing, this);
@@ -662,7 +663,8 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			context.drawStationLabels();
     		});
     	} else {
-    		Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
+    		this.plot.getOptions().xaxis.timeformat = this.plotOptions.xaxis.timeformat;
+    		//Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
     		this.plot.setupGrid();
     		this.plot.setData(this.buildPlotDataArray());
     	    this.plot.draw();

@@ -152,6 +152,10 @@
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
    	{% include "xgds_map_server/SearchForms.html" with searchForms=searchForms %}
    	
+   	<script type="text/javascript">
+   		DEFAULT_PLOT_TIME_FORMAT = '%H:%M';
+   	</script>
+   	
    	{% block extraScripts %}
    	{% endblock extraScripts %}
 {% endblock scripts %}
