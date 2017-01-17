@@ -76,7 +76,8 @@ var PlotDataModel = Backbone.Model.extend({
 	defaults: {
 		'lineColor':     'blue',
 		'usesPosition':    false,
-	   	'update': UPDATE_ON.UpdatePlanDuration
+	   	'update': UPDATE_ON.UpdatePlanDuration,
+	   	'inverse': false
 	},
 
 	initialize: function(startMoment, endMoment) {
@@ -100,7 +101,8 @@ var PlotDataTileModel = PlotDataModel.extend({
 	defaults: {
 		'lineColor':     'blue',
 		'usesPosition':    true,
-		'update': UPDATE_ON.ModifyEnd
+		'update': UPDATE_ON.ModifyEnd,
+		'inverse': false
 	},
 	initialize: function(startMoment, endMoment) {
 		this.initializeDataTileView();
@@ -156,6 +158,9 @@ var PlotDataTileModel = PlotDataModel.extend({
 				var percentValue = null;
 				if (value != null) {
 					percentValue = 100.0 * (value/range);
+					if (this.get('inverse')) {
+						percentValue = 100.0 - percentValue;
+					}
 				}
 				result.push([theTime, percentValue]);
 			}
