@@ -77,7 +77,8 @@ var PlotDataModel = Backbone.Model.extend({
 		'lineColor':     'blue',
 		'usesPosition':    false,
 	   	'update': UPDATE_ON.UpdatePlanDuration,
-	   	'inverse': false
+	   	'inverse': false,
+	   	'visible': true
 	},
 
 	initialize: function(startMoment, endMoment) {
@@ -102,7 +103,8 @@ var PlotDataTileModel = PlotDataModel.extend({
 		'lineColor':     'blue',
 		'usesPosition':    true,
 		'update': UPDATE_ON.ModifyEnd,
-		'inverse': false
+		'inverse': false,
+		'visible': true
 	},
 	initialize: function(startMoment, endMoment) {
 		this.initializeDataTileView();
@@ -392,14 +394,41 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
 		return this.lastDataIndex;
 	},
 	
+	loadLegendCookie: function(key) {
+		var cookieVisible = Cookies.get(key);
+		var visible = true;
+		if (cookieVisible != undefined){
+			visible = (cookieVisible == 'true');
+		} else {
+			Cookies.set(key, true);
+		}
+		return visible;
+	},
     drawLegendLabels: function() {
+    	var context = this;
     	var keys = Object.keys(this.dataPlots);
     	for (var i=0; i<keys.length; i++) {
     		var label=keys[i];
     		var underLabel = label.split(' ').join('_');
     		var theColor = this.dataPlots[label].getLineColor();
-    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 180px;"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
+    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 180px;"><input type="checkbox" id="' + underLabel + '_checkbox" value="' + label + '">&nbsp;<span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
     		$("#plotLegend").append(content);
+    		var visible = this.loadLegendCookie(label);
+    		$("#" + underLabel + "_checkbox").prop('checked', visible);
+    		this.dataPlots[label].set('visible', visible);
+    		$("#" + underLabel + "_checkbox").change(function() {
+    			var id = $(this).attr('id');
+    			var checked = $(this).is(":checked");
+    			Cookies.set($(this).attr('value'), checked);
+    			context.togglePlot($(this).attr('value'), checked);
+    	    });
+    	}
+    },
+    togglePlot(key, visible){
+    	var dataPlot = this.dataPlots[key];
+    	if (dataPlot.get('visible') != visible){
+    		dataPlot.set('visible', visible);
+    		this.render();
     	}
     },
     removeStationLabel: function(model){
@@ -471,8 +500,10 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     getPlotColors: function(){
     	var result = [];
     	$.each( this.dataPlots, function(key,plotModel){
-    		result.push(plotModel.get('lineColor'));
-    		});
+    		if (plotModel.get('visible')){
+    			result.push(plotModel.get('lineColor'));
+    		}
+    	});
     	return result;
     },
     getStartEndMoments: function(refresh) {
@@ -538,11 +569,13 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     	var context = this;
     	$.each( this.dataPlots, function(key,plotModel){
     		if (key in context.plotDataCache){
-	    		var data = context.plotDataCache[key];
-	    		if (data != undefined && !_.isEmpty(data)){
-	    			result.push({'label': key,
-		 			 		 	'data': data});
-	    		}
+    			if (plotModel.get('visible')){
+		    		var data = context.plotDataCache[key];
+		    		if (data != undefined && !_.isEmpty(data)){
+		    			result.push({'label': key,
+			 			 		 	'data': data});
+		    		}
+    			}
     		}
     	});
     	return result;
@@ -668,7 +701,9 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			context.drawStationLabels();
     		});
     	} else {
-    		this.plot.getOptions().xaxis.timeformat = this.plotOptions.xaxis.timeformat;
+    		var plotOptions = this.plot.getOptions();
+    		plotOptions.xaxis.timeformat = this.plotOptions.xaxis.timeformat;
+    		plotOptions.colors = this.getPlotColors();
     		//Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
     		this.plot.setupGrid();
     		this.plot.setData(this.buildPlotDataArray());
