@@ -331,7 +331,9 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
         this.listenTo(app.vent, 'itemSelected:segment', function(selected) {
         	this.selectSegment(selected);
         }, this);
-    	this.listenTo(app.vent, 'showItem:command', function(command) {this.selectCommand(command);}, this);
+    	this.listenTo(app.vent, 'showItem:command', function(command) {
+    		this.selectCommand(command);
+    	}, this);
     	this.listenTo(app.vent, 'showNothing', this.selectNothing, this);
     	this.listenTo(app.vent, 'clearSelectedStation', this.selectNothing, this);
 
@@ -355,6 +357,14 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     selectSegment: function(segment){
     	// right now we do nothing
     	this.selectNothing();
+    },
+    selectCommand: function(command){
+    	var related = command.getRelation('pathElement').related;
+    	if (related.get('type') == 'Station'){
+    		this.selectStation(related);
+    	} else {
+    		this.selectSegment(related);
+    	}
     },
 	getPlotIndex: function(currentTime){
 		var timedeltaMS = Math.abs(this.lastDataIndexTime - currentTime);
