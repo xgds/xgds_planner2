@@ -157,6 +157,9 @@ app.models = app.models || {};
             if (_.has(param, 'multipleOf')) {
                 schema[param.id]['multipleOf'] = param.multipleOf;
             }
+            if (_.has(param, 'onChange')) {
+            	schema[param.id]['onChange'] = param.onChange;
+            }
             if (_.has(param, 'visible') &&
                     _.isBoolean(param.visible) &&
                     !param.visible) {
@@ -648,6 +651,9 @@ app.models = app.models || {};
             _.extend(this.schema, formsData.schema);
             _.extend(this.data, formsData.data);
             this.on('change', function() { app.vent.trigger('change:plan'); });
+            
+            
+            
             // all attributes in the schema need to be defined, else they won't
             // be in the
             // json and so won't change when undo/redo is hit
@@ -657,6 +663,13 @@ app.models = app.models || {};
                         this.set(attr, this.data[attr]);
                     }
                 }
+                
+                // add any onChange listeners
+                if (_.has(this.schema[attr], 'onChange')) {
+                	var changeFunction = new Function('model', 'value', 'event', this.schema[attr]['onChange']);
+                	this.on('change:' + attr, changeFunction, this);
+                }
+                
             }, this);
             // the model needs an "id" attribute, else a memory leak occurs b/c
             // relational can't find the model (it tries to use the id
