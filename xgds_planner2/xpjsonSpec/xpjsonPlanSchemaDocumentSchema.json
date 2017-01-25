@@ -95,6 +95,9 @@
                     "maximum": {
                         "type": "number"
                     },
+                    "multipleOf": {
+                        "type": "number"
+                    },
                     "default": {
                         "type": "any"
                     },
@@ -218,6 +221,9 @@
                                 "maximum": {
                                     "type": "number"
                                 },
+                                "multipleOf": {
+                      				"type": "number"
+                    			},
                                 "choices": {
                                     "type": "array"
                                 },

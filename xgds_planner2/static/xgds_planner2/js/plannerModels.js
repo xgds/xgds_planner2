@@ -93,7 +93,11 @@ app.models = app.models || {};
 
             if (foundType == 'Number' && (_.has(param, 'minimum') ||
                                           _.has(param, 'maximum'))) {
-                foundType = 'MinMaxNumber';
+            	if (_.has(param, 'multipleOf')) {
+            		foundType = 'MultipleOfNumber';
+            	} else {
+            		foundType = 'MinMaxNumber';
+            	}
             }
 
             if (_.has(param, 'choices') &&
@@ -149,6 +153,9 @@ app.models = app.models || {};
             }
             if (_.has(param, 'strictMaximum')) {
                 schema[param.id]['strictMaximum'] = param.strictMaximum;
+            }
+            if (_.has(param, 'multipleOf')) {
+                schema[param.id]['multipleOf'] = param.multipleOf;
             }
             if (_.has(param, 'visible') &&
                     _.isBoolean(param.visible) &&
