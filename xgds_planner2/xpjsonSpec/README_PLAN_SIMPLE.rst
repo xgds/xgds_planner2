@@ -626,7 +626,7 @@ Inherits from:
 |``valueType``     |string          |required         |The type of value for the parameter.|
 |                  |                |                 |Options include: ``string``         |
 |                  |                |                 |``integer`` ``number`` ``boolean``  |
-|                  |                |                 |``date-time`` ``targetId``,``h:m:s``|
+|                  |                |                 |``date-time`` ``targetId`` ``h:m:s``|
 +------------------+----------------+-----------------+------------------------------------+
 |``unit``          |string          |optional         |Parameter's displayed unit value.   |
 +------------------+----------------+-----------------+------------------------------------+
