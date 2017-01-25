@@ -237,6 +237,13 @@ app.models = app.models || {};
             this.on('change', function() {
                 app.vent.trigger('change:plan');
             });
+            _.each(_.keys(this.schema), function(attr) {
+                // add any onChange listeners
+                if (_.has(this.schema[attr], 'onChange')) {
+                	var changeFunction = new Function('model', 'value', 'event', this.schema[attr]['onChange']);
+                	this.on('change:' + attr, changeFunction, this);
+                }
+            }, this);
         },
 
         toJSON: toJsonWithFilters
@@ -311,6 +318,14 @@ app.models = app.models || {};
             // furthermore, this id needs to be the same as cid. Oh
             // relational...
             this.set(this.idAttribute, this.cid);
+            
+            _.each(_.keys(this.schema), function(attr) {
+                // add any onChange listeners
+                if (_.has(this.schema[attr], 'onChange')) {
+                	var changeFunction = new Function('model', 'value', 'event', this.schema[attr]['onChange']);
+                	this.on('change:' + attr, changeFunction, this);
+                }
+            }, this);
         },
 
         toString: function() {

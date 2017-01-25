@@ -609,6 +609,97 @@ Example
     ]
   }
 
+.. _ParamSpec:
+
+ParamSpec Class
+~~~~~~~~~~~~~~~
+
+A ParamSpec (or parameter specification) describes a parameter that can be included in a Plan_, PathElement_, or Command_.
+This includes definitions of options used to describe, render and verify the parameter.
+
+Inherits from:
+  TypedObject
+
++------------------+----------------+-----------------+------------------------------------+
+|Member            |Type            |Values           |Meaning                             |
++==================+================+=================+====================================+
+|``valueType``     |string          |required         |The type of value for the parameter.|
+|                  |                |                 |Options include: ``string``         |
+|                  |                |                 |``integer`` ``number`` ``boolean``  |
+|                  |                |                 |``date-time`` ``targetId``,``h:m:s``|
++------------------+----------------+-----------------+------------------------------------+
+|``unit``          |string          |optional         |Parameter's displayed unit value.   |
++------------------+----------------+-----------------+------------------------------------+
+|``default``       |valid json      |optional         |Default parameter value.            |
++------------------+----------------+-----------------+------------------------------------+
+|``choices``       |array of name,  |optional         |For an enumerated parameter with a  |
+|                  |value arrays    |                 |select dropdown, provide choices.   |
++------------------+----------------+-----------------+------------------------------------+
+|``widget``        |string          |optional         |The type of widget to create for    |
+|                  |                |                 |parameter editing. Options include: |
+|                  |                |                 |``text`` ``number`` ``checkbox``    |
+|                  |                |                 |``datetime`` ``select`` ``textarea``|
+|                  |                |                 |``h:m:s``                           |
+|                  |                |                 |might include ids from the site, the|
+|                  |                |                 |plan, and the station that it is    |
+|                  |                |                 |part of. Note that, depending on the|
+|                  |                |                 |naming convention, the id of an     |
+|                  |                |                 |object might automatically change if|
+|                  |                |                 |the sequence that contains it is    |
+|                  |                |                 |reordered.                          |
+|                  |                |                 |                                    |
+|                  |                |                 |For PlanSchema_ and PlanLibrary_    |
+|                  |                |                 |documents, we suggest using the     |
+|                  |                |                 |canonical URL of the document as the|
+|                  |                |                 |``id``.                             |
++------------------+----------------+-----------------+------------------------------------+
+|``visible``       |boolean         |optional         |To have a hidden parameter, set the |
+|                  |                |                 |visible value to false.             |
++------------------+----------------+-----------------+------------------------------------+
+|``minimum``       |number          |optional         |The minimum valid parameter value.  |
++------------------+----------------+-----------------+------------------------------------+
+|``maximum``       |number          |optional         |The maximum valid parameter value.  |
++------------------+----------------+-----------------+------------------------------------+
+|``multipleOf``    |number          |optional         |A number that the parameter must be |
+|                  |                |                 |an exact multiple of.  Also requires|
+|                  |                |                 |minimum or maximum.                 |
++------------------+----------------+-----------------+------------------------------------+
+|``onChange``      |string          |optional         |A string containing a javascript    |
+|                  |                |                 |function which will be invoked when |
+|                  |                |                 |the parameter changes.  Function    |
+|                  |                |                 |arguments are model, value, event.  |
++------------------+----------------+-----------------+------------------------------------+
+
+Example
+-------
+
+::
+
+   {
+	    "type": "ParamSpec",
+	    "id": "defaultSpeed",
+	    "valueType": "number",
+        "unit": "meters/sec",
+	    "notes": "The default speed for traverses",
+	    "required": false,
+	    "name": "Default Speed",
+	    "default": 0.025,
+	    "widget":"number"
+	},
+	{
+        "type": "ParamSpec",
+        "id": "whiteBalance",
+        "choices": [["Auto", "Auto"],
+                    ["Daylight", "Daylight"],
+                    ["Cloudy", "Cloudy"],
+                    ["Tungsten", "Tungsten"],
+                    ["Fluorescent", "Fluorescent"]],
+        "valueType": "string",
+        "notes": "Camera white balance setting.  Normally use 'Auto' when taking single frames."
+     }
+	
+
+
 .. _Platform:
 
 Platform Class
