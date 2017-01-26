@@ -143,7 +143,8 @@ var PlotDataTileModel = PlotDataModel.extend({
 		if (!loaded){
 			return result;
 		}
-		var range = this.get('maxValue') - this.get('minValue');
+		var max = this.get('maxValue');
+		var min = this.get('minValue');
 		
 		var times = Object.keys(coordinates);
 		for (var i=0; i<times.length; i++){
@@ -159,7 +160,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 				// convert to percentage
 				var percentValue = null;
 				if (value != null) {
-					percentValue = 100.0 * (value/range);
+					percentValue = 100.0 * ((value - min) / (max - min));
 					if (this.get('inverse')) {
 						percentValue = 100.0 - percentValue;
 					}
@@ -222,6 +223,9 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
         yaxis: {
             max: 100, // set a manual maximum to allow for labels
             ticks: 0 // this line removes the y ticks
+        },
+        legend: {
+        	show: false
         }
     },
     updatePlotDuration: function() {
