@@ -1274,6 +1274,15 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
         _.each(presets, function(command) {
             if (_.has(command, 'duration')) {
                 command.timing = app.util.secondsToHMS(command.duration);
+            } else {
+            	var paramSpec = app.commandSpecs[command.type];
+            	paramSpec.params.every(function(param){
+            		if (param.id == 'duration' && _.has(param, 'default')){
+            			command.timing = app.util.secondsToHMS(param.default);
+            			return false;
+            		}
+            		return true;
+            	});
             }
         });
         return presets;
