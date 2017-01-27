@@ -685,6 +685,11 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     updateTimeValue(newTime){
     	//TODO update the time for the slider maybe
     },
+    handleResize: function(event) {
+    	if (this.plot != undefined) {
+    		this.drawStationLabels();
+    	}
+    },
 	onRender: function() {
 		if (this.rendering) {
 			return;
@@ -711,9 +716,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			});
     		this.drawStationLabels();
     		this.drawLegendLabels();
-    		$('#plot-container').resize(function() {
-    			context.drawStationLabels();
-    		});
+    		$('#plot-container').resize(function(event) {context.handleResize();});
     	} else {
     		var plotOptions = this.plot.getOptions();
     		plotOptions.xaxis.timeformat = this.plotOptions.xaxis.timeformat;

@@ -28,7 +28,7 @@ $(function() {
             },
 
             handleResize: function() {
-                app.views.OLMapView.prototype.handleResize.call(this);
+//                app.views.OLMapView.prototype.handleResize.call(this);
 //                if (!_.isUndefined(app.State.tabsContainer)){
 //                    app.State.tabsContainer.width(app.State.pageInnerWidth -
 //                                                  app.map.$el.outerWidth() -
