@@ -289,8 +289,7 @@ app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
     			timeformat = '%m/%d %H:%M';
     		}
     	} else {
-    		// for now let the plot auto-generate tick size it seems more reliable.
-    		//result['tickSize'] = tickSize;
+    		result['tickSize'] = tickSize;
     	}
     	result['timeformat'] = timeformat;
     	
