@@ -187,7 +187,26 @@ app.models = app.models || {};
             if (_.isNull(obj[key]) || _.contains(models.paramBlackList, key) ||
                (_.isString(obj[key]) && _.isEmpty(obj[key]))) {
                 delete obj[key];
-            }
+            } else {
+            	// make sure we have the right type.
+//            	try {
+//            		var paramSpec = null;
+//	            	if (obj.type == 'Station'){
+//	            		paramSpec = app.stationParamSpecs[key];
+//	            	} else if (obj.type == 'Segment'){
+//	            		paramSpec = app.segmentParamSpecs[key];
+//	            	} else if (obj.type == 'Plan'){
+//	            		paramSpec = app.planParamSpecs[key];
+//	            	}
+//	            	if (paramSpec != null){
+//	            		if (paramSpec.valueType == "number"){
+//	            			obj[key] = Number(obj[key]);
+//	            		}
+//	            	}
+//            	} catch (err){
+//            		//skip
+//            	}
+            } 
         });
         return obj;
     };

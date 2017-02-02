@@ -249,6 +249,10 @@ var app = (function($, _, Backbone) {
             	this.planNamedURLs = [];
             } 
 
+            this.stationParamSpecs = this.util.indexBy(this.planSchema.stationParams, 'id');
+            this.segmentParamSpecs = this.util.indexBy(this.planSchema.segmentParams, 'id');
+            this.planParamSpecs = this.util.indexBy(this.planSchema.planParams, 'id');
+            
             // Indexes to make command types easier to retrieve.
             this.commandSpecs = this.util.indexBy(this.planSchema.commandSpecs, 'id');
             
