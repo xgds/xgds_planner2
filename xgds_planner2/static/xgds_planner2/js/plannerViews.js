@@ -33,7 +33,7 @@ Handlebars.registerHelper('formatDistance', function(distance){
 	return sprintf('%0.2f m', distance);
 });
 
-app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
+app.views.ToolbarView = Backbone.Marionette.View.extend({
     template: '#template-toolbar',
     events: {
         'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); this.updateTip('clear');},
@@ -264,7 +264,7 @@ app.views.ToolbarView = Backbone.Marionette.ItemView.extend({
 
 });
 
-app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
+app.views.PlanMetaView = Backbone.Marionette.View.extend({
     // Responsible for rendering the 'Meta' tab
     template: '#template-meta-tab',
     serializeData: function() {
@@ -290,7 +290,7 @@ app.views.PlanMetaView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.PlanSequenceHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.PlanSequenceHeaderView = Backbone.Marionette.View.extend({
     template: '#template-plan-sequence-header',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -304,7 +304,7 @@ app.views.PlanSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.StationSequenceHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.StationSequenceHeaderView = Backbone.Marionette.View.extend({
     template: '#template-station-sequence-header',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -319,7 +319,7 @@ app.views.StationSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.SegmentSequenceHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.SegmentSequenceHeaderView = Backbone.Marionette.View.extend({
     template: '#template-segment-sequence-header',
     serializeData: function() {
         var data = this.model.toJSON();
@@ -334,7 +334,7 @@ app.views.SegmentSequenceHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.StationPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.StationPropertiesHeaderView = Backbone.Marionette.View.extend({
     template: '#template-station-properties-header',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -344,7 +344,7 @@ app.views.StationPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.SegmentPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.SegmentPropertiesHeaderView = Backbone.Marionette.View.extend({
     template: '#template-segment-properties-header',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -354,7 +354,7 @@ app.views.SegmentPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.CommandPropertiesHeaderView = Backbone.Marionette.View.extend({
     template: '#template-command-properties-header',
     serializeData: function() {
         var data = this.model.toJSON();
@@ -369,7 +369,7 @@ app.views.CommandPropertiesHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
+app.views.CommandPresetsHeaderView = Backbone.Marionette.View.extend({
     template: '#template-command-presets-header',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -380,7 +380,7 @@ app.views.CommandPresetsHeaderView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
+app.views.PlanSequenceView = Backbone.Marionette.View.extend({
     template: '#template-sequence-view',
     regions: {
         //Column Headings
@@ -429,15 +429,15 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     
     clearColumns: function() {
     	// Clears 2nd and 3rd columns
-        this.col2.reset();
-        this.col3.reset();
+        this.getRegion('col2').reset();
+        this.getRegion('col3').reset();
     },
     
     rerender: function() {
-        this.colhead1.reset();
-        this.col1.reset();
-        this.colhead1.show(new app.views.PlanSequenceHeaderView());
-        this.col1.show(new app.views.StationSequenceCollectionView({
+        this.getRegion('colhead1').reset();
+        this.getRegion('col1').reset();
+        this.getRegion('colhead1').show(new app.views.PlanSequenceHeaderView());
+        this.getRegion('col1').show(new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence')
         }));
     },
@@ -445,13 +445,13 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     onRender: function() {
         app.psv = this;
         try {
-            this.colhead1.reset();
-            this.col1.reset();
+            this.getRegion('colhead1').reset();
+            this.getRegion('col1').reset();
             this.clearColumns();
         } catch (err) {
         }
-        this.colhead1.show(new app.views.PlanSequenceHeaderView());
-        this.col1.show(new app.views.StationSequenceCollectionView({
+        this.getRegion('colhead1').show(new app.views.PlanSequenceHeaderView());
+        this.getRegion('col1').show(new app.views.StationSequenceCollectionView({
             collection: app.currentPlan.get('sequence')
         }));
     },
@@ -459,56 +459,56 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     showStation: function(itemModel) {
         // Clear columns
         try {
-            this.col3.reset();
-            this.colhead2.reset();
+            this.getRegion('col3').reset();
+            this.getRegion('colhead2').reset();
         } catch (ex) {
         }
         var headerView = new app.views.StationSequenceHeaderView({
             model: itemModel
         });
-        this.colhead2.show(headerView);
-        this.col2.reset(); 
+        this.getRegion('colhead2').show(headerView);
+        this.getRegion('col2').reset(); 
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('commands')});
-        this.col2.show(view);
+        this.getRegion('col2').show(view);
     },
 
     showSegment: function(itemModel) {
         try {
-            this.col3.reset(); 
-            this.colhead2.reset(); 
+            this.getRegion('col3').reset(); 
+            this.getRegion('colhead2').reset(); 
         } catch (ex) {
         }
         var headerView = new app.views.SegmentSequenceHeaderView({
             model: itemModel
         });
-        this.colhead2.show(headerView);
-        this.col2.reset(); 
+        this.getRegion('colhead2').show(headerView);
+        this.getRegion('col2').reset(); 
 
         var view = new app.views.CommandSequenceCollectionView({model: itemModel, collection: itemModel.get('commands')});
-        this.col2.show(view);
+        this.getRegion('col2').show(view);
 
         this.showMeta(itemModel);
     },
 
     showCommand: function(itemModel) {
         try {
-            this.colhead3.reset();
+            this.getRegion('colhead3').reset();
         } catch (ex) {
         }
         var headerView = new app.views.CommandPropertiesHeaderView({
             model: itemModel
         });
-        this.colhead3.show(headerView);
-        this.col3.reset(); 
+        this.getRegion('colhead3').show(headerView);
+        this.getRegion('col3').reset(); 
         
         var view = new app.views.PropertiesForm({model: itemModel, readonly: app.options.readOnly});
-        this.col3.show(view);
+        this.getRegion('col3').show(view);
     },
 
     showMeta: function(model) {
         try {
-            this.colhead3.reset(); 
+            this.getRegion('colhead3').reset(); 
         } catch (ex) {
             
         }
@@ -519,28 +519,28 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
         } else if (model.get('type') == 'Command') {
             var headerView = new app.views.CommandPropertiesHeaderView();
         }
-        this.colhead3.show(headerView);
-        this.col3.reset();
+        this.getRegion('colhead3').show(headerView);
+        this.getRegion('col3').reset();
         app.State.metaExpanded = true;
         app.State.addCommandsExpanded = false;
         app.State.commandSelected = undefined;
-        this.col3.show(new app.views.PropertiesForm({
+        this.getRegion('col3').show(new app.views.PropertiesForm({
             model: model
         }));
     },
 
     showPresets: function(itemModel) {
         try {
-            this.colhead3.reset(); 
+            this.getRegion('colhead3').reset(); 
         } catch (ex) {
         }
         var headerView = new app.views.CommandPresetsHeaderView();
-        this.colhead3.show(headerView);
-        this.col3.reset(); 
+        this.getRegion('colhead3').show(headerView);
+        this.getRegion('col3').reset(); 
         app.State.metaExpanded = false;
         app.State.addCommandsExpanded = true;
         app.State.commandSelected = undefined;
-        this.col3.show(new app.views.CommandPresetsView({
+        this.getRegion('col3').show(new app.views.CommandPresetsView({
             model: itemModel
         }));
     },
@@ -548,10 +548,10 @@ app.views.PlanSequenceView = Backbone.Marionette.LayoutView.extend({
     showNothing: function() {
         // clear the columns
         try {
-            this.col2.reset(); 
-            this.col3.reset(); 
-            this.colhead2.reset(); 
-            this.colhead3.reset(); 
+            this.getRegion('col2').reset(); 
+            this.getRegion('col3').reset(); 
+            this.getRegion('colhead2').reset(); 
+            this.getRegion('colhead3').reset(); 
         } catch (ex) {
             
         }
@@ -622,7 +622,7 @@ app.views.makeExpandable = function(view, expandClass) {
     view.on('render', view._restoreIcon, view);
 };
 
-app.views.SequenceListItemView = Backbone.Marionette.ItemView.extend({
+app.views.SequenceListItemView = Backbone.Marionette.View.extend({
     // The list item is a simple enough DOM subtree that we'll let the view build its own root element.
     tagName: 'li',
     initialize: function(options) {
@@ -683,7 +683,7 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     }
 });
 
-app.views.NoStationsView = Backbone.Marionette.ItemView.extend({
+app.views.NoStationsView = Backbone.Marionette.View.extend({
     template: '#template-no-stations',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -859,7 +859,7 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
     }
 });
 
-app.views.NoCommandsView = Backbone.Marionette.ItemView.extend({
+app.views.NoCommandsView = Backbone.Marionette.View.extend({
     template: '#template-no-commands',
     initialize: function() {
         this.template = Handlebars.compile($(this.template).html());
@@ -870,7 +870,7 @@ app.views.NoCommandsView = Backbone.Marionette.ItemView.extend({
     }
 });
 
-app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.extend({
+app.views.CommandSequenceCollectionView = Backbone.Marionette.CollectionView.extend({
     template: '#template-sequence-list-station',
     childView: app.views.CommandItemView,
     childViewContainer: '.command-list',
@@ -1188,7 +1188,7 @@ app.views.CommandSequenceCollectionView = Backbone.Marionette.CompositeView.exte
 ** 1) It updates its model immediately in response to field value changes.
 ** 2) It can be made read-only
 */
-app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.prototype).extend({
+app.views.PropertiesForm = Backbone.Marionette.View.extend(Backbone.Form.prototype).extend({
     template: '#template-properties-form',
 
     events: {
@@ -1238,7 +1238,7 @@ app.views.PropertiesForm = Backbone.Marionette.ItemView.extend(Backbone.Form.pro
     }
 });
 
-app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
+app.views.CommandPresetsView = Backbone.Marionette.View.extend({
     template: '#template-command-presets',
 
     serializeData: function() {
@@ -1290,7 +1290,7 @@ app.views.CommandPresetsView = Backbone.Marionette.ItemView.extend({
 });
 
 
-app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
+app.views.TabNavView = Backbone.Marionette.View.extend({
     template: '#template-tabnav',
     serializeData: function() {
         data = new Array();
@@ -1376,17 +1376,17 @@ app.views.TabNavView = Backbone.Marionette.LayoutView.extend({
             model: app.currentPlan
         });
         if (oldTab == 'layers'){
-            this.tabContent.show(view, {preventClose: true});
+            this.getRegion('tabContent').show(view, {preventClose: true});
         } else {
             if (tabId == 'layers'){
                 if (!_.isNull(this.layersView)){
-                    this.tabContent.show(this.layersView);
+                    this.getRegion('tabContent').show(this.layersView);
                 } else {
                     this.layersView = view;
-                    this.tabContent.show(view);
+                    this.getRegion('tabContent').show(view);
                 }
             } else {
-                this.tabContent.show(view);
+                this.getRegion('tabContent').show(view);
             }
         }
         

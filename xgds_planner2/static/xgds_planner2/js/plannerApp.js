@@ -34,12 +34,9 @@ var app = (function($, _, Backbone) {
 
     app.resequencing = false;
     app.dirty = false;
-    app.addRegions({
-        toolbar: '#toolbar',
-        tabs: '#tabs',
-        plot: '#plot-container'
-        	
-    });
+    app.addRegion('toolbar', '#toolbar');
+    app.addRegion('tabs', '#tabs');
+    app.addRegion('plot', '#plot-container');
 
     app.module('State', function(options) {
         this.addInitializer(function(options) {

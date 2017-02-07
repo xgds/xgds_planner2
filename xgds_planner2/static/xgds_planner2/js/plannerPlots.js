@@ -177,7 +177,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 	}
 });
 
-app.views.PlanPlotView = Backbone.Marionette.ItemView.extend({
+app.views.PlanPlotView = Backbone.Marionette.View.extend({
 	el: '#plot-container',
 	rendering: false,
 	template: false,
