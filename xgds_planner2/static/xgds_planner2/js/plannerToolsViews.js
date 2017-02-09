@@ -16,38 +16,23 @@
 
 app.views = app.views || {};
 
-app.views.PlanToolsView = Backbone.View.extend({
+app.views.PlanToolsView = Marionette.View.extend({
     template: '#template-plan-tools',
     events: {
         'click #ok-button': 'okClicked',
         'click #btn-reverse': 'reverseStations',
     },
     initialize: function() {
-        var source = $(this.template).html();
-        if (_.isUndefined(source))
-            this.template = function() {
-                return '';
-            };
-        else {
-            this.template = Handlebars.compile(source);
-        }
         this.listenTo(app.vent, 'clearAppendTool', this.clearAppendTool);
         this.listenTo(app.vent, 'setAppendError', this.setAppendError);
-        _.bindAll(this, 'render', 'afterRender'); 
-        var _this = this; 
-        this.render = _.wrap(this.render, function(render) { 
-            render(); 
-            _this.afterRender(); 
-            return _this; 
-        }); 
     },
-    render: function() {
-        this.$el.html(this.template({
-            planIndex: app.planIndex,
-            moniker: app.options.planMoniker
-        }));
+    serializeData: function() {
+        var data = this.model.toJSON();
+        data.planIndex = app.planIndex;
+        data.moniker = app.options.planMoniker;
+        return data;
     },
-    afterRender: function() {
+    onAttach: function() {
         if (app.options.readOnly) {
             this.disableForReadOnly();
         }

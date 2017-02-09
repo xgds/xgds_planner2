@@ -18,34 +18,29 @@ app.views = app.views || {};
 
 var DEFAULT_FORMAT = 'MM/DD/YYYY HH:mm'
 
-app.views.ScheduleView = Backbone.View.extend({
+app.views.ScheduleView = Marionette.View.extend({
     template: '#template-schedule',
     initialize: function() {
     	Handlebars.registerHelper('flightSelected', function (input, flightName) {
             return input === flightName ? 'selected' : '';
         });
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
-        }
     },
-    render: function() {
-    	$('#schedule_message').empty();
+    serializeData: function() {
+    	var data = this.model.toJSON();
     	var planned_start_time = "";
     	if (app.options.planExecution !== null){
     		moment.tz.setDefault('Etc/UTC');
     		planned_start_time = moment(app.options.planExecution.planned_start_time).tz(app.getTimeZone()).format('MM/DD/YYYY HH:mm');
     	}
-        this.$el.html(this.template({
-        	planned_start_time: planned_start_time,
-            planExecution: app.options.planExecution,
-            planId: app.planJson.serverId,
-            flight_names: app.options.flight_names
-        }));
+    	data.planned_start_time = planned_start_time;
+    	data.planExecution = app.options.planExecution;
+    	data.planId = app.planJson.serverId;
+    	data.flight_names = app.options.flight_name;
+    	return data;
+    },
+    onAttach: function() {
+    	$('#schedule_message').empty();
+    	
         var scheduleDate = this.$el.find("#id_schedule_date");
         scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,

@@ -16,28 +16,20 @@
 
 app.views = app.views || {};
 
-app.views.PlanLinksView = Backbone.View.extend({
+app.views.PlanLinksView = Marionette.View.extend({
     template: '#template-plan-links',
-    initialize: function() {
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
+    onAttach: function() {
+    	var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
+        if (!_.isEmpty(callback)) {
+        	$.executeFunctionByName(callback, window, [this.$el]);
         }
     },
-    render: function() {
-        this.$el.html(this.template({
-            planLinks: app.planLinks,
-            planNamedURLs: app.planNamedURLs,
-            planUuid: app.currentPlan.get('uuid'),
-            planId: app.currentPlan.get('serverId')
-        }));
-        var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
-        if (callback != null) {
-            callback(this.$el);
-        }
+    serializeData: function() {
+        var data = this.model.toJSON();
+        data.planLinks = app.planLinks;
+        data.planNamedURLs =  app.planNamedURLs;
+        data.planUuid =  app.currentPlan.get('uuid');
+        data.planId = app.currentPlan.get('serverId');
+        return data;
     }
 });

@@ -177,8 +177,8 @@ var PlotDataTileModel = PlotDataModel.extend({
 	}
 });
 
-app.views.PlanPlotView = Backbone.Marionette.View.extend({
-	el: '#plot-container',
+app.views.PlanPlotView = Marionette.View.extend({
+//	el: '#plot-container',
 	rendering: false,
 	template: false,
 	plotLabels : {},
@@ -296,10 +296,9 @@ app.views.PlanPlotView = Backbone.Marionette.View.extend({
     	
     	return result;
     },
+    initialized: false,
     initialize: function() {
     	var context = this;
-    	this.constructPlotDataModels();
-    	this.needsCoordinates = this.calculateNeedsCoordinates();
     	this.lastDataIndex = -1;
     	this.lastDataIndexTime = -1;
     	this.plotOptions['grid']['markings'] = function() {
@@ -309,11 +308,8 @@ app.views.PlanPlotView = Backbone.Marionette.View.extend({
         	}
     		return planPlots.getStationMarkings(context.startEndTimes);
     	};
-    	this.plotOptions['xaxis'] = context.getXAxisOptions(); 
     	this.plotColors = this.getPlotColors();
     	this.plotOptions['colors'] = context.plotColors;
-    	this.getStartEndMoments(true);
-    	this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
     	this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
     	this.listenTo(app.vent, 'station:change', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
     	this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
@@ -340,10 +336,19 @@ app.views.PlanPlotView = Backbone.Marionette.View.extend({
     	}, this);
     	this.listenTo(app.vent, 'showNothing', this.selectNothing, this);
     	this.listenTo(app.vent, 'clearSelectedStation', this.selectNothing, this);
-
-    	playback.addListener(playback.plot);
+    	this.listenTo(app.vent, 'onPlanLoaded', this.finishInitialization, this);
     },
-	
+    finishInitialization: function() {
+    	// once we know the plan is loaded we can reference it.
+    	this.constructPlotDataModels();
+    	this.needsCoordinates = this.calculateNeedsCoordinates();
+    	this.plotOptions['xaxis'] = this.getXAxisOptions(); 
+    	this.getStartEndMoments(true);
+    	playback.addListener(playback.plot);
+    	this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
+    	this.initialized = true;
+    	this.render();
+    },
     selectNothing: function() {
     	planPlots.lastSelectedStation = undefined;
     	if (this.plot !== undefined){
@@ -691,7 +696,7 @@ app.views.PlanPlotView = Backbone.Marionette.View.extend({
     	}
     },
 	onRender: function() {
-		if (this.rendering) {
+		if (this.rendering || !this.initialized) {
 			return;
 		}
 		this.rendering = true;

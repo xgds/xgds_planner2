@@ -8,34 +8,8 @@
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 
 {% block content %}
-<style scoped>
-  {# stylesheet 'planner_app' #}
-  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.min.css');
-  @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
-  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
-  @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
-  /* for some reason compressing this in the css does not work so it's separate in the planner_app */
-  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
-  @import url('{{ EXTERNAL_URL }}openlayers/ol.css');
-  @import url('{{ STATIC_URL}}geocamUtil/css/datatable.css');
-  @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
-  @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
-  @import url('{{ STATIC_URL }}xgds_map_server/css/xgds_map_server.css');
-  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
-  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.css');
-  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack-extra.min.css');
-  .grid-stack-item-content {
-    display: block;
-    margin: 20px 0 10px;
-    }
-</style>
-{% if 'xgds_notes2' in settings.INSTALLED_APPS %}
-{% include "xgds_notes2/NoteCSS.html" %}
-{% endif %}
-
-
-<div id="application" >
-    <div id="toolbar" class="row">
+<script type="x-template/underscore" id="application_contents">
+	<div id="toolbar" class="row">
     </div>
     <div id="controllers" class="row">
     	{% include "xgds_core/playback_controller.html" %}
@@ -80,7 +54,34 @@
 		</table>
 	</div>
 	{% include "xgds_map_server/MapSearchDialog.html" with saveSearchForm=saveSearchForm %}
-	
+</script>
+<style scoped>
+  {# stylesheet 'planner_app' #}
+  @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.min.css');
+  @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
+  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+  @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
+  /* for some reason compressing this in the css does not work so it's separate in the planner_app */
+  @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
+  @import url('{{ EXTERNAL_URL }}openlayers/ol.css');
+  @import url('{{ STATIC_URL}}geocamUtil/css/datatable.css');
+  @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
+  @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
+  @import url('{{ STATIC_URL }}xgds_map_server/css/xgds_map_server.css');
+  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
+  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.css');
+  @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack-extra.min.css');
+  .grid-stack-item-content {
+    display: block;
+    margin: 20px 0 10px;
+    }
+</style>
+{% if 'xgds_notes2' in settings.INSTALLED_APPS %}
+{% include "xgds_notes2/NoteCSS.html" %}
+{% endif %}
+
+
+<div id="application" >
 </div>
 {% endblock content %}
   
@@ -89,6 +90,57 @@
     {# javascript 'compiled_planner_app' #}
     {{ block.super }}
     {% include "xgds_core/playbackJS.html" %}
+    <script type="text/javascript">
+    var appOptions = {
+        	BODY_RADIUS_METERS: {{ settings.XGDS_MAP_SERVER_BODY_RADIUS_METERS }},
+        	DEFAULT_COORD_SYSTEM: '{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}',
+        	SETUP_COORD_SYSTEM: '{{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }}',
+            DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
+    		DEFAULT_ZOOM: {{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }},
+    		DEFAULT_ROTATION: {{ settings.XGDS_MAP_SERVER_DEFAULT_ROTATION }},
+    		SHOW_COMPASS: {{ settings.XGDS_MAP_SERVER_SHOW_COMPASS}},
+    		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:'true,false' }},
+            planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:'2' }},
+           	selectedLayerUrl: '{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}',
+            layerFeedUrl: '{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}',
+            dataUrl: '{{ settings.DATA_URL }}',
+            simulator: '{{ simulator }}',
+            directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:'true,false' }},
+            mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:'true,false' }},
+            placemarkCircleUrl: '{{ placemark_circle_url }}',
+            placemarkCircleHighlightedUrl: '{{ placemark_circle_highlighted_url }}',
+            placemarkDirectionalUrl: '{{ placemark_directional_url }}',
+            placemarkSelectedDirectionalUrl: '{{ placemark_selected_directional_url }}',
+            XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: '{{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }}',
+            XGDS_PLANNER2_LINKS_LOADED_CALLBACK: '{{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }}',
+            commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
+            readOnly: {{ editable|yesno:'false,true' }},
+            searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
+            schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
+            planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
+            planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
+            stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
+            segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
+            commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
+            stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
+            segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
+            commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}',
+            settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:'true,false' }},
+            plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }}
+        };
+        
+        {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+        	appOptions['flight_names'] = {{flight_names|safe}};
+        {% endif %}
+        
+        {% if extras %}
+            var extras = {{ extras|safe }};
+            for (var key in extras) {
+            	appOptions[key] = extras[key];
+            }
+        {% endif %}
+    </script>
+    {% javascript 'simulator' %}
     {% include "MapJS.html" %}
     {% if 'xgds_notes2' in settings.INSTALLED_APPS %}
 	    {% include "xgds_notes2/NoteJS.html" %}
@@ -129,9 +181,8 @@
   	<!--  uncomment the below to test sample plot -->
   <!-- <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plot/plannerSamplePlot.js'></script>  -->
   
-      {% javascript 'simulator' %}
       {% javascript 'custom_map' %}
-    
+   	 
    	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olStationViews.js'></script>
    	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olSegmentViews.js'></script>
    	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlanViews.js'></script>
@@ -161,81 +212,37 @@
 {% endblock scripts %}
 
 {% block jsInit %}
-    var appOptions = {
-    	BODY_RADIUS_METERS: {{ settings.XGDS_MAP_SERVER_BODY_RADIUS_METERS }},
-    	DEFAULT_COORD_SYSTEM: "{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}",
-    	SETUP_COORD_SYSTEM: {{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }},
-        DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
-		DEFAULT_ZOOM: {{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }},
-		DEFAULT_ROTATION: {{ settings.XGDS_MAP_SERVER_DEFAULT_ROTATION }},
-		SHOW_COMPASS: {{ settings.XGDS_MAP_SERVER_SHOW_COMPASS}},
-		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:"true,false" }},
-        planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:"2" }},
-       	selectedLayerUrl: "{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}",
-        layerFeedUrl: "{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}",
-        dataUrl: "{{ settings.DATA_URL }}",
-        simulator: {{ simulator }},
-        directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:"true,false" }},
-        mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:"true,false" }},
-        placemarkCircleUrl: "{{ placemark_circle_url }}",
-        placemarkCircleHighlightedUrl: "{{ placemark_circle_highlighted_url }}",
-        placemarkDirectionalUrl: "{{ placemark_directional_url }}",
-        placemarkSelectedDirectionalUrl: "{{ placemark_selected_directional_url }}",
-        XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: {{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }},
-        XGDS_PLANNER2_LINKS_LOADED_CALLBACK: {{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }},
-        commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
-        readOnly: {{ editable|yesno:"false,true" }},
-        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
-        schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
-        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
-        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
-        stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
-        segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
-        commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
-        stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
-        segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
-        commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}',
-        settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:"true,false" }},
-        plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }}
-    };
-    
-    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-    	appOptions['flight_names'] = {{flight_names|safe}};
-    {% endif %}
-    
-    {% if extras %}
-        var extras = {{ extras|safe }};
-        for (var key in extras) {
-        	appOptions[key] = extras[key];
-        }
-    {% endif %}
     
 	$(function(){
-    	app.start(appOptions);
-    	playback.initialize({getStartTime: app.getStartTime,
-    						 getEndTime: app.getEndTime,
-    						 displayTZ: app.getTimeZone(),
-    						 });
-    	playback.addListener(playback.vehicleDriver);
-    	{% block plannerInitializers %}
-    	{% endblock plannerInitializers %}
-    	xgds_gridstack.initializeGridstack();
-    	
-    	// gridstack does not play nice with handlebars. 
-    	var tabsdiv = $('#tabs');
-    	var tgi = $("#tabs-gridstack-item");
-    	var tgic = $("#tabs-gridstack-item-content");
-    	var newheight = $(window).height() - 180;
-    	tgi.height(newheight);
-    	//tgic.height(newheight-10);  
-    	tabsdiv.width(tgic.width() - 10);
-    	
-    	var mgic = $("#map-gridstack-item-content");
-    	var mgi = $("#map-gridstack-item");
-    	mgi.height(newheight); 
-    	//mgic.height(newheight-10);  
-    	app.vent.trigger('recenterMap');
-		//app.map.map.getView().setZoom({{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }});    	
+    	app.vent.on('onPlanLoaded', function() {
+	    	playback.initialize({getStartTime: app.getStartTime,
+	    						 getEndTime: app.getEndTime,
+	    						 displayTZ: app.getTimeZone(),
+	    						 });
+	    	playback.addListener(playback.vehicleDriver);
+	    	
+	    	{% block plannerInitializers %}
+	    	{% endblock plannerInitializers %}
+	    	xgds_gridstack.initializeGridstack();
+	    	
+	    	// gridstack does not play nice with handlebars. 
+	    	var tabsdiv = $('#tabs');
+	    	var tgi = $("#tabs-gridstack-item");
+	    	var tgic = $("#tabs-gridstack-item-content");
+	    	var newheight = $(window).height() - 180;
+	    	tgi.height(newheight);
+	    	//tgic.height(newheight-10);  
+	    	tabsdiv.width(tgic.width() - 10);
+	    	
+	    	var mgic = $("#map-gridstack-item-content");
+	    	var mgi = $("#map-gridstack-item");
+	    	mgi.height(newheight); 
+	    	//mgic.height(newheight-10);  
+	    	app.vent.trigger('recenterMap');
+			//app.map.map.getView().setZoom({{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }});   
+		}); 
+    	app.start();
+    		
 	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {

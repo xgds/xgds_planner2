@@ -89,8 +89,7 @@ $(function() {
     
     // This view class manages the layers that represents an entire plan.
     // On instantiation, pass in the plan sequence Backbone collection as the "collection" arguement.
-    var PlanLayerView = Backbone.View
-        .extend({
+    var PlanLayerView = Marionette.View.extend({
             initialize: function(options) {
                 this.options = options || {};
                 this.map = this.options.map
@@ -151,19 +150,19 @@ $(function() {
         	
             },
             render: function() {
-        	var redraw = false;
-        	if (this.stationsFeatures.getLength() > 0){
-        	    redraw = true;
-        	    this.segmentsVector.clear();
-        	    this.segmentsFeatures.clear();
-        	    this.segmentsDecorators.clear();
-        	    this.segmentsDecoratorsLayer.getSource().clear();
-        	    
-        	    this.stationsVector.clear();
-        	    this.stationsFeatures.clear();
-        	    this.stationsDecorators.clear();
-        	    this.stationsDecoratorsLayer.getSource().clear();
-        	}
+	        	var redraw = false;
+	        	if (this.stationsFeatures.getLength() > 0){
+	        	    redraw = true;
+	        	    this.segmentsVector.clear();
+	        	    this.segmentsFeatures.clear();
+	        	    this.segmentsDecorators.clear();
+	        	    this.segmentsDecoratorsLayer.getSource().clear();
+	        	    
+	        	    this.stationsVector.clear();
+	        	    this.stationsFeatures.clear();
+	        	    this.stationsDecorators.clear();
+	        	    this.stationsDecoratorsLayer.getSource().clear();
+	        	}
         	
                 if (this.currentMode) {
                     this.resetMode();

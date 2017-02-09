@@ -19,8 +19,7 @@ $(function() {
     app.views = app.views || {};
     
     // This view class manages the map point for a single Station model
-    app.views.StationPointView = Backbone.View
-        .extend({
+    app.views.StationPointView = Marionette.View.extend({
             initialize: function(options) {
                 this.options = options || {};
                 this.stationsVector = this.options.stationsVector;

@@ -20,7 +20,7 @@ var DEBUG_SEGMENTS = false;  // Turn on labels for segments
 $(function() {
     app.views = app.views || {};    
     
-    app.views.SegmentLineView = Backbone.View.extend({
+    app.views.SegmentLineView = Marionette.View.extend({
         initialize: function(options) {
             this.options = options || {};
             var options = this.options;
