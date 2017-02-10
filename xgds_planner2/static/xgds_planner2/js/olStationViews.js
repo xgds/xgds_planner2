@@ -20,6 +20,7 @@ $(function() {
     
     // This view class manages the map point for a single Station model
     app.views.StationPointView = Marionette.View.extend({
+    	template: false,
             initialize: function(options) {
                 this.options = options || {};
                 this.stationsVector = this.options.stationsVector;
@@ -59,7 +60,7 @@ $(function() {
             	//TODO implement
             },
             
-            render: function() {
+            onRender: function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.feature = new ol.Feature({geometry: this.geometry,
                                                id: this.model.attributes['id'],

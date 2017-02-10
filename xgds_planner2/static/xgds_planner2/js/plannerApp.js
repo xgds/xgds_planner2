@@ -40,7 +40,7 @@ var app = (function($, _, Backbone) {
 			plot: '#plot-container'
 		},
 		onRender: function() {
-			app.map = new app.views.OLMapView();
+			app.map = new app.views.OLPlanView();
 			this.showChildView('mapRegion', app.map);
 			this.showChildView('toolbar', new app.views.ToolbarView());
 			this.showChildView('tabs', new app.views.TabNavView());
@@ -71,7 +71,7 @@ var app = (function($, _, Backbone) {
 			this.rootView = new RootView();
 			this.showView(this.rootView);
 			this.parseJSON();
-            this.vent.on('updatePlanDuration', function(newDuration) {
+            this.listenTo(this.vent,'updatePlanDuration', function(newDuration) {
             	playback.updateEndTime(app.getEndTime(newDuration));
             });
 		},
@@ -246,10 +246,14 @@ var app = (function($, _, Backbone) {
             }
             
             var context = this;
-            this.vent.on('simulatePlan', _.debounce(context.simulatePlan, 10));
-            this.vent.on('updatePlan', _.debounce(context.rerender, 10));
+            this.listenTo(this.vent, 'simulatePlan', _.debounce(function() {
+            	context.simulatePlan();
+            	}, 10));
+            this.listenTo(this.vent, 'updatePlan', _.debounce(function() {
+            	context.rerender();
+            	}, 10));
             
-            this.vent.on('all', function(eventname, args) {
+            this.listenTo(this.vent,'all', function(eventname, args) {
             	if (DEBUG_EVENTS){
             		console.log('event on app.vent: ' + eventname, args);
                         console.log('current state:');

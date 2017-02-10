@@ -108,11 +108,11 @@ var PlotDataTileModel = PlotDataModel.extend({
 	},
 	initialize: function(startMoment, endMoment) {
 		this.initializeDataTileView();
-		app.vent.on('dataTileLoaded', function(uuid){
+		this.listenTo(app.vent, 'dataTileLoaded', function(uuid){
 			if (uuid == this.get('dataSourceUuid')){
 				app.vent.trigger('drawPlot',this.get('name'));
 			}
-		}, this);
+		});
 	},
 	
 	loadDataSource: function() {

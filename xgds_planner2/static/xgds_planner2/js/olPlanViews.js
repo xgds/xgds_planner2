@@ -25,6 +25,7 @@ $(function() {
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
                 app.on('recenterMap', this.updateBbox);
+                this.listenTo(app.vent, 'onPlanLoaded', this.drawPlan);
             },
 
             handleResize: function() {
@@ -38,7 +39,9 @@ $(function() {
             
             handleWindowResize: function() {
                 // window size changed, so variables need to be reset
-                if (_.isUndefined(app.tabs.currentView)) {return;}
+                if (_.isUndefined(app.currentTab) || _.isUndefined(app.currentTabView)) {
+                	return;
+                }
                 var shouldResize = app.views.OLMapView.prototype.handleWindowResize.call(this);
 //                if (shouldResize){
 //                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
@@ -53,6 +56,9 @@ $(function() {
             },
             
             updateBbox: function() {
+            	if (app.currentPlan === undefined){
+            		return;
+            	}
                 var sequence = app.currentPlan.get('sequence');
                 if (_.isUndefined(sequence) || sequence.length == 0){
                  // move to bounding box defined in plan
@@ -69,10 +75,15 @@ $(function() {
                 }
             },
             
-            render: function() {
-                app.views.OLMapView.prototype.render.call(this);
-                this.drawPlan();
-            },
+//            onAttach: function() {
+//            	app.views.OLMapView.prototype.onAttach.call(this);
+//            	this.drawPlan();
+//            },
+            
+//            onRender: function() {
+//                app.views.OLMapView.prototype.onRender.call(this);
+//                this.drawPlan();
+//            },
             
             drawPlan: function() {
                 if (this.planView) {
@@ -90,6 +101,7 @@ $(function() {
     // This view class manages the layers that represents an entire plan.
     // On instantiation, pass in the plan sequence Backbone collection as the "collection" arguement.
     var PlanLayerView = Marionette.View.extend({
+    		template: false,
             initialize: function(options) {
                 this.options = options || {};
                 this.map = this.options.map
@@ -127,11 +139,11 @@ $(function() {
                     });
                 this.map.addLayer(this.stationsDecoratorsLayer);
 
-                app.vent.on('mapmode', this.setMode, this);
+                this.listenTo(app.vent, 'mapmode', this.setMode);
                 app.vent.trigger('mapmode', 'navigate');
                 
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
-                this.listenTo(app.currentPlan, 'sync', this.render, this);
+                this.listenTo(app.currentPlan, 'sync', this.render);
                 app.State.planLoaded = true;
                 app.on('recenterMap', this.fitPlan);
                 
@@ -149,7 +161,7 @@ $(function() {
             clear: function() {
         	
             },
-            render: function() {
+            onRender: function() {
 	        	var redraw = false;
 	        	if (this.stationsFeatures.getLength() > 0){
 	        	    redraw = true;
@@ -354,7 +366,7 @@ $(function() {
                             if (app.currentTab != 'sequence') {
                                 app.vent.trigger('setTabRequested','sequence');
                             } else {
-                                app.tabs.currentView.tabContent.currentView.render();
+                                app.currentTabView.onRender();
                             }
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
@@ -489,9 +501,9 @@ $(function() {
 	                            }
 	                            app.vent.trigger('modifyEnd');
 	                        }
-	                    }, this);
-	                    app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);
-	                	app.vent.on('activateStationRepositioner', this.activateStationRepositioner, this);
+	                    });
+	                    this.listenTo(app.vent, 'deactivateStationRepositioner', this.deactivateStationRepositioner);
+	                	this.listenTo(app.vent, 'activateStationRepositioner', this.activateStationRepositioner);
                     } 
                     
                     this.segmentModifier.setActive(true);

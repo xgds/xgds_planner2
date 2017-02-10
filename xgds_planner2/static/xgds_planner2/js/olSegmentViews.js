@@ -21,6 +21,7 @@ $(function() {
     app.views = app.views || {};    
     
     app.views.SegmentLineView = Marionette.View.extend({
+    	template: false,
         initialize: function(options) {
             this.options = options || {};
             var options = this.options;
@@ -117,7 +118,7 @@ $(function() {
         	}
         	return result;
         },
-        render: function() {
+        onRender: function() {
             this.coords = _.map([this.fromStation, this.toStation],
                                function(station) {
                                    return transform(station.get('geometry').coordinates);

@@ -1335,6 +1335,7 @@ app.views.TabNavView = Marionette.View.extend({
         if (view == undefined){
     		return;
     	}
+        app.currentTabView = view;
     	this.showChildView('tabContent', view);
         
         app.vent.trigger('tab:change', tabId);
