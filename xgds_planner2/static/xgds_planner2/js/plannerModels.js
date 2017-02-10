@@ -32,6 +32,7 @@ app.models = app.models || {};
     models.widgetTypeHash = {
         'text': 'Text',
         'number': 'Number',
+        'hiddennumber': 'HiddenNumber',
         'checkbox': 'Checkbox',
         'datetime': 'DateTime',
         'select': 'Select',
@@ -163,7 +164,11 @@ app.models = app.models || {};
             if (_.has(param, 'visible') &&
                     _.isBoolean(param.visible) &&
                     !param.visible) {
-                schema[param.id]['type'] = 'Hidden';
+            	if (param.valueType == 'number'){
+                    schema[param.id]['type'] = 'HiddenNumber';
+            	} else {
+            		schema[param.id]['type'] = 'Hidden';
+            	}
             }
             if (_.has(param, 'editable') &&
                     _.isBoolean(param.editable) &&

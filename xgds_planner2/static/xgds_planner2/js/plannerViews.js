@@ -1217,10 +1217,8 @@ app.views.PropertiesForm = Marionette.View.extend(Backbone.Form.prototype).exten
             var v = attrs[k];
             this.setValue(k, v);
         }, this);
-    },
-    onRender: function() {
-    	console.log(this.model);
     }
+    
 });
 
 app.views.CommandPresetsView = Marionette.View.extend({
@@ -1319,9 +1317,6 @@ app.views.TabNavView = Marionette.View.extend({
             }
         });
         
-        if (oldTab == 'layers'){
-        	this.detachChildView('tabContent');
-        }
         var view = undefined;
         if (tabId == 'layers'){
         	// we reuse the layers view
@@ -1330,6 +1325,9 @@ app.views.TabNavView = Marionette.View.extend({
             }
             view = this.layersView;
         } else {
+        	if (oldTab == 'layers'){
+            	this.detachChildView('tabContent');
+            }
         	view = this.constructNewViewFromId(tabId);
         }
         if (view == undefined){
