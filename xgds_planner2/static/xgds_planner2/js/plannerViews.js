@@ -47,21 +47,25 @@ app.views.ToolbarView = Marionette.View.extend({
 
     initialize: function() {
         this.listenTo(app.vent, 'mapmode', this.ensureToggle);
-        this.listenTo(app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
-        this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
-        this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
+        
         this.listenTo(app.vent, 'clearSaveStatus', function(model) {this.updateSaveStatus('clear')});
         this.listenTo(app.vent, 'readOnly', function(model) {this.updateSaveStatus('readOnly')});
         this.listenTo(app.vent, 'readOnly', this.disableForReadOnly);
-        this.listenTo(app.currentPlan, 'sync', this.refreshSaveAs);
         this.listenTo(app.vent, 'undoEmpty', this.disableUndo);
         this.listenTo(app.vent, 'redoEmpty', this.disableRedo);
         this.listenTo(app.vent, 'undoNotEmpty', this.enableUndo);
         this.listenTo(app.vent, 'redoNotEmpty', this.enableRedo);
-        this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
         this.listenTo(app.vent, 'updatePlanDuration', function() {
         	this.updateDurationDistance();
         });
+        this.listenTo(app.vent, 'onPlanLoaded', function() {
+        	this.listenTo(app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
+        	this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
+            this.listenTo(app.currentPlan, 'sync', this.refreshSaveAs);
+            this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
+            this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
+            this.render();
+       });
     },
 
     onAttach: function() {
@@ -76,20 +80,19 @@ app.views.ToolbarView = Marionette.View.extend({
     		app.vent.trigger('doMapResize');
     	}
     },
-    onRender: function() {
+    serializeData: function() {
     	var simInfo = null;
+    	var data = {};
     	if (app.currentPlan) {
     		simInfo = app.currentPlan._simInfo;
     	}
-        this.$el.html(this.template({stationMoniker:app.options.stationMoniker,
-        							 stationMonikerPlural: app.options.stationMonikerPlural,
-        							 simInfo: simInfo}));
+        
+        data.stationMoniker = app.options.stationMoniker;
+        data.stationMonikerPlural = app.options.stationMonikerPlural;
+        data.simInfo = simInfo;
+        return data;
     },
-    updateDurationDistance: function() {
-    	var simInfo = app.currentPlan._simInfo;
-    	$("#totalDuration").text(printedDuration(simInfo.deltaTimeSeconds));
-    	$("#totalDistance").text(sprintf('%0.2f m', simInfo.deltaDistanceMeters));
-    },
+
     onRender: function() {
         if (app.Actions.undoEmpty()) {
             this.disableUndo();
@@ -101,6 +104,11 @@ app.views.ToolbarView = Marionette.View.extend({
         } else {
             this.enableRedo();
         }
+    },
+    updateDurationDistance: function() {
+    	var simInfo = app.currentPlan._simInfo;
+    	$("#totalDuration").text(printedDuration(simInfo.deltaTimeSeconds));
+    	$("#totalDistance").text(sprintf('%0.2f m', simInfo.deltaDistanceMeters));
     },
 
     disableForReadOnly: function() {
@@ -1276,10 +1284,10 @@ app.views.TabNavView = Marionette.View.extend({
         var context = this;
         this.listenTo(app.vent, 'onPlanLoaded', function() {
         	 context.setTab('meta');
-        }, this);
+        });
         this.listenTo(app.vent, 'setTabRequested', function(tabId) {
             context.setTab(tabId);
-        }, this);
+        });
         $('#tabs-gridstack-item').on('resizestop', function(event, ui) {
         	setTimeout(function(){
         		context.handleGridstackResize();
