@@ -605,7 +605,7 @@ app.views.SequenceListItemView = Marionette.View.extend({
     	try {
 	        return {
 	            'data-item-id': this.model.cid,
-	            'class': this.model.get('type').toLowerCase() + '-sequence-item'
+	            'class': this.model.get('type').toLowerCase() + '-sequence-item command-list'
 	        };
     	} catch (err){
     		return {};
@@ -847,9 +847,10 @@ app.views.NoCommandsView = Marionette.View.extend({
 app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
     template: '#template-sequence-list-station',
     childView: app.views.CommandItemView,
-    childViewContainer: '.command-list',
+//    childViewContainer: '.command-list',
     childViewOptions: {
-        expandClass: 'col2'
+        expandClass: 'col2',
+        container: '.command-list'
     },
     emptyView: app.views.NoCommandsView,
     events: {
@@ -865,14 +866,19 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
             app.vent.trigger('showPresets', this.model);
         },
         'sortstop .command-list': function(evt, ui) {
-            var commandOrder = this.$el.find('.command-list').sortable('toArray', {'attribute': 'data-item-id'});
-            var oldOrder = this.model.get('sequence').models.map(function(model) {
+            //var commandOrder = this.$el.find('.command-list').sortable('toArray', {'attribute': 'data-item-id'});
+            var commandOrder = this.$el.find('.command-list').sortable().toArray({'attribute': 'data-item-id'});
+            var newOrder = [];
+            for (var i=1; i<commandOrder.length-1; i++){
+            	newOrder.push($(commandOrder[i]).attr('data-item-id'));
+            }
+            var oldOrder = this.model.get('commands').models.map(function(model) {
                 return model.cid;
             });
-            if (JSON.stringify(commandOrder) == JSON.stringify(oldOrder))
+            if (JSON.stringify(newOrder) == JSON.stringify(oldOrder))
                 // no change in order
                 return;
-            var commandModels = commandOrder.map(function(cid) {
+            var commandModels = newOrder.map(function(cid) {
                 return this.model.get('commands').filter(function(child) {
                     return child.cid == cid;
                 })[0];
@@ -1023,11 +1029,11 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
     },
 
     onRender: function() {
-    	this.addChildView(this.foot); //, this.collection.length);
+    	this.addChildView(this.foot); 
         
-//		if (!this.isEmpty()){
-//		    this.$el.find('.command-list').sortable();
-//		}
+		if (this.collection.length > 0){
+		    this.$el.find('.command-list').sortable();
+		}
         this.restoreExpanded();
         if (!_.isEmpty(app.vent.request('selectedCommands'))) {
             this.enableCommandActions();

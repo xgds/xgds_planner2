@@ -180,7 +180,7 @@ var PlotDataTileModel = PlotDataModel.extend({
 app.views.PlanPlotView = Marionette.View.extend({
 //	el: '#plot-container',
 	rendering: false,
-	template: false,
+	template: '#plot_contents',
 	plotLabels : {},
 	dataPlots: {},
 	plotDataCache: {},
@@ -233,7 +233,7 @@ app.views.PlanPlotView = Marionette.View.extend({
     	if (newOptions != null){
     		Object.assign(this.plotOptions['xaxis'], newOptions);
     		this.cacheAllPlotData(UPDATE_ON.UpdatePlanDuration);
-    		this.render();
+    		this.onRender();
     		return true;
     	}
     	return false;
@@ -323,7 +323,7 @@ app.views.PlanPlotView = Marionette.View.extend({
     		}
     	});
     	this.listenTo(app.vent, 'station:remove',  function(model){ this.removeStationLabel(model);
-    		this.render()
+    		this.onRender()
     	}, this);
     	this.listenTo(app.vent, 'itemSelected:station', function(selected) {
     		this.selectStation(selected);
@@ -344,10 +344,10 @@ app.views.PlanPlotView = Marionette.View.extend({
     	this.needsCoordinates = this.calculateNeedsCoordinates();
     	this.plotOptions['xaxis'] = this.getXAxisOptions(); 
     	this.getStartEndMoments(true);
-    	playback.addListener(playback.plot);
     	this.listenTo(app.vent, 'updatePlanDuration', function(model) {this.updatePlots(UPDATE_ON.UpdatePlanDuration)});
     	this.initialized = true;
-    	this.render();
+    	this.onRender();
+    	playback.addListener(playback.plot);
     },
     selectNothing: function() {
     	planPlots.lastSelectedStation = undefined;
@@ -447,7 +447,7 @@ app.views.PlanPlotView = Marionette.View.extend({
     	var dataPlot = this.dataPlots[key];
     	if (dataPlot.get('visible') != visible){
     		dataPlot.set('visible', visible);
-    		this.render();
+    		this.onRender();
     	}
     },
     removeStationLabel: function(model){
@@ -469,6 +469,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 		var sequence = app.currentPlan.get('sequence');
 		var saveUs = [];
 		var deathRow = []
+		var plotDiv = this.$el.find("#plotDiv");
 		sequence.each(function(pathElement, i, sequence) {
     		if (pathElement.attributes.type == 'Station'){
     			startEndTime = this.startEndTimes[index];
@@ -632,7 +633,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 			} catch (err) {
 				this.plotDataCache[key] = dataValues;
 			}
-	    	this.render();
+	    	this.onRender();
 		}
     },
     updatePlots: function(eventType) {
@@ -642,7 +643,7 @@ app.views.PlanPlotView = Marionette.View.extend({
     	} 
     	if (!updated){
     		this.cacheAllPlotData( eventType);
-    		this.render();
+    		this.onRender();
     	}
     },
     selectData: function(index) {
@@ -733,7 +734,6 @@ app.views.PlanPlotView = Marionette.View.extend({
     		this.drawStationLabels();
     	}
     	this.rendering = false;
-		 
 	}
 });
 

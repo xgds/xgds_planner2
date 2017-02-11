@@ -8,6 +8,10 @@
 {% block siteSection %}Edit {{ plan_name }}{% endblock %}
 
 {% block content %}
+<script type="x-template/underscore" id="plot_contents">
+		<div id="plotDiv" class="plot-div"></div>
+		<div id="plotLegend" ></div>
+</script>
 <script type="x-template/underscore" id="application_contents">
 	<div id="toolbar" class="row">
     </div>
@@ -15,8 +19,6 @@
     	{% include "xgds_core/playback_controller.html" %}
     </div>
     <div id="plot-container" class="plot-container">
-		<div id="plotDiv" class="plot-div"></div>
-		<div id="plotLegend" ></div>
 	</div>
 
     <div class="grid-stack grid-stack-6" id="container">

@@ -44,7 +44,7 @@ var app = (function($, _, Backbone) {
 			this.showChildView('mapRegion', app.map);
 			this.showChildView('toolbar', new app.views.ToolbarView());
 			this.showChildView('tabs', new app.views.TabNavView());
-//			this.showChildView('plot', new app.views.PlanPlotView());
+			this.showChildView('plot', new app.views.PlanPlotView());
 		},
 		onAttach: function() {
 			var pageTopHeight = $('#page-top').outerHeight();
