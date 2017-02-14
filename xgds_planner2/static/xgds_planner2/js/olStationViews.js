@@ -68,10 +68,12 @@ $(function() {
                                                model: this.model,
                                                iconStyle: this.iconStyle,
                                                selectedIconStyle: this.selectedIconStyle,
-                                               textStyle: this.textStyle,
-                                               style: this.getStationStyles
+                                               textStyle: this.textStyle
+//                                               style: this.getStationStyles
                                             });
-                this.feature.setStyle(this.getStationStyles);
+    			var context = this;
+    			this.feature.setStyle(function(feature, resolution) {return context.getStationStyles(feature, resolution);});
+//                this.feature.setStyle(this.getStationStyles);
                 this.feature.set('selectedIconStyle', this.selectedIconStyle);
                 this.feature.set('iconStyle', this.iconStyle);
                 this.feature.set('textStyle', this.textStyle);

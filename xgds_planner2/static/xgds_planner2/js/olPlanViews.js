@@ -24,7 +24,7 @@ $(function() {
                 // set up tabs
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-                app.on('recenterMap', this.updateBbox);
+                this.listenTo(app.vent, 'recenterMap', this.updateBbox);
                 this.listenTo(app.vent, 'onPlanLoaded', this.drawPlan);
             },
 
@@ -385,13 +385,11 @@ $(function() {
                         
                         
                     };
-                    this.selectNavigate.setActive(true);
                     this.map.addInteraction(this.selectNavigate);
                     
                 },
                 exit: function() {
                     this.selectNavigate.getFeatures().clear();
-                    this.selectNavigate.setActive(false);
                     this.map.removeInteraction(this.selectNavigate);
                 }
             },
@@ -433,8 +431,8 @@ $(function() {
             },
             
             activateStationRepositioner: function() {
-	        	this.stationRepositioner.setActive(true);
-	        	this.stationDeleter.setActive(true);
+//	        	this.stationRepositioner.setActive(true);
+//	        	this.stationDeleter.setActive(true);
 	        	this.map.addInteraction(this.stationRepositioner);
 	        	this.map.addInteraction(this.stationDeleter);
 	        	this.stationDeleter.getFeatures().clear();
@@ -444,8 +442,8 @@ $(function() {
             deactivateStationRepositioner: function() {
 	        	this.map.removeInteraction(this.stationRepositioner);
 	        	this.map.removeInteraction(this.stationDeleter);
-	        	this.stationRepositioner.setActive(false);
-	        	this.stationDeleter.setActive(false);
+//	        	this.stationRepositioner.setActive(false);
+//	        	this.stationDeleter.setActive(false);
 	        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
             },
             
@@ -459,9 +457,11 @@ $(function() {
 	                        	features: this.stationsFeatures
 	                        });
 	                	this.stationRepositioner.on('modifystart', function(event){
+	                			console.log('stationRepositioner MODIFY START');
 	                            app.Actions.disable();
 	                        }, this);
 	                	this.stationRepositioner.on('modifyend', function(event){
+	                			console.log('stationRepositioner MODIFY END');
 	                            app.Actions.enable();
 	                            app.Actions.action();
 	                            app.vent.trigger('modifyEnd');
@@ -471,6 +471,7 @@ $(function() {
 	                    	features: this.segmentsFeatures
 	                    });
 	                    this.segmentModifier.on('modifyend', function(event){
+	                    	console.log('segmentModifier MODIFY END');
 	                        event.features.forEach(function(element, index, array) {
 	                    	var geom = element.getGeometry();
 	                    	var coords = geom.getCoordinates();
@@ -506,13 +507,13 @@ $(function() {
 	                	this.listenTo(app.vent, 'activateStationRepositioner', this.activateStationRepositioner);
                     } 
                     
-                    this.segmentModifier.setActive(true);
+//                    this.segmentModifier.setActive(true);
                     this.map.addInteraction(this.segmentModifier);
                     this.activateStationRepositioner();
                 }, // end enter
                 exit: function() {
-                	  this.stationRepositioner.setActive(false);
-                	  this.segmentModifier.setActive(false);
+//                	  this.stationRepositioner.setActive(false);
+//                	  this.segmentModifier.setActive(false);
                 	  this.stationDeleter.getFeatures().clear();
                 	  this.map.removeInteraction(this.stationRepositioner);
                 	  this.map.removeInteraction(this.segmentModifier);

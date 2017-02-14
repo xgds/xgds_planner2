@@ -113,6 +113,7 @@ var app = (function($, _, Backbone) {
                     return;
                 this._enterAction();
                 this._disableCount += 1;
+//                console.log('DISABLED COUNT ' + this._disableCount);
                 this.enabled = false;
                 this._exitAction();
             },
@@ -121,6 +122,7 @@ var app = (function($, _, Backbone) {
                     return;
                 this._enterAction();
                 this._disableCount -= 1;
+//                console.log('ENABLING: DISABLED COUNT ' + this._disableCount);
                 if (this._disableCount <= 0) {
                     this.enabled = true;
                     this._disableCount = 0;
@@ -149,6 +151,8 @@ var app = (function($, _, Backbone) {
                 if (this._inAction)
                     return;
                 if (!this.enabled)
+//                	console.log('NOT ENABLED ACTION');
+//                	console.trace();
                     return;
                 if (this.currentState == undefined)
                     return;

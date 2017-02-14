@@ -368,6 +368,10 @@ app.views.PlanPlotView = Marionette.View.extend({
     	this.selectNothing();
     },
     selectCommand: function(command){
+    	var relation = command.getRelation('pathElement');
+    	if (relation === undefined) {
+    		return;
+    	}
     	var related = command.getRelation('pathElement').related;
     	if (related.get('type') == 'Station'){
     		this.selectStation(related);
