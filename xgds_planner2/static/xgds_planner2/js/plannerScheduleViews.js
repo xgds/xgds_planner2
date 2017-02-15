@@ -25,17 +25,16 @@ app.views.ScheduleView = Marionette.View.extend({
             return input === flightName ? 'selected' : '';
         });
     },
-    serializeData: function() {
-    	var data = this.model.toJSON();
+    templateContext: function() {
     	var planned_start_time = "";
     	if (app.options.planExecution !== null){
     		moment.tz.setDefault('Etc/UTC');
     		planned_start_time = moment(app.options.planExecution.planned_start_time).tz(app.getTimeZone()).format('MM/DD/YYYY HH:mm');
     	}
-    	data.planned_start_time = planned_start_time;
-    	data.planExecution = app.options.planExecution;
-    	data.planId = app.planJson.serverId;
-    	data.flight_names = app.options.flight_name;
+    	var data = {planned_start_time: planned_start_time,
+    			    planExecution: app.options.planExecution,
+    			    planId: app.planJson.serverId,
+    			    flight_names: app.options.flight_names}
     	return data;
     },
     onAttach: function() {
@@ -81,6 +80,7 @@ app.views.ScheduleView = Marionette.View.extend({
                 	playback.updateStartTime(startMoment);
                 	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
                 	playback.setCurrentTime(startMoment);
+                	app.vent.trigger('change:scheduledStartTime', startMoment);
                 },
                 error: function(data)
                 {

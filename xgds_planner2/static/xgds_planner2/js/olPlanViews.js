@@ -323,11 +323,9 @@ $(function() {
                             
                         }, this);
                     }
-                    this.stationAdder.setActive(true);
                     this.map.addInteraction(this.stationAdder);
                 },
                 exit: function() {
-                    this.stationAdder.setActive(false);
                     this.map.removeInteraction(this.stationAdder);
                 }
             }, // end addStationMode
@@ -431,8 +429,6 @@ $(function() {
             },
             
             activateStationRepositioner: function() {
-//	        	this.stationRepositioner.setActive(true);
-//	        	this.stationDeleter.setActive(true);
 	        	this.map.addInteraction(this.stationRepositioner);
 	        	this.map.addInteraction(this.stationDeleter);
 	        	this.stationDeleter.getFeatures().clear();
@@ -442,8 +438,6 @@ $(function() {
             deactivateStationRepositioner: function() {
 	        	this.map.removeInteraction(this.stationRepositioner);
 	        	this.map.removeInteraction(this.stationDeleter);
-//	        	this.stationRepositioner.setActive(false);
-//	        	this.stationDeleter.setActive(false);
 	        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
             },
             
@@ -507,13 +501,10 @@ $(function() {
 	                	this.listenTo(app.vent, 'activateStationRepositioner', this.activateStationRepositioner);
                     } 
                     
-//                    this.segmentModifier.setActive(true);
                     this.map.addInteraction(this.segmentModifier);
                     this.activateStationRepositioner();
                 }, // end enter
                 exit: function() {
-//                	  this.stationRepositioner.setActive(false);
-//                	  this.segmentModifier.setActive(false);
                 	  this.stationDeleter.getFeatures().clear();
                 	  this.map.removeInteraction(this.stationRepositioner);
                 	  this.map.removeInteraction(this.segmentModifier);

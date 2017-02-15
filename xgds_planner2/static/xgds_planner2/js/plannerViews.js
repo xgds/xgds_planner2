@@ -80,19 +80,18 @@ app.views.ToolbarView = Marionette.View.extend({
     		app.vent.trigger('doMapResize');
     	}
     },
-    serializeData: function() {
+    templateContext: function() {
     	var simInfo = null;
-    	var data = {};
     	if (app.currentPlan) {
     		simInfo = app.currentPlan._simInfo;
     	}
-        
-        data.stationMoniker = app.options.stationMoniker;
-        data.stationMonikerPlural = app.options.stationMonikerPlural;
-        data.simInfo = simInfo;
-        return data;
+    	var data = {
+    			stationMoniker: app.planLinks,
+    			stationMonikerPlural: app.planNamedURLs,
+    			simInfo: simInfo
+    	}
+    	return data;
     },
-
     onRender: function() {
         if (app.Actions.undoEmpty()) {
             this.disableUndo();
@@ -257,99 +256,57 @@ app.views.ToolbarView = Marionette.View.extend({
 
 });
 
-//app.views.PlanMetaView = Marionette.View.extend({
-//    // Responsible for rendering the 'Meta' tab
-//    template: '#template-meta-tab',
-//    serializeData: function() {
-//        data = this.model.toJSON();
-//        data.sites = app.planLibrary.sites;
-//        data.platforms = app.planLibrary.platforms;
-//        return data;
-//    },
-//    events: {
-//        'change form#meta': 'updatePlan'
-//    },
-//    updatePlan: function(evt) {
-//        var control = $(evt.target);
-//        var key = control.attr('name');
-//        var value = control.val();
-//        if (key == 'site') {
-//            value = _.find(app.planLibrary.sites, function(s) { return s.id == value; });
-//        }
-//        if (key == 'platform') {
-//            value = _.find(app.planLibrary.platforms, function(p) { return p.id == value });
-//        }
-//        this.model.set(key, value);
-//    },
-//    onRender: function() {
-//    	console.log(this.model);
-//    }
-//});
 
 app.views.PlanSequenceHeaderView = Marionette.View.extend({
-    template: '#template-plan-sequence-header',
-    serializeData: function() {
-    	var options = {stationMoniker: app.options.stationMoniker,
-	   		   	   	   segmentMoniker: app.options.segmentMoniker,
-	   		   	   	   stationMonikerPlural: app.options.stationMonikerPlural,
-	   		   	   	   segmentMonikerPlural: app.options.segmentMonikerPlural};
-    	return options;
-    }
+	template: '#template-plan-sequence-header',
+	templateContext: {stationMoniker: app.options.stationMoniker,
+		segmentMoniker: app.options.segmentMoniker,
+		stationMonikerPlural: app.options.stationMonikerPlural,
+		segmentMonikerPlural: app.options.segmentMonikerPlural
+	}
 });
 
 app.views.StationSequenceHeaderView = Marionette.View.extend({
     template: '#template-station-sequence-header',
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.label = this.model._sequenceLabel;
-        data.stationMoniker = app.options.stationMoniker;
-        return data;
-    }
+    templateContext: function() {
+    	return {stationMoniker: app.options.stationMoniker,
+    		    label: this.model._sequenceLabel}
+	}
 });
 
 app.views.SegmentSequenceHeaderView = Marionette.View.extend({
     template: '#template-segment-sequence-header',
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.label = this.model._sequenceLabel;
-        data.segmentMoniker = app.options.segmentMoniker;
-        return data;
-    }
+    templateContext: function() {
+    	return {stationMoniker: app.options.segmentMoniker,
+    		    label: this.model._sequenceLabel}
+	}
 });
 
 app.views.StationPropertiesHeaderView = Marionette.View.extend({
     template: '#template-station-properties-header',
-    serializeData: function() {
-    	return {stationMoniker: app.options.stationMoniker};
-    }
+    templateContext: {stationMoniker: app.options.stationMoniker}
 });
 
 app.views.SegmentPropertiesHeaderView = Marionette.View.extend({
     template: '#template-segment-properties-header',
-    serializeData: function() {
-    	return {segmentMoniker: app.options.segmentMoniker};
-    }
+    templateContext: {segmentMoniker: app.options.segmentMoniker}
 });
 
 app.views.CommandPropertiesHeaderView = Marionette.View.extend({
     template: '#template-command-properties-header',
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.label = this.model._commandLabel;
-        data.commandMoniker = app.options.commandMoniker;
-        return data;
-    }
+    templateContext: function() {
+    	return {commandMoniker: app.options.commandMoniker,
+    		    label: this.model._commandLabel}
+	}
 });
 
 app.views.CommandPresetsHeaderView = Marionette.View.extend({
     template: '#template-command-presets-header',
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.label = this.model._commandLabel;
-        data.commandMoniker = app.options.commandMoniker;
-        data.commandMonikerPlural = app.options.commandMonikerPlural;
-        return data;
-    }
+    templateContext: function() {
+    	return {commandMoniker: app.options.commandMoniker,
+    			commandMonikerPlural: app.options.commandMonikerPlural,
+    		    label: this.model._commandLabel}
+	}
 });
 
 app.views.PlanSequenceView = Marionette.View.extend({
@@ -634,23 +591,19 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     },
     onExpand: function() {
     },
-    serializeData: function() {
-        var data = app.views.SequenceListItemView.prototype.serializeData.call(this, arguments);
-        if (this.model.get('type') == 'Station') {
-            data.timing = app.util.secondsToHMS(this.model.getCumulativeDuration());
+    templateContext: function() {
+    	if (this.model.get('type') == 'Station') {
+            return {timing: app.util.secondsToHMS(this.model.getCumulativeDuration())};
         } else {
-            data.timing = '+' + app.util.secondsToHMS(this.model.getDuration());
+            return {timing: '+' + app.util.secondsToHMS(this.model.getDuration())};
         }
-        return data;
     }
 });
 
 app.views.NoStationsView = Marionette.View.extend({
     template: '#template-no-stations',
-    serializeData: function() {
-    	return {stationMoniker: app.options.stationMoniker,
-            	stationMonikerPlural: app.options.stationMonikerPlural};
-    }
+    templateContext:  {stationMoniker: app.options.stationMoniker,
+            		   stationMonikerPlural: app.options.stationMonikerPlural}
 });
 
 app.views.StationSequenceCollectionView = Marionette.CollectionView.extend({
@@ -814,34 +767,31 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
         }
         app.views.makeExpandable(this, this.options.expandClass);
     },
-    serializeData: function() {
+    templateContext: function() {
     	if (this.model.attributes.type == 'Station'){
     		var itemMoniker = app.options.stationMoniker;
     	} else {
     		var itemMoniker = app.options.segmentMoniker;
     	}
 
-        return _.extend({
+        return {
           commandMoniker: app.options.commandMoniker,
           commandMonikerPlural: app.options.commandMonikerPlural,
           itemMoniker: itemMoniker
-        }, this.model.toJSON());
+        }
       },
       setUnselected: function() {
       }
 });
 
 app.views.NoCommandsView = Marionette.View.extend({
-    template: '#template-no-commands',
-    serializeData: function() {
-        return _.extend({
-          commandMoniker: app.options.commandMoniker,
-          commandMonikerPlural: app.options.commandMonikerPlural
-        }, this.model.toJSON());
-      },
-      setUnselected: function() {
-      }
-
+	template: '#template-no-commands',
+	templateContext: {
+		commandMoniker: app.options.commandMoniker,
+		commandMonikerPlural: app.options.commandMonikerPlural
+	},
+	setUnselected: function() {
+	}
 });
 
 app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
@@ -930,18 +880,18 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
     },
-    serializeData: function() {
+    templateContext: function() {
     	if (this.model.attributes.type == 'Station'){
     		var itemMoniker = app.options.stationMoniker;
     	} else {
     		var itemMoniker = app.options.segmentMoniker;
     	}
-    	return _.extend({
+    	return {
     		stationMoniker: app.options.stationMoniker,
     		commandMoniker: app.options.commandMoniker,
     		commandMonikerPlural: app.options.commandMonikerPlural,
     		itemMoniker: itemMoniker
-    	}, this.model.toJSON());
+    	};
     },
     onItemSelected: function() {
         if (this.itemsSelected) return;
@@ -1238,7 +1188,7 @@ app.views.PropertiesForm = Marionette.View.extend(Backbone.Form.prototype).exten
 app.views.CommandPresetsView = Marionette.View.extend({
     template: '#template-command-presets',
 
-    serializeData: function() {
+    templateContext: function() {
         return {
             presets: app.getCommandPresets(this.model.get('type')),
             station: this.model.toJSON()
@@ -1262,11 +1212,7 @@ app.views.CommandPresetsView = Marionette.View.extend({
 
 app.views.TabNavView = Marionette.View.extend({
     template: '#template-tabnav',
-    serializeData: function() {
-        data = new Array();
-        data.schedule = app.options.schedule;
-        return data;
-    },
+    templateContext: {schedule: app.options.schedule},
     regions: {
         tabTarget: '#tab-target',
         tabContent: '#tab-content'

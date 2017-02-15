@@ -26,11 +26,9 @@ app.views.PlanToolsView = Marionette.View.extend({
         this.listenTo(app.vent, 'clearAppendTool', this.clearAppendTool);
         this.listenTo(app.vent, 'setAppendError', this.setAppendError);
     },
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.planIndex = app.planIndex;
-        data.moniker = app.options.planMoniker;
-        return data;
+    templateContext: {
+    	planIndex: app.planIndex,
+    	moniker: app.options.planMoniker
     },
     onAttach: function() {
         if (app.options.readOnly) {

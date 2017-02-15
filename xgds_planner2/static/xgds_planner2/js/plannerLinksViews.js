@@ -24,12 +24,19 @@ app.views.PlanLinksView = Marionette.View.extend({
         	$.executeFunctionByName(callback, window, [this.$el]);
         }
     },
-    serializeData: function() {
-        var data = this.model.toJSON();
-        data.planLinks = app.planLinks;
-        data.planNamedURLs =  app.planNamedURLs;
-        data.planUuid =  app.currentPlan.get('uuid');
-        data.planId = app.currentPlan.get('serverId');
-        return data;
+    templateContext: function() {
+    	var planUuid = '';
+    	var planId = '';
+    	if (app.currentPlan !== undefined){
+    		planUuid = app.currentPlan.get('uuid');
+    		planId = app.currentPlan.get('serverId');
+    	}
+    	var data = {
+    	planLinks: app.planLinks,
+    	planNamedURLs: app.planNamedURLs,
+    	planUuid: planUuid,
+    	planId: planId
+    	}
+    	return data;
     }
 });

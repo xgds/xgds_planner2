@@ -1,8 +1,8 @@
 <div id="layertreeContainer">
   	<button id="refreshTreeLink" class="small" onclick="javascript: app.vent.trigger('refreshTree');">Refresh</button>
   	<input name="searchTree" placeholder="Filter..." autocomplete="off">
-    <button id="btnResetSearch" class="small">&times;</button>
-    <span id="matches"></span>
-    <button id="btnTransparencyEditors" class="small" style="{float:right;}" onclick="toggleTransparencySliders();">Transparency</button>
+    <button id="btnResetSearch" class="small" style="min-width:30px;">&times;</button>
+    <span id="matches"></span><br/>
+    <button id="btnTransparencyEditors" class="small" style="margin-top:5px;"  onclick="toggleTransparencySliders();">Transparency</button>
  	<div id="layertree" data-source="ajax" class="sampletree"></div>
  </div>
