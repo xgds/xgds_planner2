@@ -66,6 +66,7 @@ var app = (function($, _, Backbone) {
 		region: '#application',
         tree: undefined,
         treeData: null,
+        mapBottomPadding: 120,
 		vent: Backbone.Radio.channel('global'),
 		onStart: function() {
 			this.rootView = new RootView();

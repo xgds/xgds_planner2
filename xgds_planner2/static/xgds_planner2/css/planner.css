@@ -2,29 +2,9 @@ input[type="checkbox"].select {
     vertical-align: top;
 }
 
-#map{
-    //height: 85%;
-    height:500px; // if you make this a percentage it messes up openlayers and does not focus on the plan.
-}
-
-#postmap{
-	margin-top:20px;
-    //height: 30px;
-}
-#postpostmap{
-}
-
-#map-gridstack-item-content {
-/*   	min-height: 200px;
-  	height: 400px;
- */  }
 
 .tabs {
   width: 100%;
-}
-#tabs-gridstack-item-content {
-	//height: 400px;
-	//width: 100%;
 }
 
 .nav-tabs li:hover{

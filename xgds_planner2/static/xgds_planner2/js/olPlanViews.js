@@ -28,29 +28,6 @@ $(function() {
                 this.listenTo(app.vent, 'onPlanLoaded', this.drawPlan);
             },
 
-            handleResize: function() {
-//                app.views.OLMapView.prototype.handleResize.call(this);
-//                if (!_.isUndefined(app.State.tabsContainer)){
-//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-//                                                  app.map.$el.outerWidth() -
-//                                                  app.State.tabsLeftMargin);
-//                }
-            },
-            
-            handleWindowResize: function() {
-                // window size changed, so variables need to be reset
-                if (_.isUndefined(app.currentTab) || _.isUndefined(app.currentTabView)) {
-                	return;
-                }
-                var shouldResize = app.views.OLMapView.prototype.handleWindowResize.call(this);
-//                if (shouldResize){
-//                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-//                                                  app.map.$el.outerWidth() -
-//                                                  app.State.tabsLeftMargin);
-//                }
-            },
-            
             buildStyles: function() {
             	olStyles.buildPlannerStyles();
             },
@@ -74,16 +51,6 @@ $(function() {
                     }
                 }
             },
-            
-//            onAttach: function() {
-//            	app.views.OLMapView.prototype.onAttach.call(this);
-//            	this.drawPlan();
-//            },
-            
-//            onRender: function() {
-//                app.views.OLMapView.prototype.onRender.call(this);
-//                this.drawPlan();
-//            },
             
             drawPlan: function() {
                 if (this.planView) {
