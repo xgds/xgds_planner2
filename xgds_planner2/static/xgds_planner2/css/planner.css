@@ -2,10 +2,6 @@ input[type="checkbox"].select {
     vertical-align: top;
 }
 
-i.pinDiv {
-	float: right;
-}
-      
 #map{
     //height: 85%;
     height:500px; // if you make this a percentage it messes up openlayers and does not focus on the plan.
