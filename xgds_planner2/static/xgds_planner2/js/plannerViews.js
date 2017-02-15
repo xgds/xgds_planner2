@@ -543,20 +543,14 @@ app.views.makeExpandable = function(view, expandClass) {
 };
 
 app.views.SequenceListItemView = Marionette.View.extend({
-    // The list item is a simple enough DOM subtree that we'll let the view build its own root element.
     tagName: 'li',
     initialize: function(options) {
         this.options = options || {};
         app.views.makeExpandable(this, this.options.expandClass);
     },
-    template: function(data) {
-        return '{model.toString} <span class="duration">{timing}</span><i/>'.format(data);
-    },
-    serializeData: function() {
-        var data = Marionette.View.prototype.serializeData.call(this, arguments);
-        data.model = this.model; // give the serialized object a reference back to the model
-        data.view = this; // and view
-        return data;
+    template: '<span>{{modelstring}} <span class="duration">{{timing}}</span><i/></span>',
+    templateContext: function() {
+    	return {modelstring: this.model.toString()};
     },
     attributes: function() {
     	try {
@@ -592,11 +586,13 @@ app.views.PathElementItemView = app.views.SequenceListItemView.extend({
     onExpand: function() {
     },
     templateContext: function() {
+    	var result = app.views.SequenceListItemView.prototype.templateContext.call(this);
     	if (this.model.get('type') == 'Station') {
-            return {timing: app.util.secondsToHMS(this.model.getCumulativeDuration())};
+            result['timing'] = app.util.secondsToHMS(this.model.getCumulativeDuration());
         } else {
-            return {timing: '+' + app.util.secondsToHMS(this.model.getDuration())};
+            result['timing'] = '+' + app.util.secondsToHMS(this.model.getDuration());
         }
+    	return result;
     }
 });
 

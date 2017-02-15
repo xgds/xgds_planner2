@@ -353,16 +353,13 @@ app.models = app.models || {};
         },
 
         toString: function() {
-            var repr;
             switch (this.get('type')) {
             case 'Station':
-                repr = this._sequenceLabel;
-                break;
+                return this._sequenceLabel;
             case 'Segment':
-                repr = Math.round(this._segmentLength) + ' m';
-                break;
+                return Math.round(this._segmentLength) + ' m';
             }
-            return repr;
+            return undefined;
         },
 
         toJSON: toJsonWithFilters,
