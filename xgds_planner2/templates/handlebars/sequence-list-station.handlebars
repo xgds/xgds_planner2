@@ -1,3 +1,24 @@
-<ul class="sequence-list">
+<div class="sequence-list">
+    <div class="edit-meta head-sequence-item">{{ itemMoniker}} Properties<i/></div>
+    <div>
+    {{#if canDelete }}
+    <div class="row">
+    	<button  id="btn-kill" class="pretty default small">Delete {{ itemMoniker }}</button>
+    </div>
+    {{/if }}
+    {{#if commands.length }} 
+    <div class="row">
+       <div class="pill">
+           <button  id="btn-cut" class="pill-left small">Cut</button>
+           <button  id="btn-copy" class="small">Copy</button>
+           <button  id="btn-paste" class="small">Paste</button>
+           <button  id="btn-delete" class="pill-right small">Delete</button>
+		</div>
+	</div>
+	{{/if }}
+	</div>
+	{{#if canHaveCommands }}
     <ul class="command-list"></ul>
-</ul>
+    <div class="add-commands foot-sequence-item">Add {{commandMonikerPlural}}</i></div>
+    {{/if}}
+</div>

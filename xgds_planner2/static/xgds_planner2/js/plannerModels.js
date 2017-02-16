@@ -711,7 +711,11 @@ app.models = app.models || {};
             // relational can't find the model (it tries to use the id
             // attribute)
             // and so creates a new one, which is bad
-            this.set(this.idAttribute, this.cid);
+            try {
+            	this.set(this.idAttribute, this.cid);
+            } catch (err){
+            	debugger;
+            }
             var commandLabel = this.get('name');
             if (_.isUndefined(commandLabel)){
                 commandLabel = "";

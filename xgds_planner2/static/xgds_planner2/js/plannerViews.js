@@ -790,13 +790,13 @@ app.views.NoCommandsView = Marionette.View.extend({
 	}
 });
 
-app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
+app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.extend({
     template: '#template-sequence-list-station',
+    childrenEl: '.command-list',
     childView: app.views.CommandItemView,
-//    childViewContainer: '.command-list',
     childViewOptions: {
-        expandClass: 'col2',
-        container: '.command-list'
+        expandClass: 'col2'
+//        container: '.command-list'
     },
     emptyView: app.views.NoCommandsView,
     events: {
@@ -811,24 +811,21 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
         'click .add-commands': function(evt) {
             app.vent.trigger('showPresets', this.model);
         },
-        'sortstop .command-list': function(evt, ui) {
-            //var commandOrder = this.$el.find('.command-list').sortable('toArray', {'attribute': 'data-item-id'});
-            var commandOrder = this.$el.find('.command-list').sortable().toArray({'attribute': 'data-item-id'});
-            var newOrder = [];
-            for (var i=1; i<commandOrder.length-1; i++){
-            	newOrder.push($(commandOrder[i]).attr('data-item-id'));
-            }
+        'sortstop': function(evt, ui) {
+        	var newOrder = this.$childrenEl.sortable('toArray', {'attribute': 'data-item-id'});
             var oldOrder = this.model.get('commands').models.map(function(model) {
-                return model.cid;
+            	return model.cid;
             });
-            if (JSON.stringify(newOrder) == JSON.stringify(oldOrder))
+            if (JSON.stringify(newOrder) == JSON.stringify(oldOrder)){
                 // no change in order
                 return;
+            }
             var commandModels = newOrder.map(function(cid) {
                 return this.model.get('commands').filter(function(child) {
-                    return child.cid == cid;
+                	return child.cid == cid;
                 })[0];
             }, this);
+//            this.model.set('commands', commandModels);
             this.model.get('commands').models = commandModels;
             app.vent.trigger('change:plan');
         }
@@ -842,17 +839,6 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
 	    		this.model.attributes.itemMoniker = app.options.segmentMoniker;
 	    	}
     	}
-    	this.head = new app.views.MiscItemView({
-            model: this.model,
-            expandClass: 'col2',
-            template: '#template-sequence-list-station-head'
-        });
-        this.foot = new app.views.MiscItemView({
-            model: this.model,
-            expandClass: 'col2',
-            template: '#template-sequence-list-station-foot'
-        });
-        this.addChildView(this.head, 0);
         
         app.vent.reply('selectedCommands', this.getSelectedCommands, this);
         app.vent.reply('unselectAllCommands', this.unselectAll, this);
@@ -867,26 +853,25 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
         this.on('childview:selected', this.onItemSelected, this);
         this.on('childview:unselected', this.onItemUnSelected, this);
         this.itemsSelected = false;
-        this.listenTo(app.vent, 'showMeta', function() {
-            this.head.expand(this.head);
-        });
-        this.listenTo(app.vent, 'showPresets', function() {
-            this.foot.expand(this.foot);
-        });
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
     },
     templateContext: function() {
+    	var canHaveCommands = app.canHaveCommands(this.model.attributes.type);
     	if (this.model.attributes.type == 'Station'){
     		var itemMoniker = app.options.stationMoniker;
+    		var canDelete = true;
     	} else {
     		var itemMoniker = app.options.segmentMoniker;
+    		var canDelete = false;
     	}
     	return {
-    		stationMoniker: app.options.stationMoniker,
-    		commandMoniker: app.options.commandMoniker,
-    		commandMonikerPlural: app.options.commandMonikerPlural,
-    		itemMoniker: itemMoniker
+    		'stationMoniker': app.options.stationMoniker,
+    		'commandMoniker': app.options.commandMoniker,
+    		'commandMonikerPlural': app.options.commandMonikerPlural,
+    		'itemMoniker': itemMoniker,
+    		'canDelete': canDelete,
+    		'canHaveCommands': canHaveCommands
     	};
     },
     onItemSelected: function() {
@@ -943,9 +928,7 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
         if (app.State.metaExpanded) {
             app.vent.trigger('showMeta', this.model);
         } else if (app.State.addCommandsExpanded) {
-            //console.log('----expanding foot');
             app.vent.trigger('showPresets', this.model);
-            //console.log(this.foot.expanded);
         } else if (!_.isUndefined(app.State.commandSelected)) {
             var childView = this.children.findByModel(app.State.commandSelected);
             if (_.isUndefined(childView)) {
@@ -975,10 +958,9 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
     },
 
     onRender: function() {
-    	this.addChildView(this.foot); 
         
 		if (this.collection.length > 0){
-		    this.$el.find('.command-list').sortable();
+			this.$childrenEl.sortable();
 		}
         this.restoreExpanded();
         if (!_.isEmpty(app.vent.request('selectedCommands'))) {
@@ -987,34 +969,7 @@ app.views.CommandSequenceCollectionView = Marionette.CollectionView.extend({
             this.disableCommandActions();
         }
     },
-    // The default implementation:
-    attachHtml: function(collectionView, childView, index){
-      if (collectionView._isBuffering) {
-        // buffering happens on reset events and initial renders
-        // in order to reduce the number of inserts into the
-        // document, which are expensive.
-        collectionView._bufferedChildren.splice(index, 0, childView);
-      } else {
-        // If we've already rendered the main collection, append
-        // the new child into the correct order if we need to. Otherwise
-        // append to the end.
-    	  var realChild = false;
-		  if (this.foot.$el.parent().length > 0) {
-			  realChild = !childView.isPrototypeOf(app.views.MiscItemView);
-		  }
-    	  if (realChild){
-    		  // we are adding, stick it before the foot.
-    		  this.foot.$el.before(childView.$el);
-    	  } else {
-    		  if (!collectionView._insertBefore(childView, index)){
-    			  collectionView._insertAfter(childView);
-    		  }
-    	  }
-      }
-    },
     onClose: function() {
-        this.head.reset();
-        this.foot.reset();
         this.children.each(function(view) {
             view.reset();
         });

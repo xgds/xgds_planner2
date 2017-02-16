@@ -18,15 +18,6 @@ var DEBUG_EVENTS = false;
 
 
 /*
-** Override the TemplateCache function responsible for
-** rendering templates so that it will use Handlebars.
-*/
-Marionette.TemplateCache.prototype.compileTemplate = function(
-    rawTemplate, options) {
-    return Handlebars.compile(rawTemplate, options);
-};
-
-/*
 ** Main Application object
 */
 var app = (function($, _, Backbone) {
@@ -373,6 +364,22 @@ var app = (function($, _, Backbone) {
 	    		}
 	    	}
 	    	return null;
+	    },
+	    canHaveCommandsMap: {},
+	    canHaveCommands: function(pathElementType){
+	    	result = false;
+	    	// see if this type of path element can have child commands
+	    	if (!(pathElementType in this.canHaveCommandsMap)){
+	    		var presets = app.getCommandPresets(pathElementType);
+	    		if (!_.isEmpty(presets)){
+	    			result = true;
+	    		}
+	    		this.canHaveCommandsMap[pathElementType] = result;
+	    	} else {
+	    		result = this.canHaveCommandsMap[pathElementType];
+	    	}
+	    	return result;
+	    	
 	    },
 	    getCoordinateList: function(startUuid, endUuid) {
 	    	var sequence = app.currentPlan.get('sequence');

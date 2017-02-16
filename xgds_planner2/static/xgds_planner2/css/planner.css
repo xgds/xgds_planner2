@@ -33,7 +33,6 @@ div[id^="col"] > li:hover {
     border-style: none;
     border-width: 1px;
     margin-right: 0px;
-    margin-bottom: 4px;
     margin-left: 0;
     background-color: #aaaaaa;
 }
