@@ -280,7 +280,7 @@ app.models = app.models || {};
      * Collection that can instantiate more than one model type.
      */
     models.PathElement = Backbone.RelationalModel.extend({
-        idAttribute: '_id', // Doesn't exist, but allows us to change the "id"
+        idAttribute: 'cid', //'_id', // Doesn't exist, but allows us to change the "id"
         // attribute with impunity.
         relations: [
             {
@@ -341,7 +341,7 @@ app.models = app.models || {};
             // and so creates infinite new ones
             // furthermore, this id needs to be the same as cid. Oh
             // relational...
-            this.set(this.idAttribute, this.cid);
+//            this.set(this.idAttribute, this.cid);
             
             _.each(_.keys(this.schema), function(attr) {
                 // add any onChange listeners
@@ -667,7 +667,7 @@ app.models = app.models || {};
 
 
     models.Command = Backbone.RelationalModel.extend({
-        idAttribute: '_id', // prevent clobbering command ID's
+        idAttribute: 'cid',//'_id', // prevent clobbering command ID's
 
         initialize: function() {
             // Construct a schema compatible with backbone-forms
@@ -711,11 +711,11 @@ app.models = app.models || {};
             // relational can't find the model (it tries to use the id
             // attribute)
             // and so creates a new one, which is bad
-            try {
-            	this.set(this.idAttribute, this.cid);
-            } catch (err){
-            	debugger;
-            }
+//            try {
+//            	this.set(this.idAttribute, this.cid);
+//            } catch (err){
+//            	debugger;
+//            }
             var commandLabel = this.get('name');
             if (_.isUndefined(commandLabel)){
                 commandLabel = "";
