@@ -1,13 +1,12 @@
 <div class="sequence-list">
     <div class="edit-meta head-sequence-item">{{ itemMoniker}} Properties<i/></div>
     <div>
-    {{#if canDelete }}
-    <div class="row">
+    {{#if canDelete}}
+    <div class="row" >
     	<button  id="btn-kill" class="pretty default small">Delete {{ itemMoniker }}</button>
     </div>
-    {{/if }}
-    {{#if commands.length }} 
-    <div class="row">
+    {{/if}}
+    <div class="row" id="commandButtonRow" {{#unless commands.length}}style="display:none"{{/unless}}>
        <div class="pill">
            <button  id="btn-cut" class="pill-left small">Cut</button>
            <button  id="btn-copy" class="small">Copy</button>
@@ -15,7 +14,6 @@
            <button  id="btn-delete" class="pill-right small">Delete</button>
 		</div>
 	</div>
-	{{/if }}
 	</div>
 	{{#if canHaveCommands }}
     <ul class="command-list"></ul>

@@ -830,6 +830,16 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             app.vent.trigger('change:plan');
         }
     },
+    onAddChild: function() {
+    	if (this.collection.length == 1){
+    		this.$el.find("#commandButtonRow").show();
+    	}
+    },
+    onRemoveChild: function(){
+    	if (this.collection.length == 0){
+    		this.$el.find("#commandButtonRow").hide();
+    	}
+    },
     initialize: function() {
     	if (this.model != undefined){
 	    	this.model.attributes.commandMonikerPlural = app.options.commandMonikerPlural;
