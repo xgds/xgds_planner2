@@ -60,6 +60,7 @@ var DEBUG_EVENTS = false;
 				playback.updateEndTime(app.getEndTime(newDuration));
 			});
 		},
+		Actions: xGDS.Actions,
 		State: {
 			commandSelected: undefined,
 			stationSelected: undefined,
@@ -80,128 +81,15 @@ var DEBUG_EVENTS = false;
 			mapHeightSet: false,
 			siteFrameMode: false,
 		},
-		Actions: {
-			undoStack: new Array(),
-			redoStack: new Array(),
-			currentState: undefined,
-			enabled: true,
-			_disableCount: 0,
-			_inAction: false,
-			_enterAction: function() {
-				this._inAction = true;
-			},
-			_exitAction: function() {
-				this._inAction = false;
-			},
-			disable: function() {
-				if (this._inAction)
-					return;
-				this._enterAction();
-				this._disableCount += 1;
-//				console.log('DISABLED COUNT ' + this._disableCount);
-				this.enabled = false;
-				this._exitAction();
-			},
-			enable: function() {
-				if (this._inAction)
-					return;
-				this._enterAction();
-				this._disableCount -= 1;
-//				console.log('ENABLING: DISABLED COUNT ' + this._disableCount);
-				if (this._disableCount <= 0) {
-					this.enabled = true;
-					this._disableCount = 0;
-				}
-				this._exitAction();
-			},
-			undoEmpty: function() {
-				return this.undoStack.length == 0;
-			},
-			redoEmpty: function() {
-				return this.redoStack.length == 0;
-			},
-			setInitial: function() {
-				if (this.currentState == undefined) {
-					this.currentState = JSON.stringify(app.currentPlan.toJSON());
-				}
-			},
-			resetCurrent: function() {
-				if (this._inAction)
-					return;
-				this._enterAction();
-				this.currentState = JSON.stringify(app.currentPlan.toJSON());
-				this._exitAction();
-			},
-			action: function() {
-				if (this._inAction)
-					return;
-				if (!this.enabled)
-//					console.log('NOT ENABLED ACTION');
-//				console.trace();
-				return;
-				if (this.currentState == undefined)
-					return;
-				this.disable();
-				this._enterAction();
-				var plan = app.currentPlan.toJSON();
-				var planString = JSON.stringify(plan);
-				if (this.currentState == planString) {
-					// plan unchanged from current state
-				} else {
-					this.undoStack.push(this.currentState);
-					this.currentState = planString;
-					this.redoStack = new Array();
-					app.vent.trigger('undoNotEmpty');
-					app.vent.trigger('redoEmpty');
-					app.vent.trigger('actionOcurred');
-				}
-				this._exitAction();
-				this.enable();
-			},
-			undo: function() {
-				if (this._inAction)
-					return;
-				if (!this.enabled)
-					return;
-				this.disable();
-				this._enterAction();
-				var planString = this.undoStack.pop();
-				var plan = JSON.parse(planString);
-				if (plan == undefined) {
-					app.vent.trigger('undoEmpty');
-				} else {
-					this.redoStack.push(this.currentState);
-					this.currentState = planString;
-					app.updatePlan(plan);
-					app.vent.trigger('redoNotEmpty');
-					if (this.undoStack.length == 0)
-						app.vent.trigger('undoEmpty');
-				}
-				this._exitAction();
-				this.enable();
-			},
-			redo: function() {
-				if (this._inAction)
-					return;
-				if (!this.enabled)
-					return;
-				this.disable();
-				this._enterAction();
-				var planString = this.redoStack.pop();
-				var plan = JSON.parse(planString);
-				if (plan == undefined) {
-					app.vent.trigger('redoEmpty');
-				} else {
-					this.undoStack.push(this.currentState);
-					this.currentState = planString;
-					app.updatePlan(plan);
-					app.vent.trigger('undoNotEmpty');
-					if (this.redoStack.length == 0)
-						app.vent.trigger('redoEmpty');
-				}
-				this._exitAction();
-				this.enable();
+		getSerializableObject: function() {
+			if (!_.isUndefined(this.currentPlan)) {
+				return this.currentPlan;
+			} else {
+				return '';
 			}
+		},
+		updateSerializableObject: function(sObject){
+			this.updatePlan(sObject);
 		},
 		initialize: function(options) {
 			this.options = options = _.defaults(options || {}, {
