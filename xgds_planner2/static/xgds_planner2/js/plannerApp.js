@@ -19,8 +19,7 @@ var DEBUG_EVENTS = false;
 
 (function( xGDS, $, _, Backbone, Marionette ) {
 
-	xGDS.PlannerRootView = Marionette.View.extend({
-		template: '#application_contents',
+	xGDS.PlannerRootView = xGDS.RootView.extend({
 		regions: {
 			mapRegion: '#map',
 			toolbar: '#toolbar',
@@ -33,16 +32,6 @@ var DEBUG_EVENTS = false;
 			this.showChildView('toolbar', new app.views.ToolbarView());
 			this.showChildView('tabs', new app.views.TabNavView());
 			this.showChildView('plot', new app.views.PlanPlotView());
-		},
-		onAttach: function() {
-			var pageTopHeight = $('#page-top').outerHeight();
-			var pageElement = $('#page');
-			var pageContentElement = $('#page-content');
-			pageContentElement.outerHeight(pageElement.innerHeight() - pageTopHeight);
-			$(window).bind('resize', function() {
-				pageContentElement.outerHeight(pageElement.innerHeight() - pageTopHeight);
-			});
-			app.vent.trigger('initialRender');
 		}
 	});
 
@@ -60,7 +49,6 @@ var DEBUG_EVENTS = false;
 				playback.updateEndTime(app.getEndTime(newDuration));
 			});
 		},
-		Actions: xGDS.Actions,
 		State: {
 			commandSelected: undefined,
 			stationSelected: undefined,
@@ -81,6 +69,7 @@ var DEBUG_EVENTS = false;
 			mapHeightSet: false,
 			siteFrameMode: false,
 		},
+		Actions: xGDS.Actions,
 		getSerializableObject: function() {
 			if (!_.isUndefined(this.currentPlan)) {
 				return this.currentPlan;
@@ -154,28 +143,8 @@ var DEBUG_EVENTS = false;
 			});
 			this.vent.trigger('undoEmpty');
 			this.vent.trigger('redoEmpty');
-			_.bind(Backbone.history.start, Backbone.history);
 		},
 		util: {
-			indexBy: function(list, keyProp) {
-				// Return an object that indexes the objects in a list by their key property.
-				// keyProp should be a string.
-				obj = {};
-				_.each(list, function(item) {
-					obj[item[keyProp]] = item;
-				});
-				return obj;
-			},
-			groupBy: function(list, keyProp) {
-				obj = {};
-				_.each(list, function(item) {
-					if (_.isUndefined(obj[item[keyProp]])) {
-						obj[item[keyProp]] = [];
-					}
-					obj[item[keyProp]].push(item);
-				});
-				return obj;
-			},
 			HMSToSeconds: function(hms) {
 				// given a time in HH:mm:ss return the seconds
 				var duration = moment.duration(hms);
@@ -185,85 +154,9 @@ var DEBUG_EVENTS = false;
 				// given a time in seconds return the HH:mm:ss
 				var duration = moment.duration(seconds, "seconds");
 				return duration.format("HH:mm:ss", { trim: false });
-			},
-			randomColor: function() {
-				return '#' + ((1 << 24) * Math.random() | 0).toString(16);
-			},
-			rainbow: function(numOfSteps, step) {
-				// This function generates vibrant, 'evenly spaced' colours (i.e. no clustering).
-				// This is ideal for creating easily distiguishable vibrant markers in Google Maps and other apps.
-				// Adam Cole, 2011-Sept-14
-				// HSV to RBG adapted from:
-				// http://mjijackson.com/2008/02/rgb-to-hsl-and-rgb-to-hsv-color-model-conversion-algorithms-in-javascript
-				// source: http://stackoverflow.com/questions/1484506/random-color-generator-in-javascript/7419630
-				var r, g, b;
-				var h = step / numOfSteps;
-				var i = ~~(h * 6);
-				var f = h * 6 - i;
-				var q = 1 - f;
-				switch (i % 6) {
-				case 0:
-					r = 1, g = f, b = 0;
-					break;
-				case 1:
-					r = q, g = 1, b = 0;
-					break;
-				case 2:
-					r = 0, g = 1, b = f;
-					break;
-				case 3:
-					r = 0, g = q, b = 1;
-					break;
-				case 4:
-					r = f, g = 0, b = 1;
-					break;
-				case 5:
-					r = 1, g = 0, b = q;
-					break;
-				}
-				var c = '#' + ('00' + (~~(r * 255)).toString(16)).slice(-2) +
-				('00' + (~~(g * 255)).toString(16)).slice(-2) +
-				('00' + (~~(b * 255)).toString(16)).slice(-2);
-				return (c);
-			},
-
-			toSiteFrame: function(coords, alternateCrs) {
-				if (alternateCrs.type == 'roversw' &&
-						alternateCrs.properties.projection == 'utm') {
-					var utmcoords = [null, null, null];
-					LLtoUTM(coords[1], coords[0], utmcoords, alternateCrs.properties.zone);
-					var x = utmcoords[1] - alternateCrs.properties.originNorthing;
-					var y = utmcoords[0] - alternateCrs.properties.originEasting;
-					return [x, y]; // northing, easting for roversw
-				} else if (alternateCrs.type == 'proj4') {
-					var proj = proj4(alternateCrs.properties.projection);
-					return proj.forward(coords);
-				} else {
-					console.warn('Alternate CRS unknown');
-					return coords;
-				}
-			},
-
-			toLngLat: function(coords, alternateCrs) {
-				if (alternateCrs.type == 'roversw' &&
-						alternateCrs.properties.projection == 'utm') {
-					var oeasting = alternateCrs.properties.originEasting;
-					var onorthing = alternateCrs.properties.originNorthing;
-					var utmEasting = parseFloat(coords[1]) + alternateCrs.properties.originEasting;
-					var utmNorthing = parseFloat(coords[0]) + alternateCrs.properties.originNorthing;
-					var lonLat = {};
-					UTMtoLL(utmNorthing, utmEasting,
-							alternateCrs.properties.zone,
-							lonLat);
-					return [lonLat.lon, lonLat.lat];
-				} else if (alternateCrs.type == 'proj4') {
-					var proj = proj4(alternateCrs.properties.projection);
-					return proj.inverseTransform(coords);
-				} else {
-					console.warn('Alternate CRS unknown');
-					return coords;
-				}
 			}
+
+
 		},
 		parseJSON: function() {
 			/*
@@ -280,20 +173,20 @@ var DEBUG_EVENTS = false;
 				this.planNamedURLs = [];
 			} 
 
-			this.stationParamSpecs = this.util.indexBy(this.planSchema.stationParams, 'id');
-			this.segmentParamSpecs = this.util.indexBy(this.planSchema.segmentParams, 'id');
-			this.planParamSpecs = this.util.indexBy(this.planSchema.planParams, 'id');
+			this.stationParamSpecs = $.indexBy(this.planSchema.stationParams, 'id');
+			this.segmentParamSpecs = $.indexBy(this.planSchema.segmentParams, 'id');
+			this.planParamSpecs = $.indexBy(this.planSchema.planParams, 'id');
 
 			// Indexes to make command types easier to retrieve.
-			this.commandSpecs = this.util.indexBy(this.planSchema.commandSpecs, 'id');
+			this.commandSpecs = $.indexBy(this.planSchema.commandSpecs, 'id');
 
-			//this.commandPresetsByCode = this.util.indexBy( this.planLibrary.commands, 'presetCode' );
-			this.commandPresetsByName = this.util.indexBy(this.planLibrary.commands, 'name');
-			_.extend(this.commandPresetsByName, this.util.indexBy(this.planLibrary.commands, 'presetName'));
-			this.commandPresetsByType = this.util.groupBy(this.planLibrary.commands, 'type');
+			//this.commandPresetsByCode = $.indexBy( this.planLibrary.commands, 'presetCode' );
+			this.commandPresetsByName = $.indexBy(this.planLibrary.commands, 'name');
+			_.extend(this.commandPresetsByName, $.indexBy(this.planLibrary.commands, 'presetName'));
+			this.commandPresetsByType = $.groupBy(this.planLibrary.commands, 'type');
 
 			// create lookup table for units, based on the unit spects
-			this.unitSpecs = this.util.indexBy(this.planSchema.unitSpecs,'id');
+			this.unitSpecs = $.indexBy(this.planSchema.unitSpecs,'id');
 			this.units = {
 					// this object will be filled
 			};
@@ -587,23 +480,8 @@ var DEBUG_EVENTS = false;
 			});
 			this[key] = presets;
 			return presets;
-		},
-		getColor: function(key) {
-			function allocateColor() {
-				return app.util.randomColor();
-			} 
-			if (!app.colors) {
-				app.colors = {};
-			}
-			var color;
-			if (_.has(app.colors, key)) {
-				color = app.colors[key];
-			} else {
-				color = allocateColor();
-				app.colors[key] = color;
-			}
-			return color;
 		}
+		
 	});
 
 	

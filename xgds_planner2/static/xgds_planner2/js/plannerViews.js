@@ -1171,16 +1171,8 @@ app.views.CommandPresetsView = Marionette.View.extend({
 });
 
 
-app.views.TabNavView = Marionette.View.extend({
-    template: '#template-tabnav',
+app.views.TabNavView = xGDS.TabNavView.extend({
     templateContext: {schedule: app.options.schedule},
-    regions: {
-        tabTarget: '#tab-target',
-        tabContent: '#tab-content'
-    },
-    events: {
-        'click ul.tab-nav li': 'clickSelectTab'
-    },
     viewMap: {
         'meta': app.views.PropertiesForm,
         'sequence': app.views.PlanSequenceView,
@@ -1192,82 +1184,14 @@ app.views.TabNavView = Marionette.View.extend({
     },
 
     initialize: function() {
-        this.layersView = null;
-        this.on('tabSelected', this.setTab);
+    	xGDS.TabNavView.prototype.initialize.call(this);
         var context = this;
         this.listenTo(app.vent, 'onPlanLoaded', function() {
-        	 context.setTab('meta');
-        });
-        this.listenTo(app.vent, 'setTabRequested', function(tabId) {
-            context.setTab(tabId);
-        });
-        $('#tabs-gridstack-item').on('resizestop', function(event, ui) {
-        	setTimeout(function(){
-        		context.handleGridstackResize();
-        	}, 105);
-        });
+        	 this.setTab('meta');
+        }, this);
     },
-
-    handleGridstackResize: function() {
-    	if (!_.isUndefined(app.State.tabsContainer)){
-    		var tabsDiv = this.$el.parent();
-    		var grandpa = this.$el.parent().parent();
-    		tabsDiv.width(grandpa.width());
-        }
-    },
-    
-
-    clickSelectTab: function(event) {
-        var newmode = $(event.target).parents('li').data('target');
-        this.trigger('tabSelected', newmode);
-    },
-
-    setTab: function(tabId) {
-        var oldTab = app.currentTab;
-        app.currentTab = tabId;
-        if (oldTab == tabId){
-            return;
-        }
-        var $tabList = this.$el.find('ul.tab-nav li');
-        $tabList.each(function() {
-            li = $(this);
-            if (li.data('target') === tabId) {
-                li.addClass('active');
-            } else {
-                li.removeClass('active');
-            }
-        });
-        
-        var view = undefined;
-        if (tabId == 'layers'){
-        	// we reuse the layers view
-            if (_.isNull(this.layersView)){
-            	this.layersView =  this.constructNewViewFromId(tabId);
-            }
-            view = this.layersView;
-        } else {
-        	if (oldTab == 'layers'){
-            	this.detachChildView('tabContent');
-            }
-        	view = this.constructNewViewFromId(tabId);
-        }
-        if (view == undefined){
-    		return;
-    	}
-        app.currentTabView = view;
-    	this.showChildView('tabContent', view);
-        
-        app.vent.trigger('tab:change', tabId);
-    },
-    constructNewViewFromId: function(tabId){
-    	var viewClass = this.viewMap[tabId];
-        if (! viewClass) { 
-        	return undefined; 
-        }
-        var view = new viewClass({
-            model: app.currentPlan
-        });
-        return view;
+    getModel: function() {
+    	return app.currentPlan;
     }
 
 });
