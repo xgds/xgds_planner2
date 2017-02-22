@@ -37,6 +37,7 @@ var DEBUG_EVENTS = false;
 
 	xGDS.PlannerApplication = xGDS.Application.extend( {
 		resequencing: false,
+		expandableTab: 'sequence',
 		dirty: false,
 		colors: {},
 		getRootView: function() {

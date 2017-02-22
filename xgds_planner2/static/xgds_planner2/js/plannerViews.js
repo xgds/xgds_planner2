@@ -478,75 +478,13 @@ app.views.PlanSequenceView = Marionette.View.extend({
     }
 });
 
-app.views.makeExpandable = function(view, expandClass) {
-    /*
-     * Call this on a view to indicate it is a expandable item in the three-column layout.
-     * When the view's 'expand' event is triggered, it will display it's chevron and trigger
-     * the global 'viewExpanded' event.  On recieving a global 'viewExpoanded' event with an
-     * expandClass that matches its own, the view will remove it's chevron.
-     */
-    if (app.currentTab != 'sequence') {
-        // memory leak work around
-        return;
-    }
-    var expandable = {
-        expand: function(childView) {
-            this.trigger('expand', childView);
-        },
-        _expand: function() {
-            var expandClass = this.options.expandClass;
-            this.expanded = true;
-            this._addIcon();
-            app.vent.trigger('viewExpanded', this, expandClass);
-            if (!_.isUndefined(this.onExpand) && _.isFunction(this.onExpand)) {
-                this.onExpand();
-            }
-        },
-        unexpand: function() {
-            //            console.log('(((((((Unexpanding');
-            this.expanded = false;
-            this.$el.find('i').removeClass('icon-play');
-        },
-        onExpandOther: function(target, expandClass) {
-            //            console.log('Got onExpandOther');
-            if (this.options.expandClass === expandClass && this != target && target.isClosed != true) {
-                this.unexpand();
-                //                console.log('target:');
-                //                console.log(target);
-            }
-        },
-        _ensureIcon: function() {
-            if (view.$el.find('i').length == 0) {
-                view.$el.append('<i/>');
-            }
-        },
-        _restoreIcon: function() {
-            //            console.log('!!!!!!!!!!!restoring icon');
-            //            console.log('Expanded:', this.expanded);
-            if (this.expanded) {
-                this._addIcon();
-            }
-        },
-        _addIcon: function() {
-            this._ensureIcon();
-            this.$el.find('i').addClass('icon-play');
-        },
-        onClose: function() {
-            this.stopListening();
-        }
-    };
-    view = _.defaults(view, expandable);
-    view.options = _.defaults(view.options, {expandClass: expandClass});
-    view.listenTo(app.vent, 'viewExpanded', view.onExpandOther, view);
-    view.on('expand', view._expand, view);
-    view.on('render', view._restoreIcon, view);
-};
+
 
 app.views.SequenceListItemView = Marionette.View.extend({
     tagName: 'li',
     initialize: function(options) {
         this.options = options || {};
-        app.views.makeExpandable(this, this.options.expandClass);
+        xGDS.makeExpandable(this, this.options.expandClass);
     },
     template: '<span>{{modelstring}} <span class="duration">{{timing}}</span><i/></span>',
     templateContext: function() {
@@ -761,7 +699,7 @@ app.views.MiscItemView = app.views.SequenceListItemView.extend({
         if (this.options.click) {
             this.on('click', this.options.click, this);
         }
-        app.views.makeExpandable(this, this.options.expandClass);
+        xGDS.makeExpandable(this, this.options.expandClass);
     },
     templateContext: function() {
     	if (this.model.attributes.type == 'Station'){
