@@ -55,7 +55,7 @@ PLAN_SCHEMA_CACHE = {}
 
 
 class AbstractVehicle(models.Model):
-    name = models.CharField(max_length=192, blank=True, db_index=True)
+    name = models.CharField(max_length=64, blank=True, db_index=True)
     notes = models.TextField(blank=True)
     type = models.CharField(max_length=16, db_index=True)
 
@@ -124,7 +124,7 @@ DEFAULT_GROUP_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.GroupFligh
 
 class AbstractFlight(models.Model):
     uuid = UuidField(unique=True, db_index=True)
-    name = models.CharField(max_length=255, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV', db_index=True)
+    name = models.CharField(max_length=128, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV', db_index=True)
     locked = models.BooleanField(blank=True, default=False)
     start_time = models.DateTimeField(null=True, blank=True, db_index=True)
     end_time = models.DateTimeField(null=True, blank=True, db_index=True)
@@ -257,7 +257,7 @@ class AbstractGroupFlight(models.Model):
     This GroupFlight model represents the overall coordinated
     operation.
     """
-    name = models.CharField(max_length=255, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A', db_index=True)
+    name = models.CharField(max_length=128, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A', db_index=True)
     notes = models.TextField(blank=True)
 
     def thumbnail_url(self):
@@ -295,7 +295,7 @@ class GroupFlight(AbstractGroupFlight):
 
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)
-    name = models.CharField(max_length=256, db_index=True)
+    name = models.CharField(max_length=128, db_index=True)
     dateModified = models.DateTimeField(db_index=True)
     creator = models.ForeignKey(User, null=True, blank=True, db_index=True)
 
