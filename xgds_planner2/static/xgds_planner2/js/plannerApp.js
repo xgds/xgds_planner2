@@ -49,6 +49,7 @@ var DEBUG_EVENTS = false;
 			this.listenTo(this.vent,'updatePlanDuration', function(newDuration) {
 				playback.updateEndTime(app.getEndTime(newDuration));
 			});
+			app.vent.trigger('mapmode', 'navigate');
 		},
 		State: {
 			commandSelected: undefined,
@@ -68,7 +69,7 @@ var DEBUG_EVENTS = false;
 			tabsContainer: undefined,
 			mapResized: false,
 			mapHeightSet: false,
-			siteFrameMode: false,
+			siteFrameMode: false
 		},
 		Actions: xGDS.Actions,
 		getSerializableObject: function() {

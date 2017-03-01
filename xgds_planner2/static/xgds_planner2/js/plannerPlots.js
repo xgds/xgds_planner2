@@ -476,18 +476,20 @@ app.views.PlanPlotView = Marionette.View.extend({
 		var plotDiv = this.$el.find("#plotDiv");
 		sequence.each(function(pathElement, i, sequence) {
     		if (pathElement.attributes.type == 'Station'){
-    			startEndTime = this.startEndTimes[index];
-    			o = context.plot.pointOffset({ x: startEndTime.start.toDate().getTime(), y: 0 });
-    			if (pathElement.attributes.uuid in context.plotLabels){
-    				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
-    				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
-    			} else {
-    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:black;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
-    				el.appendTo(plotDiv);
-    				context.plotLabels[pathElement.attributes.uuid] = el;
+    			var startEndTime = this.startEndTimes[index];
+    			if (startEndTime !== undefined) {
+	    			var o = context.plot.pointOffset({ x: startEndTime.start.toDate().getTime(), y: 0 });
+	    			if (pathElement.attributes.uuid in context.plotLabels){
+	    				context.plotLabels[pathElement.attributes.uuid].text(pathElement._sequenceLabel);
+	    				context.plotLabels[pathElement.attributes.uuid].css({top: (o.top - 20), left: (o.left + 4), position:'absolute'});
+	    			} else {
+	    				var el = $("<div id='plotLabel_" + pathElement.attributes.uuid + "' style='position:absolute;left:" + (o.left + 4) + "px;top:" + (o.top - 20) + "px;color:black;font-weight:bold;'>" + pathElement._sequenceLabel + "</div>");
+	    				el.appendTo(plotDiv);
+	    				context.plotLabels[pathElement.attributes.uuid] = el;
+	    			}
+	        		saveUs.push(pathElement.attributes.uuid);
+	    			index++;
     			}
-        		saveUs.push(pathElement.attributes.uuid);
-    			index++;
     		}
 		}, this);
 //		_.each(Object.keys(context.plotLabels), function(key){

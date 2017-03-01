@@ -20,7 +20,7 @@ app.views.PlanLinksView = Marionette.View.extend({
     template: '#template-plan-links',
     onAttach: function() {
     	var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
-        if (!_.isEmpty(callback)) {
+    	if (!_.isEmpty(callback) && callback !== "null") {
         	$.executeFunctionByName(callback, window, [this.$el]);
         }
     },
