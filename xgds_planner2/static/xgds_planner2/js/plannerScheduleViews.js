@@ -18,34 +18,28 @@ app.views = app.views || {};
 
 var DEFAULT_FORMAT = 'MM/DD/YYYY HH:mm'
 
-app.views.ScheduleView = Backbone.View.extend({
+app.views.ScheduleView = Marionette.View.extend({
     template: '#template-schedule',
     initialize: function() {
     	Handlebars.registerHelper('flightSelected', function (input, flightName) {
             return input === flightName ? 'selected' : '';
         });
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
-        }
     },
-    render: function() {
-    	$('#schedule_message').empty();
+    templateContext: function() {
     	var planned_start_time = "";
     	if (app.options.planExecution !== null){
     		moment.tz.setDefault('Etc/UTC');
     		planned_start_time = moment(app.options.planExecution.planned_start_time).tz(app.getTimeZone()).format('MM/DD/YYYY HH:mm');
     	}
-        this.$el.html(this.template({
-        	planned_start_time: planned_start_time,
-            planExecution: app.options.planExecution,
-            planId: app.planJson.serverId,
-            flight_names: app.options.flight_names
-        }));
+    	var data = {planned_start_time: planned_start_time,
+    			    planExecution: app.options.planExecution,
+    			    planId: app.planJson.serverId,
+    			    flight_names: app.options.flight_names}
+    	return data;
+    },
+    onAttach: function() {
+    	$('#schedule_message').empty();
+    	
         var scheduleDate = this.$el.find("#id_schedule_date");
         scheduleDate.datetimepicker({'controlType': 'select',
             'oneLine': true,
@@ -86,6 +80,7 @@ app.views.ScheduleView = Backbone.View.extend({
                 	playback.updateStartTime(startMoment);
                 	playback.updateEndTime(moment(startMoment).add(app.currentPlan._simInfo.deltaTimeSeconds, 's'));
                 	playback.setCurrentTime(startMoment);
+                	app.vent.trigger('change:scheduledStartTime', startMoment);
                 },
                 error: function(data)
                 {

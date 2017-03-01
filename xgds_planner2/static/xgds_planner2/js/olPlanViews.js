@@ -24,35 +24,18 @@ $(function() {
                 // set up tabs
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-                app.on('recenterMap', this.updateBbox);
+                this.listenTo(app.vent, 'recenterMap', this.updateBbox);
+                this.listenTo(app.vent, 'onPlanLoaded', this.drawPlan);
             },
 
-            handleResize: function() {
-//                app.views.OLMapView.prototype.handleResize.call(this);
-//                if (!_.isUndefined(app.State.tabsContainer)){
-//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-//                                                  app.map.$el.outerWidth() -
-//                                                  app.State.tabsLeftMargin);
-//                }
-            },
-            
-            handleWindowResize: function() {
-                // window size changed, so variables need to be reset
-                if (_.isUndefined(app.tabs.currentView)) {return;}
-                var shouldResize = app.views.OLMapView.prototype.handleWindowResize.call(this);
-//                if (shouldResize){
-//                    app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
-//                    app.State.tabsContainer.width(app.State.pageInnerWidth -
-//                                                  app.map.$el.outerWidth() -
-//                                                  app.State.tabsLeftMargin);
-//                }
-            },
-            
             buildStyles: function() {
             	olStyles.buildPlannerStyles();
             },
             
             updateBbox: function() {
+            	if (app.currentPlan === undefined){
+            		return;
+            	}
                 var sequence = app.currentPlan.get('sequence');
                 if (_.isUndefined(sequence) || sequence.length == 0){
                  // move to bounding box defined in plan
@@ -67,11 +50,6 @@ $(function() {
                         this.map.getView().fit(extent, this.map.getSize(), {}); //.fit(fitExtent(extent, this.map.getSize());
                     }
                 }
-            },
-            
-            render: function() {
-                app.views.OLMapView.prototype.render.call(this);
-                this.drawPlan();
             },
             
             drawPlan: function() {
@@ -89,8 +67,8 @@ $(function() {
     
     // This view class manages the layers that represents an entire plan.
     // On instantiation, pass in the plan sequence Backbone collection as the "collection" arguement.
-    var PlanLayerView = Backbone.View
-        .extend({
+    var PlanLayerView = Marionette.View.extend({
+    		template: false,
             initialize: function(options) {
                 this.options = options || {};
                 this.map = this.options.map
@@ -128,11 +106,11 @@ $(function() {
                     });
                 this.map.addLayer(this.stationsDecoratorsLayer);
 
-                app.vent.on('mapmode', this.setMode, this);
+                this.listenTo(app.vent, 'mapmode', this.setMode);
                 app.vent.trigger('mapmode', 'navigate');
                 
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
-                this.listenTo(app.currentPlan, 'sync', this.render, this);
+                this.listenTo(app.currentPlan, 'sync', this.render);
                 app.State.planLoaded = true;
                 app.on('recenterMap', this.fitPlan);
                 
@@ -150,20 +128,20 @@ $(function() {
             clear: function() {
         	
             },
-            render: function() {
-        	var redraw = false;
-        	if (this.stationsFeatures.getLength() > 0){
-        	    redraw = true;
-        	    this.segmentsVector.clear();
-        	    this.segmentsFeatures.clear();
-        	    this.segmentsDecorators.clear();
-        	    this.segmentsDecoratorsLayer.getSource().clear();
-        	    
-        	    this.stationsVector.clear();
-        	    this.stationsFeatures.clear();
-        	    this.stationsDecorators.clear();
-        	    this.stationsDecoratorsLayer.getSource().clear();
-        	}
+            onRender: function() {
+	        	var redraw = false;
+	        	if (this.stationsFeatures.getLength() > 0){
+	        	    redraw = true;
+	        	    this.segmentsVector.clear();
+	        	    this.segmentsFeatures.clear();
+	        	    this.segmentsDecorators.clear();
+	        	    this.segmentsDecoratorsLayer.getSource().clear();
+	        	    
+	        	    this.stationsVector.clear();
+	        	    this.stationsFeatures.clear();
+	        	    this.stationsDecorators.clear();
+	        	    this.stationsDecoratorsLayer.getSource().clear();
+	        	}
         	
                 if (this.currentMode) {
                     this.resetMode();
@@ -312,11 +290,9 @@ $(function() {
                             
                         }, this);
                     }
-                    this.stationAdder.setActive(true);
                     this.map.addInteraction(this.stationAdder);
                 },
                 exit: function() {
-                    this.stationAdder.setActive(false);
                     this.map.removeInteraction(this.stationAdder);
                 }
             }, // end addStationMode
@@ -355,7 +331,7 @@ $(function() {
                             if (app.currentTab != 'sequence') {
                                 app.vent.trigger('setTabRequested','sequence');
                             } else {
-                                app.tabs.currentView.tabContent.currentView.render();
+                                app.currentTabView.onRender();
                             }
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
@@ -374,13 +350,11 @@ $(function() {
                         
                         
                     };
-                    this.selectNavigate.setActive(true);
                     this.map.addInteraction(this.selectNavigate);
                     
                 },
                 exit: function() {
                     this.selectNavigate.getFeatures().clear();
-                    this.selectNavigate.setActive(false);
                     this.map.removeInteraction(this.selectNavigate);
                 }
             },
@@ -422,8 +396,6 @@ $(function() {
             },
             
             activateStationRepositioner: function() {
-	        	this.stationRepositioner.setActive(true);
-	        	this.stationDeleter.setActive(true);
 	        	this.map.addInteraction(this.stationRepositioner);
 	        	this.map.addInteraction(this.stationDeleter);
 	        	this.stationDeleter.getFeatures().clear();
@@ -433,8 +405,6 @@ $(function() {
             deactivateStationRepositioner: function() {
 	        	this.map.removeInteraction(this.stationRepositioner);
 	        	this.map.removeInteraction(this.stationDeleter);
-	        	this.stationRepositioner.setActive(false);
-	        	this.stationDeleter.setActive(false);
 	        	this.stationDeleter.getFeatures().un('add', this.deleteStation, this);
             },
             
@@ -448,9 +418,11 @@ $(function() {
 	                        	features: this.stationsFeatures
 	                        });
 	                	this.stationRepositioner.on('modifystart', function(event){
+	                			console.log('stationRepositioner MODIFY START');
 	                            app.Actions.disable();
 	                        }, this);
 	                	this.stationRepositioner.on('modifyend', function(event){
+	                			console.log('stationRepositioner MODIFY END');
 	                            app.Actions.enable();
 	                            app.Actions.action();
 	                            app.vent.trigger('modifyEnd');
@@ -460,6 +432,7 @@ $(function() {
 	                    	features: this.segmentsFeatures
 	                    });
 	                    this.segmentModifier.on('modifyend', function(event){
+	                    	console.log('segmentModifier MODIFY END');
 	                        event.features.forEach(function(element, index, array) {
 	                    	var geom = element.getGeometry();
 	                    	var coords = geom.getCoordinates();
@@ -490,18 +463,15 @@ $(function() {
 	                            }
 	                            app.vent.trigger('modifyEnd');
 	                        }
-	                    }, this);
-	                    app.vent.on('deactivateStationRepositioner', this.deactivateStationRepositioner, this);
-	                	app.vent.on('activateStationRepositioner', this.activateStationRepositioner, this);
+	                    });
+	                    this.listenTo(app.vent, 'deactivateStationRepositioner', this.deactivateStationRepositioner);
+	                	this.listenTo(app.vent, 'activateStationRepositioner', this.activateStationRepositioner);
                     } 
                     
-                    this.segmentModifier.setActive(true);
                     this.map.addInteraction(this.segmentModifier);
                     this.activateStationRepositioner();
                 }, // end enter
                 exit: function() {
-                	  this.stationRepositioner.setActive(false);
-                	  this.segmentModifier.setActive(false);
                 	  this.stationDeleter.getFeatures().clear();
                 	  this.map.removeInteraction(this.stationRepositioner);
                 	  this.map.removeInteraction(this.segmentModifier);

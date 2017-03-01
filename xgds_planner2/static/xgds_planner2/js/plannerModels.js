@@ -32,6 +32,7 @@ app.models = app.models || {};
     models.widgetTypeHash = {
         'text': 'Text',
         'number': 'Number',
+        'hiddennumber': 'HiddenNumber',
         'checkbox': 'Checkbox',
         'datetime': 'DateTime',
         'select': 'Select',
@@ -163,7 +164,11 @@ app.models = app.models || {};
             if (_.has(param, 'visible') &&
                     _.isBoolean(param.visible) &&
                     !param.visible) {
-                schema[param.id]['type'] = 'Hidden';
+            	if (param.valueType == 'number'){
+                    schema[param.id]['type'] = 'HiddenNumber';
+            	} else {
+            		schema[param.id]['type'] = 'Hidden';
+            	}
             }
             if (_.has(param, 'editable') &&
                     _.isBoolean(param.editable) &&
@@ -187,7 +192,26 @@ app.models = app.models || {};
             if (_.isNull(obj[key]) || _.contains(models.paramBlackList, key) ||
                (_.isString(obj[key]) && _.isEmpty(obj[key]))) {
                 delete obj[key];
-            }
+            } else {
+            	// make sure we have the right type.
+//            	try {
+//            		var paramSpec = null;
+//	            	if (obj.type == 'Station'){
+//	            		paramSpec = app.stationParamSpecs[key];
+//	            	} else if (obj.type == 'Segment'){
+//	            		paramSpec = app.segmentParamSpecs[key];
+//	            	} else if (obj.type == 'Plan'){
+//	            		paramSpec = app.planParamSpecs[key];
+//	            	}
+//	            	if (paramSpec != null){
+//	            		if (paramSpec.valueType == "number"){
+//	            			obj[key] = Number(obj[key]);
+//	            		}
+//	            	}
+//            	} catch (err){
+//            		//skip
+//            	}
+            } 
         });
         return obj;
     };
@@ -256,7 +280,7 @@ app.models = app.models || {};
      * Collection that can instantiate more than one model type.
      */
     models.PathElement = Backbone.RelationalModel.extend({
-        idAttribute: '_id', // Doesn't exist, but allows us to change the "id"
+        idAttribute: 'cid', //'_id', // Doesn't exist, but allows us to change the "id"
         // attribute with impunity.
         relations: [
             {
@@ -317,7 +341,7 @@ app.models = app.models || {};
             // and so creates infinite new ones
             // furthermore, this id needs to be the same as cid. Oh
             // relational...
-            this.set(this.idAttribute, this.cid);
+//            this.set(this.idAttribute, this.cid);
             
             _.each(_.keys(this.schema), function(attr) {
                 // add any onChange listeners
@@ -329,16 +353,13 @@ app.models = app.models || {};
         },
 
         toString: function() {
-            var repr;
             switch (this.get('type')) {
             case 'Station':
-                repr = this._sequenceLabel;
-                break;
+                return this._sequenceLabel;
             case 'Segment':
-                repr = Math.round(this._segmentLength) + ' m';
-                break;
+                return Math.round(this._segmentLength) + ' m';
             }
-            return repr;
+            return undefined;
         },
 
         toJSON: toJsonWithFilters,
@@ -646,7 +667,7 @@ app.models = app.models || {};
 
 
     models.Command = Backbone.RelationalModel.extend({
-        idAttribute: '_id', // prevent clobbering command ID's
+        idAttribute: 'cid',//'_id', // prevent clobbering command ID's
 
         initialize: function() {
             // Construct a schema compatible with backbone-forms
@@ -690,7 +711,11 @@ app.models = app.models || {};
             // relational can't find the model (it tries to use the id
             // attribute)
             // and so creates a new one, which is bad
-            this.set(this.idAttribute, this.cid);
+//            try {
+//            	this.set(this.idAttribute, this.cid);
+//            } catch (err){
+//            	debugger;
+//            }
             var commandLabel = this.get('name');
             if (_.isUndefined(commandLabel)){
                 commandLabel = "";

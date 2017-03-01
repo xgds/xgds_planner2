@@ -19,8 +19,8 @@ $(function() {
     app.views = app.views || {};
     
     // This view class manages the map point for a single Station model
-    app.views.StationPointView = Backbone.View
-        .extend({
+    app.views.StationPointView = Marionette.View.extend({
+    	template: false,
             initialize: function(options) {
                 this.options = options || {};
                 this.stationsVector = this.options.stationsVector;
@@ -60,7 +60,7 @@ $(function() {
             	//TODO implement
             },
             
-            render: function() {
+            onRender: function() {
                 this.geometry = new ol.geom.Point(this.point);
                 this.feature = new ol.Feature({geometry: this.geometry,
                                                id: this.model.attributes['id'],
@@ -68,10 +68,12 @@ $(function() {
                                                model: this.model,
                                                iconStyle: this.iconStyle,
                                                selectedIconStyle: this.selectedIconStyle,
-                                               textStyle: this.textStyle,
-                                               style: this.getStationStyles
+                                               textStyle: this.textStyle
+//                                               style: this.getStationStyles
                                             });
-                this.feature.setStyle(this.getStationStyles);
+    			var context = this;
+    			this.feature.setStyle(function(feature, resolution) {return context.getStationStyles(feature, resolution);});
+//                this.feature.setStyle(this.getStationStyles);
                 this.feature.set('selectedIconStyle', this.selectedIconStyle);
                 this.feature.set('iconStyle', this.iconStyle);
                 this.feature.set('textStyle', this.textStyle);

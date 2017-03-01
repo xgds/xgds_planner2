@@ -16,28 +16,27 @@
 
 app.views = app.views || {};
 
-app.views.PlanLinksView = Backbone.View.extend({
+app.views.PlanLinksView = Marionette.View.extend({
     template: '#template-plan-links',
-    initialize: function() {
-        var source = $(this.template).html();
-        if (_.isUndefined(source)) {
-            this.template = function() {
-                return '';
-            };
-        } else {
-            this.template = Handlebars.compile(source);
+    onAttach: function() {
+    	var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
+    	if (!_.isEmpty(callback) && callback !== "null") {
+        	$.executeFunctionByName(callback, window, [this.$el]);
         }
     },
-    render: function() {
-        this.$el.html(this.template({
-            planLinks: app.planLinks,
-            planNamedURLs: app.planNamedURLs,
-            planUuid: app.currentPlan.get('uuid'),
-            planId: app.currentPlan.get('serverId')
-        }));
-        var callback = app.options.XGDS_PLANNER2_LINKS_LOADED_CALLBACK;
-        if (callback != null) {
-            callback(this.$el);
-        }
+    templateContext: function() {
+    	var planUuid = '';
+    	var planId = '';
+    	if (app.currentPlan !== undefined){
+    		planUuid = app.currentPlan.get('uuid');
+    		planId = app.currentPlan.get('serverId');
+    	}
+    	var data = {
+    	planLinks: app.planLinks,
+    	planNamedURLs: app.planNamedURLs,
+    	planUuid: planUuid,
+    	planId: planId
+    	}
+    	return data;
     }
 });
