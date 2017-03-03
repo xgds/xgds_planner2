@@ -309,7 +309,8 @@ app.views.PlanPlotView = Marionette.View.extend({
     	};
     	this.plotColors = this.getPlotColors();
     	this.plotOptions['colors'] = context.plotColors;
-    	this.listenTo(app.vent, 'modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
+    	this.listenTo(app.vent, 'station:modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
+    	this.listenTo(app.vent, 'segment:modifyEnd', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
     	this.listenTo(app.vent, 'station:change', function(model) {this.updatePlots(UPDATE_ON.ModifyEnd)});
     	this.listenTo(app.vent, 'save', function(model) {this.updatePlots(UPDATE_ON.Save)});
     	this.listenTo(app.vent, 'drawPlot', function(key) {this.updatePlot(key)}); //TODO just render the specific plot

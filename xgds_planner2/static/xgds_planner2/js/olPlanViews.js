@@ -159,11 +159,14 @@ $(function() {
 
             },
             getPlanExtens: function() {
-            	return this.segmentsVector.getExtent();
+            	return this.stationsVector.getExtent();
             },
             fitPlan: function() {
             	if (!_.isEmpty(this.segmentsVector.getFeatures())){
                 	this.map.getView().fit(this.segmentsVector.getExtent(), this.map.getSize(), {}); 
+                }
+            	if (!_.isEmpty(this.stationsVector.getFeatures())){
+                	this.map.getView().fit(this.stationsVector.getExtent(), this.map.getSize(), {}); 
                 }
             },
 
@@ -418,21 +421,27 @@ $(function() {
 	                        	features: this.stationsFeatures
 	                        });
 	                	this.stationRepositioner.on('modifystart', function(event){
-	                			console.log('stationRepositioner MODIFY START');
+	                			app.vent.trigger('station:modifyStart');
 	                            app.Actions.disable();
 	                        }, this);
 	                	this.stationRepositioner.on('modifyend', function(event){
-	                			console.log('stationRepositioner MODIFY END');
 	                            app.Actions.enable();
 	                            app.Actions.action();
 	                            app.vent.trigger('modifyEnd');
+	                			app.vent.trigger('station:modifyEnd');
+
 	                        }, this);
 	                    this.segmentModifier = new ol.interaction.Modify({
 	                    	name: "segmentModifier",
 	                    	features: this.segmentsFeatures
 	                    });
+	                    this.segmentModifier.on('modifystart', function(event){
+                			app.vent.trigger('segment:modifyStart');
+                            app.Actions.disable();
+                        }, this);
 	                    this.segmentModifier.on('modifyend', function(event){
-	                    	console.log('segmentModifier MODIFY END');
+	                    	app.Actions.enable();
+                            app.Actions.action();
 	                        event.features.forEach(function(element, index, array) {
 	                    	var geom = element.getGeometry();
 	                    	var coords = geom.getCoordinates();
@@ -440,7 +449,7 @@ $(function() {
 	                    	    var model = element.get('model')
 	                    	    model.trigger('splitSegment');
 	                    	}
-                            app.vent.trigger('modifyEnd');
+                            app.vent.trigger('segment:modifyEnd');
 
 	                        }, this);
 	                	
