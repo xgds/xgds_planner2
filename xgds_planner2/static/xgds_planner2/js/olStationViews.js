@@ -20,6 +20,7 @@ $(function() {
     
     // This view class manages the map point for a single Station model
     app.views.StationPointView = Marionette.View.extend({
+    	editingStations: false,
     	template: false,
             initialize: function(options) {
                 this.options = options || {};
@@ -41,6 +42,8 @@ $(function() {
                 this.initTextStyle();
                 this.render();
 
+                this.listenTo(app.vent, 'station:modifyStart', function() {this.editingStations = true;}, this);
+                this.listenTo(app.vent, 'station:modifyEnd', function() {this.editingStations = false}, this);
                 this.listenTo(this.model, 'change', this.redraw);
                 this.listenTo(this.model, 'add:sequence remove:sequence',
                               function(command, collection, event) {
@@ -73,7 +76,6 @@ $(function() {
                                             });
     			var context = this;
     			this.feature.setStyle(function(feature, resolution) {return context.getStationStyles(feature, resolution);});
-//                this.feature.setStyle(this.getStationStyles);
                 this.feature.set('selectedIconStyle', this.selectedIconStyle);
                 this.feature.set('iconStyle', this.iconStyle);
                 this.feature.set('textStyle', this.textStyle);
@@ -106,6 +108,11 @@ $(function() {
                 if (_.isUndefined(this.geometry)){
                     return;
                 }
+                
+                if (this.editingStations){
+                	return;
+                }
+                
                 // redraw code. To be invoked when relevant model attributes change.
                 app.Actions.disable();
 
