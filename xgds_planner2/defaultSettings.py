@@ -70,7 +70,6 @@ XGDS_PLANNER_PIPELINE_JS = {
         'source_filenames': ('jquery/dist/jquery.min.js',
                              'jquery-migrate-official/src/migrate.js',
                              'jquery-ui/jquery-ui.min.js',
-                             'lodash/lodash.min.js',
                              'handlebars/handlebars.min.js',
                              'backbone/backbone.js',
                              'backbone.wreqr/lib/backbone.wreqr.min.js',
@@ -267,26 +266,12 @@ XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
 
 
 BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += ['jquery-migrate=http://code.jquery.com/jquery-migrate-1.2.1.js',
-                         'lodash#3.10.0',
-                         'backbone#1.1.2',
-                         'marionette=marionette#2.4.7',
-                         'backbone-relational',
-                         'backbone-forms',
-                         'handlebars=git://github.com/components/handlebars.js.git',
-                         'string-format=git://github.com/tamarmot/string-format.git',
+BOWER_INSTALLED_APPS += ['string-format=git://github.com/tamarmot/string-format.git',
                          'proj4',
                          'usng=git://github.com/codice/usng.js.git',
                          'qunit',
-                         'openlayers3=https://github.com/openlayers/ol3/releases/download/v3.16.0/v3.16.0-dist.zip',
-                         'ol3-popup',
-                         'fancytree=fancytree',
-                         'jquery-cookie=git://github.com/carhartl/jquery-cookie.git',
                          'pure-uuid',
-                         'moment',
-                         'moment-duration-format',
                          'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
-                         'datatables-sorting-datetime-moment=https://cdn.datatables.net/plug-ins/1.10.11/sorting/datetime-moment.js',
                          'flot'
                          ]
 
