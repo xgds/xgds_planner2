@@ -218,7 +218,7 @@ $(function() {
             	}
             },
             
-            close: function() {
+            onDestroy: function() {
                 this.stopListening();
             }
 

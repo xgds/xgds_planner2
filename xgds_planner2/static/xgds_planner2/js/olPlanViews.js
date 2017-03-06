@@ -377,7 +377,9 @@ $(function() {
                         }
                     }
                     
-                    features.push(foundFeature);
+                    if (foundFeature != undefined) {
+                    	features.push(foundFeature);
+                    }
                     
                 }  else {
                 	if (features.getLength() > 0){
