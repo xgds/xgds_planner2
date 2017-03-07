@@ -65,6 +65,11 @@ app.views.ToolbarView = Marionette.View.extend({
             this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
             this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
             this.render();
+            if (app.isEmptyPlan()) {
+            	app.vent.trigger('mapmode', 'addStations');
+            } else {
+            	app.vent.trigger('mapmode', 'navigate');
+            }
        });
     },
 

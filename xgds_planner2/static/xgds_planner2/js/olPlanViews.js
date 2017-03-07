@@ -107,7 +107,6 @@ $(function() {
                 this.map.addLayer(this.stationsDecoratorsLayer);
 
                 this.listenTo(app.vent, 'mapmode', this.setMode);
-                app.vent.trigger('mapmode', 'navigate');
                 
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.listenTo(app.currentPlan, 'sync', this.render);

@@ -49,7 +49,6 @@ var DEBUG_EVENTS = false;
 			this.listenTo(this.vent,'updatePlanDuration', function(newDuration) {
 				playback.updateEndTime(app.getEndTime(newDuration));
 			});
-			app.vent.trigger('mapmode', 'navigate');
 		},
 		State: {
 			commandSelected: undefined,
@@ -231,6 +230,9 @@ var DEBUG_EVENTS = false;
 			if (!_.isUndefined(this.map.planView)){
 				this.map.planView.render();
 			}
+		},
+		isEmptyPlan: function() {
+			return app.currentPlan.get('sequence').length == 0;
 		},
 		getStations: function() {
 			result = [];
