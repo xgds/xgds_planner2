@@ -19,7 +19,7 @@
 {% block contents %}
    <h3>Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}</h3>
   <form action="{% url 'planner2_addGroupFlight' %}" method="post">
-	<table>
+	<table class="table-striped">
 		<tr>
 			<td align="right"><label for="id_date">Date:</label></td>
 			<td>{{ groupFlightForm.date }}</td>
