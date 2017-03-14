@@ -493,7 +493,7 @@ app.views.SequenceListItemView = Marionette.View.extend({
     },
     template: '<span>{{modelstring}} <span class="duration">{{timing}}</span><i/></span>',
     templateContext: function() {
-    	return {modelstring: this.model.toString()};
+    	return  {modelstring: this.model.toString()};
     },
     attributes: function() {
     	try {
@@ -739,7 +739,6 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
     childView: app.views.CommandItemView,
     childViewOptions: {
         expandClass: 'col2'
-//        container: '.command-list'
     },
     emptyView: app.views.NoCommandsView,
     events: {
@@ -808,6 +807,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
         this.itemsSelected = false;
         this.listenTo(app.vent, 'commandsSelected', this.enableCommandActions);
         this.listenTo(app.vent, 'commandsUnSelected', this.disableCommandActions);
+        this.listenTo(app.vent, 'updatePlanDuration', this.render);
     },
     templateContext: function() {
     	var canHaveCommands = app.canHaveCommands(this.model.attributes.type);
@@ -818,7 +818,13 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
     		var itemMoniker = app.options.segmentMoniker;
     		var canDelete = false;
     	}
+    	var duration = '';
+    	if (this.model.get('type') == 'Station' || this.model.get('type') == 'Segment') {
+            duration =  '+' + app.util.secondsToHMS(this.model.getDuration());
+        }
+
     	return {
+    		'duration': duration,
     		'stationMoniker': app.options.stationMoniker,
     		'commandMoniker': app.options.commandMoniker,
     		'commandMonikerPlural': app.options.commandMonikerPlural,
