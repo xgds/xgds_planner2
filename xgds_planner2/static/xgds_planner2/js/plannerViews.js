@@ -150,14 +150,14 @@ app.views.ToolbarView = Marionette.View.extend({
         });
     },
 
+    msgMap :{
+        'change': 'Unsaved changes.',
+        'sync': app.options.planMoniker + ' saved.',
+        'error': 'Save error.',
+        'clear': '',
+        'readOnly': app.options.planMoniker + ' is LOCKED.'
+    },
     updateSaveStatus: function(eventName) {
-        var msgMap = {
-            'change': 'Unsaved changes.',
-            'sync': app.options.planMoniker + ' saved.',
-            'error': 'Save error.',
-            'clear': '',
-            'readOnly': app.options.planMoniker + ' is LOCKED.'
-        };
         if (app.options.readOnly) {
             eventName = 'readOnly';
         }
@@ -167,7 +167,7 @@ app.views.ToolbarView = Marionette.View.extend({
             app.dirty = false;
         }
 
-        var msg = msgMap[eventName];
+        var msg = this.msgMap[eventName];
         this.$el.find('#save-status').text(msg);
         if (eventName == 'change' || eventName == 'error' || eventName == 'readOnly') {
             this.$el.find('#save-status').addClass('notify-alert');
@@ -176,13 +176,13 @@ app.views.ToolbarView = Marionette.View.extend({
         }
     },
 
+    tipMap : {
+    	'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
+        'add': 'Click to add stations to end.',
+        'clear': 'Click and drag to pan map.'
+    },
     updateTip: function(eventName) {
-        var msgMap = {
-            'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
-            'add': 'Click to add stations to end.',
-            'clear': 'Click and drag to pan map.'
-        };
-        var msg = msgMap[eventName];
+        var msg = this.tipMap[eventName];
         this.$el.find('#tip-status').text(msg);
     },
 

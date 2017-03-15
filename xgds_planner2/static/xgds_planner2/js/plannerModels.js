@@ -331,7 +331,7 @@ app.models = app.models || {};
                     if (!_.contains(models.paramBlackList, item) &&
                         (_.has(previous, item) || !_.isEmpty(changed[item]))
                        ) {
-                        app.vent.trigger('change:plan');
+//                        app.vent.trigger('change:plan');
                         return true;
                     }
                 });
@@ -799,7 +799,7 @@ app.models = app.models || {};
                 app.Actions.enable();
             }
 
-            app.vent.trigger('change:plan');
+//            app.vent.trigger('change:plan');
         }
 
 
