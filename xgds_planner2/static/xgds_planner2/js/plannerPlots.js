@@ -239,13 +239,16 @@ app.views.PlanPlotView = Marionette.View.extend({
     	}
     	var newOptions = this.getXAxisOptions();
     	if (force) {
-    		if (newOptions == null){
-    			newOptions = this.plotOptions['xaxis'];
-    		}
     		// update start time 
     		var startEnd = this.getStartEndMoments(false);
-    		newOptions.min = startEnd.start.toDate().getTime();
-    		newOptions.max = startEnd.end.toDate().getTime();
+    		if (startEnd != undefined && startEnd.start != undefined){
+	    		if (newOptions == null){
+	    			newOptions = this.plotOptions['xaxis'];
+	    		}
+	    		newOptions.min = startEnd.start.toDate().getTime();
+	    		newOptions.max = startEnd.end.toDate().getTime();
+    		}
+    		
     	}
     	if (newOptions != null){
     		Object.assign(this.plotOptions['xaxis'], newOptions);
