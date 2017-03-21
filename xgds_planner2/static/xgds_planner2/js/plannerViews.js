@@ -35,11 +35,12 @@ Handlebars.registerHelper('formatDistance', function(distance){
 
 app.views.ToolbarView = Marionette.View.extend({
     template: '#template-toolbar',
+    saving: false,
     events: {
         'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); this.updateTip('clear');},
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
-        'click #btn-save': function() { app.simulatePlan(); app.currentPlan.save() },
+        'click #btn-save': function() { this.doSavePlan(); },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); }
@@ -59,8 +60,18 @@ app.views.ToolbarView = Marionette.View.extend({
         	this.updateDurationDistance();
         });
         this.listenTo(app.vent, 'onPlanLoaded', function() {
-        	this.listenTo(app.vent, 'change:plan', function(model) {this.updateSaveStatus('change')});
-        	this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
+        	this.listenTo(app.vent, 'change:plan', function(model) {
+        		if (!context.saving){
+        			this.updateSaveStatus('change')}
+        		}
+        	);
+        	var context = this;
+        	app.currentPlan.on('change', function() {
+        		if (!context.saving){
+        			app.vent.trigger('change:plan');
+        		}
+            });
+//        	this.listenTo(app.currentPlan, 'sync', function(model) {this.updateSaveStatus('sync')});
             this.listenTo(app.currentPlan, 'sync', this.refreshSaveAs);
             this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
             this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
@@ -71,6 +82,25 @@ app.views.ToolbarView = Marionette.View.extend({
             	app.vent.trigger('mapmode', 'navigate');
             }
        });
+    },
+    
+    doSavePlan: function() {
+    	app.simulatePlan(); 
+    	this.saving = true;
+    	var context = this;
+    	this.updateSaveStatus('saving');
+    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
+    												      error: function(model, response, options) {context.saveError(model, response, options);}});
+    },
+    saveWorked: function(model, response, options) {
+    	this.saving = false;
+    	this.updateSaveStatus('sync');
+    },
+    saveError: function(model, response, options) {
+    	this.saving = false;
+    	console.log('SAVE ERROR');
+    	console.log(response);
+    	this.updateSaveStatus('error');
     },
 
     onAttach: function() {
@@ -153,11 +183,15 @@ app.views.ToolbarView = Marionette.View.extend({
     msgMap :{
         'change': 'Unsaved changes.',
         'sync': app.options.planMoniker + ' saved.',
+        'saving': 'Saving ' + app.options.planMoniker+ '.',
         'error': 'Save error.',
         'clear': '',
         'readOnly': app.options.planMoniker + ' is LOCKED.'
     },
     updateSaveStatus: function(eventName) {
+    	if (eventName == 'change' && this.saving){
+    		return;  // skip changes while saving;
+    	}
         if (app.options.readOnly) {
             eventName = 'readOnly';
         }

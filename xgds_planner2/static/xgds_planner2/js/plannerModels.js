@@ -258,9 +258,9 @@ app.models = app.models || {};
             var formsData = xpjsonToBackboneFormsSchema(params, 'Plan');
             _.extend(this.schema, formsData.schema);
             _.extend(this.data, formsData.data);
-            this.on('change', function() {
-                app.vent.trigger('change:plan');
-            });
+//            this.on('change', function(a, b) {
+//                app.vent.trigger('change:plan');
+//            });
             _.each(_.keys(this.schema), function(attr) {
                 // add any onChange listeners
                 if (_.has(this.schema[attr], 'onChange')) {
