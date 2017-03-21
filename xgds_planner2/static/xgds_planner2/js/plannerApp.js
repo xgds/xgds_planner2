@@ -210,12 +210,15 @@ var DEBUG_EVENTS = false;
 				this.colors[commandSpec.id] = commandSpec.color;
 			}, this);
 
+			var existingPlan = !_.isEmpty(this.planJson);
 			this.planJson = JSON.parse($('#plan_json').html());
 			if (this.planJson) {
 				this.currentPlan = new app.models.Plan(this.planJson);
 				this.simulatePlan(); // do this before the change:plan event is mapped
 				this.currentPlan.get('sequence').resequence();
-				this.Actions.setInitial();
+				if (!existingPlan){
+					this.Actions.setInitial();
+				}
 				this.vent.trigger('onPlanLoaded');
 			}
 		},
