@@ -385,7 +385,7 @@ def writeCommandDictionary(inSchemaPath, outHtmlPath, **kwargs):
 
     if settings['includeIndex']:
         p('<div class="command_index">')
-        p('  <h2 class="title">Index</h2>')
+        p('  <h6 class="title">Index</h6>')
         p('  <ul>')
         for c in commandSpecs:
             p('    <li><a href="#command_%s">%s</a></li>' % (c.id, c.id))
