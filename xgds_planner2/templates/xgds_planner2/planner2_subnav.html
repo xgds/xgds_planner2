@@ -1,19 +1,18 @@
 {% block sitemenu-content-secondary %}
 {% load nav %}
-<div class="sitemenu-nav-secondary">
 	<nav class="subnav">
-	<ul>
-		<li {% currentnav planner2_index %}><a href="{% url 'planner2_index' %}"> List {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}s </a></li>
+	<ul class="nav nav-pills">
+		<li class='nav-item {% currentnav planner2_index %}'><a class='nav-link {% currentnav planner2_index %}' href="{% url 'planner2_index' %}"> List {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}s </a></li>
 		{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
-		<li {% currentnav planner2_manage planner2_startFlight planner2_stopFlight planner2_startPlan planner2_stopPlan %}><a href="{% url 'planner2_manage' %}">Manage {{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a></li>
+		<li class='nav-item  {% currentnav planner2_manage planner2_startFlight planner2_stopFlight planner2_startPlan planner2_stopPlan %}'>
+			<a class='nav-link  {% currentnav planner2_manage planner2_startFlight planner2_stopFlight planner2_startPlan planner2_stopPlan %}' href="{% url 'planner2_manage' %}">Manage {{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a></li>
 		{% endif %}
 		<!-- 
-	    <li {% currentnav planner2_help %}><a href="{% url 'planner2_help' %}">Planner Help</a></li>
+	    <li class='nav-item {% currentnav planner2_help %}'><a class='nav-link {% currentnav planner2_help %}' href="{% url 'planner2_help' %}">Planner Help</a></li>
 	     -->
 		{% if plan_json %}
-			<li {% currentnav planner2_edit %} ><a> Edit {{ plan_name }}</a></li>
+			<li class='nav-item {% currentnav planner2_edit %}' ><a class='nav-link {% currentnav planner2_edit %}'> Edit {{ plan_name }}</a></li>
 		{% endif %}
 	</ul>
 	</nav>
-</div>
 {% endblock %}
