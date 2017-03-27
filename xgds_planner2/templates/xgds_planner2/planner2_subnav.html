@@ -1,7 +1,5 @@
 {% block sitemenu-content-secondary %}
 {% load nav %}
-	<nav class="subnav">
-	<ul class="nav nav-pills">
 		<li class='nav-item {% currentnav planner2_index %}'><a class='nav-link {% currentnav planner2_index %}' href="{% url 'planner2_index' %}"> List {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}s </a></li>
 		{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 		<li class='nav-item  {% currentnav planner2_manage planner2_startFlight planner2_stopFlight planner2_startPlan planner2_stopPlan %}'>
@@ -13,6 +11,4 @@
 		{% if plan_json %}
 			<li class='nav-item {% currentnav planner2_edit %}' ><a class='nav-link {% currentnav planner2_edit %}'> Edit {{ plan_name }}</a></li>
 		{% endif %}
-	</ul>
-	</nav>
 {% endblock %}
