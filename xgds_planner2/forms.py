@@ -76,7 +76,7 @@ class GroupFlightForm(forms.Form):
                              label="Prefix",
                              required=True)
 
-    notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False)
+    notes = forms.CharField(widget=forms.TextInput(attrs={'size': 128}), label="Notes", required=False, help_text='Optional')
 
     def __init__(self, *args, **kwargs):
         super(GroupFlightForm, self).__init__(*args, **kwargs)
