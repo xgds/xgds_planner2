@@ -1,45 +1,51 @@
-    <div id="map-buttons" data-toggle="buttons-radio" class="four columns">
-        <div class="pill">
-            <button class="pill-left radio checked" id="btn-navigate">Navigate</button>
-            <button class="radio" id="btn-reposition" style="width:120px;">Edit {{ stationMonikerPlural }}</button>
-            <button class="radio pill-right" style="width:120px;" id="btn-addStations">Add {{ stationMonikerPlural }}</button>
-            <!-- <button  id="btn-add-targets">Add Targets</button> -->
-        </div>
-    </div>
-    
-    <div id="tab-buttons" class="eight columns">
     	<div class="row">
-	        <div class="four columns">
-	        {{#if simInfo}}
-	        <strong>Duration: </strong><span id="totalDuration">{{formatDuration simInfo.deltaTimeSeconds}}</span><br/>
-	        <strong>Distance: </strong><span id="totalDistance">{{formatDistance simInfo.deltaDistanceMeters}}</span>
-	        {{/if}}
+		    <div id="map-buttons" data-toggle="buttons-radio" class="col-4">
+		        <div class="btn-group" role="group" data-toggle="buttons">
+		        	<label class="btn btn-primary active">
+		        		<input type="radio" id="btn-navigate" autocomplete="off" checked/>Navigate
+		        	</label>
+		        	<label class="btn btn-primary">
+		        		<input type="radio" id="btn-reposition" autocomplete="off"/>Edit {{ stationMonikerPlural }}
+		        	</label>
+		        	<label class="btn btn-primary">
+		        		<input type="radio"id="btn-addStations" autocomplete="off"/>Add {{ stationMonikerPlural }}
+		        	</label>
+		        	
+		        	<!--
+		            <button class=" checked" id="btn-navigate">Navigate</button>
+		            <button class="radio" id="btn-reposition" >Edit {{ stationMonikerPlural }}</button>
+		            <button class="radio"  id="btn-addStations">Add {{ stationMonikerPlural }}</button>
+		            -->
+		        </div>
+		    </div>
+	    
+		    <div class="col-5">
+		        {{#if simInfo}}
+		        <strong>Duration: </strong><span id="totalDuration">{{formatDuration simInfo.deltaTimeSeconds}}</span><br/>
+		        <strong>Distance: </strong><span id="totalDistance">{{formatDistance simInfo.deltaDistanceMeters}}</span>
+		        {{/if}}
 			</div>
-			<div class="three columns">
-		    	<!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
-	        </div>
-	        <div class="pill five columns" >
-	            <button  id="btn-undo" class="pill-left">Undo</button>
-	            <button  id="btn-redo" >Redo</button>
-	            <button  id="btn-saveas" >Save As</button>
-	            <button  id="btn-save" class="pill-right">Save</button>
-	        </div>
-	     </div>
-    </div>
-
-
-<div class="row">
-    <div class="four columns">
-     <p style="float:left" class="small" id="tip-status">&nbsp;</p>
-    </div>
-    <div class="eight columns">
-    	<div class="row">
-    	<div class="seven columns">
-	    </div>
-	    <div class="five columns">
-	        <span class="notify" id="save-status"></span>
-	    </div>
-	    </div>
-	</div>
-</div>
-
+			
+			
+			<div class="btn-group col-3" role="group">
+				<!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
+	            <button  id="btn-undo" class="btn btn-primary">Undo</button>
+	            <button  id="btn-redo" class="btn btn-primary">Redo</button>
+	            <button  id="btn-saveas" class="btn btn-primary">Save As</button>
+	            <button  id="btn-save" class="btn btn-primary">Save</button>
+		    </div>
+	    </div> <!-- end row -->
+	
+	
+		<div class="row">
+			<div class="col-4">
+		    	<p class="text-info" id="tip-status">
+		    	</p>
+		    </div>
+		    <div class="col-5">
+		    </div>
+		    <div class="col-3">
+			        <span class="notify" id="save-status"></span>
+			</div>
+		</div>
+		
