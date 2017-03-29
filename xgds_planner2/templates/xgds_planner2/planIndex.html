@@ -27,14 +27,14 @@ table.planIndex td.exportFormat a {
 
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
 <input type="submit" class="btn btn-primary right" id="deleteButton" value="Delete Selected" ></input>
-<input class="btn btn-primary right" type="button" id="toggle_button" value="Toggle Lock" ></input>
+<input class="btn btn-primary" type="button" id="toggle_button" value="Toggle Lock" ></input>
 {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
 <input class="btn btn-primary right" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 {% endif %}
 <a href="{% url 'planner2_planImport' %}"  role="button" class="btn btn-primary" style="float:right; margin-bottom:3px;"> Import {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</a>
 <a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} role="button" class="btn btn-primary" style="float:right; margin-bottom:3px;"> Create {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</a>
 <table id="dataTable" class="planIndex table-striped">
-<thead class="table_header">
+<thead>
   <tr>
   	<th><label for="pick_master">All</label><br/><input type="checkbox" id="pick_master" /></th>
     <th></th>

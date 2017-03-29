@@ -24,16 +24,19 @@
 	{% if errorString %}
 	<span class="error">{{ errorString }}</span>
 	{% endif %}
-	<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
-	<input type="checkbox" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} style="margin-bottom:3px;"></input><label for="id_today">Today Only</label>
-	</form>
-	<a class="btn btn-primary" role="button" href="{% url 'planner2_addGroupFlight' %}" style="float:right;margin-bottom:3px;">Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
-	<a class="btn btn-primary" role="button" href="{% url 'planner2_manage' %}" style="float:right;margin-bottom:3px;">Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
-	<a class="btn btn-primary" role="button" href="{% url 'planner2_manageFlightHelp' %}" style="float:right;margin-bottom:3px;" target="help">Help</a>
-	<br/>
+	<div class="d-flex justify-content-between" style="width: 100%;">
+		<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
+		<label for="id_today" style="display:inline"><input type="checkbox" class="mr-1" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} ></input>Today</label>
+		</form>
+		<div class="btn-group" role="group">
+			<a class="btn btn-primary" role="button" href="{% url 'planner2_addGroupFlight' %}" >Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
+			<a class="btn btn-primary" role="button" href="{% url 'planner2_manage' %}" >Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
+			<a class="btn btn-primary" role="button" href="{% url 'planner2_manageFlightHelp' %}" target="help">Help</a>
+		</div>
+	</div>
 	
 	<table id="dataTable" class="planIndex table-striped">
-	<thead class="table_header">
+	<thead>
 		<tr>
 		<th>Name</th>
 		<th>Planned</th>
