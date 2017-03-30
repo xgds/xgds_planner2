@@ -204,9 +204,11 @@ app.views.ToolbarView = Marionette.View.extend({
         var msg = this.msgMap[eventName];
         this.$el.find('#save-status').text(msg);
         if (eventName == 'change' || eventName == 'error' || eventName == 'readOnly') {
-            this.$el.find('#save-status').addClass('notify-alert');
+            this.$el.find('#save-status').addClass('text-danger');
+            this.$el.find('#save-status').addClass('font-weight-bold');
         } else {
-            this.$el.find('#save-status').removeClass('notify-alert');
+            this.$el.find('#save-status').removeClass('text-danger');
+            this.$el.find('#save-status').removeClass('font-weight-bold');
         }
     },
 
