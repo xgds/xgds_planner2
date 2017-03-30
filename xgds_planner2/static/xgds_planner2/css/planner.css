@@ -2,11 +2,11 @@ input[type="checkbox"].select {
     vertical-align: top;
 }
 
-
-.tabs {
+/* .tabs {
   width: 100%;
 }
-
+ */
+ 
 .nav-tabs li:hover{
     cursor: pointer;
 }
@@ -15,14 +15,16 @@ div[id^="col"] > li:hover {
     cursor: pointer;
 }
 
-.nav-tabs > li.active a {
+/* .nav-tabs > li.active a {
     background-color: #d4d4d4;
 }
+*/
 
-.notify-alert {
+/* .notify-alert {
 	font-weight: bold;
 	color: red;
 }
+*/
 
 [class*="-sequence-item"] {
     list-style-type: none;
@@ -30,7 +32,7 @@ div[id^="col"] > li:hover {
     border-width: 1px;
     margin-right: 0px;
     margin-left: 0;
-    background-color: #aaaaaa;
+    //background-color: #aaaaaa;
 }
 
 [class*="-sequence-item"]:hover{
@@ -46,37 +48,74 @@ div[id^="col"] > li:hover {
 }
 
 .head-sequence-item {
-    background-color: #cccccc;
+	font-weight: bold;
+    //background-color: #cccccc;
 }
 
 .foot-sequence-item {
-    background-color: #cccccc;
+	font-weight: bold;
+    //background-color: #cccccc;
 }
 
 .scrolling_column {
     border-style: solid;
-    border-color: #005c8e;
+    border-color: #cbcacc; //#005c8e;
     border-width: 1px;
-    padding: 0px;
+    padding: 5px;
     margin: 0px;
     overflow-y: scroll;
     max-height: 450px;
 }
 
-#col1, #col2 {
-	margin-right: 5px;
+.scrolling_column ul {
+	-webkit-padding-start: 0px;
+	-webkit-padding-before: 3px;
 }
 
-#col1 ul, #col2 ul, #col3  ul {
+.scrolling_column li {
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.scrolling_column div.row {
+	margin: 0px;
+}
+
+.scrolling_column div {
+	margin-bottom: 3px;
+}
+
+.scrolling_column div.form-check {
+	margin-left: 5px;
+	width: 100%;
+}
+
+.scrolling_column form input {
+	max-width: 100% !important;
+}
+
+.scrolling_column input.form-check-input {
+	position:absolute !important;
+}
+
+#colhead1, #colhead2, #colhead3 {
+	padding-left: 5px;
+}
+
+#col1, #col2 {
+	//margin-right: 5px;
+}
+
+/* #col1 ul, #col2 ul, #col3  ul {
     margin: 0px;
     margin-left: 2px;
-}
+} */
 
 span.duration {
     font-weight: bold;
     font-style: italic;
     float: right;
-    padding-right: 4px;
+    padding-right: 8px;
 }
 
 span.entry-title {
@@ -94,15 +133,15 @@ span.entry-title {
 }
 
 
-div.tool-title {
+/* div.tool-title {
     font-weight: bold;
     font-size: 18px;
     margin-bottom: 10px;
-}
+}*/
 
-div.tool-entry {
-    margin-bottom: 5px;
-}
+/* div.tool-entry {
+    padding: 8px;
+} */
 
 span#select-title {
     display: block;
@@ -144,13 +183,9 @@ h4.kmltree-title {
 	font-size: 1.25rem;
 }
 
-.plot-container {
-}
-
 .plot-div {
 	width: 100%;
 	height: 100px; 
-	//font-size: 14px;
 	line-height: 1.2em;
 	background: white;
 }

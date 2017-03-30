@@ -1,8 +1,14 @@
 <div id="layertreeContainer">
-  	<button id="refreshTreeLink" class="btn btn-primary" onclick="javascript: app.vent.trigger('refreshTree');">Refresh</button>
-  	<input name="searchTree" placeholder="Filter..." autocomplete="off">
-    <button id="btnResetSearch" class="btn btn-primary">&times;</button>
-    <span id="matches"></span><br/>
-    <button id="btnTransparencyEditors" class="btn btn-primary" style="margin-top:5px;"  onclick="toggleTransparencySliders();">Transparency</button>
+	<div class="btn-toolbar mb-1" role="toolbar">
+	   <button id="refreshTreeLink" class="fa fa-refresh btn btn-primary btn-sm mr-2" onclick="javascript: app.vent.trigger('refreshTree');"></button>
+	  <div class="input-group">
+	  		<input name="searchTree" placeholder="Filter..." autocomplete="off" class="form-control col-6">
+	  		<span class="input-group-addon " id="btnResetSearch"><i class="fa fa-close"></i></span>
+	    </div>
+	</div>
+	<div class="mb-2" role="group">
+	    <button id="btnTransparencyEditors" class="btn btn-primary" onclick="toggleTransparencySliders();app.vent.trigger('toggleTransparency');">Transparency</button>
+	    <span id="matches"></span>
+	</div>
  	<div id="layertree" data-source="ajax" class="sampletree"></div>
  </div>

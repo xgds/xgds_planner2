@@ -1,15 +1,15 @@
 <br/>
 <div class="plan-tool" id="reverse-plan">
-<button  id="btn-reverse" class="btn btn-primary">Reverse Current {{moniker}}</button>
+<button  id="btn-reverse" class="btn btn-primary">Reverse {{moniker}}</button>
 </div>
 <br/>
 
 
 <div class="plan-tool" id="append-plan">
-  <div class="tool-title">Append {{moniker}}</div>
+  <h6>Append {{moniker}}</h6>
   <div class="tool-entry">
     <label for="plan-select">Select {{moniker}}:</label>
-    <select id="plan-select" class="tool-input">
+    <select id="plan-select">
       {{#each planIndex}}
         <option value="{{id}}">{{name}}</option>
       {{/each}}
@@ -27,7 +27,7 @@
     <input type="checkbox" id="reverse-plan" class="tool-input">
     <label for="reverse-plan" style="display:inline-block;">Reverse Appended {{moniker}}</label>
   </div><div class="tool-submit">
-    <button id="ok-button" class="tool-input">OK</button>
-    <span class="entry-error" id="append-error"><!-- error message space --></span>
+    <button id="ok-button" class="btn btn-primary">OK</button>
+    <span class="entry-error text-danger" id="append-error"><!-- error message space --></span>
   </div>
 </div>

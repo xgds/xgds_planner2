@@ -1,25 +1,25 @@
 <div class="sequence-list">
-    <div class="edit-meta head-sequence-item">{{ itemMoniker}} Properties<i/></div>
+    <div class="edit-meta head-sequence-item text-primary">{{ itemMoniker}} Properties<i/></div>
     <div>
     Duration: {{ duration }}
     </div>
     <div>
     {{#if canDelete}}
     <div class="row" >
-    	<button  id="btn-kill" class="pretty default small">Delete {{ itemMoniker }}</button>
+    	<button  id="btn-kill" class="btn btn-primary btn-sm">Delete {{ itemMoniker }}</button>
     </div>
     {{/if}}
     <div class="row" id="commandButtonRow" {{#unless commands.length}}style="display:none"{{/unless}}>
-       <div class="pill">
-           <button  id="btn-cut" class="pill-left small">Cut</button>
-           <button  id="btn-copy" class="small">Copy</button>
-           <button  id="btn-paste" class="small">Paste</button>
-           <button  id="btn-delete" class="pill-right small">Delete</button>
+       <div class="btn-group" role="group">
+           <button  id="btn-cut" class="btn btn-primary btn-sm">Cut</button>
+           <button  id="btn-copy" class="btn btn-primary btn-sm">Copy</button>
+           <button  id="btn-paste" class="btn btn-primary btn-sm">Paste</button>
+           <button  id="btn-delete" class="btn btn-primary btn-sm">Delete</button>
 		</div>
 	</div>
 	</div>
 	{{#if canHaveCommands }}
     <ul class="command-list"></ul>
-    <div class="add-commands foot-sequence-item">Add {{commandMonikerPlural}}</i></div>
+    <div class="add-commands foot-sequence-item"><button class="btn btn-primary">Add {{commandMonikerPlural}}</button></div>
     {{/if}}
 </div>
