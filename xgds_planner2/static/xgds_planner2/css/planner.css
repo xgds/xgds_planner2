@@ -2,11 +2,12 @@ input[type="checkbox"].select {
     vertical-align: top;
 }
 
-/* .tabs {
-  width: 100%;
-}
- */
- 
+
+.tab-content {
+	min-height: 400px;
+	height: 100%;
+} 
+
 .nav-tabs li:hover{
     cursor: pointer;
 }
@@ -15,16 +16,7 @@ div[id^="col"] > li:hover {
     cursor: pointer;
 }
 
-/* .nav-tabs > li.active a {
-    background-color: #d4d4d4;
-}
-*/
 
-/* .notify-alert {
-	font-weight: bold;
-	color: red;
-}
-*/
 
 [class*="-sequence-item"] {
     list-style-type: none;
