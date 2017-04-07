@@ -10,28 +10,30 @@
 
 {% if groupFlight %}
 {% with groupFlight.pk|stringformat:"s" as group_pk %}
-
-<strong>{{ settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER}}: {{ groupFlight.name }}</strong>
+<h5>{{ settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER}}: {{ groupFlight.name }}</h5>
 {% block groupFlightContents %}
 {% if groupFlight.view_url %}
-<br/><a href="{{ groupFlight.view_url }}" target="">View</a>
+<a href="{{ groupFlight.view_url }}" target="" class="font-weight-bold">View</a>
 {% endif %}
 {% with 'flight__group:'|add:group_pk as groupFlightFilter %}
-<br/><a href="{% url 'search_xgds_notes_map_filter' groupFlightFilter %}" target="_blank">Notes</a>
+<a href="{% url 'search_xgds_notes_map_filter' groupFlightFilter %}" target="_blank" class="font-weight-bold">All Notes</a>
 {% endwith %}
 {% endblock groupFlightContents %}
 
 {% for flight in groupFlight.flights %}
 {% with flight.vehicle.pk|stringformat:"s" as vehicle_pk %}
 {% with 'flight__group:'|add:group_pk|add:',flight__vehicle:'|add:vehicle_pk as theFilter %}
+<div class="">
 
-<table border=1 style="border: 1px solid #001a28;" class="table-striped">
+<table class="table-striped table-bordered rounded mt-2">
+<thead>
 <tr>
-<td>Resource
-</td>
-<td><strong>{{flight.vehicle}}</strong>
-</td>
+<th>Resource
+</th>
+<th><strong>{{flight.vehicle}}</strong>
+</th>
 </tr>
+</thead>
 {% for pe in flight.plans %}
 {% with pe.plan as plan %}
 {% block planExporters %}
@@ -93,6 +95,7 @@
 {% endif %}
 {% endblock flightContents %}
 </table>
+</div>
 {% endwith %}
 {% endwith %}
 {% endfor %}
