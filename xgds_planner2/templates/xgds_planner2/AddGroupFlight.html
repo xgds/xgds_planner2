@@ -17,16 +17,12 @@
 {% endblock %}
 						
 {% block contents %}
+	<h4>Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }} </h4>
   <form action="{% url 'planner2_addGroupFlight' %}" method="post">
-  	<p>
-		<label></label>
-		<span class="h6">Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }}</span>
-	</p>
-  	{{groupFlightForm.as_p }}
-  	<p>
-			<label ></label>
-			<input type="submit" value="Create" />
-		</p>
+	<table>
+  	{{groupFlightForm.as_table }}
+  	<tr><td></td><td><input type="submit" value="Create" /></td></tr>
+  	</table>
 </form>
 
 {% endblock %}
