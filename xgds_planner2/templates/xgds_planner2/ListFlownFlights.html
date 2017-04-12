@@ -26,7 +26,7 @@
 	{% endif %}
 	<div class="d-flex justify-content-between" style="width: 100%;">
 		<form name='TodayForm' id="todayForm" action="{% url 'planner2_updateToday' %}" method="post">
-		<label for="id_today" style="display:inline"><input type="checkbox" class="mr-1" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} ></input>Today</label>
+			<label for="id_today" style="display:inline"><input type="checkbox" class="mr-1" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} ></input>Today</label>
 		</form>
 		<div class="btn-group" role="group">
 			<a class="btn btn-primary" role="button" href="{% url 'planner2_addGroupFlight' %}" >Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
