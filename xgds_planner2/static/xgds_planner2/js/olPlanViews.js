@@ -419,7 +419,8 @@ $(function() {
                     if (_.isUndefined(this.stationRepositioner)){
 	                	this.stationRepositioner = new ol.interaction.Modify({
 	                        	name: "stationRepositioner",
-	                        	features: this.stationsFeatures
+	                        	features: this.stationsFeatures,
+	                        	pixelTolerance: 15
 	                        });
 	                	this.stationRepositioner.on('modifystart', function(event){
 	                			app.vent.trigger('station:modifyStart');

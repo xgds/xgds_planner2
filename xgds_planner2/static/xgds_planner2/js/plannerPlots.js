@@ -16,6 +16,7 @@
 
 
 UPDATE_ON = {
+		Schedule: 3,
 		UpdatePlanDuration: 2,
 		ModifyEnd: 1,
 		Save: 0
@@ -47,6 +48,10 @@ $.extend(playback, {
         app.listenTo(app.vent, 'itemSelected:segment', function(selected) {
 			_this.doSetTime(_this.getTimeFromPathElement(selected)); 
         });
+    	app.vent.trigger('change:scheduledStartTime', function(startMoment) {
+    		//heretamar
+    	});
+
 		this.initialized = true;
 	},
 	doSetTime: function(currentTime){
@@ -228,11 +233,26 @@ app.views.PlanPlotView = Marionette.View.extend({
         	show: false
         }
     },
-    updatePlotDuration: function() {
+    updatePlotDuration: function(force, eventType) {
+    	if (eventType == undefined){
+    		eventType = UPDATE_ON.UpdatePlanDuration;
+    	}
     	var newOptions = this.getXAxisOptions();
+    	if (force) {
+    		// update start time 
+    		var startEnd = this.getStartEndMoments(false);
+    		if (startEnd != undefined && startEnd.start != undefined){
+	    		if (newOptions == null){
+	    			newOptions = this.plotOptions['xaxis'];
+	    		}
+	    		newOptions.min = startEnd.start.toDate().getTime();
+	    		newOptions.max = startEnd.end.toDate().getTime();
+    		}
+    		
+    	}
     	if (newOptions != null){
     		Object.assign(this.plotOptions['xaxis'], newOptions);
-    		this.cacheAllPlotData(UPDATE_ON.UpdatePlanDuration);
+    		this.cacheAllPlotData(eventType);
     		this.onRender();
     		return true;
     	}
@@ -337,6 +357,10 @@ app.views.PlanPlotView = Marionette.View.extend({
     	this.listenTo(app.vent, 'showNothing', this.selectNothing, this);
     	this.listenTo(app.vent, 'clearSelectedStation', this.selectNothing, this);
     	this.listenTo(app.vent, 'onPlanLoaded', this.finishInitialization, this);
+    	this.listenTo(app.vent, 'change:scheduledStartTime', function() {
+    		this.getStartEndMoments(true);
+    		this.updatePlots(UPDATE_ON.Schedule);
+    	});
     },
     finishInitialization: function() {
     	// once we know the plan is loaded we can reference it.
@@ -585,7 +609,7 @@ app.views.PlanPlotView = Marionette.View.extend({
     	var context = this;
 
     	$.each( this.dataPlots, function(key, plotModel){
-    		if (eventType == plotModel.get('update') || !(key in context.plotDataCache)) {
+    		if (eventType >= plotModel.get('update') || !(key in context.plotDataCache)) {
     			context.updatePlot(key, coordinates, plotModel);
     		}
     	});
@@ -644,9 +668,9 @@ app.views.PlanPlotView = Marionette.View.extend({
     },
     updatePlots: function(eventType) {
     	var updated = false;
-    	if (eventType == UPDATE_ON.UpdatePlanDuration){
-    		updated = this.updatePlotDuration();
-    	} 
+    	if (eventType > 0) {
+    		updated = this.updatePlotDuration(true, eventType);
+    	}
     	if (!updated){
     		this.cacheAllPlotData( eventType);
     		this.onRender();
@@ -732,6 +756,8 @@ app.views.PlanPlotView = Marionette.View.extend({
     	} else {
     		var plotOptions = this.plot.getOptions();
     		plotOptions.xaxis.timeformat = this.plotOptions.xaxis.timeformat;
+    		plotOptions.xaxis.min = this.plotOptions.xaxis.min;
+    		plotOptions.xaxis.max = this.plotOptions.xaxis.max;
     		plotOptions.colors = this.getPlotColors();
     		//Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
     		this.plot.setupGrid();
