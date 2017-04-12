@@ -106,6 +106,7 @@ XGDS_PLANNER_PIPELINE_JS = {
       },
 
     # must create 'simulator' entry in top-level siteSettings.py
+    #TODO update, qunit is installed with bower
     'xgds_planner2_testing': {
         'source_filenames': (
             'external/js/qunit-1.12.0.js',
@@ -269,7 +270,7 @@ BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
 BOWER_INSTALLED_APPS += ['string-format=git://github.com/tamarmot/string-format.git',
                          'proj4',
                          'usng=git://github.com/codice/usng.js.git',
-                         'qunit',
+                         'qunit#2.1.1',
                          'pure-uuid',
                          'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
                          'flot'
