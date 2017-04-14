@@ -458,7 +458,9 @@ app.views.PlanPlotView = Marionette.View.extend({
     		var label=keys[i];
     		var underLabel = label.split(' ').join('_');
     		var theColor = this.dataPlots[label].getLineColor();
-    		var content = '<div id="' + underLabel + 'legend_div" style="display:inline-block; min-width: 180px;"><input type="checkbox" id="' + underLabel + '_checkbox" value="' + label + '">&nbsp;<span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></div>';
+    		var content = '<div id="' + underLabel + 'legend_div" class="d-sm-inline-flex flex-row" style="min-width:180px;">';
+    		content += '<label><input type="checkbox" id="' + underLabel + '_checkbox" value="' + label + '" style="display:inline-block;" class="mr-1"><span id="' + underLabel + '_label" style="color:' + theColor + '">' + label + ':</span><span id="' + underLabel + '_value">' + BLANKS + '</span></label>';
+    		content += '</div>'
     		$("#plotLegend").append(content);
     		var visible = this.loadLegendCookie(label);
     		$("#" + underLabel + "_checkbox").prop('checked', visible);
