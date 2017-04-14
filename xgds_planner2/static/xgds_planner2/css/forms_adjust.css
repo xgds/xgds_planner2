@@ -9,6 +9,7 @@
   }
   
  .bbf-field .bbf-help {
+ 	margin: 0 0;
     margin-left: 20%;
     width: 79%;
     display: inherit !important;
