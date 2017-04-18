@@ -995,9 +995,14 @@ def mapJsonPlan(request, uuid):
                             content_type="application/json")
 
 
-def getActiveFlights():
+def getActiveFlights(vehicle=None):
     ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
-    return ACTIVE_FLIGHTS_MODEL.get().objects.all()
+
+    if not vehicle:
+        return ACTIVE_FLIGHTS_MODEL.get().objects.all()
+    else:
+        # filter by vehicle
+        return ACTIVE_FLIGHTS_MODEL.get().objects.filter(flight__vehicle=vehicle)
 
 
 def activeFlightsTreeNodes(request):
