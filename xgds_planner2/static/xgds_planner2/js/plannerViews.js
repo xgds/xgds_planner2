@@ -689,11 +689,12 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
     template: function(data) {
         var displayName = data.name || data.presetName || data.presetCode;
         var timing = app.util.secondsToHMS(data.duration);
-        return '<div class="form-check form-check-inline"><label class="form-check-label"><input class="form-check-input" type="checkbox" id="id_"' + displayName + '">' + displayName +'</label><span class="duration">' + timing + '</span><i/></div>';
+        return '<div class="form-check form-check-inline"><label class="form-check-label"><input class="form-check-input" type="checkbox" id="id_' + displayName + '">' + displayName +'</label><span class="duration">' + timing + '</span><i/></div>';
     },
     events: function() {
         return _.extend(app.views.SequenceListItemView.prototype.events, {
-            'click input.select': this.toggleSelect
+            'click input.form-check-input': this.toggleSelect,
+            'click div label :checkbox': this.toggleSelect,
         });
     },
 //    initialize: function(options) {
@@ -707,13 +708,13 @@ app.views.CommandItemView = app.views.SequenceListItemView.extend({
         app.vent.trigger('showItem:command', this.model);
     },
     isSelected: function(evt) {
-        return this.$el.find('input.select').is(':checked');
+        return this.$el.find('input.form-check-input').is(':checked');
     },
     setSelected: function() {
-        this.$el.find('input.select').prop('checked', true);
+        this.$el.find('input.form-check-input').prop('checked', true);
     },
     setUnselected: function() {
-        this.$el.find('input.select').prop('checked', false);
+        this.$el.find('input.form-check-input').prop('checked', false);
     },
     toggleSelect: function(evt) {
         if (this.isSelected()) {

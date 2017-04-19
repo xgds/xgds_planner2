@@ -1,5 +1,5 @@
 <div class="sequence-list">
-    <div class="edit-meta head-sequence-item text-primary">{{ itemMoniker}} Properties<i/></div>
+    <div class="edit-meta head-sequence-item text-secondary">{{ itemMoniker}} Properties<i/></div>
     <div>
     Duration: {{ duration }}
     </div>
@@ -9,7 +9,7 @@
     	<button  id="btn-kill" class="btn btn-primary btn-sm">Delete {{ itemMoniker }}</button>
     </div>
     {{/if}}
-    <div class="row" id="commandButtonRow" {{#unless commands.length}}style="display:none"{{/unless}}>
+    <div class="row" id="commandButtonRow" >
        <div class="btn-group" role="group">
            <button  id="btn-cut" class="btn btn-primary btn-sm">Cut</button>
            <button  id="btn-copy" class="btn btn-primary btn-sm">Copy</button>
