@@ -39,10 +39,9 @@ from django.http import (HttpResponseRedirect,
                          Http404,
                          HttpResponseNotAllowed,
                          HttpResponseBadRequest)
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
-from django.contrib.staticfiles import finders
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from geocamUtil import timezone
@@ -79,12 +78,9 @@ GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODE
 VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
 
 def plan_help(request):
-    return render_to_response(
-        'xgds_planner2/planner_help.html',
-        RequestContext(request, {
-            "settings": settings
-        })
-    )
+    return render(request,
+                  'xgds_planner2/planner_help.html',
+                  {"settings": settings})
 
 
 @login_required
@@ -100,29 +96,22 @@ def plan_tests(request, plan_id, editable=True):
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
 #     print planSchema.getJsonSchema();
-    return render_to_response(
-        'xgds_planner2/planner_tests.html',
-        RequestContext(request, {
-            'templates': templates,
-            'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
-            'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
-            'plan_json': json.dumps(plan_json),
-            'plan_name': plan.name,
-            'plan_index_json': json.dumps(plan_index_json()),
-            'editable': editable,
-            'simulatorUrl': planSchema.simulatorUrl,
-            'simulator': planSchema.simulator,
-            'placemark_circle_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
-            ),
-            'placemark_circle_highlighted_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
-            ),
-            'plan_links_json': json.dumps(plan.getLinks()),
-            'plan_namedURLs_json': json.dumps(plan.namedURLs),
-        }),
-        # context_instance=RequestContext
-    )
+    return render(request,
+                  'xgds_planner2/planner_tests.html',
+                  {'templates': templates,
+                   'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
+                   'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
+                   'plan_json': json.dumps(plan_json),
+                   'plan_name': plan.name,
+                   'plan_index_json': json.dumps(plan_index_json()),
+                   'editable': editable,
+                   'simulatorUrl': planSchema.simulatorUrl,
+                   'simulator': planSchema.simulator,
+                   'placemark_circle_url': request.build_absolute_uri(staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')),
+                   'placemark_circle_highlighted_url': request.build_absolute_uri(staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')),
+                   'plan_links_json': json.dumps(plan.getLinks()),
+                   'plan_namedURLs_json': json.dumps(plan.namedURLs),
+                   })
 
 
 def aggregate_handlebars_templates(request):
@@ -227,12 +216,11 @@ def plan_detail_doc(request, plan_id=None):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-    return render_to_response(
-        'xgds_planner2/planDetailDoc.html',
-        RequestContext(request,
-                       {'plan_json': plan_json,
-                        'plan_schema': json.loads(planSchema.getJsonSchema()),
-                        'plan_library': json.loads(planSchema.getJsonLibrary())}))
+    return render(request,
+                  'xgds_planner2/planDetailDoc.html',
+                  {'plan_json': plan_json,
+                   'plan_schema': json.loads(planSchema.getJsonSchema()),
+                   'plan_library': json.loads(planSchema.getJsonLibrary())})
 
 
 def fixTimezonesInPlans():
@@ -250,19 +238,17 @@ def fixTimezonesInPlans():
 
 def plan_bearing_distance_view(request, plan_id):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
-    return render_to_response(
-        'xgds_planner2/bearingDistancePlan.html',
-        RequestContext(request,
-                       {'plan_uuid': plan.uuid,
-                        'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH}))
+    return render(request,
+                  'xgds_planner2/bearingDistancePlan.html',
+                  {'plan_uuid': plan.uuid,
+                   'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH})
 
 def plan_bearing_distance_top_view(request, plan_id):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
-    return render_to_response(
-        'xgds_planner2/bearingDistancePlanTop.html',
-        RequestContext(request,
-                       {'plan_uuid': plan.uuid,
-                        'handlebar_path': 'xgds_planner2/templates/xgds_planner2/bearingDistancePlanTop.handlebars'}))
+    return render(request,
+                  'xgds_planner2/bearingDistancePlanTop.html',
+                  {'plan_uuid': plan.uuid,
+                   'handlebar_path': 'xgds_planner2/templates/xgds_planner2/bearingDistancePlanTop.handlebars'})
     
 @login_required
 def plan_editor_app(request, plan_id=None, editable=True):
@@ -318,10 +304,9 @@ def plan_editor_app(request, plan_id=None, editable=True):
             'plan_links_json': json.dumps(plan.getLinks())
         }
 
-    return render_to_response(
-        'xgds_planner2/planner_app.html',
-        RequestContext(request, getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context)),
-    )
+    return render(request,
+                  'xgds_planner2/planner_app.html',
+                  getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context))
 
 
 def addToEditorContext(context):
@@ -341,10 +326,10 @@ def planIndex(request):
                'flight_names': getAllFlightNames(),
                'exporters': choosePlanExporter.PLAN_EXPORTERS
                }
-    return render_to_response(
-        'xgds_planner2/planIndex.html',
-        getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context),
-        context_instance=RequestContext(request))
+    return render(request,
+                  'xgds_planner2/planIndex.html',
+                  getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context),
+                  )
 
 
 def plan_index_json():
@@ -458,9 +443,10 @@ def planCreate(request):
             return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
-    return render_to_response('xgds_planner2/planCreate.html',
-                              RequestContext(request,{'form': form,
-                                                      'siteLabel':'Create'}))
+    return render(request,
+                  'xgds_planner2/planCreate.html',
+                  {'form': form,
+                   'siteLabel':'Create'})
 
 
 @login_required
@@ -520,9 +506,10 @@ def planImport(request):
             return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
     else:
         return HttpResponseNotAllowed(['GET', 'POST'])
-    return render_to_response('xgds_planner2/planCreate.html',
-                              RequestContext(request,{'form': form,
-                                                      'siteLabel': 'Import'}))
+    return render(request,
+                  'xgds_planner2/planCreate.html',
+                  {'form': form,
+                   'siteLabel': 'Import'})
 
 @login_required
 def plan_delete(request):
@@ -625,29 +612,30 @@ def updateTodaySession(request):
 @login_required
 def manageFlights(request, errorString=""):
     today = request.session.get('today', False)
-    return render_to_response("xgds_planner2/ManageFlights.html",
-                              {'groups': getAllGroupFlights(today=today),
-                               "errorstring": errorString},
-                              context_instance=RequestContext(request))
+    return render(request,
+                  "xgds_planner2/ManageFlights.html",
+                  {'groups': getAllGroupFlights(today=today),
+                   "errorstring": errorString},
+                  )
 
 
 @login_required
 def listFlownFlights(request, errorString=""):
     today = request.session.get('today', False)
-    return render_to_response("xgds_planner2/ListFlownFlights.html",
-                              {'groups': getAllGroupFlights(today=today),
-                               "errorstring": errorString},
-                              context_instance=RequestContext(request))
+    return render(request,
+                  "xgds_planner2/ListFlownFlights.html",
+                  {'groups': getAllGroupFlights(today=today),
+                   "errorstring": errorString},
+                  )
 
 
 def manageHelp(request):
-    return render_to_response("xgds_planner2/ManageFlightHelp.html", {},
-                              context_instance=RequestContext(request))
+    return render(request,
+                  "xgds_planner2/ManageFlightHelp.html")
 
 
 def oltest(request):
-    return render_to_response("xgds_planner2/oltest.html", {},
-                              context_instance=RequestContext(request))
+    return render(request, "xgds_planner2/oltest.html")
 
 
 def startFlightTracking(request, flightName):
@@ -859,10 +847,12 @@ def addGroupFlight(request):
 
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
-        return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': groupFlightForm,
-                                                                        'groupFlights': getGroupFlights(),
-                                                                        'errorstring': errorString},
-                                  context_instance=RequestContext(request))
+        return render(request,
+                      "xgds_planner2/AddGroupFlight.html", 
+                      {'groupFlightForm': groupFlightForm,
+                       'groupFlights': getGroupFlights(),
+                       'errorstring': errorString})
+
     if request.method == 'POST':
         form = GroupFlightForm(request.POST)
         if form.is_valid():
@@ -873,11 +863,12 @@ def addGroupFlight(request):
                 groupFlight.save()
             except IntegrityError, strerror:
                 errorString = "Problem Creating Group Flight: {%s}" % strerror
-                return render_to_response("xgds_planner2/AddGroupFlight.html",
-                                          {'groupFlightForm': form,
-                                           'groupFlights': getGroupFlights(),
-                                           'errorstring': errorString},
-                                          context_instance=RequestContext(request))
+                return render(request,
+                              "xgds_planner2/AddGroupFlight.html",
+                              {'groupFlightForm': form,
+                               'groupFlights': getGroupFlights(),
+                               'errorstring': errorString},
+                              )
 
             for vehicle in form.cleaned_data['vehicles']:
                 newFlight = FLIGHT_MODEL.get()()
@@ -893,17 +884,20 @@ def addGroupFlight(request):
                     newFlight.save(force_insert=True)
                 except IntegrityError, strerror:
                     errorString = "Problem Creating Flight: {%s}" % strerror
-                    return render_to_response("xgds_planner2/AddGroupFlight.html",
-                                              {'groupFlightForm': form,
-                                               'groupFlights': getGroupFlights(),
-                                               'errorstring': errorString},
-                                              context_instance=RequestContext(request))
+                    return render(request,
+                                  "xgds_planner2/AddGroupFlight.html",
+                                  {'groupFlightForm': form,
+                                   'groupFlights': getGroupFlights(),
+                                   'errorstring': errorString},
+                                  )
         else:
             errorString = form.errors
-            return render_to_response("xgds_planner2/AddGroupFlight.html", {'groupFlightForm': form,
-                                                                            'groupFlights': getGroupFlights(),
-                                                                            'errorstring': errorString},
-                                      context_instance=RequestContext(request))
+            return render(request,
+                          "xgds_planner2/AddGroupFlight.html", 
+                          {'groupFlightForm': form,
+                           'groupFlights': getGroupFlights(),
+                           'errorstring': errorString},
+                          )
 
     return HttpResponseRedirect(reverse('planner2_manage', args=[]))
 
@@ -1129,8 +1123,9 @@ def getTodaysGroupFlights():
 def getGroupFlightSummary(request, groupFlightName):
     try:
         group = GROUP_FLIGHT_MODEL.get().objects.get(name=groupFlightName)
-        return render_to_response("xgds_planner2/groupFlightSummary.html",
-                                  {'groupFlight': group},
-                                  context_instance=RequestContext(request))
+        return render(request,
+                      "xgds_planner2/groupFlightSummary.html",
+                      {'groupFlight': group},
+                      )
     except:
         raise Http404("%s %s does not exist" % (settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER, groupFlightName))
