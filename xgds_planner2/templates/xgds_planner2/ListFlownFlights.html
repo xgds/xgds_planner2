@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load nav %}
 {% load tz %}
+{% load static %}
 
 {% block siteSection %} Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }} {% endblock %}
 
@@ -82,7 +83,7 @@
   {{ block.super }}
   	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
   	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
-	<script language="javascript" type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+	<script language="javascript" type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
 <script type="text/javascript">
 

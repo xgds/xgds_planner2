@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load pipeline %}
+{% load static %}
 
 {% block sitemenu-content-secondary %}
 {% include "xgds_planner2/planner2_subnav.html" %}
@@ -67,16 +68,16 @@
   {# stylesheet 'planner_app' #}
   @import url('{{EXTERNAL_URL}}jquery-ui/themes/base/jquery-ui.min.css');
   @import url('{{EXTERNAL_URL}}ol3-popup/src/ol3-popup.css');
-  @import url('{{STATIC_URL}}xgds_planner2/css/planner.css');
+  @import url("{% static 'xgds_planner2/css/planner.css' %}");
   @import url('{{EXTERNAL_URL}}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.css');
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
   @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
   @import url('{{ EXTERNAL_URL }}openlayers/ol.css');
-  @import url('{{ STATIC_URL}}geocamUtil/css/datatable.css');
+  @import url("{% static 'geocamUtil/css/datatable.css' %}");
   @import url('{{ EXTERNAL_URL }}fancytree/dist/skin-lion/ui.fancytree.min.css');
-  @import url('{{ STATIC_URL }}xgds_map_server/css/fancytree_custom.css');
-  @import url('{{ STATIC_URL }}xgds_map_server/css/xgds_map_server.css');
-  @import url('{{ STATIC_URL }}xgds_planner2/css/forms_adjust.css');
+  @import url("{% static 'xgds_map_server/css/fancytree_custom.css' %}");
+  @import url("{% static 'xgds_map_server/css/xgds_map_server.css' %}");
+  @import url("{% static 'xgds_planner2/css/forms_adjust.css' %}");
   @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.css');
   @import url('{{ EXTERNAL_URL }}gridstack/dist/gridstack-extra.min.css');
   .grid-stack-item-content {
@@ -155,7 +156,7 @@
 	{% endif %}
      <script type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
-     <script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+     <script type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}datatables-sorting-datetime-moment/index.js"></script>
     
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
@@ -170,30 +171,30 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}Flot/jquery.flot.js" ></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}Flot/jquery.flot.time.js" ></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}Flot/jquery.flot.resize.js" ></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}xgds_core/js/gridstackUtils.js"></script>
+	<script type="text/javascript" src="{% static 'xgds_core/js/gridstackUtils.js' %}"></script>
     
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/handlebars-helpers.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/geo.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_map_server/js/util/forms.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerModels.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlannerStyles.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerLinksViews.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerToolsViews.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerScheduleViews.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerPlanPlots.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerPlots.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plannerViews.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/simulatorDriver.js'></script>
-    <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/vehicleDriver.js'></script>
+    <script type="text/javascript" src="{% static 'xgds_map_server/js/util/handlebars-helpers.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_map_server/js/util/geo.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_map_server/js/util/forms.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerModels.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/olPlannerStyles.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerLinksViews.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerToolsViews.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerScheduleViews.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerPlanPlots.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerPlots.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerViews.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/simulatorDriver.js' %}"></script>
+    <script type="text/javascript" src="{% static 'xgds_planner2/js/vehicleDriver.js' %}"></script>
   
   	<!--  uncomment the below to test sample plot -->
-  <!-- <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/plot/plannerSamplePlot.js'></script>  -->
+  <!-- <script type="text/javascript" src="{% static 'xgds_planner2/js/plot/plannerSamplePlot.js' %}"></script>  -->
   
       {% javascript 'custom_map' %}
    	 
-   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olStationViews.js'></script>
-   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olSegmentViews.js'></script>
-   	 <script type="text/javascript" src='{{STATIC_URL}}xgds_planner2/js/olPlanViews.js'></script>
+   	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olStationViews.js' %}"></script>
+   	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olSegmentViews.js' %}"></script>
+   	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olPlanViews.js' %}"></script>
      
     <!-- 
     <script type="text/javascript" src="{# planner_appUrl #}"></script>

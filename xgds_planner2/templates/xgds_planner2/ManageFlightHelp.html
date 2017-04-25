@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load nav %}
+{% load static %}
 {% block siteSection %}Manage {{settings.XGDS_PLANNER2_FLIGHT_MONIKER}} Help{% endblock %}
 
 	{% block headExtras %}
@@ -29,7 +30,7 @@ For example, you may have a series of related {{ settings.XGDS_PLANNER2_PLAN_MON
 <li>Go to the <a href="{% url 'planner2_index' %}" target="_blank">List {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}s</a> page.</li>
 <li>Check the box to the left of the {{ settings.XGDS_PLANNER2_PLAN_MONIKER }} you want to schedule.</li>
 <li>Click the Schedule Selected blue button on the upper right; this dialog will pop up:<br/>
-<img src="{{STATIC_URL}}xgds_planner2/images/SchedulePlan.png"</li>
+<img src="{% static 'xgds_planner2/images/SchedulePlan.png' %}"></li>
 <li>Click the box to the right of the When label and select the date AND time (24 hour clock) when you intend to run the {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}.  Note it does not have to be exact.</li>
 <li>Click the Schedule button</li>
 <li>You will notice that there is now a time in the Scheduled column on the list {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}s page.</li>

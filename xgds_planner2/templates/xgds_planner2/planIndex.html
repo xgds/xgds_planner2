@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% load tz %}
+{% load static %}
 
 {% block cssExtras %}
 {{ block.super }}
@@ -55,7 +56,7 @@ table.planIndex td.exportFormat a {
 {% for plan in plans %}
   <tr id={{ plan.id }}>
   	<td><input type="checkbox" id="pick_{{plan.id}}" name="picks" value="{{plan.id}}" class="check"/></td>
-  	<td>{% if plan.readOnly %}<img src="{{ STATIC_URL }}xgds_planner2/images/lock.png" alt="Read Only">{% endif %}</td>
+  	<td>{% if plan.readOnly %}<img src="{% static 'xgds_planner2/images/lock.png' %}" alt="Read Only">{% endif %}</td>
   	<td ><label for="pick_{{plan.id}}"><a href="{% url 'planner2_edit' plan.id %}" id="edit_{{plan.id}}">{{ plan.name }}</a></label></td>
   	<td>{{ plan.creator }}</td>
     <td>{% timezone TIME_ZONE %}{{ plan.dateModified|date:"Y-m-d H:i e" }}{% endtimezone %}</td>
@@ -110,10 +111,10 @@ table.planIndex td.exportFormat a {
   {{ block.super }}
   	<script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.min.js"></script>
   	<script type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
-	<script type="text/javascript" src="{{ STATIC_URL }}geocamUtil/js/datatable_helpers.js"></script>
+	<script type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
 	{% include "xgds_core/timeJS.html" %}
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jqueryui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
-	<script type="text/javascript" src='{{ STATIC_URL }}xgds_core/js/datetimepickerUtils.js'></script>
+	<script type="text/javascript" src="{% static 'xgds_core/js/datetimepickerUtils.js' %}"></script>
 	
 
 <script type="text/javascript">
