@@ -37,7 +37,7 @@ from xgds_planner2 import xpjson, statsPlanExporter
 from geocamUtil.loader import LazyGetModelByName
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
-from xgds_core.models import NamedURL
+from xgds_core.models import NamedURL, NameManager
 
 # pylint: disable=C1001,E1101
 
@@ -53,9 +53,10 @@ from xgds_core.models import NamedURL
 
 PLAN_SCHEMA_CACHE = {}
 
-
 class AbstractVehicle(models.Model):
-    name = models.CharField(max_length=64, blank=True, db_index=True)
+    objects = NameManager()
+    
+    name = models.CharField(max_length=64, blank=True, db_index=True, unique=True)
     notes = models.TextField(blank=True)
     type = models.CharField(max_length=16, db_index=True)
 
@@ -67,6 +68,10 @@ class AbstractVehicle(models.Model):
 
     def getDict(self):
         return {"name": self.name, "notes": self.notes, "type": self.type}
+    
+    def natural_key(self):
+        return (self.name)
+
 
 
 class Vehicle(AbstractVehicle):
@@ -123,6 +128,8 @@ DEFAULT_GROUP_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.GroupFligh
 
 
 class AbstractFlight(models.Model):
+    objects = NameManager()
+    
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=128, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV', db_index=True)
     locked = models.BooleanField(blank=True, default=False)
@@ -134,6 +141,9 @@ class AbstractFlight(models.Model):
     notes = models.TextField(blank=True)
     group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'
 
+    def natural_key(self):
+        return (self.name)
+    
     @classmethod
     def cls_type(cls):
         return 'Flight'
@@ -257,6 +267,8 @@ class AbstractGroupFlight(models.Model):
     This GroupFlight model represents the overall coordinated
     operation.
     """
+    objects = NameManager()
+    
     name = models.CharField(max_length=128, blank=True, unique=True, help_text='Usually same as episode name. I.e. 201340925A', db_index=True)
     notes = models.TextField(blank=True)
 
@@ -279,6 +291,9 @@ class AbstractGroupFlight(models.Model):
     def flights(self):
         #TODO implement
         return None
+    
+    def natural_key(self):
+        return (self.name)
 
     class Meta:
         abstract = True
