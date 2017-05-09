@@ -998,6 +998,10 @@ def getActiveFlights(vehicle=None):
         # filter by vehicle
         return ACTIVE_FLIGHTS_MODEL.get().objects.filter(flight__vehicle=vehicle)
 
+def getActiveFlightFlights(vehicle=None):
+    activeFlights = getActiveFlights(vehicle)
+    flights = FLIGHT_MODEL.get().objects.filter(active__in=activeFlights)
+    return flights
 
 def activeFlightsTreeNodes(request):
     activeFlights = getActiveFlights()
