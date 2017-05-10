@@ -228,10 +228,15 @@ class AbstractFlight(models.Model):
             serviceName = self.vehicle.name + "TrackListener"
             stopPyraptordServiceIfRunning(pyraptord, serviceName)
             
-            #TODO remove the current position for that track
-            if self.track:
-                if self.track.currentposition:
-                    self.track.currentposition.delete()
+        #TODO remove the current position for that track
+        if self.track:
+            if self.track.currentposition_set:
+                try:
+                    position = self.track.currentposition_set.first()
+                    if position:
+                        position.delete()
+                except:
+                    pass
 
     def startTracking(self):
         #TODO define
