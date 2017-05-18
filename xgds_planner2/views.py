@@ -95,7 +95,7 @@ def plan_tests(request, plan_id, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-#     print planSchema.getJsonSchema();
+    
     return render(request,
                   'xgds_planner2/planner_tests.html',
                   {'templates': templates,
