@@ -1,4 +1,4 @@
-    	<div class="row">
+    	<div class="row justify-content-between">
 		    <div id="map-buttons" data-toggle="buttons-radio" class="col-4">
 		        <div class="btn-group" role="group" data-toggle="buttons">
 		        	<label class="btn btn-primary active" id="btn-navigate">
@@ -13,7 +13,7 @@
 		        </div>
 		    </div>
 	    
-		    <div class="col-5">
+		    <div class="col-4">
 		        {{#if simInfo}}
 		        <strong>Duration: </strong><span id="totalDuration">{{formatDuration simInfo.deltaTimeSeconds}}</span><br/>
 		        <strong>Distance: </strong><span id="totalDistance">{{formatDistance simInfo.deltaDistanceMeters}}</span>
@@ -28,6 +28,10 @@
 	            <button  id="btn-saveas" class="btn btn-primary">Save As</button>
 	            <button  id="btn-save" class="btn btn-primary">Save</button>
 		    </div>
+		    
+		    <div >
+	    		<button id="gridstack_toggleAll" class='btn btn-primary fa fa-lock my-1' role='button' style="color:white; max-height:1.8rem;" onclick="xgds_gridstack.handleToggleAllClick();"></button>
+	    	</div>
 	    </div> <!-- end row -->
 	
 	
@@ -36,9 +40,9 @@
 		    	<p class="text-info" id="tip-status">
 		    	</p>
 		    </div>
-		    <div class="col-5">
+		    <div class="col-4">
 		    </div>
-		    <div class="col-3">
+		    <div class="col-4">
 			        <span class="notify" id="save-status"></span>
 			</div>
 		</div>
