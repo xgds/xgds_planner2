@@ -38,7 +38,8 @@ from django.http import (HttpResponseRedirect,
                          HttpResponse,
                          Http404,
                          HttpResponseNotAllowed,
-                         HttpResponseBadRequest)
+                         HttpResponseBadRequest,
+                         JsonResponse)
 from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
@@ -1123,6 +1124,45 @@ def planImportXPJson(request):
 def getTodaysGroupFlights():
     today = timezone.localtime(timezone.now()).date()
     return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=today.strftime('%Y%m%d'))
+
+def getTodaysPlans():
+    letters = []
+    plans = []
+
+    groupFlights = getTodaysGroupFlights()
+    if groupFlights:
+        for gf in groupFlights.all():
+            letter = gf.name[-1]
+            for flight in gf.flights.all():
+                if flight.plans:
+                    plan = flight.plans.last().plan
+                    if letter not in letters:
+                        letters.append(letter)
+                        plans.append(plan)
+    return zip(letters, plans)
+                        
+def getTodaysPlanFiles(request, fileFormat='.kml'):
+    todaysPlans = getTodaysPlans()
+    letters = []
+    plankmls = []
+    for theTuple in todaysPlans:
+        letters.append(theTuple[0])
+        plankmls.append(theTuple[1].getExportUrl(fileFormat))
+    if not letters:
+        messages.error(request, "No Planned Traverses found for today. Tell team to schedule in xGDS.")
+        return None
+    else:
+        return zip(letters, plankmls)
+
+
+def getTodaysPlansJson(request):
+    todaysPlans = getTodaysPlans()
+    result = {}
+    if todaysPlans:
+        for theTuple in todaysPlans:
+            result[theTuple[0]] = theTuple[1].jsonPlan
+    return JsonResponse(result, encoder=DatetimeJsonEncoder)
+
 
 def getGroupFlightSummary(request, groupFlightName):
     try:
