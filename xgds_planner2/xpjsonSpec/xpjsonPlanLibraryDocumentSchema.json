@@ -213,7 +213,7 @@
                         "type": "string",
                         "required": true
                     }
-                    "libraryId": {
+                   "libraryId": {
                         "type": "string"
                     },
                     "stationId": {
