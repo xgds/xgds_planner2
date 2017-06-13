@@ -101,6 +101,13 @@ An XPJSON Plan_::
           "type": "Point",
           "coordinates": [-122.065483, 37.416433]
         }
+        "validations": [
+      	{"status":"error",
+       	"name":"Rover Validation",
+       	"time": "2020-12-31T 10:42:83.843Z",
+       	"source": "Unknown",
+       	"data": {"min": 13, "max": 23,"severity": 8}
+      	}]
       },
       {
         "type": "Segment",
@@ -117,6 +124,13 @@ An XPJSON Plan_::
             "intervalSeconds": 5
           }
         ]
+        "validations": [
+      	{"status":"success",
+       	"name":"Segment Validation",
+       	"description":"Looks Good!",
+       	"time": "2021-05-12T 09:19:23.156Z",
+       	"data": {"min": 23, "max": 45,"severity": 0.1}
+      	}]
       },
       {
         "type": "Station",
@@ -135,12 +149,27 @@ An XPJSON Plan_::
             "focalLengthMm": 10.1
           }
         ]
+        "validations": [
+      	{"status":"warning",
+       "name":"Rover Validation",
+       "description": "It is getting dark",
+       "time": "2021-05-30T 8:30:83.843Z",
+       "data": {"min": 13, "max": 23,"severity": 8}
+      }]
       },
       {
         "type": "Segment",
         "id": "03",
         "tolerance": 1.0,
         "speed": 0.7
+         "validations": [
+      		{"status":"error",
+       		 "name":"Validation 2",
+        	 "description":"Not in reachability zone",
+       	 	 "time": "2021-04-23T18:25:43.511Z",
+       		 "source": "Do not know",
+       		 "data": {"min": 1, "max": 3,"severity": 10}
+      	    }]
       },
       {
         "type": "Station",
@@ -150,6 +179,14 @@ An XPJSON Plan_::
           "type": "Point",
           "coordinates": [-122.065639,  37.416503]
         }
+         "validations": [
+      		{"status":"warning",
+       		 "name":"Validation 1",
+       		 "description":"The sun is setting",
+       		 "time": "2021-11-22T19:45:45.234Z",
+       		 "source": "What is source?",
+       		 "data": {"min": 0.1, "max": 2.2,"severity": 3}
+      		}]
       }
     ]
   }
@@ -417,6 +454,10 @@ hierarchy as follows:
    * Site_
 
    * Target_
+   
+   * ValidatedObject_
+   
+   * Validation_
 
 JavaScript objects are collections of name/value pairs where the names
 are strings.
@@ -535,6 +576,74 @@ Inherits from:
 |                  |                |                 |contents.                           |
 +------------------+----------------+-----------------+------------------------------------+
 
+.. _ValidatedObject:
+
+ValidatedObject Class
+~~~~~~~~~~~~~~~~~~~~~
+
+A ValidatedObject instance has an optional ``validations`` member that includes any validation data 
+for the containing object
+
+Abstract class:
+  Yes
+
+Inherits from:
+  TypedObject
+
++-------------------+----------------+-----------------+------------------------------------+
+|``validations``    |array of        |optional         |The list of validations holds any   |
+|                   | validations    |                 |validation data.		    		|
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+
+.. _Validation:
+
+Validation Class
+~~~~~~~~~~~~~~~~~~~~~
+
+A Validation instance contains informational fields about particular validation data
+
+Abstract class:
+  No
+
+Inherits from:                                                            
+  (none)
+
++-------------------+----------------+-----------------+------------------------------------+
+|Member             |Type            |Values           |Meaning                             |
++-------------------+----------------+-----------------+------------------------------------+
+|``status``         | enum           |required         |Displays the validation status.     |
+|                   |                |                 |        	        	    		|
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+|``name``           | string         |required         |Displays the name of validation     |
+|                   |                |                 |        	        	    		|
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+|``description``    | string         |optional         |Describes the validation            |
+|                   |                |                 |        	        	    		|
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+|``time``           | date-time      |required         |Displays the date of validation     |
+|                   |                |                 |occurrence        	        	    |
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+|``source``         | string         |optional         |Displays the source of validation   |
+|                   |                |                 |		        	        	    |
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+|``data``           | object         |optional         |Displays data for the validation    |
+|                   |                |                 |                	        	    |
+|                   |                |                 |                                    |
+|                   |                |                 | 									|
++-------------------+----------------+-----------------+------------------------------------+
+
 .. _ClassSpec:
 
 ClassSpec Class
@@ -617,7 +726,7 @@ Abstract class:
   Yes
 
 Inherits from:
-  TypedObject
+  ValidatedObject
 
 +-------------------+----------------+-----------------+------------------------------------+
 |Member             |Type            |Values           |Meaning                             |
@@ -1098,7 +1207,7 @@ contain commands in its ``sequence`` member.
 Abstract class: Yes
 
 Inherits from:
-  TypedObject
+  ValidatedObject
 
 +------------------+----------------+-----------------+------------------------------------+
 |Member            |Type            |Values           |Meaning                             |
@@ -1131,7 +1240,7 @@ Abstract class:
   No
 
 Inherits from:
-  TypedObject
+  ValidatedObject
 
 +--------------------+-------------+----------------+------------------------------------+
 |Member              |Type         |Values          |Meaning                             |
@@ -1184,7 +1293,7 @@ Example
 ::
 
   {
-    // inherited from TypedObject
+    // inherited from ValidatedObject
     "type": "Plan",
     "name": "(name)",
     "notes": "(notes)",
@@ -1453,7 +1562,11 @@ Inherits from:
 |                           |string`_    |                |auto-generate the ``id`` of Target_ |
 |                           |            |                |objects.                            |
 +---------------------------+------------+----------------+------------------------------------+
-
+|``valdations``             |`list       |optional        |A list used to                      |
+|                           |of          |                |contain the ``validations`` of      |
+|                           |validations |                |Command_, Plan_, Station_, and      |
+|							|`_			 |			      |Segment_ objects.				   |
++---------------------------+------------+----------------+------------------------------------+
 Example
 -------
 
@@ -1598,14 +1711,13 @@ Inherits from:
 |                  |            |                |support editing the Segment         |
 |                  |            |                |geometry.)                          |
 +------------------+------------+----------------+------------------------------------+
-
 Example
 -------
 
 ::
 
   {
-    // inherited from TypedObject
+    // inherited from PathElement
     "type": "Segment",
     "name": "(name)",
     "notes": "(notes)",
@@ -1744,7 +1856,7 @@ Example
 ::
 
   {
-    // inherited from TypedObject
+    // inherited from PathElement
     "type": "Station",
     "name": "(name)",
     "notes": "(notes)",
@@ -1779,7 +1891,7 @@ Abstract class:
   No
 
 Inherits from:
-  TypedObject
+  ValidatedObject
 
 +-------------------+----------------+-----------------+------------------------------------+
 |Member             |Type            |Values           |Meaning                             |
@@ -1795,7 +1907,7 @@ Example
 ::
 
   {
-    // inherited from TypedObject
+    // inherited from ValidatedObject
     "type": "Target",
     "name": "(name)",
     "notes": "(notes)",

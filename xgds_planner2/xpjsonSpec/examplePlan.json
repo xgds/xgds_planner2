@@ -43,7 +43,14 @@
       "geometry": {
         "type": "Point",
         "coordinates": [-122.065483, 37.416433]
-      }
+      },
+      "validations": [
+      {"status":"error",
+       "name":"Station Validation",
+       "time": "2020-12-31T 10:42:83.843Z",
+       "source": "Unknown",
+       "data": {"min": 13, "max": 23,"severity": 8}
+      }]
     },
     {
       "type": "Segment",
@@ -59,7 +66,14 @@
           "focalLengthMm": 7.4,
           "intervalSeconds": 5
         }
-      ]
+      ],
+     "validations": [
+      {"status":"success",
+       "name":"Segment Validation",
+       "description":"Looks Good!",
+       "time": "2021-05-12T 09:19:23.156Z",
+       "data": {"min": 23, "max": 45,"severity": 0.1}
+      }]
     },
     {
       "type": "Station",
@@ -77,13 +91,28 @@
           "whiteBalance": "A",
           "focalLengthMm": 10.1
         }
-      ]
+      ],
+      "validations": [
+      {"status":"warning",
+       "name":"Rover Validation",
+       "description": "It is getting dark",
+       "time": "2021-05-30T 8:30:83.843Z",
+       "data": {"min": 13, "max": 23,"severity": 8}
+      }]
     },
     {
       "type": "Segment",
       "id": "SEG02",
       "tolerance": 1.0,
-      "speed": 0.7
+      "speed": 0.7,
+      "validations": [
+      {"status":"error",
+       "name":"Validation 2",
+       "description":"Not in reachability zone",
+       "time": "2021-04-23T18:25:43.511Z",
+       "source": "Do not know",
+       "data": {"min": 1, "max": 3,"severity": 10}
+      }]
     },
     {
       "type": "Station",
@@ -92,7 +121,15 @@
       "geometry": {
         "type": "Point",
         "coordinates": [-122.065639,  37.416503]
-      }
+      },
+      "validations": [
+      {"status":"warning",
+       "name":"Validation 1",
+       "description":"The sun is setting",
+       "time": "2021-11-22T19:45:45.234Z",
+       "source": "What is source?",
+       "data": {"min": 0.1, "max": 2.2,"severity": 3}
+      }]
     }
   ]
 }

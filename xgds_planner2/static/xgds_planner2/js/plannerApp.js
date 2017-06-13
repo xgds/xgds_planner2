@@ -487,8 +487,29 @@ var DEBUG_EVENTS = false;
 			});
 			this[key] = presets;
 			return presets;
+		},
+		buildValidation: function(container, status, name, description, timestamp, source, data){
+			/* Builds a new validation objects and puts it in the container's validations attribute.  The container is a Plan, Station, Segment or Command. */
+
+			try{
+				var validations = container.get('validations'); //validations is a list. might be undefined.  If it's undefined, set it on the container
+
+				if (validations==undefined) {
+
+					validations=[];
+					container.set("validations", validations);
+
+				}
+
+				var newValidation = {'status': status, 'name': name, 'description': description, 'timestamp':timestamp, 'source': source, 'data': data};
+				validations.push(newValidation);
+				return newValidation;
+			}
+			catch(err){
+				console.log(err.name);
+			}
 		}
-		
+
 	});
 
 	

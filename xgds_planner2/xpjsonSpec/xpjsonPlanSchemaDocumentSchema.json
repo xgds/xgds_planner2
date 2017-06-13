@@ -540,35 +540,7 @@
 
         "commandIdFormat": {
             "type": "string"
-        },
-        
-        "validations":{
-            "type": "array",
-            "items":{
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "enum":["error", "warning", "success"] 
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "description": {
-                        "type": "string"
-                    },
-                    "time": {
-                        "type": "date-time"
-                    },
-                    "source":{
-                        "type": "string"
-                    },
-                    "data":{
-                        "type": "object"
-                        }
-                    }
-                }
-            }
         }
-
+        
     }
 }
