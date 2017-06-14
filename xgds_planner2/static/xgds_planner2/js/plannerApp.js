@@ -500,16 +500,108 @@ var DEBUG_EVENTS = false;
 					container.set("validations", validations);
 
 				}
-
-				var newValidation = {'status': status, 'name': name, 'description': description, 'timestamp':timestamp, 'source': source, 'data': data};
+				var timestampString = timestamp;
+				if(timestamp instanceof moment){
+					timestampString = timestamp.isoformat();
+				}
+				var newValidation = {'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data};
 				validations.push(newValidation);
 				return newValidation;
 			}
 			catch(err){
 				console.log(err.name);
 			}
-		}
+		},
+		clearValidations: function(container, match, recursive){
+			//Clear any matching validations on the container, recursing if the recursive flag is true
+			var validations = container.get('validations');
+			//var validations = {'source': 'Temporal Bounds'};
+			if(validations!== undefined){
+				//iterate through the validations list and check if everything matches
+				var removalList = [];
+				for(var i=0; i<validations.length; i++){
+					var v = validations[i];
+					var foundMatch=undefined;
+					var keys = Object.keys(match); //gets keys in object
+					for(var k=0; k<keys.length; k++){
 
+						var key = keys[k];
+						if(key in v){
+							var value= match[key]; 
+							if(key=='data'){
+								var dataKeys = Object.keys(value);
+								var validationData = v[key];
+								for(var d=0; d<dataKeys.length; d++){
+									var matchData = value[dataKeys[d]];
+									if(dataKeys[d] in validationData){
+										if(validationData[dataKeys[d]] == matchData){
+											foundMatch=true; 
+										}
+										else{
+											foundMatch=false; 
+											break;
+										}
+									}
+									else{
+										foundMatch=false;
+										break;
+									}
+
+
+								}
+							}
+							else{
+								if(value==v[key]){								
+									foundMatch = true;
+								}
+								else{				
+									foundMatch = false;
+									break;
+								}
+							}
+						}
+
+						else{
+							foundMatch=false;
+							break;
+						}
+
+						if(foundMatch == true){
+							removalList.push(v);
+						}
+					}
+				}
+			}
+				// if removalList is not empty
+				if(removalList !== undefined){
+					// iterate through removalList
+					for(var i=0; i<removalList.length; i++){
+						//delete the values of removalList in validations
+						var index = validations.indexOf(removalList[i]);
+						validations.splice(index, 1);
+					}
+					
+					
+				}
+				//see if recursive flag is true
+				if(recursive == true){
+					
+				    if (container.get('sequence') !== undefined){
+				    	var sequence = container.get('sequence');
+				 
+				    	sequence.each(function(element){
+				    		
+							
+			    			app.clearValidations(element, match, recursive);
+			    		
+				    	});
+			
+				    }
+					 
+				}
+				
+			}
+		
 	});
 
 	
