@@ -29,18 +29,30 @@
 				<ul class="nav justify-content-end">
 					<i class="fa fa-lock pinDiv gray-light"></i>
 				</ul>
-    			<!--<div id="map" class="mt-negative-1rem"></div> -->
 				<div id="map"></div>
     			<div id="postmap" ></div>
     			<div id="postpostmap" ></div>
     		</div>
     	</div>
-    	<div id="tabs-gridstack-item" class="grid-stack-item"  data-gs-x="2" data-gs-y="0" data-gs-width="4" data-gs-height="4" >
+    	<div id="tabs-gridstack-item" class="grid-stack-item"  data-gs-x="2" data-gs-y="0" data-gs-width="4" data-gs-height="3" >
     		<div id="tabs-gridstack-item-content" class="grid-stack-item-content" >
 				<ul class="nav justify-content-end">
     				<i class="fa fa-lock pinDiv gray-light"></i>
 				</ul>
 		        <div id="tabs" class="mt-negative-1rem"></div>
+		    </div>
+		</div>
+		<div id="validation-gridstack-item" class="grid-stack-item"  data-gs-x="2" data-gs-y="3" data-gs-width="4" data-gs-height="1" >
+    		<div id="validation-gridstack-item-content" class="grid-stack-item-content" >
+				<ul class="nav justify-content-end">
+    				<i class="fa fa-lock pinDiv gray-light"></i>
+				</ul>
+		        <div id="validation" class="mt-negative-1rem">
+					<table id="validation_table">
+
+ 
+					</table>
+				</div>
 		    </div>
 		</div>
     </div>
@@ -158,9 +170,10 @@
      <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
      <script type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}datatables-sorting-datetime-moment/index.js"></script>
+
     
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/index.js'></script>
-    
+     <script type="text/javascript" src='{{ EXTERNAL_URL }}pure-uuid/uuid.min.js'></script>
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/lib/string-format.js'></script>
@@ -258,7 +271,8 @@
             return 'Unsaved changes, are you sure you want to exit?';
         }
     }); 
+
 {% endblock jsInit %}
-  
+
 {% block footer %}
 {% endblock footer %}

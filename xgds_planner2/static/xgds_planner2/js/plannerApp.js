@@ -24,7 +24,8 @@ var DEBUG_EVENTS = false;
 			mapRegion: '#map',
 			toolbar: '#toolbar',
 			tabs: '#tabs',
-			plot: '#plot-container'
+			plot: '#plot-container',
+			validation: '#validation'
 		},
 		onRender: function() {
 			app.map = new app.views.OLPlanView();
@@ -32,6 +33,7 @@ var DEBUG_EVENTS = false;
 			this.showChildView('toolbar', new app.views.ToolbarView());
 			this.showChildView('tabs', new app.views.TabNavView());
 			this.showChildView('plot', new app.views.PlanPlotView());
+			this.showChildView('validation', new app.views.ValidationTableView());
 		}
 	});
 
@@ -500,17 +502,59 @@ var DEBUG_EVENTS = false;
 					container.set("validations", validations);
 
 				}
+				
 				var timestampString = timestamp;
 				if(timestamp instanceof moment){
 					timestampString = timestamp.isoformat();
+					console.log(timestampString);
 				}
-				var newValidation = {'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data};
+				var newValidation = {'station': container._sequenceLabel,'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data, 'uuid': new UUID(4).format()};
+				//console.log(newValidation)
 				validations.push(newValidation);
 				return newValidation;
 			}
 			catch(err){
 				console.log(err.name);
 			}
+		},
+		result: [],
+		getValidationsAsList: function(container, recursive, clearList = true){
+			// build an array for the result
+			if(clearList){
+				this.result=[];
+			}
+			// insert the validations in the current container
+			var validations = container.get('validations');
+			if(validations!=undefined){
+				for(var i=0; i<validations.length; i++){
+					var v = validations[i];
+				// for each validation make sure it has a container_name  property
+					var name = v.name; //not necessarily container_name												
+					//if container_name is not undefined
+					if(name !== undefined){
+						// insert all recursively found validations					
+							this.result.push(v);														
+					}
+				}
+			}
+			
+			 if(recursive == true){
+			 	if (container.get('sequence') !== undefined){
+	    			var modelList = container.get('sequence').models;
+	    			if(modelList !== undefined){
+	    				for(var i=0; i<modelList.length; i++){
+	    		
+	    				
+	    					app.getValidationsAsList(modelList[i], recursive, false);
+    					
+	    				}
+	    			}
+	    		}
+
+	    	}
+				//if container_name is not undefined
+			// return the array
+			return this.result;
 		},
 		clearValidations: function(container, match, recursive){
 			//Clear any matching validations on the container, recursing if the recursive flag is true
@@ -533,7 +577,7 @@ var DEBUG_EVENTS = false;
 								var validationData = v[key];
 								for(var d=0; d<dataKeys.length; d++){
 									var matchData = value[dataKeys[d]];
-									if(dataKeys[d] in validationData){
+									if(validationData[dataKeys[d]] !== undefined){
 										if(validationData[dataKeys[d]] == matchData){
 											foundMatch=true; 
 										}
@@ -546,11 +590,8 @@ var DEBUG_EVENTS = false;
 										foundMatch=false;
 										break;
 									}
-
-
 								}
-							}
-							else{
+							} else {
 								if(value==v[key]){								
 									foundMatch = true;
 								}
@@ -583,19 +624,20 @@ var DEBUG_EVENTS = false;
 					
 					
 				}
+			 
 				//see if recursive flag is true
 				if(recursive == true){
 					
 				    if (container.get('sequence') !== undefined){
+				    	
+
 				    	var sequence = container.get('sequence');
-				 
-				    	sequence.each(function(element){
-				    		
-							
-			    			app.clearValidations(element, match, recursive);
+				    	if(sequence !== undefined){
+				    		sequence.each(function(element){
+				    			app.clearValidations(element, match, recursive);
 			    		
-				    	});
-			
+				    		});
+				    	}
 				    }
 					 
 				}

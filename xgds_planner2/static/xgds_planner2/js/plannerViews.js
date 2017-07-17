@@ -1182,3 +1182,153 @@ app.views.TabNavView = xGDS.TabNavView.extend({
 
 });
 
+
+//TODO Sophie
+/*
+Construct a new ValidationTableView which will use the div below the tab view.
+First step is to construct this marionette view and insert some html into the div using jquery. $el is I think the main element when you are inside your view, 
+onAttach function is where you want to do the rendering stuff.  $el.append('<span>HELLO WORLD</span>');
+try using template:undefined
+When this initializes OR when an event is fired adding or removing a validation, the table will update with the validation contents.
+You will need to set up a datatable to populate the table.
+You will also need to write another recursive function in plannerApp to get a flat list of validations including their container
+Once you are done building the view you can uncomment its construction in plannerApp.
+*/
+app.views.ValidationTableView = Marionette.View.extend({
+	template: false,
+	validationArray: undefined, //gets the validations
+	tableElement: undefined,  //table we will pass to dataTables to use  
+	initialize: function(){
+		//TODO call plannerApp.getValidationAsList; this list is the data that goes in to the datatable
+		var count=0;
+		this.listenTo(app.vent,'onPlanLoaded', this.initializeValidations);
+		this.listenTo(app.vent,'validations: create', function(validationsArray){
+			count++;
+			console.log(count);
+			this.constructDataTable(validationsArray); 
+			});
+		/*this.listenTo(app.vent, 'showDatatable', function(){
+			
+			
+		});*/
+		this.listenTo(app.vent, 'validation:remove',function(uuid){
+			this.deleteMatchingRow(uuid);
+		});
+	/*this.listenTo(app.vent, 'validation:remove', function(validation){
+			this.updateValidationsRemove(validation);
+		}, this);*/
+		//this.listenTo(app.vent, 'validation:add', this.clearValidations);
+	},
+
+	initializeValidations: function() {
+		console.log('initializing validation');
+		
+		if(app.currentPlan !==undefined){
+			
+			console.log("Current Plan is not undefined!");
+			console.log(app.currentPlan);
+			console.log(app.getValidationsAsList(app.currentPlan,true));
+			//this.validationArray = app.getValidationsAsList(app.currentPlan,true);
+			console.log(this.validationArray);
+			//this.constructDataTable(this.validationArray);
+			//TODO trigger updateValidationTable
+			//this.initializeValidationTableData();			
+		}
+	},
+	constructDataTable: function(validationsArray){
+		this.$el.html("<table id='validation_table'>" + "</table>");
+		var dataSet = [];
+		var selected=[];
+		this.tableElement =	$('#validation_table').DataTable({
+			data: dataSet,
+			select: true,
+			columns: [
+				{title: "Station"},
+				{title: "Status"},
+				{title: "Name"},
+				{title: "Description"},
+				{title: "Source"},
+				{title: "Data"}/*,
+				{title: "UUID"}*/
+			],
+			"createdRow": function(row, data, dataIndex){
+				$(row).attr("id", validationsArray[dataIndex].uuid);
+			}
+		});	
+			for (var i = 0; i<validationsArray.length; i++) { //loop each row of validationArray				
+				var val = 	validationsArray[i];
+				
+				dataSet.push([val.station, val.status, val.name, val.description, val.source, this.showData(val.data) /*, val.uuid*/]);
+			    var newRow =  this.tableElement.row.add(dataSet[i]).draw(false);
+				$(newRow).attr("id", val.uuid);
+			}
+
+			var myTable = this.tableElement;
+			
+			this.validationArray =  validationsArray;
+			//return myTable;
+	 },
+	 showData: function(data){
+		 var dataKeys = Object.keys(data);
+		 var dataString = "";
+		 for(var i = 0; i<dataKeys.length; i++){
+			 dataString += "\n"+ dataKeys[i]+": "+ data[dataKeys[i]];
+		 }
+		 return dataString;
+	 },
+	 /*Create a new method that takes the uuid as an argument and deletes the matching row*/
+	 deleteMatchingRow: function(matchUuid){
+		 //loop through the table rows
+		 
+		 var myTable = this.tableElement;
+		 var myRow = myTable.row("#"+matchUuid).select();
+		 myRow.remove().draw();
+	 },
+	 getValidationArray: function(){
+		 console.log(this.validationArray);
+		 return this.validationArray;
+	 },
+/*	initializeValidationTableData: function(validationsArray) {
+		//TODO set the datatable's data from this.validationsArray
+		//console.log(app.currentPlan);
+		//console.log(validations);
+		if (this.validationArray == undefined) {
+		this.validationArray =[];
+		}
+		this.validationArray = validationsArray;
+		this.constructDataTable(this.validationArray);
+		//validations is an array
+		//
+
+	},*/
+	updateValidationsRemove: function(validation){
+		//TODO update the datatable with the attached validations
+		var uuid = validation.uuid;
+		this.deleteMatchingRow(uuid);
+	},
+	 onAttach: function(){
+		//this.listenTo(app.vent,'onPlanLoaded', this.initializeValidations);
+		console.log("I am here");		
+		/*this.$el.append("<table id='validation_table'>" + "</table>");
+		var dataSet = [];
+		this.tableElement =	$('#validation_table').DataTable({
+			data: dataSet,
+			columns: [
+				{title: "Status"},
+				{title: "Name"},
+				{title: "Description"},
+				{title: "Timestamp"},
+				{title: "Source"},
+				{title: "Data"},
+				{title: "UUID"}
+			]
+		});*/
+		//this.$el.append(this.tableElement);
+
+		//this.tableElement = this.constructDataTable(/*this.validationArray*/);
+		//this.$el.append(this.tableElement);
+		
+		
+	}
+
+});
