@@ -67,9 +67,9 @@ class xgds_planner2Test(TestCase):
     @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_REST',
                     settings.XGDS_PLANNER2_TEST_SKIP_PLAN_REST),
             'plan rest test set to be skipped')
-    def test_plan_REST(self):
+    def test_plan_save_json(self):
         self.client.login(**self.login_info)
-        response = self.client.get(reverse('planner2_planREST', args=['1', 'test']))
+        response = self.client.get(reverse('planner2_plan_save_json', args=['1', 'test']))
         self.assertEquals(response.status_code, 200)
 
     @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT',

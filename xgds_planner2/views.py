@@ -65,7 +65,7 @@ from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
-from xgds_core.views import get_handlebars_templates
+from xgds_core.views import get_handlebars_templates, addRelay
 
 from xgds_map_server.forms import MapSearchForm
 
@@ -131,24 +131,35 @@ def handleCallbacks(request, plan, mode):
                 plan = foundMethod(request, plan)
     return plan
 
+def populatePlanFromJson(plan, rawData):
+    data = json.loads(rawData)
+    for k, v in data.iteritems():
+        if k == "_simInfo":
+            continue
+        plan.jsonPlan[k] = v
+    plan.extractFromJson(overWriteDateModified=True)
 
+def plan_save_from_relay(request, plan_id):
+    """ When we receive a relayed plan, handle creation or update of that plan
+    """
+    plan = PLAN_MODEL.get().objects.get_or_create(pk=plan_id)
+    populatePlanFromJson(plan, request.body)
+    plan.save()
+    
 @login_required
-def plan_REST(request, plan_id, jsonPlanId):
+def plan_save_json(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     if request.method == "PUT":
-        data = json.loads(request.body)
-        for k, v in data.iteritems():
-            if k == "_simInfo":
-                continue
-            plan.jsonPlan[k] = v
-#         print json.dumps(data, indent=4, sort_keys=True)
-        plan.extractFromJson(overWriteDateModified=True)
+        # this is coming in from the regular plan editor
+        populatePlanFromJson(plan, request.body)
         plan.save()
         plan = handleCallbacks(request, plan, settings.SAVE)
+        addRelay(plan, None, json.dumps(request.body), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
+        return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
         # we are doing a save as
@@ -156,22 +167,16 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.creationDate = datetime.datetime.now(pytz.utc)
         plan.uuid = None
         plan.pk = None
-        data = json.loads(request.body)
-        for k, v in data.iteritems():
-            if k == "_simInfo":
-                continue
-            plan.jsonPlan[k] = v
-        plan.extractFromJson(overWriteDateModified=True, overWriteUuid=True)
+        populatePlanFromJson(plan, request.body)
         plan.name = plan.jsonPlan['planName']
         plan.jsonPlan['name'] = plan.jsonPlan['planName']
 
-        # TODO I don't understand why this did not work above
         plan.creator = request.user
         plan.jsonPlan.creator = request.user.username
 
         #make sure it is not read only
         plan.readOnly = False
-        plan.save()
+        plan.save()  # need to save to get the new pk
 
         newid = plan.pk
         plan.jsonPlan["serverId"] = newid
@@ -188,14 +193,15 @@ def plan_REST(request, plan_id, jsonPlanId):
         
         plan.save()
         handleCallbacks(request, plan, settings.SAVE)
+        addRelay(plan, None, json.dumps(plan.jsonPlan), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
 
         response = {}
         response["msg"] = "New plan created"
         response["data"] = newid
+        
         return HttpResponse(json.dumps(response), content_type='application/json')
 
-    return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
-
+    
 
 def updateAllUuids(planDict):
     planDict.uuid = makeUuid()
