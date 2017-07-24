@@ -935,7 +935,8 @@ def relayAddFlight(request):
             pass
         
         # we are good it does not exist
-        newFlight = FLIGHT_MODEL.get()(**request.POST)
+        form_dict = json.loads(request.POST.get('serialized_form'))
+        newFlight = FLIGHT_MODEL.get()(**form_dict)
         newFlight.save()
         return JsonResponse(model_to_dict(newFlight))
     except Exception, e:
@@ -957,7 +958,8 @@ def relayAddGroupFlight(request):
         except:
             pass
 
-        newGroupFlight = GROUP_FLIGHT_MODEL.get()(**request.POST)
+        form_dict = json.loads(request.POST.get('serialized_form'))
+        newGroupFlight = GROUP_FLIGHT_MODEL.get()(**form_dict)
         newGroupFlight.save()
         return JsonResponse(model_to_dict(newGroupFlight))
     except Exception, e:
