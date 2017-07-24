@@ -42,6 +42,8 @@ urlpatterns = [
     url(r'startTracking/(?P<flightName>\w+)$', views.startFlightTracking, {'loginRequired': True}, 'planner2_startFlightTracking'),
     url(r'stopTracking/(?P<flightName>\w+)$', views.stopFlightTracking, {'loginRequired': True}, 'planner2_stopFlightTracking'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),
+    url(r'^relayAddFlight/$', views.relayAddFlight, {'loginRequired': False}, "planner2_relayAddFlight"),
+    url(r'^relayAddGroupFlight/$', views.relayAddGroupFlight, {'loginRequired': False}, "planner2_relayAddGroupFlight"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     url(r'^schedulePlan/$', views.schedulePlans, {'redirect': False}, "planner2_schedulePlan_ajax"),
     url(r'startPlan/(?P<pe_id>[\w-]+)$', views.startPlan, {'loginRequired': True}, 'planner2_startPlan'),

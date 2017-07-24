@@ -25,6 +25,7 @@ import traceback
 from uuid import uuid4
 
 from dateutil.parser import parse as dateparser
+from django.forms.models import model_to_dict
 from django.contrib import messages 
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
@@ -851,6 +852,8 @@ def deletePlanExecution(request, pe_id):
 def addGroupFlight(request):
     from xgds_planner2.forms import GroupFlightForm
     errorString = None
+    groupFlight = None
+    newFlights = []
 
     if request.method != 'POST':
         groupFlightForm = GroupFlightForm()
@@ -889,6 +892,7 @@ def addGroupFlight(request):
 
                 try:
                     newFlight.save(force_insert=True)
+                    newFlights.append(newFlight)
                 except IntegrityError, strerror:
                     errorString = "Problem Creating Flight: {%s}" % strerror
                     return render(request,
@@ -906,7 +910,59 @@ def addGroupFlight(request):
                            'errorstring': errorString},
                           )
 
+    # add relay ...
+    if groupFlight:
+        addRelay(groupFlight, None, json.dumps({'name': groupFlight.name, 'id': groupFlight.pk, 'notes': groupFlight.notes}), reverse('planner2_relayAddGroupFlight'))
+        for f in newFlights:
+            addRelay(f, None, json.dumps({'group_id': groupFlight.pk, 'vehicle_id': f.vehicle.pk, 'name': f.name, 'uuid': str(f.uuid), 'id': f.id}), reverse('planner2_relayAddFlight'))
+            
     return HttpResponseRedirect(reverse('planner2_manage', args=[]))
+
+
+def relayAddFlight(request):
+    """ Add a flight with same pk and uuid from the post dictionary
+    """
+    try:
+        try:
+            flightName = request.POST.get('name')
+            preexisting= FLIGHT_MODEL.get().get(name=flightName)
+            preexisting.name = 'BAD' + preexisting.name
+            preexisting.save()
+
+            #TODO this should never happen, we should not have flights on multiple servers with the same name
+            print '********DUPLICATE FLIGHT***** %s WAS ATTEMPTED TO RELAY WITH PK %d' % (flightName, request.POST.get('id'))
+        except:
+            pass
+        
+        # we are good it does not exist
+        newFlight = FLIGHT_MODEL.get()(**request.POST)
+        newFlight.save()
+        return JsonResponse(model_to_dict(newFlight))
+    except Exception, e:
+        traceback.print_exc()
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
+
+
+def relayAddGroupFlight(request):
+    """ Add a group flight with same pk and uuid from the post dictionary
+    """
+    try:        
+        try:
+            gfName = request.POST.get('name')
+            preexisting= GROUP_FLIGHT_MODEL.get().get(name=gfName)
+            preexisting.name = 'BAD' + preexisting.name
+            preexisting.save()
+            #TODO this should never happen, we should not have flights on multiple servers with the same name
+            print '********DUPLICATE GROUP FLIGHT***** %s WAS ATTEMPTED TO RELAY WITH PK %d' % (gfName, request.POST.get('id'))
+        except:
+            pass
+
+        newGroupFlight = GROUP_FLIGHT_MODEL.get()(**request.POST)
+        newGroupFlight.save()
+        return JsonResponse(model_to_dict(newGroupFlight))
+    except Exception, e:
+        traceback.print_exc()
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
 
 
 def getSiteFrames():
