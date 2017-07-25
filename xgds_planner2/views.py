@@ -704,7 +704,11 @@ def stopFlight(request, uuid):
         else:
             flight.end_time = datetime.datetime.now(pytz.utc)
             flight.save()
-            flight.stopFlightExtras(request)
+            try:
+                flight.stopFlightExtras(request)
+            except:
+                print 'error in stop flight extras for %s' % flight.name
+                traceback.print_exc()
 
             # kill the plans
             for pe in flight.plans.all():
