@@ -61,6 +61,6 @@ urlpatterns = [
     url(r'^import/xpjson/$', views.planImportXPJson, {'loginRequired': True}, name='planner2_planImport_xpjson'),
     url(r'^import/$', views.planImport, {'loginRequired': True}, name='planner2_planImport'),
     url(r'^summary/(?P<groupFlightName>\w+)$', views.getGroupFlightSummary, name="planner2_group_flight_summary"),
-    url(r'^plans/today/json$', views.getTodaysPlansJson, name="planner2_today_plans_json"),
+    url(r'^plans/today/json$', views.getTodaysPlansJson, {'loginRequired': False}, name="planner2_today_plans_json"),
 
     ]
