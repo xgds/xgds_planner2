@@ -131,7 +131,6 @@ def handleCallbacks(request, plan, mode):
     return plan
 
 
-@login_required
 def plan_REST(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
@@ -155,14 +154,15 @@ def plan_REST(request, plan_id, jsonPlanId):
         plan.creationDate = datetime.datetime.now(pytz.utc)
         plan.uuid = None
         plan.pk = None
+        print "PLAN REST: POST body: %s" % request.body
         data = json.loads(request.body)
         for k, v in data.iteritems():
             if k == "_simInfo":
                 continue
             plan.jsonPlan[k] = v
         plan.extractFromJson(overWriteDateModified=True, overWriteUuid=True)
-        plan.name = plan.jsonPlan['planName']
-        plan.jsonPlan['name'] = plan.jsonPlan['planName']
+#        plan.name = plan.jsonPlan['planName']
+#        plan.jsonPlan['name'] = plan.jsonPlan['planName']
 
         # TODO I don't understand why this did not work above
         plan.creator = request.user

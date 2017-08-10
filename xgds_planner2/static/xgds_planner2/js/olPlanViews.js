@@ -25,7 +25,10 @@ $(function() {
                 app.State.tabsContainer = $('#tabs');
                 app.State.tabsLeftMargin = parseFloat(app.State.tabsContainer.css('margin-left'));
                 this.listenTo(app.vent, 'recenterMap', this.updateBbox);
-                this.listenTo(app.vent, 'onPlanLoaded', this.drawPlan);
+                this.listenTo(app.vent, 'onPlanLoaded', function(){
+                	this.drawPlan();
+                });
+
             },
 
             buildStyles: function() {
@@ -90,8 +93,6 @@ $(function() {
                 this.map.addLayer(this.segmentsDecoratorsLayer);
                 this.segmentsDecoratorsLayer.setZIndex(95);
                 
-                
-                
                 this.stationsFeatures = new ol.Collection();
                 this.stationsVector = new ol.source.Vector({features:this.stationsFeatures});
                 this.stationsLayer = new ol.layer.Vector({name:'stations',
@@ -107,7 +108,6 @@ $(function() {
                 this.map.addLayer(this.stationsDecoratorsLayer);
 
                 this.listenTo(app.vent, 'mapmode', this.setMode);
-                
                 this.collection.resequence(); // Sometimes it doesn't resequence itself on load
                 this.listenTo(app.currentPlan, 'sync', this.render);
                 app.State.planLoaded = true;

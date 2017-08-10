@@ -82,10 +82,12 @@ var AbstractPlan = {
             return feature;
         },
         setupStationPopup: function(feature, stationJson) {
-            var trString = "<tr><td>%s</td><td>%s</td></tr>";
+
+        	var trString = "<tr><td>%s</td><td>%s</td></tr>";
             var formattedString = "<table>";
             for (var j = 0; j< 3; j++){
                 formattedString = formattedString + trString;
+                
             }
             formattedString = formattedString + "</table>"; 
             var data = ["Notes:", stationJson.notes,

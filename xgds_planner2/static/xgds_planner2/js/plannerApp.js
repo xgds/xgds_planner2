@@ -25,7 +25,7 @@ var DEBUG_EVENTS = false;
 			toolbar: '#toolbar',
 			tabs: '#tabs',
 			plot: '#plot-container',
-			validation: '#validation'
+			validation: '#validation',
 		},
 		onRender: function() {
 			app.map = new app.views.OLPlanView();
@@ -495,154 +495,147 @@ var DEBUG_EVENTS = false;
 
 			try{
 				var validations = container.get('validations'); //validations is a list. might be undefined.  If it's undefined, set it on the container
-
+				//console.log(validations);
 				if (validations==undefined) {
-
 					validations=[];
 					container.set("validations", validations);
-
-				}
-				
+				}				
 				var timestampString = timestamp;
 				if(timestamp instanceof moment){
 					timestampString = timestamp.isoformat();
-					console.log(timestampString);
 				}
-				var newValidation = {'station': container._sequenceLabel,'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data, 'uuid': new UUID(4).format()};
-				//console.log(newValidation)
+				var newValidation = {'container_uuid': container.get('uuid'), 'planTime': this.getArrivalTime(container).toISOString(),'station': container._sequenceLabel,'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data, 'uuid': new UUID(4).format()};
 				validations.push(newValidation);
+				app.vent.trigger('validation:add', newValidation);
+				container.trigger('validation:add', newValidation);
 				return newValidation;
 			}
 			catch(err){
 				console.log(err.name);
 			}
 		},
-		result: [],
-		getValidationsAsList: function(container, recursive, clearList = true){
-			// build an array for the result
-			if(clearList){
-				this.result=[];
-			}
-			// insert the validations in the current container
-			var validations = container.get('validations');
-			if(validations!=undefined){
-				for(var i=0; i<validations.length; i++){
-					var v = validations[i];
-				// for each validation make sure it has a container_name  property
-					var name = v.name; //not necessarily container_name												
-					//if container_name is not undefined
-					if(name !== undefined){
-						// insert all recursively found validations					
-							this.result.push(v);														
-					}
-				}
-			}
-			
-			 if(recursive == true){
-			 	if (container.get('sequence') !== undefined){
-	    			var modelList = container.get('sequence').models;
-	    			if(modelList !== undefined){
-	    				for(var i=0; i<modelList.length; i++){
-	    		
-	    				
-	    					app.getValidationsAsList(modelList[i], recursive, false);
-    					
-	    				}
-	    			}
-	    		}
-
-	    	}
-				//if container_name is not undefined
-			// return the array
-			return this.result;
-		},
-		clearValidations: function(container, match, recursive){
-			//Clear any matching validations on the container, recursing if the recursive flag is true
-			var validations = container.get('validations');
-			//var validations = {'source': 'Temporal Bounds'};
-			if(validations!== undefined){
-				//iterate through the validations list and check if everything matches
-				var removalList = [];
-				for(var i=0; i<validations.length; i++){
-					var v = validations[i];
-					var foundMatch=undefined;
-					var keys = Object.keys(match); //gets keys in object
-					for(var k=0; k<keys.length; k++){
-
-						var key = keys[k];
-						if(key in v){
-							var value= match[key]; 
-							if(key=='data'){
-								var dataKeys = Object.keys(value);
-								var validationData = v[key];
-								for(var d=0; d<dataKeys.length; d++){
-									var matchData = value[dataKeys[d]];
-									if(validationData[dataKeys[d]] !== undefined){
-										if(validationData[dataKeys[d]] == matchData){
-											foundMatch=true; 
-										}
-										else{
-											foundMatch=false; 
-											break;
-										}
-									}
-									else{
-										foundMatch=false;
-										break;
-									}
+		
+		isMatch: function(validation, match){
+			var keys = Object.keys(match); //gets keys in object
+			var foundMatch = false;
+			for(var k=0; k<keys.length; k++){
+				var key = keys[k];
+				if(key in validation){
+					var value= match[key]; 
+					if(key=='data'){
+						var dataKeys = Object.keys(value);
+						var validationData = validation[key];
+						for(var d=0; d<dataKeys.length; d++){
+							var matchData = value[dataKeys[d]];
+							if(validationData[dataKeys[d]] !== undefined){
+								if(validationData[dataKeys[d]] == matchData){
+									foundMatch=true; 
 								}
-							} else {
-								if(value==v[key]){								
-									foundMatch = true;
-								}
-								else{				
-									foundMatch = false;
+								else{
+									foundMatch=false; 
 									break;
 								}
 							}
+							else{
+								foundMatch=false;
+								break;
+							}
 						}
-
-						else{
-							foundMatch=false;
+					} else {
+						if(value==validation[key]){								
+							foundMatch = true;
+						}
+						else{				
+							foundMatch = false;
 							break;
 						}
+					}
+				}
+				else{
+					foundMatch=false;
+					break;
+				}
+			}
+			return foundMatch;
+		},
+		getHighestValidationLevel: function(validations){
+			var highest = undefined;
+			for(var i=0;i<validations.length;i++){
+				if (validations[i].status == 'error'){
+					return validations[i].status;
+				}
+				if (highest === undefined) {
+					highest = validations[i].status;
+				} else {
+					if (validations[i].status == 'warning'){
+						highest = validations[i].status;
+					}
+				}
+			}
+			return highest;
+		},
+		getValidationsAsList: function(container, match, recursive, result, remove=false){
+			//Find any matching validations on the container, recursing if the recursive flag is true
+			// if remove is true, then delete them from the validations.
+			// always return a flat list of all found validations that match.
+			if (result === undefined){
+				result = [];
+			}
+			var newMatches = [];
+			var validations = container.get('validations');
+			if(validations!== undefined) {
 
+				if (match != undefined){
+					//iterate through the validations list and check if everything matches
+					for(var i=0; i<validations.length; i++){
+						var v = validations[i];
+						var foundMatch=this.isMatch(v, match);
 						if(foundMatch == true){
-							removalList.push(v);
+							newMatches.push(v);
+						}
+					}
+				} else {
+					newMatches = validations;
+				}
+			}
+
+			if (remove && newMatches.length > 0){
+				// iterate through removalList
+				for(var i=0; i<newMatches.length; i++){
+					var index = validations.indexOf(newMatches[i]);
+					if (index > -1){
+						var deadValidation = validations[i];
+						if (deadValidation !== undefined){
+							validations.splice(index, 1);
+							app.vent.trigger('validation:remove', deadValidation);
+							if (deadValidation.container_uuid !== undefined){
+								var pathElement = app.getPathElementByUuid(deadValidation.container_uuid);
+								pathElement.trigger('validation:remove', deadValidation);
+							}
 						}
 					}
 				}
 			}
-				// if removalList is not empty
-				if(removalList !== undefined){
-					// iterate through removalList
-					for(var i=0; i<removalList.length; i++){
-						//delete the values of removalList in validations
-						var index = validations.indexOf(removalList[i]);
-						validations.splice(index, 1);
-					}
-					
-					
-				}
-			 
-				//see if recursive flag is true
-				if(recursive == true){
-					
-				    if (container.get('sequence') !== undefined){
-				    	
 
-				    	var sequence = container.get('sequence');
-				    	if(sequence !== undefined){
-				    		sequence.each(function(element){
-				    			app.clearValidations(element, match, recursive);
-			    		
-				    		});
-				    	}
-				    }
-					 
+			// add them to the result
+			result.push.apply(result,newMatches);
+
+			//see if recursive flag is true
+			if(recursive == true){
+				if (container.get('sequence') !== undefined){
+					var sequence = container.get('sequence');
+					if(sequence !== undefined){
+						sequence.each(function(element){
+							return app.getValidationsAsList(element, match, recursive, result, remove);
+
+						});
+					}
 				}
-				
+
 			}
+			return result;
+
+		}
 		
 	});
 

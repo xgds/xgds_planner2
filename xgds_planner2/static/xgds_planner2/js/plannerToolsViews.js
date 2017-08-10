@@ -14,7 +14,7 @@
 // specific language governing permissions and limitations under the License.
 //__END_LICENSE__
 
-app.views = app.views || {};
+app.views = app.views || {}; 
 
 app.views.PlanToolsView = Marionette.View.extend({
     template: '#template-plan-tools',

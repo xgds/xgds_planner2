@@ -1196,33 +1196,34 @@ Once you are done building the view you can uncomment its construction in planne
 */
 app.views.ValidationTableView = Marionette.View.extend({
 	template: false,
-	validationArray: undefined, //gets the validations
-	tableElement: undefined,  //table we will pass to dataTables to use  
+	dataTable: undefined,  //table we will pass to dataTables to use  
 	initialize: function(){
-		//TODO call plannerApp.getValidationAsList; this list is the data that goes in to the datatable
-		this.listenTo(app.vent,'onPlanLoaded', this.initializeValidations);
-		this.listenTo(app.vent,'validations:create', function(validationsArray){		
-			this.constructDataTable(validationsArray); 
+		this.listenTo(app.vent,'onPlanLoaded', function(){
+			this.initializeValidations();
+			});
+		
+		this.listenTo(app.vent,'validation:add', function(validation){		
+			this.addValidation(validation); 
 			});
 
-		this.listenTo(app.vent, 'validation:remove',function(uuid){
-			this.deleteMatchingRow(uuid);
+		this.listenTo(app.vent, 'validation:remove', function(validation){
+			this.deleteValidation(validation);
 		});
+		//TODO Tamar if we ever update validations then have them listen here
 
 	},
 	initializeValidations: function() {	
 		if(app.currentPlan !==undefined){
-			this.validationArray = app.getValidationsAsList(app.currentPlan, true, true);
-			this.constructDataTable(this.validationArray);
-			//this.initializeValidationTableData(this.validationArray);			
+			this.constructDataTable(app.getValidationsAsList(app.currentPlan, undefined, true));
 		}
 	},
 	constructDataTable: function(validationsArray){
 		this.$el.html("<table id='validation_table'>" + "</table>"); //how to get real html from the template? 
-		this.tableElement =	$('#validation_table').DataTable({
+		this.dataTable =	$('#validation_table').DataTable({
 			data: validationsArray,
 			select: true,
 			columns: [
+				{data: 'planTime', orderDataType: 'date-dd-MMM-yyyy', title: "Plan Time"},
 				{data: 'station', title: "Container"},
 				{data: 'status', title: "Status"},
 				{data: 'name', title: "Name"},
@@ -1241,22 +1242,17 @@ app.views.ValidationTableView = Marionette.View.extend({
 				}
 			],
 			"createdRow": function(row, data, dataIndex){
-				$(row).attr("id", validationsArray[dataIndex].uuid);
+				$(row).attr("id", data.uuid);
 			}
 		});	
-
-			var myTable = this.tableElement;
-			
-			this.validationArray =  validationsArray;
-			//return myTable;
 	 },
-	 /*Create a new method that takes the uuid as an argument and deletes the matching row*/
-	 deleteMatchingRow: function(matchUuid){
-		 //loop through the table rows
-		 
-		 var myTable = this.tableElement;
-		 var myRow = myTable.row("#"+matchUuid).select();
-		 myRow.remove().draw();
+	 addValidation: function(validation){
+		//SOPHIE todo again look at datatables documentation about adding data
+		 // something like this.dataTable.add(validation)
+		 this.dataTable.row.add(validation).draw();
+	 },
+	 deleteValidation: function(validation){
+		 this.dataTable.row(validation).remove().draw();
 	 },
 	initializeValidationTableData: function(validationsArray) {
 		//TODO set the datatable's data from this.validationsArray
@@ -1265,14 +1261,8 @@ app.views.ValidationTableView = Marionette.View.extend({
 		}
 		this.constructDataTable(validationsArray);
 	},
-	updateValidationsRemove: function(validation){
-		//TODO update the datatable with the attached validations
-		var uuid = validation.uuid;
-		this.deleteMatchingRow(uuid);
-	},
 	 onAttach: function(){
-		this.tableElement = this.$el.find('#validation_table');
-		console.log(this.tableElement);		
+		//this.dataTable = this.$el.find('#validation_table');	
 	}
 
 });
