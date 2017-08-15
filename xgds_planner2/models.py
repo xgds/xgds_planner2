@@ -348,8 +348,12 @@ class AbstractPlan(models.Model):
         ordering = ['-dateModified']
         abstract = True
 
+    @property
+    def acquisition_time(self):
+        return self.dateModified
+
     def get_absolute_url(self):
-        return reverse('planner2_planREST', args=[self.pk, self.name])
+        return reverse('planner2_plan_save_json', args=[self.pk, self.name])
 
     def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
         if overWriteUuid:

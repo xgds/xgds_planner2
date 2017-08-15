@@ -1183,17 +1183,6 @@ app.views.TabNavView = xGDS.TabNavView.extend({
 });
 
 
-//TODO Sophie
-/*
-Construct a new ValidationTableView which will use the div below the tab view.
-First step is to construct this marionette view and insert some html into the div using jquery. $el is I think the main element when you are inside your view, 
-onAttach function is where you want to do the rendering stuff.  $el.append('<span>HELLO WORLD</span>');
-try using template:undefined
-When this initializes OR when an event is fired adding or removing a validation, the table will update with the validation contents.
-You will need to set up a datatable to populate the table.
-You will also need to write another recursive function in plannerApp to get a flat list of validations including their container
-Once you are done building the view you can uncomment its construction in plannerApp.
-*/
 app.views.ValidationTableView = Marionette.View.extend({
 	template: false,
 	dataTable: undefined,  //table we will pass to dataTables to use  
@@ -1209,7 +1198,6 @@ app.views.ValidationTableView = Marionette.View.extend({
 		this.listenTo(app.vent, 'validation:remove', function(validation){
 			this.deleteValidation(validation);
 		});
-		//TODO Tamar if we ever update validations then have them listen here
 
 	},
 	initializeValidations: function() {	
@@ -1247,15 +1235,12 @@ app.views.ValidationTableView = Marionette.View.extend({
 		});	
 	 },
 	 addValidation: function(validation){
-		//SOPHIE todo again look at datatables documentation about adding data
-		 // something like this.dataTable.add(validation)
 		 this.dataTable.row.add(validation).draw();
 	 },
 	 deleteValidation: function(validation){
 		 this.dataTable.row(validation).remove().draw();
 	 },
 	initializeValidationTableData: function(validationsArray) {
-		//TODO set the datatable's data from this.validationsArray
 		if (validationsArray == undefined) {
 		validationsArray =[];
 		}

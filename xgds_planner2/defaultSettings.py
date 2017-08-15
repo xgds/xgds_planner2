@@ -311,3 +311,6 @@ XGDS_PLANNER2_PLOTS = {}
 
 # Uncomment the below to see plannerSamplePlot.js, and include it in planner_app_base
 # XGDS_PLANNER2_PLOTS['Sample'] = 'sample_plot'
+
+# Turn on to enable plan validation support and UI
+XGDS_PLANNER2_VALIDATION = False

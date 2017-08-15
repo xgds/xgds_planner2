@@ -24,7 +24,8 @@ urlpatterns = [
     url(r'^edit/(?P<plan_id>[^/]+)$', views.plan_editor_app, {}, name='planner2_edit'),
     url(r'^test/(?P<plan_id>[^/]+)$', views.plan_tests, {}, name='planner2_tests'),
     url(r'^doc/(?P<plan_id>[^/]+)$', views.plan_detail_doc, {}, name='planner2_doc'),
-    url(r'^plan/(?P<plan_id>[^/]+)/(?P<jsonPlanId>[^/\.]+)\.json$', views.plan_REST, {'loginRequired': False}, name="planner2_planREST"),
+    url(r'^plan/(?P<plan_id>[^/]+)$', views.plan_save_from_relay, {'loginRequired': False}, name="planner2_save_plan_from_relay"),
+    url(r'^plan/(?P<plan_id>[^/]+)/(?P<jsonPlanId>[^/\.]+)\.json$', views.plan_save_json, {}, name="planner2_plan_save_json"),
     url(r'^plan/bearingDistance/(?P<plan_id>[^/]+)$', views.plan_bearing_distance_view, {}, name='plan_bearing_distance'),
     url(r'^plan/bearingDistanceTop/(?P<plan_id>[^/]+)$', views.plan_bearing_distance_top_view, {}, name='plan_bearing_distance_top'),
     url(r'^plan/export/ajax/(?P<uuid>[\w-]+)/(?P<name>[^/]+)$', views.planExport, {'readOnly': True, 'loginRequired': False, 'isAjax': True, 'securityTags': ['readOnly']}, name='planner2_planExport_ajax'),
@@ -41,6 +42,8 @@ urlpatterns = [
     url(r'startTracking/(?P<flightName>\w+)$', views.startFlightTracking, {'loginRequired': True}, 'planner2_startFlightTracking'),
     url(r'stopTracking/(?P<flightName>\w+)$', views.stopFlightTracking, {'loginRequired': True}, 'planner2_stopFlightTracking'),
     url(r'^addGroupFlight/$', views.addGroupFlight, {}, "planner2_addGroupFlight"),
+    url(r'^relayAddFlight/$', views.relayAddFlight, {'loginRequired': False}, "planner2_relayAddFlight"),
+    url(r'^relayAddGroupFlight/$', views.relayAddGroupFlight, {'loginRequired': False}, "planner2_relayAddGroupFlight"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     url(r'^schedulePlan/$', views.schedulePlans, {'redirect': False}, "planner2_schedulePlan_ajax"),
     url(r'startPlan/(?P<pe_id>[\w-]+)$', views.startPlan, {'loginRequired': True}, 'planner2_startPlan'),
@@ -58,5 +61,6 @@ urlpatterns = [
     url(r'^import/xpjson/$', views.planImportXPJson, {'loginRequired': True}, name='planner2_planImport_xpjson'),
     url(r'^import/$', views.planImport, {'loginRequired': True}, name='planner2_planImport'),
     url(r'^summary/(?P<groupFlightName>\w+)$', views.getGroupFlightSummary, name="planner2_group_flight_summary"),
+    url(r'^plans/today/json$', views.getTodaysPlansJson, {'loginRequired': False}, name="planner2_today_plans_json"),
 
     ]

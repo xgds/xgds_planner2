@@ -42,8 +42,10 @@
 		        <div id="tabs" class="mt-negative-1rem"></div>
 		    </div>
 		</div>
+	
+		{% if settings.XGDS_PLANNER2_VALIDATION %}
 		<div id="validation-gridstack-item" class="grid-stack-item"  data-gs-x="2" data-gs-y="3" data-gs-width="4" data-gs-height="1" >
-    		<div id="validation-gridstack-item-content" class="grid-stack-item-content" >
+    			<div id="validation-gridstack-item-content" class="grid-stack-item-content" >
 				<ul class="nav justify-content-end">
     				<i class="fa fa-lock pinDiv gray-light"></i>
 				</ul>
@@ -55,6 +57,8 @@
 				</div>
 		    </div>
 		</div>
+		{% endif %}
+
     </div>
     <div id="saveAsDialog" style="display:none; background:white !important;">
 		<p>Enter a new name and/or version to save as.  (Version already changed.)</p>
@@ -116,39 +120,40 @@
         	BODY_RADIUS_METERS: {{ settings.XGDS_MAP_SERVER_BODY_RADIUS_METERS }},
         	DEFAULT_COORD_SYSTEM: '{{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM }}',
         	SETUP_COORD_SYSTEM: '{{ settings.XGDS_MAP_SERVER_MAP_SETUP_COORD_SYSTEM }}',
-            DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
+        DEFAULT_COORD_SYSTEM_CENTER: {{ settings.XGDS_MAP_SERVER_DEFAULT_COORD_SYSTEM_CENTER }},
     		DEFAULT_ZOOM: {{ settings.XGDS_MAP_SERVER_DEFAULT_ZOOM }},
     		DEFAULT_ROTATION: {{ settings.XGDS_MAP_SERVER_DEFAULT_ROTATION }},
     		SHOW_COMPASS: {{ settings.XGDS_MAP_SERVER_SHOW_COMPASS}},
     		offline: {{ settings.XGDS_PLANNER_OFFLINE|yesno:'true,false' }},
-            planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:'2' }},
-           	selectedLayerUrl: '{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}',
-            layerFeedUrl: '{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}',
-            dataUrl: '{{ settings.DATA_URL }}',
-            simulator: '{{ simulator }}',
-            directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:'true,false' }},
-            mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:'true,false' }},
-            placemarkCircleUrl: '{{ placemark_circle_url }}',
-            placemarkCircleHighlightedUrl: '{{ placemark_circle_highlighted_url }}',
-            placemarkDirectionalUrl: '{{ placemark_directional_url }}',
-            placemarkSelectedDirectionalUrl: '{{ placemark_selected_directional_url }}',
-            XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: '{{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }}',
-            XGDS_PLANNER2_LINKS_LOADED_CALLBACK: '{{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }}',
-            commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
-            readOnly: {{ editable|yesno:'false,true' }},
-            searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
-            schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
-            planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
-            planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
-            stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
-            segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
-            commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
-            stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
-            segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
-            commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}',
-            settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:'true,false' }},
-            plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }}
-        };
+        planLineWidthPixels: {{ settings.XGDS_PLANNER2_LINE_WIDTH_PIXELS|default:'2' }},
+       	selectedLayerUrl: '{{ settings.XGDS_MAP_SERVER_SELECTED_LAYER_URL }}',
+        layerFeedUrl: '{{ settings.XGDS_PLANNER2_LAYER_FEED_URL }}',
+        dataUrl: '{{ settings.DATA_URL }}',
+        simulator: '{{ simulator }}',
+        directionalStations: {{ settings.XGDS_PLANNER_DIRECTIONAL_STATIONS|yesno:'true,false' }},
+        mapRotationHandles: {{ settings.XGDS_PLANNER_MAP_ROTATION_HANDLES|yesno:'true,false' }},
+        placemarkCircleUrl: '{{ placemark_circle_url }}',
+        placemarkCircleHighlightedUrl: '{{ placemark_circle_highlighted_url }}',
+        placemarkDirectionalUrl: '{{ placemark_directional_url }}',
+        placemarkSelectedDirectionalUrl: '{{ placemark_selected_directional_url }}',
+        XGDS_MAP_SERVER_MAP_LOADED_CALLBACK: '{{ settings.XGDS_MAP_SERVER_MAP_LOADED_CALLBACK }}',
+        XGDS_PLANNER2_LINKS_LOADED_CALLBACK: '{{ settings.XGDS_PLANNER2_LINKS_LOADED_CALLBACK }}',
+        commandRenderers: {{ settings.XGDS_PLANNER_COMMAND_RENDERERS|safe }},
+        readOnly: {{ editable|yesno:'false,true' }},
+        searchModels: {{ settings.XGDS_MAP_SERVER_JS_MAP|safe }},
+        schedule: {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %} true {% else %} false {% endif%},
+        planExecution: {% if plan_execution %} {{ plan_execution|safe }} {% else %} null {% endif %},
+        planMoniker: '{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}',
+        stationMoniker: '{{ settings.XGDS_PLANNER2_STATION_MONIKER }}',
+        segmentMoniker: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER }}',
+        commandMoniker: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER }}',
+        stationMonikerPlural: '{{ settings.XGDS_PLANNER2_STATION_MONIKER_PLURAL }}',
+        segmentMonikerPlural: '{{ settings.XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL }}',
+        commandMonikerPlural: '{{ settings.XGDS_PLANNER2_COMMAND_MONIKER_PLURAL }}',
+        settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:'true,false' }},
+        plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }},
+        validation: {{ settings.XGDS_PLANNER2_VALIDATION|yesno:"true,false" }}
+     };
         
         {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
         	appOptions['flight_names'] = {{flight_names|safe}};

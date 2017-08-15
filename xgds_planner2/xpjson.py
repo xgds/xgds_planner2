@@ -108,6 +108,11 @@ CHECK_UNKNOWN_FIELDS = True
 # validation. callers can change this global to inhibit the deletion.
 KEEP_PARAM_SPECS = False
 
+# normally the 'parent' in a param is deleted after resolving schema inheritance,
+# since it is not needed anymore. callers can change this global to inhibit the
+# deletion.
+KEEP_PARAM_PARENT = False
+
 class UnknownParentError(Exception):
     pass
 
@@ -289,7 +294,8 @@ def resolveInheritanceLookup(spec, parentSpecLookup,
                         parent,
                         inheritFields=inheritFields,
                         localOnlyFields=localOnlyFields)))
-            result.pop('parent', None)
+            if not KEEP_PARAM_PARENT:
+                result.pop('parent', None)
             return result
         else:
             raise UnknownParentError(spec.parent)

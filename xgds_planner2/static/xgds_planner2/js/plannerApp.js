@@ -33,7 +33,9 @@ var DEBUG_EVENTS = false;
 			this.showChildView('toolbar', new app.views.ToolbarView());
 			this.showChildView('tabs', new app.views.TabNavView());
 			this.showChildView('plot', new app.views.PlanPlotView());
-			this.showChildView('validation', new app.views.ValidationTableView());
+			if (app.options.validation){
+				this.showChildView('validation', new app.views.ValidationTableView());
+			}
 		}
 	});
 
@@ -594,13 +596,14 @@ var DEBUG_EVENTS = false;
 							newMatches.push(v);
 						}
 					}
+					console.log(newMatches);
 				} else {
 					newMatches = validations;
+					console.log(newMatches);
 				}
 			}
 
 			if (remove && newMatches.length > 0){
-				// iterate through removalList
 				for(var i=0; i<newMatches.length; i++){
 					var index = validations.indexOf(newMatches[i]);
 					if (index > -1){
@@ -619,15 +622,14 @@ var DEBUG_EVENTS = false;
 
 			// add them to the result
 			result.push.apply(result,newMatches);
-
 			//see if recursive flag is true
 			if(recursive == true){
 				if (container.get('sequence') !== undefined){
 					var sequence = container.get('sequence');
 					if(sequence !== undefined){
 						sequence.each(function(element){
-							return app.getValidationsAsList(element, match, recursive, result, remove);
-
+							//TODO Sophie make sure this is actually iterating through station, segment, stations.dddd
+							app.getValidationsAsList(element, match, recursive, result, remove);
 						});
 					}
 				}
