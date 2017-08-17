@@ -33,6 +33,11 @@ Handlebars.registerHelper('formatDistance', function(distance){
 	return sprintf('%0.2f m', distance);
 });
 
+Handlebars.registerHelper('capitalize', function(input){
+	var result = input.replace(/\b\w/g, function(l){ return l.toUpperCase() });
+	return result;
+});
+
 app.views.ToolbarView = Marionette.View.extend({
     template: '#template-toolbar',
     saving: false,
