@@ -120,6 +120,14 @@
                     },
                     "editable": {
                         "type": "boolean"
+                    },
+                    "widget": {
+                        "type": "string",
+                        "required": false
+                    },
+                    "onChange": {
+                        "type": "string",
+                        "required": false
                     }
                 }
             }

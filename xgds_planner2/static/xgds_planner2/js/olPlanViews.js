@@ -332,8 +332,6 @@ $(function() {
                             app.State.commandSelected = undefined;
                             if (app.currentTab != 'sequence') {
                                 app.vent.trigger('setTabRequested','sequence');
-                            } else {
-                                app.currentTabView.onRender();
                             }
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {

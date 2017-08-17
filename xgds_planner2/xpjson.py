@@ -576,6 +576,8 @@ class ParamSpec(TypedObject):
     required = Field('boolean', default=True)
     visible = Field('boolean', default=True)
     editable = Field('boolean', default=True)
+    onChange = Field('string', required=False, validMethod='isNotEmpty')
+    
 
     def __init__(self, objDict, **kwargs):
         super(ParamSpec, self).__init__(objDict, **kwargs)
@@ -585,6 +587,9 @@ class ParamSpec(TypedObject):
         else:
             self.enum = [c[0] for c in self.choices]
 
+    def isNotEmpty(self, val):
+        return len(val) > 0
+        
     def isValidValueType(self, val):
         return (val in VALUE_TYPE_CHOICES
                 or parseArrayType(val))

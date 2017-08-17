@@ -1161,6 +1161,10 @@ Inherits from:
 |                  |                +------------------------+------------------------------------+
 |                  |                |``false``               |Don't allow editing.                |
 +------------------+----------------+------------------------+------------------------------------+
+|``onChange``      |string          |optional                |A string of javascript code to      |
+|                  |                |                        |execute when the value of this      |
+|                  |                |                        |parameter changes.                  |
++------------------+----------------+------------------------+------------------------------------+
 
 Example
 -------
@@ -1193,7 +1197,9 @@ Example
     "default": (default value),
     "required": true,
     "visible": true,
-    "editable": true
+    "editable": true,
+    	"onChange": "if (app.currentPlan != undefined){ console.log(value);}}"
+
   }
 
 .. _PathElement:
