@@ -678,14 +678,17 @@ app.models = app.models || {};
             this.data = {
                 // put static data elements here
             };
-            // this is to fix old/bad plans with lawnmowers. total hack.
-            if (this.get('type') == 'LawnmowerPattern') {
-                this.set('type', 'RasterPattern');
-            }
-            var params = app.commandSpecs[this.get('type')].params;
-            var formsData = xpjsonToBackboneFormsSchema(params, 'Command');
-            _.extend(this.schema, formsData.schema);
-            _.extend(this.data, formsData.data);
+            
+            try {
+            	   var params = app.commandSpecs[this.get('type')].params;
+               var formsData = xpjsonToBackboneFormsSchema(params, 'Command');
+               _.extend(this.schema, formsData.schema);
+               _.extend(this.data, formsData.data);
+                   
+            	}
+            	catch (e) {
+            		// this is for supporting old plans when the schema has changed.
+            	}
             this.on('change', function() { app.vent.trigger('change:plan'); });
             
             
