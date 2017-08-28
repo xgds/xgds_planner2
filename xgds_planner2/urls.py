@@ -59,6 +59,7 @@ urlpatterns = [
     url(r'flightTreeNodes/(?P<flight_id>\d+)$', views.flightTreeNodes, {'loginRequired': True}, 'planner2_flightTreeNodes'),
     url(r'mapJsonPlan/(?P<uuid>[\w-]+)$', views.mapJsonPlan, {'loginRequired': False}, 'planner2_mapJsonPlan'),
     url(r'mapJsonPlanPK/(?P<pk>[\d]+)$', views.mapJsonPlan, {'loginRequired': False}, 'planner2_mapJsonPlan'),
+    url(r'getLastChangedPlanIdForUser/(?P<username>\w+)$', views.get_last_changed_planID_for_user_json, {'loginRequired': False}, 'planner2_getLastChangedPlanIdForUser'),
     url(r'^import/xpjson/$', views.planImportXPJson, {'loginRequired': True}, name='planner2_planImport_xpjson'),
     url(r'^import/$', views.planImport, {'loginRequired': True}, name='planner2_planImport'),
     url(r'^summary/(?P<groupFlightName>\w+)$', views.getGroupFlightSummary, name="planner2_group_flight_summary"),

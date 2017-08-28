@@ -69,6 +69,7 @@ from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay
 
 from xgds_map_server.forms import MapSearchForm
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 _template_cache = None
 
@@ -146,7 +147,16 @@ def plan_save_from_relay(request, plan_id):
     plan = PLAN_MODEL.get().objects.get_or_create(pk=plan_id)
     populatePlanFromJson(plan, request.body)
     plan.save()
-    
+
+
+# TODO - make entry in urls.py for this method!
+def get_last_changed_planID_for_user_json(request, username):
+    plan = PLAN_MODEL.get().objects.filter(creator__username=username).order_by('-dateModified')[0]
+    planMetadata = {"planID":plan.id, "planUUID":plan.uuid, "planName":plan.name,
+                    "lastModified":plan.dateModified, "username":username}
+    return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
+
+
 @login_required
 def plan_save_json(request, plan_id, jsonPlanId):
     """
