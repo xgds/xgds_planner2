@@ -1216,7 +1216,11 @@ app.views.ValidationTableView = Marionette.View.extend({
 			data: validationsArray,
 			select: true,
 			columns: [
-				{data: 'planTime', orderDataType: 'date-dd-MMM-yyyy', title: "Plan Time"},
+				{data: 'planTime', 
+				render: function(data, type, row){
+					return moment(data).format('MM/DD/YY HH:mm:ss');
+				},
+				title: "Plan Time"},
 				{data: 'station', title: "Container"},
 				{data: 'status', title: "Status"},
 				{data: 'name', title: "Name"},
@@ -1228,7 +1232,16 @@ app.views.ValidationTableView = Marionette.View.extend({
 					 var dataString = "";
 					 var dataKeys = Object.keys(data);
 					 for(var i=0; i<dataKeys.length; i++){
-						 dataString += "\n" + dataKeys[i] +": "+data[dataKeys[i]];
+						 dataString += "\n" + dataKeys[i] +": ";
+						 if (dataKeys[i].match(/time/i)) {
+							 try {
+								 dataString += moment(data[dataKeys[i]]).format('MM/DD/YY HH:mm:ss');
+							 } catch(err){
+								 dataString += data[dataKeys[i]];
+							 }
+						 } else {
+							 dataString += data[dataKeys[i]];
+						 }
 					 }
 					 return dataString;
 				 }
@@ -1238,6 +1251,9 @@ app.views.ValidationTableView = Marionette.View.extend({
 				$(row).attr("id", data.uuid);
 			}
 		});	
+        $.fn.dataTable.moment( DEFAULT_TIME_FORMAT);
+        $.fn.dataTable.moment( "MM/DD/YY HH:mm:ss");
+
 	 },
 	 addValidation: function(validation){
 		 this.dataTable.row.add(validation).draw();
@@ -1250,9 +1266,6 @@ app.views.ValidationTableView = Marionette.View.extend({
 		validationsArray =[];
 		}
 		this.constructDataTable(validationsArray);
-	},
-	 onAttach: function(){
-		//this.dataTable = this.$el.find('#validation_table');	
 	}
 
 });
