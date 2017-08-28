@@ -1046,10 +1046,14 @@ def toggleReadOnly(request):
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
-def mapJsonPlan(request, uuid):
+def mapJsonPlan(request, uuid=None, pk=None):
+    ''' Return the json of the plan via uuid or pk '''
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
     try:
-        plan = PLAN_MODEL.get().objects.get(uuid=uuid)
+        if uuid:
+            plan = PLAN_MODEL.get().objects.get(uuid=uuid)
+        elif pk:
+            plan = PLAN_MODEL.get().objects.get(pk=pk)
         json_data = json.dumps([plan.toMapDict()], indent=4)
         return HttpResponse(content=json_data,
                             content_type="application/json")

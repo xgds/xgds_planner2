@@ -480,13 +480,15 @@ var DEBUG_EVENTS = false;
 					command.timing = app.util.secondsToHMS(command.duration);
 				} else {
 					var paramSpec = app.commandSpecs[command.type];
-					paramSpec.params.every(function(param){
-						if (param.id == 'duration' && _.has(param, 'default')){
-							command.timing = app.util.secondsToHMS(param.default);
-							return false;
-						}
-						return true;
-					});
+					if (paramSpec !== undefined){
+						paramSpec.params.every(function(param){
+							if (param.id == 'duration' && _.has(param, 'default')){
+								command.timing = app.util.secondsToHMS(param.default);
+								return false;
+							}
+							return true;
+						});
+					}
 				}
 			});
 			this[key] = presets;
