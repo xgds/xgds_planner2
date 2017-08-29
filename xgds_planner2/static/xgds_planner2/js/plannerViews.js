@@ -1035,7 +1035,10 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
         var type = model.get('type');
         var cut = app.vent.request('cutAfterPaste');
         _.each(app.copiedCommands, function(command) {
-        	commands.add(command.clone());
+        	var cclone = command.clone();
+        	cclone.set('uuid', new UUID(4).format());
+        	
+        	commands.add(cclone);
             //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
             /*
             if (cut) {

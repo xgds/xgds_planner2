@@ -406,11 +406,13 @@ app.models = app.models || {};
                 command.set('name', preset.name);
             }
             command.parent = this;
+            command.set('uuid',new UUID(4).format());
             this.get('commands').add(command);
         },
 
         appendCommandModel: function(model) {
             model.parent = this;
+            model.set('uuid',new UUID(4).format());
             this.get('commands').add(model);
         },
         /*
