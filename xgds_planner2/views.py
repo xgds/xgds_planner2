@@ -167,14 +167,15 @@ def plan_save_json(request, plan_id, jsonPlanId):
     if request.method == "PUT":
         # this is coming in from the regular plan editor
         populatePlanFromJson(plan, request.body)
+        plan.jsonPlan.modifier = request.user.username
         plan.save()
+        
         plan = handleCallbacks(request, plan, settings.SAVE)
         addRelay(plan, None, json.dumps(request.body), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
         # we are doing a save as
-        plan.jsonPlan.creator = request.user.username
         plan.creationDate = datetime.datetime.now(pytz.utc)
         plan.uuid = None
         plan.pk = None
@@ -184,6 +185,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
 
         plan.creator = request.user
         plan.jsonPlan.creator = request.user.username
+        plan.jsonPlan.modifier = request.user.username
 
         #make sure it is not read only
         plan.readOnly = False
