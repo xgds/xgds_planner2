@@ -1214,7 +1214,6 @@ app.views.ValidationTableView = Marionette.View.extend({
 		}
 	},
 	constructDataTable: function(validationsArray){
-		this.$el.html("<table id='validation_table'>" + "</table>"); //how to get real html from the template? 
 		this.dataTable =	$('#validation_table').DataTable({
 			data: validationsArray,
 			select: true,
