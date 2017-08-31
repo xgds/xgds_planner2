@@ -594,7 +594,7 @@ def getAllGroupFlights(today=False, reverseOrder=False):
         return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
 
 
-def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=False):
+def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=True):
     orderby = 'name'
     if reverseOrder:
         orderby = '-name'
@@ -800,6 +800,13 @@ def schedulePlans(request, redirect=True):
                         pe = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, pe)
                         
                     pe.save()
+                    
+                    # relay the new plan execution
+                    peDict = pe.toSimpleDict()
+                    del peDict['flight']
+                    del peDict['plan']
+                    addRelay(pe, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
+
                     lastPlanExecution = pe
         except:
             traceback.print_exc()
@@ -812,6 +819,31 @@ def schedulePlans(request, redirect=True):
             return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
+
+def relaySchedulePlan(request):
+    """ Schedule a plan with same plan execution pk from the post dictionary
+        requires the flight, plan and ev all exist.
+    """
+    try:
+        form_dict = json.loads(request.POST.get('serialized_form'))
+            
+        try:
+            id = form_dict['id']
+            preexisting= PLAN_EXECUTION_MODEL.get().get(pk=id)
+
+            #TODO this should never happen, we should not have flights on multiple servers with the same name
+            print '********DUPLICATE PLAN EXECUTION ***** WAS ATTEMPTED TO RELAY WITH PK %d' % (id)
+        except:
+            pass
+        
+        # we are good it does not exist
+        newPlanExecution = PLAN_EXECUTION_MODEL.get()(**form_dict)
+        newPlanExecution.save()
+        return JsonResponse(model_to_dict(newPlanExecution))
+        
+    except Exception, e:
+        traceback.print_exc()
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
 
 @login_required
 def startPlan(request, pe_id):
