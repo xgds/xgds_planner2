@@ -702,7 +702,7 @@ def startFlight(request, uuid):
                 newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
                 newlyActive.save()
 
-        flight.startFlightExtras(request)
+        flight.startFlightExtras(request, flight)
     return manageFlights(request, errorString)
 
 
@@ -717,7 +717,7 @@ def stopFlight(request, uuid):
             flight.end_time = datetime.datetime.now(pytz.utc)
             flight.save()
             try:
-                flight.stopFlightExtras(request)
+                flight.stopFlightExtras(request, flight)
             except:
                 print 'error in stop flight extras for %s' % flight.name
                 traceback.print_exc()
