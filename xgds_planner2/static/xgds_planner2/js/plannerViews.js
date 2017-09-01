@@ -1035,7 +1035,10 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
         var type = model.get('type');
         var cut = app.vent.request('cutAfterPaste');
         _.each(app.copiedCommands, function(command) {
-        	commands.add(command.clone());
+        	var cclone = command.clone();
+        	cclone.set('uuid', new UUID(4).format());
+        	
+        	commands.add(cclone);
             //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
             /*
             if (cut) {
@@ -1211,12 +1214,16 @@ app.views.ValidationTableView = Marionette.View.extend({
 		}
 	},
 	constructDataTable: function(validationsArray){
-		this.$el.html("<table id='validation_table'>" + "</table>"); //how to get real html from the template? 
+		this.$el.html("<table id='validation_table'>" + "</table>");
 		this.dataTable =	$('#validation_table').DataTable({
 			data: validationsArray,
 			select: true,
 			columns: [
-				{data: 'planTime', orderDataType: 'date-dd-MMM-yyyy', title: "Plan Time"},
+				{data: 'planTime', 
+				render: function(data, type, row){
+					return moment(data).format('MM/DD/YY HH:mm:ss');
+				},
+				title: "Plan Time"},
 				{data: 'station', title: "Container"},
 				{data: 'status', title: "Status"},
 				{data: 'name', title: "Name"},
@@ -1228,7 +1235,16 @@ app.views.ValidationTableView = Marionette.View.extend({
 					 var dataString = "";
 					 var dataKeys = Object.keys(data);
 					 for(var i=0; i<dataKeys.length; i++){
-						 dataString += "\n" + dataKeys[i] +": "+data[dataKeys[i]];
+						 dataString += "\n" + dataKeys[i] +": ";
+						 if (dataKeys[i].match(/time/i)) {
+							 try {
+								 dataString += moment(data[dataKeys[i]]).format('MM/DD/YY HH:mm:ss');
+							 } catch(err){
+								 dataString += data[dataKeys[i]];
+							 }
+						 } else {
+							 dataString += data[dataKeys[i]];
+						 }
 					 }
 					 return dataString;
 				 }
@@ -1238,6 +1254,9 @@ app.views.ValidationTableView = Marionette.View.extend({
 				$(row).attr("id", data.uuid);
 			}
 		});	
+        $.fn.dataTable.moment( DEFAULT_TIME_FORMAT);
+        $.fn.dataTable.moment( "MM/DD/YY HH:mm:ss");
+
 	 },
 	 addValidation: function(validation){
 		 this.dataTable.row.add(validation).draw();
@@ -1250,9 +1269,6 @@ app.views.ValidationTableView = Marionette.View.extend({
 		validationsArray =[];
 		}
 		this.constructDataTable(validationsArray);
-	},
-	 onAttach: function(){
-		//this.dataTable = this.$el.find('#validation_table');	
 	}
 
 });

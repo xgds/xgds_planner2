@@ -35,6 +35,10 @@
             "type": "string",
             "name": "Author"
         },
+        
+        "modifier": {
+            "type": "string"
+        },
 
         "contributors": {
             "type": "array",

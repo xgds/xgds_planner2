@@ -69,6 +69,7 @@ from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay
 
 from xgds_map_server.forms import MapSearchForm
+from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 _template_cache = None
 
@@ -146,7 +147,16 @@ def plan_save_from_relay(request, plan_id):
     plan = PLAN_MODEL.get().objects.get_or_create(pk=plan_id)
     populatePlanFromJson(plan, request.body)
     plan.save()
-    
+
+
+# TODO - make entry in urls.py for this method!
+def get_last_changed_planID_for_user_json(request, username):
+    plan = PLAN_MODEL.get().objects.filter(creator__username=username).order_by('-dateModified')[0]
+    planMetadata = {"planID":plan.id, "planUUID":plan.uuid, "planName":plan.name,
+                    "lastModified":plan.dateModified, "username":username}
+    return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
+
+
 @login_required
 def plan_save_json(request, plan_id, jsonPlanId):
     """
@@ -157,14 +167,15 @@ def plan_save_json(request, plan_id, jsonPlanId):
     if request.method == "PUT":
         # this is coming in from the regular plan editor
         populatePlanFromJson(plan, request.body)
+        plan.jsonPlan.modifier = request.user.username
         plan.save()
+        
         plan = handleCallbacks(request, plan, settings.SAVE)
         addRelay(plan, None, json.dumps(request.body), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
         # we are doing a save as
-        plan.jsonPlan.creator = request.user.username
         plan.creationDate = datetime.datetime.now(pytz.utc)
         plan.uuid = None
         plan.pk = None
@@ -174,6 +185,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
 
         plan.creator = request.user
         plan.jsonPlan.creator = request.user.username
+        plan.jsonPlan.modifier = request.user.username
 
         #make sure it is not read only
         plan.readOnly = False
@@ -1078,10 +1090,14 @@ def toggleReadOnly(request):
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
-def mapJsonPlan(request, uuid):
+def mapJsonPlan(request, uuid=None, pk=None):
+    ''' Return the json of the plan via uuid or pk '''
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
     try:
-        plan = PLAN_MODEL.get().objects.get(uuid=uuid)
+        if uuid:
+            plan = PLAN_MODEL.get().objects.get(uuid=uuid)
+        elif pk:
+            plan = PLAN_MODEL.get().objects.get(pk=pk)
         json_data = json.dumps([plan.toMapDict()], indent=4)
         return HttpResponse(content=json_data,
                             content_type="application/json")

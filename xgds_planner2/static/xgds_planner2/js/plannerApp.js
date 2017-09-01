@@ -480,13 +480,15 @@ var DEBUG_EVENTS = false;
 					command.timing = app.util.secondsToHMS(command.duration);
 				} else {
 					var paramSpec = app.commandSpecs[command.type];
-					paramSpec.params.every(function(param){
-						if (param.id == 'duration' && _.has(param, 'default')){
-							command.timing = app.util.secondsToHMS(param.default);
-							return false;
-						}
-						return true;
-					});
+					if (paramSpec !== undefined){
+						paramSpec.params.every(function(param){
+							if (param.id == 'duration' && _.has(param, 'default')){
+								command.timing = app.util.secondsToHMS(param.default);
+								return false;
+							}
+							return true;
+						});
+					}
 				}
 			});
 			this[key] = presets;
@@ -518,44 +520,40 @@ var DEBUG_EVENTS = false;
 		},
 		
 		isMatch: function(validation, match){
-			var keys = Object.keys(match); //gets keys in object
+			var matchKeys = Object.keys(match); //gets keys in object
 			var foundMatch = false;
-			for(var k=0; k<keys.length; k++){
-				var key = keys[k];
+			for(var k=0; k<matchKeys.length; k++){
+				var key = matchKeys[k];
 				if(key in validation){
-					var value= match[key]; 
+					var matchValue = match[key]; 
 					if(key=='data'){
-						var dataKeys = Object.keys(value);
+						var matchDataKeys = Object.keys(matchValue);
 						var validationData = validation[key];
-						for(var d=0; d<dataKeys.length; d++){
-							var matchData = value[dataKeys[d]];
-							if(validationData[dataKeys[d]] !== undefined){
-								if(validationData[dataKeys[d]] == matchData){
+						for(var d=0; d<matchDataKeys.length; d++){
+							var matchData = matchValue[matchDataKeys[d]];
+							if(validationData[matchDataKeys[d]] !== undefined){
+								if(validationData[matchDataKeys[d]] == matchData){
 									foundMatch=true; 
 								}
 								else{
-									foundMatch=false; 
-									break;
+									return false;
 								}
 							}
 							else{
-								foundMatch=false;
-								break;
+								return false;
 							}
 						}
 					} else {
-						if(value==validation[key]){								
+						if(matchValue==validation[key]){								
 							foundMatch = true;
 						}
 						else{				
-							foundMatch = false;
-							break;
+							return false;
 						}
 					}
 				}
 				else{
-					foundMatch=false;
-					break;
+					return false;
 				}
 			}
 			return foundMatch;
@@ -584,9 +582,9 @@ var DEBUG_EVENTS = false;
 				result = [];
 			}
 			var newMatches = [];
+			
 			var validations = container.get('validations');
 			if(validations!== undefined) {
-
 				if (match != undefined){
 					//iterate through the validations list and check if everything matches
 					for(var i=0; i<validations.length; i++){
@@ -596,10 +594,9 @@ var DEBUG_EVENTS = false;
 							newMatches.push(v);
 						}
 					}
-					console.log(newMatches);
 				} else {
+					// match on all of them
 					newMatches = validations;
-					console.log(newMatches);
 				}
 			}
 
@@ -607,14 +604,12 @@ var DEBUG_EVENTS = false;
 				for(var i=0; i<newMatches.length; i++){
 					var index = validations.indexOf(newMatches[i]);
 					if (index > -1){
-						var deadValidation = validations[i];
-						if (deadValidation !== undefined){
-							validations.splice(index, 1);
-							app.vent.trigger('validation:remove', deadValidation);
-							if (deadValidation.container_uuid !== undefined){
-								var pathElement = app.getPathElementByUuid(deadValidation.container_uuid);
-								pathElement.trigger('validation:remove', deadValidation);
-							}
+						var deadValidation = validations[index];
+						validations.splice(index, 1);
+						app.vent.trigger('validation:remove', deadValidation);
+						if (deadValidation.container_uuid !== undefined){
+							var pathElement = app.getPathElementByUuid(deadValidation.container_uuid);
+							pathElement.trigger('validation:remove', deadValidation);
 						}
 					}
 				}
@@ -622,18 +617,17 @@ var DEBUG_EVENTS = false;
 
 			// add them to the result
 			result.push.apply(result,newMatches);
+			
 			//see if recursive flag is true
 			if(recursive == true){
 				if (container.get('sequence') !== undefined){
 					var sequence = container.get('sequence');
 					if(sequence !== undefined){
 						sequence.each(function(element){
-							//TODO Sophie make sure this is actually iterating through station, segment, stations.dddd
 							app.getValidationsAsList(element, match, recursive, result, remove);
 						});
 					}
 				}
-
 			}
 			return result;
 
