@@ -27,7 +27,6 @@ from uuid import uuid4
 from dateutil.parser import parse as dateparser
 from django.forms.models import model_to_dict
 from django.contrib import messages 
-from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
@@ -44,6 +43,7 @@ from django.http import (HttpResponseRedirect,
 from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
+
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from geocamUtil import timezone
@@ -86,7 +86,6 @@ def plan_help(request):
                   {"settings": settings})
 
 
-@login_required
 def plan_tests(request, plan_id, editable=True):
     templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
@@ -157,7 +156,6 @@ def get_last_changed_planID_for_user_json(request, username):
     return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
 
 
-@login_required
 def plan_save_json(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
@@ -270,7 +268,6 @@ def plan_bearing_distance_top_view(request, plan_id):
                   {'plan_uuid': plan.uuid,
                    'handlebar_path': 'xgds_planner2/templates/xgds_planner2/bearingDistancePlanTop.handlebars'})
     
-@login_required
 def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
@@ -410,7 +407,6 @@ def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=Fals
         return exporter.getHttpResponse(dbPlan, attachmentName=None)
 
 
-@login_required
 def planCreate(request):
     if request.method == 'GET':
         form = CreatePlanForm()
@@ -469,7 +465,6 @@ def planCreate(request):
                    'siteLabel':'Create'})
 
 
-@login_required
 def planImport(request):
     if request.method == 'GET':
         messages.info(request, 'You can create a ' +  settings.XGDS_PLANNER2_PLAN_MONIKER + ' by importing a kml file containing a LineString.')
@@ -531,7 +526,6 @@ def planImport(request):
                   {'form': form,
                    'siteLabel': 'Import'})
 
-@login_required
 def plan_delete(request):
     picks = request.POST.getlist('picks')
     for i in picks:
@@ -619,7 +613,6 @@ def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=False):
     return flightNames
 
 
-@login_required
 def updateTodaySession(request):
     if not request.is_ajax() or not request.method == 'POST':
         return HttpResponseNotAllowed(['POST'])
@@ -629,7 +622,6 @@ def updateTodaySession(request):
     return HttpResponse('ok')
 
 
-@login_required
 def manageFlights(request, errorString=""):
     today = request.session.get('today', False)
     return render(request,
@@ -639,7 +631,6 @@ def manageFlights(request, errorString=""):
                   )
 
 
-@login_required
 def listFlownFlights(request, errorString=""):
     today = request.session.get('today', False)
     return render(request,
@@ -682,7 +673,7 @@ def stopFlightTracking(request, flightName):
         messages.error(request, 'Flight not found: ' + flightName)
     return redirect(reverse('error'))
 
-@login_required
+
 def startFlight(request, uuid):
     errorString = ""
     try:
@@ -706,7 +697,6 @@ def startFlight(request, uuid):
     return manageFlights(request, errorString)
 
 
-@login_required
 def stopFlight(request, uuid):
     errorString = ""
     try:
@@ -738,7 +728,7 @@ def stopFlight(request, uuid):
         errorString = "Flight not found"
     return manageFlights(request, errorString)
 
-@login_required
+
 def schedulePlans(request, redirect=True):
     flight = None
     lastPlanExecution = None
@@ -825,7 +815,6 @@ def schedulePlans(request, redirect=True):
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
 
-@login_required
 def startPlan(request, pe_id):
     errorString = ""
     try:
@@ -838,7 +827,6 @@ def startPlan(request, pe_id):
     return manageFlights(request, errorString)
 
 
-@login_required
 def stopPlan(request, pe_id):
     errorString = ""
     try:
@@ -853,7 +841,6 @@ def stopPlan(request, pe_id):
     return manageFlights(request, errorString)
 
 
-@login_required
 def deletePlanExecution(request, pe_id):
     errorString = ""
     try:
@@ -864,7 +851,6 @@ def deletePlanExecution(request, pe_id):
     return manageFlights(request, errorString)
 
 
-@login_required
 def addGroupFlight(request):
     from xgds_planner2.forms import GroupFlightForm
     errorString = None
@@ -1043,7 +1029,6 @@ def getClosestSiteFrame(lat, lon):
     return None
 
 
-@login_required
 def toggleReadOnly(request):
     """ Toggle the read only state of plans"""
     if request.method == 'POST':
