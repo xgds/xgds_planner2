@@ -46,6 +46,7 @@ app.views.ToolbarView = Marionette.View.extend({
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
         'click #btn-save': function() { this.doSavePlan(); },
+        'click #btn-fetch': function() { this.doFetchPlan(); },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); }
@@ -90,23 +91,40 @@ app.views.ToolbarView = Marionette.View.extend({
     },
     
     doSavePlan: function() {
-    	app.simulatePlan(); 
-    	this.saving = true;
-    	var context = this;
-    	this.updateSaveStatus('saving');
-    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
-    												      error: function(model, response, options) {context.saveError(model, response, options);}});
+	    	app.simulatePlan(); 
+	    	this.saving = true;
+	    	var context = this;
+	    	this.updateSaveStatus('saving');
+	    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
+	    												      error: function(model, response, options) {context.saveError(model, response, options);}});
     },
     saveWorked: function(model, response, options) {
-    	this.saving = false;
-    	this.updateSaveStatus('sync');
+    		this.saving = false;
+    		this.updateSaveStatus('sync');
     },
     saveError: function(model, response, options) {
-    	this.saving = false;
-    	console.log('SAVE ERROR');
-    	console.log(response);
-    	this.updateSaveStatus('error');
+	    	this.saving = false;
+	    	console.log('SAVE ERROR');
+	    	console.log(response);
+	    	this.updateSaveStatus('error');
     },
+    
+    doFetchPlan: function() {
+	    	var context = this;
+	    	this.updateSaveStatus('reloading');
+	    	app.currentPlan.fetch({success: function(model, response, options) {context.fetchWorked(model, response, options);},
+	    						   error: function(model, response, options) {context.fetchError(model, response, options);}});
+	    		
+    },
+    fetchWorked: function(model, response, options) {
+		this.updateSaveStatus('fetch');
+		app.simulatePlan();
+	},
+	fetchError: function(model, response, options) {
+	    	console.log('FETCH ERROR');
+	    	console.log(response);
+	    	this.updateSaveStatus('fetchError');
+	},
 
     onAttach: function() {
     	if (!app.State.mapHeightSet) {
@@ -188,8 +206,10 @@ app.views.ToolbarView = Marionette.View.extend({
     msgMap :{
         'change': 'Unsaved changes.',
         'sync': app.options.planMoniker + ' saved.',
+        'fetch': app.options.planMoniker + ' reloaded.',
         'saving': 'Saving ' + app.options.planMoniker+ '.',
         'error': 'Save error.',
+        'fetchError': 'Reload error.',
         'clear': '',
         'readOnly': app.options.planMoniker + ' is LOCKED.'
     },
@@ -204,6 +224,8 @@ app.views.ToolbarView = Marionette.View.extend({
             app.dirty = true;
         } else if (eventName == 'sync') {
             app.dirty = false;
+        } else if (eventName == 'fetch'){
+        		app.dirty = false;
         }
 
         var msg = this.msgMap[eventName];

@@ -159,10 +159,13 @@ def get_last_changed_planID_for_user_json(request, username):
 def plan_save_json(request, plan_id, jsonPlanId):
     """
     Read and write plan JSON.
+    Alternately fetch plan contents with a get.
     jsonPlanId is ignored.  It's for human-readabilty in the URL
     """
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
-    if request.method == "PUT":
+    if request.method == "GET":
+        return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
+    elif request.method == "PUT":
         # this is coming in from the regular plan editor
         populatePlanFromJson(plan, request.body)
         plan.jsonPlan.modifier = request.user.username
