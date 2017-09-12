@@ -110,6 +110,7 @@ app.views.ToolbarView = Marionette.View.extend({
     },
     
     doFetchPlan: function() {
+    		app.preFetchPlan();
 	    	var context = this;
 	    	this.updateSaveStatus('reloading');
 	    	app.currentPlan.fetch({success: function(model, response, options) {context.fetchWorked(model, response, options);},

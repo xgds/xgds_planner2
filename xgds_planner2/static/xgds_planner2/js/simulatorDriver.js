@@ -50,6 +50,8 @@ $(function() {
         
         app.State.disableSimulate = true;
         app.Actions.disable();
+        app.preSimulatePlan();
+       
         var sim = new app.Simulator();
         var plan = app.currentPlan;
         if (plan.get('sequence').length == 0) {
@@ -100,13 +102,16 @@ $(function() {
 
         sim.endPlan(plan);
         setSimInfo(sim, plan, prePlanSimState);
+
         app.Actions.enable();
         app.State.disableSimulate = false;
         app.vent.trigger('updatePlanDuration', app.currentPlan._simInfo.deltaTimeSeconds);
         if (app.State.stationSelected != undefined){
-        	var stationStartTime = app.getStartTime().add(app.State.stationSelected._simInfo.elapsedTimeSeconds, 's');
-        	app.vent.trigger('playback:setCurrentTime', stationStartTime);
+        		var stationStartTime = app.getStartTime().add(app.State.stationSelected._simInfo.elapsedTimeSeconds, 's');
+        		app.vent.trigger('playback:setCurrentTime', stationStartTime);
         }
+        app.postSimulatePlan();
+
     };
 
     function renderSimState(plan) {
