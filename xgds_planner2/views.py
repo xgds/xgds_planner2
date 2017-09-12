@@ -696,6 +696,15 @@ def startFlight(request, uuid):
         errorString = "Flight not found"
 
     if flight:
+        # end any other active flight that is with the same vehicle
+        try:
+            conflictingFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle__pk=flight.vehicle.pk)
+            for cf in conflictingFlights:
+                doStopFlight(request, cf.flight.uuid)
+        except:
+            pass
+        
+        # make this flight active
         foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
         if not foundFlight:
             if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
@@ -708,6 +717,10 @@ def startFlight(request, uuid):
 
 @login_required
 def stopFlight(request, uuid):
+    errorString = doStopFlight(request, uuid)
+    return manageFlights(request, errorString)
+
+def doStopFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
@@ -736,7 +749,7 @@ def stopFlight(request, uuid):
     except:
         traceback.print_exc()
         errorString = "Flight not found"
-    return manageFlights(request, errorString)
+    return errorString
 
 @login_required
 def schedulePlans(request, redirect=True):
