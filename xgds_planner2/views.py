@@ -134,6 +134,8 @@ def handleCallbacks(request, plan, mode):
     return plan
 
 def populatePlanFromJson(plan, rawData):
+    print "*** JSON PLAN ***"
+    print rawData
     data = json.loads(rawData)
     for k, v in data.iteritems():
         if k == "_simInfo":
@@ -144,8 +146,12 @@ def populatePlanFromJson(plan, rawData):
 def plan_save_from_relay(request, plan_id):
     """ When we receive a relayed plan, handle creation or update of that plan
     """
-    plan = PLAN_MODEL.get().objects.get_or_create(pk=plan_id)
-    populatePlanFromJson(plan, request.body)
+    try:
+        plan = PLAN_MODEL.get().objects.get(pk=plan_id)
+    except:
+        plan = PLAN_MODEL.get()(pk=plan_id)
+    populatePlanFromJson(plan, json.dumps(request.body.jsonPlan))
+    print "*** PLAN RELAY - date modified:", str(plan.dateModified)
     plan.save()
 
 
