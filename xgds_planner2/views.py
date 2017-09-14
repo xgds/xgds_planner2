@@ -171,7 +171,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
         plan.save()
         
         plan = handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps(request.body), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
+        addRelay(plan, None, {'jsonPlan':request.body}, reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
@@ -206,7 +206,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
         
         plan.save()
         handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps(plan.jsonPlan), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
+        addRelay(plan, None, {'jsonPlan':planDict}, reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
 
         response = {}
         response["msg"] = "New plan created"
