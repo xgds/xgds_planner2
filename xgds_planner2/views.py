@@ -150,6 +150,8 @@ def plan_save_from_relay(request, plan_id):
         plan = PLAN_MODEL.get()(pk=plan_id)
     populatePlanFromJson(plan, request.POST['jsonPlan'])
     plan.save()
+    return JsonResponse({"status":"success","planPK":plan.pk})
+
 
 
 # TODO - make entry in urls.py for this method!
