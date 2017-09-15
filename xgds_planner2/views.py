@@ -134,8 +134,6 @@ def handleCallbacks(request, plan, mode):
     return plan
 
 def populatePlanFromJson(plan, rawData):
-    print "*** JSON PLAN ***"
-    print rawData
     data = json.loads(rawData)
     for k, v in data.iteritems():
         if k == "_simInfo":
@@ -150,8 +148,7 @@ def plan_save_from_relay(request, plan_id):
         plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     except:
         plan = PLAN_MODEL.get()(pk=plan_id)
-    populatePlanFromJson(plan, json.dumps(request.body.jsonPlan))
-    print "*** PLAN RELAY - date modified:", str(plan.dateModified)
+    populatePlanFromJson(plan, request.POST['jsonPlan'])
     plan.save()
 
 
@@ -177,7 +174,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
         plan.save()
         
         plan = handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, {'jsonPlan':request.body}, reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
+        addRelay(plan, None, json.dumps({"jsonPlan":json.dumps(plan.jsonPlan)}), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
@@ -212,7 +209,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
         
         plan.save()
         handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, {'jsonPlan':planDict}, reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
+        addRelay(plan, None, json.dumps({"jsonPlan":plan.jsonPlan}), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
 
         response = {}
         response["msg"] = "New plan created"
