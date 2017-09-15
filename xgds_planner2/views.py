@@ -693,6 +693,7 @@ def startFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
+        # This next line is to avoid replication problems. If we are not the track provider (e.g. ground server) we wait for times to replicate.
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             if not flight.start_time:
                 flight.start_time = datetime.datetime.now(pytz.utc)
@@ -713,9 +714,9 @@ def startFlight(request, uuid):
         # make this flight active
         foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
         if not foundFlight:
-            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-                newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
-                newlyActive.save()
+#            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+            newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
+            newlyActive.save()
 
         flight.startFlightExtras(request, flight)
     return manageFlights(request, errorString)
