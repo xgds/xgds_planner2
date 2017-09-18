@@ -131,6 +131,7 @@ class PlanExecution(AbstractPlanExecution):
 DEFAULT_VEHICLE_FIELD = lambda: models.ForeignKey(Vehicle, null=True, blank=True)
 DEFAULT_GROUP_FLIGHT_FIELD = lambda: models.ForeignKey('xgds_planner2.GroupFlight', null=True, blank=True)
 
+XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL)
 
 class AbstractFlight(models.Model):
     objects = NameManager()
@@ -138,13 +139,51 @@ class AbstractFlight(models.Model):
     uuid = UuidField(unique=True, db_index=True)
     name = models.CharField(max_length=128, blank=True, unique=True, help_text='it is episode name + asset role. i.e. 20130925A_ROV', db_index=True)
     locked = models.BooleanField(blank=True, default=False)
-    start_time = models.DateTimeField(null=True, blank=True, db_index=True)
-    end_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    start_time_raw = models.DateTimeField(null=True, blank=True, db_index=True)
+    end_time_raw = models.DateTimeField(null=True, blank=True, db_index=True)
     timezone = models.CharField(null=True, blank=False, max_length=128, default=settings.TIME_ZONE)
 
     vehicle = 'set to DEFAULT_VEHICLE_FIELD() or similar in derived classes'
     notes = models.TextField(blank=True)
     group = 'set to DEFAULT_GROUP_FLIGHT_FIELD() or similar in derived classes'
+
+    @property
+    def start_time(self):
+        if self.start_time_raw:
+            return self.start_time_raw
+        try:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get().objects.get(flight=self, server=settings.HOSTNAME)
+            return foundExecution.start_time
+        except:
+            pass
+        return None
+    
+    @property
+    def end_time(self):
+        if self.end_time_raw:
+            return self.end_time_raw
+        try:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get().objects.get(flight=self, server=settings.HOSTNAME)
+            return foundExecution.end_time
+        except:
+            pass
+        return None
+        
+    def setStartTime(self, start_time):
+        try:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get().objects.get(flight=self, server=settings.HOSTNAME)
+        except:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get()(flight=self, server=settings.HOSTNAME)
+        foundExecution.start_time = start_time
+        foundExecution.save()
+    
+    def setEndTime(self, end_time):
+        try:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get().objects.get(flight=self, server=settings.HOSTNAME)
+        except:
+            foundExecution = XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL.get()(flight=self, server=settings.HOSTNAME)
+        foundExecution.end_time = end_time
+        foundExecution.save()
 
     def natural_key(self):
         return (self.name)
@@ -153,11 +192,13 @@ class AbstractFlight(models.Model):
     def cls_type(cls):
         return 'Flight'
     
-    def hasStarted(self):
+    @property
+    def started(self):
         return (self.start_time != None)
     
-    def hasEnded(self):
-        if self.hasStarted():
+    @property
+    def ended(self):
+        if self.started:
             return (self.end_time != None)
         return False
 
@@ -320,6 +361,23 @@ class GroupFlight(AbstractGroupFlight):
     def flights(self):
         return self.flight_set.all()
 
+
+class AbstractFlightExecution(models.Model):
+    server = models.CharField(max_length=128, db_index=True, default=settings.HOSTNAME)
+    flight = 'set to DEFAULT_FLIGHT_FIELD() or similar in derived classes'
+    start_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    end_time = models.DateTimeField(null=True, blank=True, db_index=True)
+    
+    def __unicode__(self):
+        return self.flight.name + ' ' + self.server
+
+
+class FlightExecution(AbstractFlightExecution):
+    #flight = DEFAULT_FLIGHT_FIELD() 
+    # explicity set related name
+    flight = models.ForeignKey(Flight, related_name='%(app_label)s_%(class)s_related')
+
+    
 
 class AbstractPlan(models.Model):
     uuid = UuidField(unique=True, db_index=True)

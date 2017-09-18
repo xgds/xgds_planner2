@@ -77,6 +77,7 @@ PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
 PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
 ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
 FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+FLIGHT_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_EXECUTION_MODEL)
 GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
 VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
 
@@ -695,8 +696,8 @@ def startFlight(request, uuid):
         # This next line is to avoid replication problems. If we are not the track provider (e.g. ground server) we wait for times to replicate.
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             if not flight.start_time:
-                flight.start_time = datetime.datetime.now(pytz.utc)
-            flight.end_time = None
+                flight.setStartTime(datetime.datetime.now(pytz.utc))
+            flight.setEndTime(None)
             flight.save()
     except FLIGHT_MODEL.get().DoesNotExist:
         errorString = "Flight not found"
@@ -733,7 +734,7 @@ def doStopFlight(request, uuid):
         if not flight.start_time:
             errorString = "Flight has not been started"
         else:
-            flight.end_time = datetime.datetime.now(pytz.utc)
+            flight.setEndTime(datetime.datetime.now(pytz.utc))
             flight.save()
             try:
                 flight.stopFlightExtras(request, flight)
@@ -1150,6 +1151,8 @@ def activeFlightsTreeNodes(request):
 
 
 def completedFlightsTreeNodes(request):
+    #TODO clean this up
+    fem_related_name = FLIGHT_EXECUTION_MODEL.get()._meta.app_label + '_' + FLIGHT_MODEL.get().__name__.lower() + '_related__isnull'
     flights = FLIGHT_MODEL.get().objects.exclude(end_time__isnull=True)
     result = []
     for f in flights:
