@@ -233,18 +233,19 @@ app.views.ToolbarView = Marionette.View.extend({
     },
 
     refreshSaveAs: function(model, response) {
-        var text = response.responseText;
-        if (response.data != null) {
-            var newId = response.data;
-            if (newId != null) {
-                document.location.href = newId;
-            } else {
-                app.vent.trigger('sync');
-            }
-        } else {
-            app.vent.trigger('sync');
-        }
-    },
+	    	if (response != null) {
+	    		var newPlan = response;
+	    		if (newPlan != null) {
+	    			var serverId = newPlan.serverId;
+	    			var oldId = parseInt(document.location.href.substr(document.location.href.lastIndexOf('/') + 1));
+	    			if (oldId != serverId){
+	    				app.dirty=false;
+	    				document.location.href = serverId;
+	    				return;
+	    			}
+	    		}
+	    	}
+	},
 
     handleVersionChange: function(model, response) {
         // update the plan id in case the version has changed

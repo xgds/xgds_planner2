@@ -213,11 +213,11 @@ def plan_save_json(request, plan_id, jsonPlanId):
         handleCallbacks(request, plan, settings.SAVE)
         addRelay(plan, None, json.dumps({"jsonPlan":plan.jsonPlan}), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
 
-        response = {}
-        response["msg"] = "New plan created"
-        response["data"] = newid
+#         response = {}
+#         response["msg"] = "New plan created"
+#         response["data"] = newid
         
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        return HttpResponse(plan.jsonPlan, content_type='application/json')
 
     
 
@@ -850,6 +850,50 @@ def schedulePlans(request, redirect=True):
             return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
+
+def schedulePlanActiveFlight(request, vehicleName, planPK):
+    ''' This is to support scheduling a new plan from sextantwebapp, which got the active plan from the last scheduled plan execution'''
+    try:
+        vehicle = VEHICLE_MODEL.get().objects.get(name=vehicleName)
+        activeFlights = getActiveFlights(vehicle=vehicle)
+        flight = activeFlights[0].flight # there can be only one
+        # we must have existing plan executions, let's copy the last one
+        if not flight.plans:
+            # it might not have come from this vehicle
+            groupFlights = getTodaysGroupFlights()
+            if groupFlights:
+                for gf in groupFlights.all():
+                    for flight in gf.flights.all():
+                        if flight.plans:
+                            lastPE = flight.plans.last()
+        else:
+            lastPE = flight.plans.last()
+        
+        if not lastPE:
+            # make a totally new one. should never be able to get to this state.
+            lastPE = PLAN_EXECUTION_MODEL.get()()
+            lastPE.flight = flight
+            
+            if settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD:
+                # this will fail we don't have what we need ...
+                lastPE = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, lastPE)
+                
+        lastPE.pk = None
+        lastPE.plan_id = planPK
+        lastPE.planned_start_time = timezone.now()
+        lastPE.start_time = None
+        lastPE.end_time = None
+        lastPE.save()
+        
+        peDict = lastPE.toSimpleDict()
+        del peDict['flight']
+        del peDict['plan']
+        addRelay(lastPE, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
+        return JsonResponse(peDict);
+    
+    except Exception, e:
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
+    
 
 def relaySchedulePlan(request):
     """ Schedule a plan with same plan execution pk from the post dictionary
