@@ -82,35 +82,36 @@ app.views.ToolbarView = Marionette.View.extend({
             this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
             this.render();
         		
-            app.vent.trigger('mapmode', 'navigate');
 
             // right now for an unsolved reason there is a heisenbug that crashes chrome if you start in add stations mode and pan/zoom while building plan.
             // defaulting to navigate mode fixes this.
-//            if (app.isEmptyPlan()) {
-//            	app.vent.trigger('mapmode', 'addStations');
-//            } else {
-//            	app.vent.trigger('mapmode', 'navigate');
-//            }
+            //app.vent.trigger('mapmode', 'navigate');
+
+            if (app.isEmptyPlan()) {
+            		app.vent.trigger('mapmode', 'addStations');
+            } else {
+            		app.vent.trigger('mapmode', 'navigate');
+            }
        });
     },
     
     doSavePlan: function() {
-    	app.simulatePlan(); 
-    	this.saving = true;
-    	var context = this;
-    	this.updateSaveStatus('saving');
-    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
-    												      error: function(model, response, options) {context.saveError(model, response, options);}});
+	    	app.simulatePlan(); 
+	    	this.saving = true;
+	    	var context = this;
+	    	this.updateSaveStatus('saving');
+	    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
+	    												      error: function(model, response, options) {context.saveError(model, response, options);}});
     },
     saveWorked: function(model, response, options) {
-    	this.saving = false;
-    	this.updateSaveStatus('sync');
+	    	this.saving = false;
+	    	this.updateSaveStatus('sync');
     },
     saveError: function(model, response, options) {
-    	this.saving = false;
-    	console.log('SAVE ERROR');
-    	console.log(response);
-    	this.updateSaveStatus('error');
+	    	this.saving = false;
+	    	console.log('SAVE ERROR');
+	    	console.log(response);
+	    	this.updateSaveStatus('error');
     },
 
     onAttach: function() {
