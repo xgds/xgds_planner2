@@ -213,6 +213,7 @@ app.views.ToolbarView = Marionette.View.extend({
     msgMap :{
         'change': 'Unsaved changes.',
         'sync': app.options.planMoniker + ' saved.',
+        'reloading': 'Reloading ' + app.options.planMoniker,
         'fetch': app.options.planMoniker + ' reloaded.',
         'saving': 'Saving ' + app.options.planMoniker+ '.',
         'error': 'Save error.',

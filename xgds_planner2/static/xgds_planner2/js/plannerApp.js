@@ -494,7 +494,7 @@ var DEBUG_EVENTS = false;
 			this[key] = presets;
 			return presets;
 		},
-		buildValidation: function(container, status, name, description, timestamp, source, data){
+		buildValidation: function(container, status, name, description, timestamp, source, data, planTime){
 			/* Builds a new validation objects and puts it in the container's validations attribute.  The container is a Plan, Station, Segment or Command. */
 
 			try{
@@ -508,7 +508,10 @@ var DEBUG_EVENTS = false;
 				if(timestamp instanceof moment){
 					timestampString = timestamp.isoformat();
 				}
-				var newValidation = {'container_uuid': container.get('uuid'), 'planTime': this.getArrivalTime(container).toISOString(),'station': container._sequenceLabel,'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data, 'uuid': new UUID(4).format()};
+				if (_.isUndefined(planTime)){
+					planTime = this.getArrivalTime(container).toISOString();
+				}
+				var newValidation = {'container_uuid': container.get('uuid'), 'planTime': planTime,'station': container._sequenceLabel,'status': status, 'name': name, 'description': description, 'timestamp':timestampString, 'source': source, 'data': data, 'uuid': new UUID(4).format()};
 				validations.push(newValidation);
 				app.vent.trigger('validation:add', newValidation);
 				container.trigger('validation:add', newValidation);

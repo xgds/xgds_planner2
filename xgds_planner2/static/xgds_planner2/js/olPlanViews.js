@@ -329,9 +329,9 @@ $(function() {
                             app.State.metaExpanded = true;
                             app.State.addCommandsExpanded = false;
                             app.State.commandSelected = undefined;
-                            if (app.currentTab != 'sequence') {
-                                app.vent.trigger('setTabRequested','sequence');
-                            }
+//                            if (app.currentTab != 'sequence') {
+//                                app.vent.trigger('setTabRequested','sequence');
+//                            }
                         });
                         this.selectNavigate.getFeatures().on('remove', function(e) {
                             var feature = e.element;
