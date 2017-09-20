@@ -285,7 +285,6 @@ $(function() {
 
                             // set location for added station
                             app.State.addStationLocation = coords;
-                            app.vent.trigger('simulatePlan');
                             
                             app.State.stationSelected = station;
                             app.vent.trigger('itemSelected:station', station);

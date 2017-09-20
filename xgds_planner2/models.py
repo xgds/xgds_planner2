@@ -97,17 +97,22 @@ class AbstractPlanExecution(models.Model):
     def toSimpleDict(self):
         result = {}
         result['pk'] = self.pk
+        result['id'] = self.pk
         result['start_time'] = self.start_time
         result['planned_start_time'] = self.planned_start_time
         result['end_time'] = self.end_time
         if self.plan:    
             result['plan'] = self.plan.pk
+            result['plan_id'] = self.plan.pk
         else:
             result['plan'] = None
+            result['plan_id'] = None
         if self.flight:
             result['flight'] = self.flight.name
+            result['flight_id'] = self.flight.pk
         else:
             result['flight'] = None
+            result['flight_id'] = None
         return result
     
     def __unicode__(self):
@@ -228,7 +233,6 @@ class AbstractFlight(models.Model):
             serviceName = self.vehicle.name + "TrackListener"
             stopPyraptordServiceIfRunning(pyraptord, serviceName)
             
-        #TODO remove the current position for that track
         if self.track:
             if self.track.currentposition_set:
                 try:

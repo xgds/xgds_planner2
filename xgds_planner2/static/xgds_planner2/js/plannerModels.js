@@ -375,8 +375,12 @@ app.models = app.models || {};
              * command.get('duration'); } }); return duration;
              */
             // actually use the simulator
-            if (this._simInfo == undefined) app.simulatePlan();
-            if (this._simInfo == undefined) return undefined;
+            if (this._simInfo == undefined) {
+            		app.simulatePlan();
+            }
+            if (this._simInfo == undefined) {
+            		return undefined;
+            }
             return this._simInfo.deltaTimeSeconds;
         },
 

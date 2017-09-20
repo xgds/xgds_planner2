@@ -218,6 +218,7 @@ var DEBUG_EVENTS = false;
 			this.planJson = JSON.parse($('#plan_json').html());
 			if (this.planJson) {
 				this.currentPlan = new app.models.Plan(this.planJson);
+				moment.tz.setDefault(app.getTimeZone()); // first thing, make sure we are using the correct timezone
 				this.simulatePlan(); // do this before the change:plan event is mapped
 				this.currentPlan.get('sequence').resequence();
 				if (!existingPlan){
@@ -410,16 +411,15 @@ var DEBUG_EVENTS = false;
 		},
 		getStartTime: function() {
 			if (app.options.planExecution) {
-				return moment.utc(app.options.planExecution.planned_start_time);
+				return  moment(app.options.planExecution.planned_start_time);
 			} else {
-				if (!app.startTime){
-					app.startTime = moment().utc();
+				if (_.isUndefined(app.startTime)){
+					app.startTime = moment();
 				}
-				return app.startTime;
+				return app.startTime.clone();
 			}
 		},
 		getEndTime: function(newDuration) {
-			var theStartTime = app.getStartTime();
 			if (app.currentPlan._simInfo === undefined){
 				app.simulatePlan();
 			}
@@ -427,7 +427,7 @@ var DEBUG_EVENTS = false;
 			if (duration === undefined){
 				duration = app.currentPlan._simInfo.deltaTimeSeconds;
 			}
-			var theEndTime = moment(theStartTime).add(duration, 's');
+			var theEndTime = moment(app.getStartTime()).add(duration, 's');
 			return theEndTime;
 		},
 		getTimeZone: function(){
@@ -442,7 +442,7 @@ var DEBUG_EVENTS = false;
 			return 'Etc/UTC';
 		},
 		getStationStartEndTimes: function() {
-			var startTime = app.getStartTime();
+			var startTime = app.getStartTime().clone();
 			var endTime = undefined;
 			var result = [];
 			app.currentPlan.get('sequence').each(function(pathElement, i, sequence) {

@@ -82,10 +82,16 @@ app.views.ToolbarView = Marionette.View.extend({
             this.listenTo(app.currentPlan, 'change:planVersion', this.handleVersionChange);
             this.listenTo(app.currentPlan, 'error', function(model) {this.updateSaveStatus('error')});
             this.render();
+        		
+
+            // right now for an unsolved reason there is a heisenbug that crashes chrome if you start in add stations mode and pan/zoom while building plan.
+            // defaulting to navigate mode fixes this.
+            //app.vent.trigger('mapmode', 'navigate');
+
             if (app.isEmptyPlan()) {
-            	app.vent.trigger('mapmode', 'addStations');
+            		app.vent.trigger('mapmode', 'addStations');
             } else {
-            	app.vent.trigger('mapmode', 'navigate');
+            		app.vent.trigger('mapmode', 'navigate');
             }
        });
     },
@@ -241,9 +247,9 @@ app.views.ToolbarView = Marionette.View.extend({
     },
 
     tipMap : {
-    	'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
+    		'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
         'add': 'Click to add stations to end.',
-        'clear': 'Click and drag to pan map.'
+        'clear': 'Click and drag to pan map.  Select Add button to add stations.'
     },
     updateTip: function(eventName) {
         var msg = this.tipMap[eventName];
@@ -251,18 +257,19 @@ app.views.ToolbarView = Marionette.View.extend({
     },
 
     refreshSaveAs: function(model, response) {
-        var text = response.responseText;
-        if (response.data != null) {
-            var newId = response.data;
-            if (newId != null) {
-                document.location.href = newId;
-            } else {
-                app.vent.trigger('sync');
-            }
-        } else {
-            app.vent.trigger('sync');
-        }
-    },
+	    	if (response != null) {
+	    		var newPlan = response;
+	    		if (newPlan != null) {
+	    			var serverId = newPlan.serverId;
+	    			var oldId = parseInt(document.location.href.substr(document.location.href.lastIndexOf('/') + 1));
+	    			if (oldId != serverId){
+	    				app.dirty=false;
+	    				document.location.href = serverId;
+	    				return;
+	    			}
+	    		}
+	    	}
+	},
 
     handleVersionChange: function(model, response) {
         // update the plan id in case the version has changed

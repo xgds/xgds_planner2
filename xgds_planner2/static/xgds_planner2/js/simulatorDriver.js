@@ -61,7 +61,7 @@ $(function() {
             app.Actions.enable();
             return;
         }
-
+        
         var prePlanSimState = getSimState(sim);
         sim.startPlan(plan);
 

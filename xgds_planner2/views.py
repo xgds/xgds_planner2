@@ -143,9 +143,14 @@ def populatePlanFromJson(plan, rawData):
 def plan_save_from_relay(request, plan_id):
     """ When we receive a relayed plan, handle creation or update of that plan
     """
-    plan = PLAN_MODEL.get().objects.get_or_create(pk=plan_id)
-    populatePlanFromJson(plan, request.body)
+    try:
+        plan = PLAN_MODEL.get().objects.get(pk=plan_id)
+    except:
+        plan = PLAN_MODEL.get()(pk=plan_id)
+    populatePlanFromJson(plan, request.POST['jsonPlan'])
     plan.save()
+    return JsonResponse({"status":"success","planPK":plan.pk})
+
 
 
 # TODO - make entry in urls.py for this method!
@@ -172,7 +177,7 @@ def plan_save_json(request, plan_id, jsonPlanId):
         plan.save()
         
         plan = handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps(request.body), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
+        addRelay(plan, None, json.dumps({"jsonPlan":json.dumps(plan.jsonPlan)}), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
@@ -207,13 +212,13 @@ def plan_save_json(request, plan_id, jsonPlanId):
         
         plan.save()
         handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps(plan.jsonPlan), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
+        addRelay(plan, None, json.dumps({"jsonPlan":plan.jsonPlan}), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
 
-        response = {}
-        response["msg"] = "New plan created"
-        response["data"] = newid
+#         response = {}
+#         response["msg"] = "New plan created"
+#         response["data"] = newid
         
-        return HttpResponse(json.dumps(response), content_type='application/json')
+        return HttpResponse(plan.jsonPlan, content_type='application/json')
 
     
 
@@ -603,7 +608,7 @@ def getAllGroupFlights(today=False, reverseOrder=False):
         return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
 
 
-def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=False):
+def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=True):
     orderby = 'name'
     if reverseOrder:
         orderby = '-name'
@@ -681,6 +686,7 @@ def startFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
+        # This next line is to avoid replication problems. If we are not the track provider (e.g. ground server) we wait for times to replicate.
         if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             if not flight.start_time:
                 flight.start_time = datetime.datetime.now(pytz.utc)
@@ -690,17 +696,30 @@ def startFlight(request, uuid):
         errorString = "Flight not found"
 
     if flight:
+        # end any other active flight that is with the same vehicle
+        try:
+            conflictingFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle__pk=flight.vehicle.pk)
+            for cf in conflictingFlights:
+                doStopFlight(request, cf.flight.uuid)
+        except:
+            pass
+        
+        # make this flight active
         foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
         if not foundFlight:
-            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-                newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
-                newlyActive.save()
+#            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
+            newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
+            newlyActive.save()
 
-        flight.startFlightExtras(request)
+        flight.startFlightExtras(request, flight)
     return manageFlights(request, errorString)
 
 
 def stopFlight(request, uuid):
+    errorString = doStopFlight(request, uuid)
+    return manageFlights(request, errorString)
+
+def doStopFlight(request, uuid):
     errorString = ""
     try:
         flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
@@ -710,7 +729,7 @@ def stopFlight(request, uuid):
             flight.end_time = datetime.datetime.now(pytz.utc)
             flight.save()
             try:
-                flight.stopFlightExtras(request)
+                flight.stopFlightExtras(request, flight)
             except:
                 print 'error in stop flight extras for %s' % flight.name
                 traceback.print_exc()
@@ -729,7 +748,7 @@ def stopFlight(request, uuid):
     except:
         traceback.print_exc()
         errorString = "Flight not found"
-    return manageFlights(request, errorString)
+    return errorString
 
 
 def schedulePlans(request, redirect=True):
@@ -805,6 +824,13 @@ def schedulePlans(request, redirect=True):
                         pe = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, pe)
                         
                     pe.save()
+                    
+                    # relay the new plan execution
+                    peDict = pe.toSimpleDict()
+                    del peDict['flight']
+                    del peDict['plan']
+                    addRelay(pe, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
+
                     lastPlanExecution = pe
         except:
             traceback.print_exc()
@@ -817,6 +843,75 @@ def schedulePlans(request, redirect=True):
             return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
         return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
+
+def schedulePlanActiveFlight(request, vehicleName, planPK):
+    ''' This is to support scheduling a new plan from sextantwebapp, which got the active plan from the last scheduled plan execution'''
+    try:
+        vehicle = VEHICLE_MODEL.get().objects.get(name=vehicleName)
+        activeFlights = getActiveFlights(vehicle=vehicle)
+        flight = activeFlights[0].flight # there can be only one
+        # we must have existing plan executions, let's copy the last one
+        if not flight.plans:
+            # it might not have come from this vehicle
+            groupFlights = getTodaysGroupFlights()
+            if groupFlights:
+                for gf in groupFlights.all():
+                    for flight in gf.flights.all():
+                        if flight.plans:
+                            lastPE = flight.plans.last()
+        else:
+            lastPE = flight.plans.last()
+        
+        if not lastPE:
+            # make a totally new one. should never be able to get to this state.
+            lastPE = PLAN_EXECUTION_MODEL.get()()
+            lastPE.flight = flight
+            
+            if settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD:
+                # this will fail we don't have what we need ...
+                lastPE = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, lastPE)
+                
+        lastPE.pk = None
+        lastPE.plan_id = planPK
+        lastPE.planned_start_time = timezone.now()
+        lastPE.start_time = None
+        lastPE.end_time = None
+        lastPE.save()
+        
+        peDict = lastPE.toSimpleDict()
+        del peDict['flight']
+        del peDict['plan']
+        addRelay(lastPE, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
+        return JsonResponse(peDict);
+    
+    except Exception, e:
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
+    
+
+def relaySchedulePlan(request):
+    """ Schedule a plan with same plan execution pk from the post dictionary
+        requires the flight, plan and ev all exist.
+    """
+    try:
+        form_dict = json.loads(request.POST.get('serialized_form'))
+            
+        try:
+            id = form_dict['id']
+            preexisting= PLAN_EXECUTION_MODEL.get().get(pk=id)
+
+            #TODO this should never happen, we should not have flights on multiple servers with the same name
+            print '********DUPLICATE PLAN EXECUTION ***** WAS ATTEMPTED TO RELAY WITH PK %d' % (id)
+        except:
+            pass
+        
+        # we are good it does not exist
+        newPlanExecution = PLAN_EXECUTION_MODEL.get()(**form_dict)
+        newPlanExecution.save()
+        return JsonResponse(model_to_dict(newPlanExecution))
+        
+    except Exception, e:
+        traceback.print_exc()
+        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
 
 def startPlan(request, pe_id):
     errorString = ""

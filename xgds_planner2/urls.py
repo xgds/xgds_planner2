@@ -47,6 +47,8 @@ urlpatterns = [
     url(r'^relayAddGroupFlight/$', views.relayAddGroupFlight, {}, "planner2_relayAddGroupFlight"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     url(r'^schedulePlan/$', views.schedulePlans, {'redirect': False}, "planner2_schedulePlan_ajax"),
+    url(r'^schedulePlanActive/(?P<vehicleName>\w+)/(?P<planPK>[\d]+)$', views.schedulePlanActiveFlight, {}, "planner2_schedulePlan_active"),
+    url(r'^relaySchedulePlan/$', views.relaySchedulePlan, {}, "planner2_relaySchedulePlan"),
     url(r'startPlan/(?P<pe_id>[\w-]+)$', views.startPlan, {}, 'planner2_startPlan'),
     url(r'stopPlan/(?P<pe_id>[\w-]+)$', views.stopPlan, {}, 'planner2_stopPlan'),
     url(r'deletePlanExecution/(?P<pe_id>[\w-]+)$', views.deletePlanExecution, {}, 'planner2_deletePlanExecution'),
