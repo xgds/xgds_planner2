@@ -1149,7 +1149,7 @@ def mapJsonPlan(request, uuid=None, pk=None):
             plan = PLAN_MODEL.get().objects.get(uuid=uuid)
         elif pk:
             plan = PLAN_MODEL.get().objects.get(pk=pk)
-        json_data = json.dumps([plan.toMapDict()], indent=4)
+        json_data = json.dumps(plan.jsonPlan, indent=4)
         return HttpResponse(content=json_data,
                             content_type="application/json")
     except:
