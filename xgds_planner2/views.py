@@ -161,7 +161,7 @@ def get_last_changed_planID_for_user_json(request, username):
     return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
 
 
-def plan_save_json(request, plan_id, jsonPlanId):
+def plan_save_json(request, plan_id, jsonPlanId=None):
     """
     Read and write plan JSON.
     Alternately fetch plan contents with a get.
