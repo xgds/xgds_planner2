@@ -1293,7 +1293,7 @@ app.views.ValidationTableView = Marionette.View.extend({
 		 this.dataTable.row.add(validation).draw();
 	 },
 	 deleteValidation: function(validation){
-		 if (this.dataTable !== undefined){
+		 if (this.dataTable !== undefined && validation !== undefined){
 			 var theRow = this.datTable.row(validation);
 			 if (theRow !== undefined){
 				 theRow.remove().draw();
