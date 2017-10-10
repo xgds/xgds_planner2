@@ -254,13 +254,14 @@ app.views.PlanPlotView = Marionette.View.extend({
 		if (force) {
 			// update start time 
 			var startEnd = this.getStartEndMoments(force);
-			if (startEnd != undefined && startEnd.start != undefined){
-				if (newOptions == null){
-					newOptions = this.plotOptions['xaxis'];
-				}
-				newOptions.min = startEnd.start.toDate().getTime();
-				newOptions.max = startEnd.end.toDate().getTime();
-			}
+			// this broke the plot for new plans.  Clearly not needed.
+//			if (startEnd !== undefined && startEnd.start !== undefined){
+//				if (newOptions == null){
+//					newOptions = this.plotOptions['xaxis'];
+//				}
+//				newOptions.min = startEnd.start.toDate().getTime();
+//				newOptions.max = startEnd.end.toDate().getTime();
+//			}
 
 		}
 		if (newOptions != null){
@@ -299,7 +300,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 	},
 	getXAxisOptions: function() {
 		var durationSeconds = app.currentPlan._simInfo.deltaTimeSeconds;
-		if (this.lastDurationSeconds != undefined){
+		if (this.lastDurationSeconds != undefined && durationSeconds > 0){
 			if (this.lastDurationSeconds == durationSeconds){
 				return null;
 			}
@@ -310,9 +311,9 @@ app.views.PlanPlotView = Marionette.View.extend({
 		}
 
 		result =  { mode: 'time',
-				timeformat: DEFAULT_PLOT_TIME_FORMAT,
-				timezone: app.getTimeZone(),
-				reserveSpace: false
+					timeformat: DEFAULT_PLOT_TIME_FORMAT,
+					timezone: app.getTimeZone(),
+					reserveSpace: false
 		};
 		this.lastDurationSeconds = durationSeconds;
 		var mduration = moment.duration(durationSeconds, 'seconds');
@@ -324,9 +325,12 @@ app.views.PlanPlotView = Marionette.View.extend({
 			} else if (mduration.hours() > 12){
 				timeformat = '%m/%d %H:%M';
 			}
-		} else {
-			result['tickSize'] = tickSize;
+//		} else {
+//			result['tickSize'] = tickSize;
 		}
+
+		// Flot just seems to work, well.  Let's just use it.
+		result['tickSize'] = null;
 		result['timeformat'] = timeformat;
 
 		return result;
@@ -359,7 +363,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 			}
 		});
 		this.listenTo(app.vent, 'station:remove',  function(model){ this.removeStationLabel(model);
-		this.onRender()
+			this.onRender()
 		}, this);
 		this.listenTo(app.vent, 'itemSelected:station', function(selected) {
 			this.selectStation(selected);
@@ -776,10 +780,10 @@ app.views.PlanPlotView = Marionette.View.extend({
 		} else {
 			var plotOptions = this.plot.getOptions();
 			plotOptions.xaxis.timeformat = this.plotOptions.xaxis.timeformat;
-			plotOptions.xaxis.min = this.plotOptions.xaxis.min;
-			plotOptions.xaxis.max = this.plotOptions.xaxis.max;
+			// not needed
+//			plotOptions.xaxis.min = this.plotOptions.xaxis.min;
+//			plotOptions.xaxis.max = this.plotOptions.xaxis.max;
 			plotOptions.colors = this.getPlotColors();
-			//Object.assign(this.plot.getOptions().xaxis, this.plotOptions.xaxis);
 			this.plot.setupGrid();
 			this.plot.setData(this.buildPlotDataArray());
 			this.plot.draw();
