@@ -67,6 +67,7 @@ from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay
+from xgds_core.util import insertIntoPath
 
 from xgds_map_server.forms import MapSearchForm
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -555,7 +556,8 @@ def getPlanIndexKml(request):
     for plan in plans:
         fname = '%s.kml' % plan.escapedName()
         relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
-        url = request.build_absolute_uri(relUrl)
+        restUrl = insertIntoPath(relUrl, 'rest')
+        url = request.build_absolute_uri(restUrl)
 #         print(url)
         out.write("""
 <NetworkLink>
