@@ -13,7 +13,7 @@
 		        </div>
 		    </div>
 	    
-		    <div class="col-4">
+		    <div class="col-3">
 		        {{#if simInfo}}
 		        <strong>Duration: </strong><span id="totalDuration">{{formatDuration simInfo.deltaTimeSeconds}}</span><br/>
 		        <strong>Distance: </strong><span id="totalDistance">{{formatDistance simInfo.deltaDistanceMeters}}</span>
@@ -21,18 +21,20 @@
 			</div>
 			
 			
-			<div class="btn-group col-3" role="group">
+			<div class="btn-group pull-right col-5" role="group">
 				<!-- <button  id="btn-showWedges" data-toggle="button">Show Fovs</button> -->
-	            <button  id="btn-undo" class="btn btn-primary">Undo</button>
-	            <button  id="btn-redo" class="btn btn-primary">Redo</button>
-	            <button  id="btn-fetch" class="btn btn-primary">Reload</button>
-	            <button  id="btn-saveas" class="btn btn-primary">Save As</button>
-	            <button  id="btn-save" class="btn btn-primary">Save</button>
+                <div class="pull-right">
+                    <button  id="btn-undo" class="btn btn-primary">Undo</button>
+                    <button  id="btn-redo" class="btn btn-primary">Redo</button>
+                    <button  id="btn-fetch" class="btn btn-primary">Reload</button>
+                    <button  id="btn-saveas" class="btn btn-primary">Save As</button>
+                    <button  id="btn-save" class="btn btn-primary">Save</button>
+                    <span style="margin-left: 20px;">
+                        <button id="gridstack_toggleAll" class='btn btn-primary fa fa-lock my-1' role='button' style="color:white; max-height:1.8rem;" onclick="xgds_gridstack.handleToggleAllClick();"></button>
+                        <button id="gridstack_reset" class='btn btn-primary my-1' role='button' style="color:white; max-height:1.8rem;" onclick="xgds_gridstack.resetGrid(window.location.href);">Reset Grid</button>
+                    </span>
+                </div>
 		    </div>
-		    
-		    <div >
-	    		<button id="gridstack_toggleAll" class='btn btn-primary fa fa-lock my-1' role='button' style="color:white; max-height:1.8rem;" onclick="xgds_gridstack.handleToggleAllClick();"></button>
-	    	</div>
 	    </div> <!-- end row -->
 	
 	
