@@ -57,5 +57,5 @@ def getActiveFlight(vehicle):
         foundFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter()
         
     if foundFlights:
-        return foundFlights[0].flight
+        return foundFlights.last().flight
     return None
