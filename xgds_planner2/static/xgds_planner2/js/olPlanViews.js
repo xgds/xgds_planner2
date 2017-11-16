@@ -36,36 +36,8 @@ $(function() {
             },
 
             //Override since we don't want to draw the latest plan on the editor page
-            initializeMapData: function() {
-                if (!this.layersInitialized){
-	                $.ajax({
-	                    url: app.options.layerFeedUrl,
-	                    dataType: 'json',
-	                    success: $.proxy(function(data) {
-	                    	if (data != null){
-		                        app.treeData = data;
-		                        this.layersInitialized = true;
-		                        app.vent.trigger('treeData:loaded');
-		                        this.initializeMapLayers(app.treeData[0]);
-	                    	}
-	                    }, this)
-	                  });
-	                // turn on layers that were turned on in the cookies
-	                var selected_uuids = Cookies.get('fancytree-1-selected');
-	                if (selected_uuids != undefined && selected_uuids.length > 0){
-		                $.ajax({
-		                    url: '/xgds_map_server/uuidsjson/',
-		                    dataType: 'json',
-		                    type: "POST",
-		                    data: {'uuids':selected_uuids},
-		                    success: $.proxy(function(data) {
-		                    	if (data != null){
-			                        this.selectNodes(data);
-		                    	}
-		                    }, this)
-                        });
-	                }
-                }
+            drawLatestPlan: function() {
+
             },
             
             updateBbox: function() {
