@@ -265,17 +265,6 @@ XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
                                   'model': XGDS_PLANNER2_PLAN_MODEL,
                                   'hiddenColumns': ['stations', 'type', 'id']}
 
-
-BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += ['string-format=git://github.com/tamarmot/string-format.git',
-                         'proj4',
-                         'usng=git://github.com/codice/usng.js.git',
-                         'qunit#2.1.1',
-                         'pure-uuid',
-                         'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
-                         'flot'
-                         ]
-
 XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
 XGDS_DATA_MASKED_FIELDS['xgds_planner2'] = {'Plan': ['uuid',
                                                      'dateModified',

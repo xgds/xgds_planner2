@@ -1,0 +1,21 @@
+{
+  "name": "xgds_planner2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "string-format": "tamarmot/string-format",
+    "proj4": "^2.4.0",
+    "usng": "codice/usng.js",
+    "qunit": "2.1.1",
+    "pure-uuid": "rse/pure-uuid",
+    "jquery-fileDownload": "johnculviner/jquery.fileDownload",
+    "flot": "flot/flot"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}
