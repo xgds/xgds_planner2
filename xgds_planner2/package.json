@@ -7,10 +7,10 @@
     "string-format": "tamarmot/string-format",
     "proj4": "^2.4.0",
     "usng": "codice/usng.js",
-    "qunit": "2.1.1",
+    "qunit": "^2.4.1",
     "pure-uuid": "rse/pure-uuid",
     "jquery-fileDownload": "johnculviner/jquery.fileDownload",
-    "flot": "flot/flot"
+    "flot": "^0.8.0-alpha"
   },
   "devDependencies": {},
   "scripts": {
