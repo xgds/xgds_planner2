@@ -9,7 +9,7 @@
     "usng": "codice/usng.js",
     "qunit": "^2.4.1",
     "pure-uuid": "rse/pure-uuid",
-    "jquery-fileDownload": "johnculviner/jquery.fileDownload",
+    "jquery-file-download": "^1.4.6",
     "flot": "^0.8.0-alpha"
   },
   "devDependencies": {},
