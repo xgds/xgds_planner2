@@ -69,7 +69,7 @@ XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': ('jquery/dist/jquery.min.js',
                              'jquery-migrate-official/src/migrate.js',
-                             'jquery-ui/jquery-ui.min.js',
+                             'jquery-ui/jquery-ui.js',
                              'handlebars/dist/handlebars.min.js',
                              'backbone/backbone.js',
                              'backbone.wreqr/lib/backbone.wreqr.min.js',
