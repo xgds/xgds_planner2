@@ -76,7 +76,7 @@ XGDS_PLANNER_PIPELINE_JS = {
                              'backbone.babysitter/lib/backbone.babysitter.min.js',
                              'backbone-relational/backbone-relational.js',
                              'backbone-forms/distribution/backbone-forms.min.js',
-                             'marionette/lib/backbone.marionette.min.js',
+                             'backbone.marionette/lib/backbone.marionette.min.js',
                              'string-format/lib/string-format.js',
                              'usng/usng.js',
                              'proj4/dist/proj4.js',
