@@ -6,9 +6,9 @@
   "dependencies": {
     "string-format": "tamarmot/string-format",
     "proj4": "^2.4.0",
-    "usng": "codice/usng.js",
+    "usng.js": "codice/usng.js",
     "qunit": "^2.4.1",
-    "pure-uuid": "rse/pure-uuid",
+    "pure-uuid": "^1.4.11",
     "jquery-file-download": "^1.4.6",
     "flot": "^0.8.0-alpha"
   },
