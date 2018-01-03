@@ -13,7 +13,7 @@
 {% block cssExtras %}
 {{ block.super }}
 <style type="text/css" title="currentStyle">
-	@import "{{ EXTERNAL_URL }}jquery-ui/themes/base/jquery-ui.css";
+	@import "{{ EXTERNAL_URL }}jquery-ui-dist/jquery-ui.min.css";
 </style>
 {% endblock cssExtras %}
 
@@ -81,7 +81,7 @@
 
 {% block scripts %}
   {{ block.super }}
-  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui/jquery-ui.js"></script>
+  	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui-dist/jquery-ui.min.js"></script>
   	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}datatables/media/js/jquery.dataTables.min.js"></script>
 	<script language="javascript" type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
 	<script language="javascript" type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>

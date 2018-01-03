@@ -69,7 +69,7 @@ XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': ('jquery/dist/jquery.min.js',
                              'jquery-migrate-official/src/migrate.js',
-                             'jquery-ui/jquery-ui.js',
+                             'jquery-ui-dist/jquery-ui.min.js',
                              'handlebars/dist/handlebars.min.js',
                              'backbone/backbone.js',
                              'backbone.wreqr/lib/backbone.wreqr.min.js',
@@ -119,7 +119,7 @@ XGDS_PLANNER_PIPELINE_JS = {
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
-                             'jquery-ui/themes/base/jquery-ui.css',
+                             'jquery-ui-dist/jquery-ui.min.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
                              # 'backbone-forms/distribution/templates/old.css',
                              'xgds_planner2/css/planner.css',
