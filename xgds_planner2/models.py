@@ -190,8 +190,9 @@ class AbstractFlight(models.Model):
                              "tooltip": "Tracks for " + self.name, 
                              "key": self.uuid + "_tracks", 
                              "data": {"json": reverse('geocamTrack_mapJsonTrack', kwargs={'uuid': str(self.track.uuid)}),
-                                     "sseUrl": "", 
-                                     "type": 'MapLink', 
+                                      "kmlFile": reverse('geocamTrack_trackKml', kwargs={'trackName': self.track.name}),
+                                      "sseUrl": "",
+                                      "type": 'MapLink',
                                      }
                             })
         if self.plans:
@@ -201,6 +202,8 @@ class AbstractFlight(models.Model):
                              "tooltip": "Plan for " + self.name, 
                              "key": self.uuid + "_plan", 
                              "data": {"json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(myplan.uuid)}),
+                                     "kmlFile": reverse('planner2_planExport', kwargs={'uuid': str(myplan.uuid),
+                                                                                      'name': myplan.name + '.kml'}),
                                      "sseUrl": "", 
                                      "type": 'MapLink', 
                                      }
@@ -490,6 +493,8 @@ class AbstractPlan(models.Model):
                   "tooltip": self.jsonPlan.notes,
                   "data": {"type": "MapLink",  # we cheat so this will be 'live'
                            "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
+                           "kmlFile": reverse('planner2_planExport', kwargs={'uuid': str(self.uuid),
+                                                                             'name': self.name + '.kml'}),
                            "href": reverse('planner2_edit', kwargs={'plan_id': str(self.pk)})
                            }
                   }
