@@ -491,7 +491,7 @@ class AbstractPlan(models.Model):
         result = {"title": self.name,
                   "key": self.uuid,
                   "tooltip": self.jsonPlan.notes,
-                  "data": {"type": "MapLink",  # we cheat so this will be 'live'
+                  "data": {"type": "PlanLink",  # we cheat so this will be 'live'
                            "json": reverse('planner2_mapJsonPlan', kwargs={'uuid': str(self.uuid)}),
                            "kmlFile": reverse('planner2_planExport', kwargs={'uuid': str(self.uuid),
                                                                              'name': self.name + '.kml'}),
