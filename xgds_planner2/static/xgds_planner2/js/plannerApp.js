@@ -627,9 +627,10 @@ var DEBUG_EVENTS = false;
 			if(recursive == true){
 				var sequence = container.get('sequence');
 				if(!_.isEmpty(sequence)) {
-					sequence.each(function(element){
+					for (var i=0; i < sequence.length; i++){
+						var element = sequence[i];
 						app.getValidationsAsList(element, match, recursive, result, remove);
-					});
+					}
 				}
 			}
 			return result;
