@@ -612,7 +612,9 @@ var DEBUG_EVENTS = false;
 						app.vent.trigger('validation:remove', deadValidation);
 						if (deadValidation.container_uuid !== undefined){
 							var pathElement = app.getPathElementByUuid(deadValidation.container_uuid);
-							pathElement.trigger('validation:remove', deadValidation);
+							if (!_.isEmpty(pathElement)) {
+                                pathElement.trigger('validation:remove', deadValidation);
+                            }
 						}
 					}
 				}
