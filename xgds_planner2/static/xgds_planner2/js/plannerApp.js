@@ -587,7 +587,7 @@ var DEBUG_EVENTS = false;
 			var newMatches = [];
 			
 			var validations = container.get('validations');
-			if(validations!== undefined) {
+			if(!_.isEmpty(validations)) {
 				if (match != undefined){
 					//iterate through the validations list and check if everything matches
 					for(var i=0; i<validations.length; i++){
@@ -623,13 +623,11 @@ var DEBUG_EVENTS = false;
 			
 			//see if recursive flag is true
 			if(recursive == true){
-				if (container.get('sequence') !== undefined){
-					var sequence = container.get('sequence');
-					if(sequence !== undefined){
-						sequence.each(function(element){
-							app.getValidationsAsList(element, match, recursive, result, remove);
-						});
-					}
+				var sequence = container.get('sequence');
+				if(!_.isEmpty(sequence)) {
+					sequence.each(function(element){
+						app.getValidationsAsList(element, match, recursive, result, remove);
+					});
 				}
 			}
 			return result;
