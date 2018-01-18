@@ -424,6 +424,9 @@ app.views.PlanPlotView = Marionette.View.extend({
 		}
 	},
 	getPlotIndex: function(currentTime){
+		if (_.isEmpty(this.startEndTimes)){
+			return -1;
+		}
 		var timedeltaMS = Math.abs(this.lastDataIndexTime - currentTime);
 		if (timedeltaMS/1000 >= this.intervalSeconds){
 			// we should change it, find the next index.
