@@ -585,8 +585,13 @@ var DEBUG_EVENTS = false;
 				result = [];
 			}
 			var newMatches = [];
-			
-			var validations = container.get('validations');
+
+			var validations = undefined;
+			try {
+                validations = container.get('validations');
+            } catch (err) {
+				return result;
+			}
 			if(!_.isEmpty(validations)) {
 				if (match != undefined){
 					//iterate through the validations list and check if everything matches
