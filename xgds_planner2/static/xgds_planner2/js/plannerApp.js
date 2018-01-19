@@ -646,9 +646,7 @@ var DEBUG_EVENTS = false;
 			
 		},
     	// override these functions if you need to call anything pre or post plan simulation
-	    preSimulatePlan: function() {
-	    		console.log('uh oh');
-	    	},
+	    preSimulatePlan: function() {},
 	    postSimulatePlan: function() {}
 
 		
