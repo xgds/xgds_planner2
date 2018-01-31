@@ -69,14 +69,14 @@ XGDS_PLANNER_PIPELINE_JS = {
     'planner_app': {
         'source_filenames': ('jquery/dist/jquery.min.js',
                              'jquery-migrate-official/src/migrate.js',
-                             'jquery-ui/jquery-ui.min.js',
-                             'handlebars/handlebars.min.js',
+                             'jquery-ui-dist/jquery-ui.min.js',
+                             'handlebars/dist/handlebars.min.js',
                              'backbone/backbone.js',
                              'backbone.wreqr/lib/backbone.wreqr.min.js',
                              'backbone.babysitter/lib/backbone.babysitter.min.js',
                              'backbone-relational/backbone-relational.js',
                              'backbone-forms/distribution/backbone-forms.min.js',
-                             'marionette/lib/backbone.marionette.min.js',
+                             'backbone.marionette/lib/backbone.marionette.min.js',
                              'string-format/lib/string-format.js',
                              'usng/usng.js',
                              'proj4/dist/proj4.js',
@@ -119,7 +119,7 @@ XGDS_PLANNER_PIPELINE_JS = {
 XGDS_PLANNER_PIPELINE_CSS = {
     'planner_app': {
         'source_filenames': (
-                             'jquery-ui/themes/base/jquery-ui.css',
+                             'jquery-ui-dist/jquery-ui.min.css',
                              # for some reason compressing this in the css does not work so it's separate in the planner_app
                              # 'backbone-forms/distribution/templates/old.css',
                              'xgds_planner2/css/planner.css',
@@ -264,17 +264,6 @@ XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
                                   'model': XGDS_PLANNER2_PLAN_MODEL,
                                   'hiddenColumns': ['stations', 'type', 'id']}
-
-
-BOWER_INSTALLED_APPS = getOrCreateArray('BOWER_INSTALLED_APPS')
-BOWER_INSTALLED_APPS += ['string-format=git://github.com/tamarmot/string-format.git',
-                         'proj4',
-                         'usng=git://github.com/codice/usng.js.git',
-                         'qunit#2.1.1',
-                         'pure-uuid',
-                         'jquery-fileDownload=git://github.com/johnculviner/jquery.fileDownload.git',
-                         'flot'
-                         ]
 
 XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
 XGDS_DATA_MASKED_FIELDS['xgds_planner2'] = {'Plan': ['uuid',
