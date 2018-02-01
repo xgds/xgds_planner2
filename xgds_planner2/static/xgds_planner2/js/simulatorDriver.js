@@ -82,11 +82,15 @@ $(function() {
                 throw 'Invalid PathElement type.';
             }
 
-            pathElement.get('commands').each(function(command) {
-                var preCommandSimState = getSimState(sim);
-                sim.executeCommand(command);
-                setSimInfo(sim, command, preCommandSimState);
-            });
+            var commands = pathElement.get('commands');
+            if (!_.isEmpty(commands)) {
+                for (var i=0; i<commands.length; i++){
+                    var command = commands[i];
+                    var preCommandSimState = getSimState(sim);
+                    sim.executeCommand(command);
+                    setSimInfo(sim, command, preCommandSimState);
+                }
+            }
 
             if (type == 'Station') {
                 sim.endStation(pathElement, ctx);

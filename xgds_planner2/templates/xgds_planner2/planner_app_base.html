@@ -43,7 +43,7 @@
 	    </div>
 	</div>
 
-	
+
 		{% if settings.XGDS_PLANNER2_VALIDATION %}
 		<div id="validation-gridstack-item" class="grid-stack-item"  data-gs-x="0" data-gs-y="7" data-gs-width="12" data-gs-height="2" >
     			<div id="validation-gridstack-item-content" class="grid-stack-item-content" >
@@ -109,7 +109,7 @@
 <div id="application" >
 </div>
 {% endblock content %}
-  
+
 
 {% block scripts %}
     {# javascript 'compiled_planner_app' #}
@@ -154,11 +154,11 @@
         plots: {{ settings.XGDS_PLANNER2_PLOTS|safe }},
         validation: {{ settings.XGDS_PLANNER2_VALIDATION|yesno:"true,false" }}
      };
-        
+
         {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
         	appOptions['flight_names'] = {{flight_names|safe}};
         {% endif %}
-        
+
         {% if extras %}
             var extras = {{ extras|safe }};
             for (var key in extras) {
@@ -173,10 +173,10 @@
 	{% endif %}
      <script type="text/javascript" src="{{ EXTERNAL_URL }}jquery-ui-timepicker-addon/dist/jquery-ui-timepicker-addon.min.js"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
-     <script type="text/javascript" src="{% static 'geocamUtil/js/datatable_helpers.js' %}"></script>
+     <script language="javascript" type="text/javascript" src="{% static 'xgds_core/js/datatablesUtils.js' %}"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}datatables.net-plugins/sorting/datetime-moment.js"></script>
 
-    
+
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/dist/jquery-migrate.min.js'></script>
      <script type="text/javascript" src='{{ EXTERNAL_URL }}pure-uuid/uuid.js'></script>
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
@@ -189,7 +189,7 @@
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}flot/jquery.flot.time.js" ></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}flot/jquery.flot.resize.js" ></script>
 	<script type="text/javascript" src="{% static 'xgds_core/js/gridstackUtils.js' %}"></script>
-    
+
     <script type="text/javascript" src="{% static 'xgds_map_server/js/util/handlebars-helpers.js' %}"></script>
     <script type="text/javascript" src="{% static 'xgds_map_server/js/util/geo.js' %}"></script>
     <script type="text/javascript" src="{% static 'xgds_map_server/js/util/forms.js' %}"></script>
@@ -203,17 +203,17 @@
     <script type="text/javascript" src="{% static 'xgds_planner2/js/plannerViews.js' %}"></script>
     <script type="text/javascript" src="{% static 'xgds_planner2/js/simulatorDriver.js' %}"></script>
     <script type="text/javascript" src="{% static 'xgds_planner2/js/vehicleDriver.js' %}"></script>
-  
+
   	<!--  uncomment the below to test sample plot -->
   <!-- <script type="text/javascript" src="{% static 'xgds_planner2/js/plot/plannerSamplePlot.js' %}"></script>  -->
-  
+
       {% javascript 'custom_map' %}
-   	 
+
    	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olStationViews.js' %}"></script>
    	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olSegmentViews.js' %}"></script>
    	 <script type="text/javascript" src="{% static 'xgds_planner2/js/olPlanViews.js' %}"></script>
-     
-    <!-- 
+
+    <!--
     <script type="text/javascript" src="{# planner_appUrl #}"></script>
     <script type="text/javascript" src="{# simulatorUrl#}"></script>
     -->
@@ -228,17 +228,17 @@
     <script id="plan_links_json" type="application/json">{{ plan_links_json|safe }}</script>
     {% if plan_json %}<script id="plan_json" type="application/json">{{ plan_json|safe }}</script>{% endif %}
    	{% include "xgds_map_server/SearchForms.html" with searchForms=searchForms %}
-   	
+
    	<script type="text/javascript">
    		DEFAULT_PLOT_TIME_FORMAT = '%H:%M';
    	</script>
-   	
+
    	{% block extraScripts %}
    	{% endblock extraScripts %}
 {% endblock scripts %}
 
 {% block jsInit %}
-    
+
 	$(function(){
     	app.vent.on('onPlanLoaded', function() {
 	    	playback.initialize({getStartTime: app.getStartTime,
@@ -246,7 +246,7 @@
 	    						 displayTZ: app.getTimeZone(),
 	    						 });
 	    	playback.addListener(playback.vehicleDriver);
-	    	
+
 	    	{% block plannerInitializers %}
 	    	{% endblock plannerInitializers %}
 	    	var gridstackOptions = {
@@ -256,30 +256,30 @@
 	        float: false
 	    };
 	    	xgds_gridstack.initializeGridstack(gridstackOptions);
-	    	
+
 	    	{% block plannerGridstack %}
-	    	// gridstack does not play nice with handlebars. 
+	    	// gridstack does not play nice with handlebars.
 	    	var tabsdiv = $('#tabs');
 	    	var tgi = $("#tabs-gridstack-item");
 	    	var tgic = $("#tabs-gridstack-item-content");
 	    	var newheight = $(window).height() - 180;
 	    	tgi.height(newheight);
 	    	tabsdiv.width(tgic.width() - 10);
-	    	
+
 	    	var mgic = $("#map-gridstack-item-content");
 	    	var mgi = $("#map-gridstack-item");
-	    	mgi.height(newheight); 
+	    	mgi.height(newheight);
 	    	app.vent.trigger('recenterMap');
 	    	{% endblock plannerGridstack %}
-		}); 
+		});
     	app.start();
-    		
+
 	});
 	$(window).bind('beforeunload', function() {
         if (app.dirty) {
             return 'Unsaved changes, are you sure you want to exit?';
         }
-    }); 
+    });
 
 {% endblock jsInit %}
 
