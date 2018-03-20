@@ -40,13 +40,13 @@ class KmlPlanExporter(TreeWalkPlanExporter):
                 name = station.id
         name = "__" + name
         directionStyle = None
-        styleUrl = 'station'
+        styleUrl = '#station'
         result = ""
         try:
             if station.isDirectional:
                 if station.headingDegrees:
                     headingDegrees = float(station.headingDegrees)
-                    styleUrl = 'heading'
+                    styleUrl = '#heading'
                     directionStyle = KmlUtil.makeStyle(iconHeading=headingDegrees)
         except AttributeError:
             pass
@@ -73,7 +73,7 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         result = '''
 <Placemark>
   <name>%(name)s</name>
-  <styleUrl>segment</styleUrl>
+  <styleUrl>#segment</styleUrl>
   <MultiGeometry>
     <LineString>
       <tessellate>1</tessellate>
