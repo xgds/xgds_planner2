@@ -90,8 +90,8 @@ class KmlPlanExporter(TreeWalkPlanExporter):
         return result
 
     def makeStyles(self):
-        waypointStyle = KmlUtil.makeStyle("station", "http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
-        directionStyle = KmlUtil.makeStyle("heading", iconUrl="http://earth.google.com/images/kml-icons/track-directional/track-0.png")
+        waypointStyle = KmlUtil.makeStyle("station", "https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
+        directionStyle = KmlUtil.makeStyle("heading", iconUrl="https://earth.google.com/images/kml-icons/track-directional/track-0.png")
         segmentStyle = KmlUtil.makeStyle("segment", lineWidth=2)
         return waypointStyle + directionStyle + segmentStyle
 
