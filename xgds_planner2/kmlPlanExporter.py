@@ -15,9 +15,11 @@
 #__END_LICENSE__
 
 from geocamUtil import KmlUtil
+from xgds_core.util import insertIntoPath
 from xml.sax.saxutils import escape
 from xgds_planner2.planExporter import TreeWalkPlanExporter
 from xgds_planner2 import xpjson
+from django.contrib.staticfiles.templatetags.staticfiles import static
 
 
 class KmlPlanExporter(TreeWalkPlanExporter):
@@ -89,9 +91,22 @@ class KmlPlanExporter(TreeWalkPlanExporter):
 '''
         return result
 
+    def getFullUrl(self, piece):
+        result = static(piece)
+        result = insertIntoPath(result, 'rest')
+        result = self.request.build_absolute_uri(result)
+        return result
+
     def makeStyles(self):
-        waypointStyle = KmlUtil.makeStyle("station", "https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
-        directionStyle = KmlUtil.makeStyle("heading", iconUrl="https://earth.google.com/images/kml-icons/track-directional/track-0.png")
+        if self.request:
+            placemark_url = self.getFullUrl('xgds_planner2/images/placemark_circle.png')
+            placemark_directional_url = self.getFullUrl('xgds_planner2/images/placemark_directional.png')
+            waypointStyle = KmlUtil.makeStyle("station", placemark_url, 0.85)
+            directionStyle = KmlUtil.makeStyle("heading", iconUrl=placemark_directional_url)
+        else:
+            waypointStyle = KmlUtil.makeStyle("station", "https://maps.google.com/mapfiles/kml/shapes/placemark_circle.png", 0.85)
+            directionStyle = KmlUtil.makeStyle("heading", iconUrl="https://earth.google.com/images/kml-icons/track-directional/track-0.png")
+
         segmentStyle = KmlUtil.makeStyle("segment", lineWidth=2)
         return waypointStyle + directionStyle + segmentStyle
 

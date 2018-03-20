@@ -48,14 +48,14 @@ class PlanExporter(object):
     label = 'Describe the type of file the class exports. Set in subclasses.'
     content_type = 'The MIME type of the file the class exports. Set in subclasses.'
 
-    def exportDbPlan(self, dbPlan):
+    def exportDbPlan(self, dbPlan, request):
         raise NotImplementedError()
 
     def serializeExportedObject(self, obj):
         return obj
     
-    def getHttpResponse(self, dbPlan, attachmentName=None):
-        obj = self.exportDbPlan(dbPlan)
+    def getHttpResponse(self, dbPlan, attachmentName=None, request=None):
+        obj = self.exportDbPlan(dbPlan, request)
         text = self.serializeExportedObject(obj)
         response = HttpResponse(text,
                                 content_type=self.content_type)
@@ -63,8 +63,8 @@ class PlanExporter(object):
             response['Content-disposition'] = 'attachment; filename=%s' % attachmentName
         return response
 
-    def exportDbPlanToPath(self, dbPlan, path):
-        open(path, 'wb').write(self.serializeExportedObject(self.exportDbPlan(dbPlan)))
+    def exportDbPlanToPath(self, dbPlan, path, request):
+        open(path, 'wb').write(self.serializeExportedObject(self.exportDbPlan(dbPlan, request)))
 
     def initPlan(self, plan, context):
         """
@@ -167,7 +167,6 @@ class TreeWalkPlanExporter(PlanExporter):
         return self.transformSegment(segment, tsequence, context)
 
     def exportPlan(self, plan, schema):
-        # plan = copy.deepcopy(plan)
         context = DotDict({
             'plan': plan
         })
@@ -197,11 +196,12 @@ class TreeWalkPlanExporter(PlanExporter):
 
         return self.transformPlan(plan, tsequence, context)
 
-    def exportDbPlan(self, dbPlan):
+    def exportDbPlan(self, dbPlan, request):
         try:
             platform = dbPlan.jsonPlan['platform']
             planSchema = models.getPlanSchema(platform["name"])
             plan = dbPlan.toXpjson()
+            self.request = request
             return self.exportPlan(plan, planSchema.getSchema())
         except:
             logging.warning('exportDbPlan: could not save plan %s', dbPlan.name)
@@ -239,7 +239,7 @@ class XpjsonPlanExporter(JsonPlanExporter):
 
     label = 'xpJson'
 
-    def exportDbPlan(self, dbPlan):
+    def exportDbPlan(self, dbPlan, request):
         return dbPlan.jsonPlan
 
 
@@ -323,7 +323,7 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         return command
 
         
-    def exportDbPlan(self, dbPlan):
+    def exportDbPlan(self, dbPlan, request):
         try:
             platform = dbPlan.jsonPlan['platform']
             planSchema = models.getPlanSchema(platform["name"])

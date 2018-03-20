@@ -408,12 +408,12 @@ def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=Fals
         
     if outputDirectory:
         # output the exported file to a directory
-        exporter.exportDbPlanToPath(dbPlan, os.path.join(outputDirectory, name))
+        exporter.exportDbPlanToPath(dbPlan, os.path.join(outputDirectory, name), request)
         return True
     elif not isAjax:
-        return exporter.getHttpResponse(dbPlan, attachmentName=name)
+        return exporter.getHttpResponse(dbPlan, name, request)
     else:
-        return exporter.getHttpResponse(dbPlan, attachmentName=None)
+        return exporter.getHttpResponse(dbPlan, None, request)
 
 
 def planCreate(request):
