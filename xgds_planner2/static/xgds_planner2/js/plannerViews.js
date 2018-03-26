@@ -1036,6 +1036,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             }
             command.destroy();
         });
+        app.vent.trigger('command:remove');
         app.vent.trigger('change:plan');
         if (selectParent != null){
             var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
@@ -1079,6 +1080,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             } */
             
         });
+        app.vent.trigger('command:add');
         app.vent.trigger('change:plan');
     },
 
@@ -1096,6 +1098,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
                     command.collection.remove(command);
                 }
             });
+            app.vent.trigger('command:remove');
             app.vent.trigger('change:plan');
             if (selectParent != null){
                 var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
@@ -1104,6 +1107,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             
 //            app.vent.request('unselectAllCommands');
             app.vent.trigger('cutAfterPaste');
+
         }
     }
     

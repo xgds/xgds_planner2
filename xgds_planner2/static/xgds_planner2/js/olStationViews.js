@@ -94,14 +94,10 @@ $(function() {
             		app.vent.trigger('itemSelected:station', this.model);
             	}
             	 var coords = inverseTransform(this.geometry.getCoordinates());
-            	 var oldCoords = this.model.getPoint();
-//            	 if (oldCoords[0] != coords[0] && oldCoords[1] != coords[1]){
-            		 this.model.setPoint({
-                         lng: coords[0],
-                         lat: coords[1]
-                     });
-//            	 }
-                 console.log("GEOMETRY CHANGED " + this.model.name);
+                 this.model.setPoint({
+                     lng: coords[0],
+                     lat: coords[1]
+                 });
             },
             
             redraw: function() {
