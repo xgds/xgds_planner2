@@ -592,12 +592,16 @@ var DEBUG_EVENTS = false;
 			}
 			return highest;
 		},
-		getValidationsAsList: function(container, match, recursive, result, remove=false){
+		getValidationsAsList: function(container, match, recursive, result, remove){
 			//Find any matching validations on the container, recursing if the recursive flag is true
 			// if remove is true, then delete them from the validations.
 			// always return a flat list of all found validations that match.
 			if (result === undefined){
 				result = [];
+			}
+
+			if (remove === undefined){
+				remove = false;
 			}
 			var newMatches = [];
 
@@ -648,7 +652,7 @@ var DEBUG_EVENTS = false;
 				var sequence = container.get('sequence');
 				if(!_.isEmpty(sequence)) {
 					for (var i=0; i < sequence.length; i++){
-						var element = sequence[i];
+						var element = sequence.models[i];
 						app.getValidationsAsList(element, match, recursive, result, remove);
 					}
 				}

@@ -362,7 +362,7 @@ class AbstractPlan(models.Model):
     def get_absolute_url(self):
         return reverse('planner2_plan_save_json', args=[self.pk, self.name])
 
-    def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True):
+    def extractFromJson(self, overWriteDateModified=True, overWriteUuid=True, request=None):
         if overWriteUuid:
             if not self.uuid:
                 self.uuid = makeUuid()
@@ -389,7 +389,7 @@ class AbstractPlan(models.Model):
         try:
             exporter = statsPlanExporter.StatsPlanExporter()
 #             print ' about to do stats'
-            stats = exporter.exportDbPlan(self)
+            stats = exporter.exportDbPlan(self, request)
             for f in ('numStations', 'numSegments', 'numCommands', 'lengthMeters', 'estimatedDurationSeconds'):
                 setattr(self, f, stats[f])
             self.stats.numCommandsByType = stats["numCommandsByType"]

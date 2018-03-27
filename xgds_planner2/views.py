@@ -133,6 +133,7 @@ def handleCallbacks(request, plan, mode):
                 plan = foundMethod(request, plan)
     return plan
 
+
 def populatePlanFromJson(plan, rawData):
     data = json.loads(rawData)
     for k, v in data.iteritems():
@@ -140,6 +141,7 @@ def populatePlanFromJson(plan, rawData):
             continue
         plan.jsonPlan[k] = v
     plan.extractFromJson(overWriteDateModified=True)
+
 
 def plan_save_from_relay(request, plan_id):
     """ When we receive a relayed plan, handle creation or update of that plan
@@ -151,7 +153,6 @@ def plan_save_from_relay(request, plan_id):
     populatePlanFromJson(plan, request.POST['jsonPlan'])
     plan.save()
     return JsonResponse({"status":"success","planPK":plan.pk})
-
 
 
 # TODO - make entry in urls.py for this method!
@@ -221,7 +222,6 @@ def plan_save_json(request, plan_id, jsonPlanId=None):
         
         return HttpResponse(plan.jsonPlan, content_type='application/json')
 
-    
 
 def updateAllUuids(planDict):
     planDict.uuid = makeUuid()
@@ -263,6 +263,7 @@ def fixTimezonesInPlans():
                     plan.save()
                     break;
 
+
 def plan_bearing_distance_view(request, plan_id):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     return render(request,
@@ -270,13 +271,15 @@ def plan_bearing_distance_view(request, plan_id):
                   {'plan_uuid': plan.uuid,
                    'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH})
 
+
 def plan_bearing_distance_top_view(request, plan_id):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     return render(request,
                   'xgds_planner2/bearingDistancePlanTop.html',
                   {'plan_uuid': plan.uuid,
                    'handlebar_path': 'xgds_planner2/templates/xgds_planner2/bearingDistancePlanTop.handlebars'})
-    
+
+
 def plan_editor_app(request, plan_id=None, editable=True):
     templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
 
@@ -340,6 +343,7 @@ def addToEditorContext(context):
     Must add a json dictionary called extras; contents of this dictionary will be inserted into appOptions.
     '''
     return context
+
 
 def planIndex(request):
     """
