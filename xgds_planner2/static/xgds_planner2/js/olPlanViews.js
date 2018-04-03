@@ -293,6 +293,7 @@ $(function() {
                             
                             app.State.stationSelected = station;
                             app.vent.trigger('itemSelected:station', station);
+                            app.vent.trigger('station:add', station);
                             
                         }, this);
                     }

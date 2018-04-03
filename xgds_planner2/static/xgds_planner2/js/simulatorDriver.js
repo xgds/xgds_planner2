@@ -76,6 +76,7 @@ $(function() {
             if (type == 'Station') {
                 sim.startStation(pathElement, ctx);
             } else if (type == 'Segment') {
+                ctx.prevStation = sequence[i - 1];
                 ctx.nextStation = sequence[i + 1];
                 sim.startSegment(pathElement, ctx);
             } else {

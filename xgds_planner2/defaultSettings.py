@@ -98,12 +98,6 @@ XGDS_PLANNER_PIPELINE_JS = {
                              ),
         'output_filename': 'js/compiled_planner_app.js'
     },
-    'custom_map': {'source_filenames': ('xgds_map_server/js/map_viewer/olShowMapCoords.js',
-                                        'xgds_map_server/js/map_viewer/olInitialLayers.js',
-                                        'xgds_planner2/js/uploadJson.js',
-                                        ),
-      'output_filename': 'js/custom_map.js',
-      },
 
     # must create 'simulator' entry in top-level siteSettings.py
     #TODO update, qunit is installed with bower
@@ -135,6 +129,24 @@ XGDS_PLANNER_PIPELINE_CSS = {
         'output_filename': 'css/planner_tests.css',
     },
 }
+
+PIPELINE = getOrCreateDict('PIPELINE')
+PIPELINE['CSS'] = XGDS_PLANNER_PIPELINE_CSS
+PIPELINE['JAVASCRIPT'] = getOrCreateDict('PIPELINE.JAVASCRIPT')
+
+# if we are using the planner we want to add uploadJson into the custom map for right now. Really it should not be jammed in that file.
+PIPELINE['JAVASCRIPT']['custom_map'] = {'source_filenames': ('xgds_planner2/js/uploadJson.js',
+                                                             'xgds_map_server/js/map_viewer/olShowMapCoords.js',
+                                                             'xgds_map_server/js/map_viewer/olInitialLayers.js'
+                                                             ),
+                                        'output_filename': 'js/custom_map.js'
+                                        }
+
+# Override this compilation of javascript files for the map if you are using the planner
+# PIPELINE['JAVASCRIPT']['simulator'] = {'source_filenames': ('xgds_yoursitename_app/js/planner/yourvehicleSimulator.js'),
+#                                                             'output_filename': 'js/simulator.js',
+#                                                             }
+
 
 _thisDir = os.path.dirname(__file__)
 

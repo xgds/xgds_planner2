@@ -251,6 +251,17 @@ var DEBUG_EVENTS = false;
 			});
 			return result;
 		},
+		getStartEndStation: function() {
+			var seq = app.currentPlan.get('sequence');
+			var result = {};
+			if (!_.isEmpty(seq)){
+				result['start'] = seq.first();
+			}
+			if (seq.length > 2){
+				result['end'] = seq.last();
+			}
+			return result;
+		},
 		getPathElementByUuid: function(uuid) {
 			var sequence = app.currentPlan.get('sequence');
 			for (var i=0; i<sequence.models.length; i++){
@@ -391,7 +402,11 @@ var DEBUG_EVENTS = false;
 			var startIndex = sequence.indexOf(startStation) + 2;
 			for (var i = startIndex; i< sequence.length; i+= 2){
 				var station = sequence.models[i];
-				durations.push(station._simInfo.deltaTimeSeconds);
+				if (!_.isUndefined(station._simInfo)) {
+                    durations.push(station._simInfo.deltaTimeSeconds);
+                } else {
+					durations.push(0);
+				}
 				if (station.attributes.uuid == endStation.attributes.uuid){
 					i = sequence.length;
 				}
@@ -577,12 +592,16 @@ var DEBUG_EVENTS = false;
 			}
 			return highest;
 		},
-		getValidationsAsList: function(container, match, recursive, result, remove=false){
+		getValidationsAsList: function(container, match, recursive, result, remove){
 			//Find any matching validations on the container, recursing if the recursive flag is true
 			// if remove is true, then delete them from the validations.
 			// always return a flat list of all found validations that match.
 			if (result === undefined){
 				result = [];
+			}
+
+			if (remove === undefined){
+				remove = false;
 			}
 			var newMatches = [];
 
@@ -633,7 +652,7 @@ var DEBUG_EVENTS = false;
 				var sequence = container.get('sequence');
 				if(!_.isEmpty(sequence)) {
 					for (var i=0; i < sequence.length; i++){
-						var element = sequence[i];
+						var element = sequence.models[i];
 						app.getValidationsAsList(element, match, recursive, result, remove);
 					}
 				}

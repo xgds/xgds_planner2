@@ -414,12 +414,14 @@ app.models = app.models || {};
             command.parent = this;
             command.set('uuid',new UUID(4).format());
             this.get('commands').add(command);
+            app.vent.trigger('command:add', command);
         },
 
         appendCommandModel: function(model) {
             model.parent = this;
             model.set('uuid',new UUID(4).format());
             this.get('commands').add(model);
+            app.vent.trigger('command:add', model);
         },
         /*
          * * Relevant to stations only... * A convenience mainly to keep details
@@ -536,6 +538,7 @@ app.models = app.models || {};
             }
             app.Actions.enable();
             app.Actions.action();
+            app.vent.trigger('station:add', stationModel);
             app.vent.trigger('station:change', stationModel);
             return segment;
         },
@@ -551,6 +554,7 @@ app.models = app.models || {};
             var seq = this.plan.get('sequence');
             var idx = seq.indexOf(segmentAfter);
             this.add([segmentBefore, stationModel], {at: idx});
+            app.vent.trigger('station:add', stationModel);
             app.vent.trigger('station:change', stationModel);
             segmentAfter.trigger('alter:stations'); 
             return segmentBefore;
