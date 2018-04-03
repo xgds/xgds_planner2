@@ -124,6 +124,7 @@ app.views.ToolbarView = Marionette.View.extend({
 	    		
     },
     fetchWorked: function(model, response, options) {
+        app.vent.trigger('plan:reloaded');
 		this.updateSaveStatus('fetch');
 		app.simulatePlan();
 	},
