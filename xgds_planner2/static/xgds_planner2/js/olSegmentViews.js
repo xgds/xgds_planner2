@@ -118,21 +118,23 @@ $(function() {
         	}
         	return result;
         },
+        updateCoords: function() {
+        	this.coords = _.map([this.fromStation, this.toStation],
+        			function(station) {
+        				return transform(station.get('geometry').coordinates);
+        	});
+        },
         onRender: function() {
-            this.coords = _.map([this.fromStation, this.toStation],
-                               function(station) {
-                                   return transform(station.get('geometry').coordinates);
-                               });
-
-            this.geometry = new ol.geom.LineString([this.coords[0], this.coords[1]], 'XY');
+            this.updateCoords();
+            this.geometry = new ol.geom.LineString(this.coords, 'XY');
             this.feature = new ol.Feature({geometry: this.geometry,
                                            id: this.fromStation.attributes['id'],
                                            name: this.fromStation.attributes['id'],
                                            model: this.model
                                                  });
             var context = this;
-            this.features[0].setStyle(function(feature, resolution) {return context.getSegmentStyles(feature, resolution);});
-            this.features[0].set('textStyle', context.textStyle);
+            this.feature.setStyle(function(feature, resolution) {return context.getSegmentStyles(feature, resolution);});
+            this.feature.set('textStyle', context.textStyle);
             
             this.listenTo(this.model, 'splitSegment', this.handleSplitSegment, this);
             this.model['feature'] = this.feature;
@@ -187,14 +189,9 @@ $(function() {
          */
          updateGeometry: function() {
              if (!_.isUndefined(this.fromStation) && !_.isUndefined(this.toStation) && !_.isUndefined(this.geometry)){
-                 this.coords = _.map([this.fromStation, this.toStation],
-                         function(station) {
-                             return transform(station.get('geometry').coordinates);
-                         });
+                 this.updateCoords();
                  this.geometry.setCoordinates(this.coords);
              }
-
-
          },
          
          // for debugging put a label on the segment
