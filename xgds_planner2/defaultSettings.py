@@ -142,11 +142,11 @@ PIPELINE['JAVASCRIPT']['custom_map'] = {'source_filenames': ('xgds_planner2/js/u
                                         'output_filename': 'js/custom_map.js'
                                         }
 
-# Override this compilation of javascript files for the map if you are using the planner
-# PIPELINE['JAVASCRIPT']['simulator'] = {'source_filenames': ('xgds_yoursitename_app/js/planner/yourvehicleSimulator.js'),
-#                                                             'output_filename': 'js/simulator.js',
-#                                                             }
-
+# Override this compilation of javascript files for your planner and simulator
+PIPELINE['JAVASCRIPT']['simulator'] = {'source_filenames': ('xgds_planner2/js/planner/genericVehicleSimulator.js',  # This trailing comma is critical because this makes it a tuple
+                                                            ),
+                                       'output_filename': 'js/simulator.js',
+                                      }
 
 _thisDir = os.path.dirname(__file__)
 
@@ -169,7 +169,6 @@ XGDS_PLANNER2_LAYER_FEED_URL = "/xgds_map_server/treejson/"
 
 XGDS_PLANNER2_LINE_WIDTH_PIXELS = 3
 
-
 XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
 XGDS_PLANNER2_PLAN_MONIKER = "Plan"
 XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
@@ -186,9 +185,8 @@ XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL = "Segments"
 XGDS_PLANNER2_COMMAND_MONIKER = "Command"
 XGDS_PLANNER2_COMMAND_MONIKER_PLURAL = "Commands"
 
-#TODO to have a default site frame in the creation form, set this to the site id from your plan library.
-XGDS_PLANNER2_DEFAULT_SITE = None
-
+#TODO to have a default site frame in the creation form, set this to the site id from your WITHIN plan library.
+XGDS_PLANNER2_DEFAULT_SITE = ('IRG', 'Ames')
 
 # Method to add stuff to context for plan editor, override and register your own method if you need it.
 # It must add a json dictionary called extras
@@ -225,11 +223,17 @@ XGDS_PLANNER2_CREATE_URL = "/xgds_planner2/plan/create"
 #   the file at @simulatorUrl.
 #
 XGDS_PLANNER_SCHEMAS = {
-    "test": {
-        "schemaSource": "apps/xgds_planner2/testing/examplePlanSchema.json",
-        "librarySource": "apps/xgds_planner2/testing/examplePlanLibrary.json",
-        "simulatorUrl": "xgds_planner2/testing/exampleSimulator.js",
-        "simulator": "xgds_planner2.ExampleSimulator",
+    # "test": {
+    #     "schemaSource": "apps/xgds_planner2/testing/examplePlanSchema.json",
+    #     "librarySource": "apps/xgds_planner2/testing/examplePlanLibrary.json",
+    #     "simulatorUrl": "xgds_planner2/testing/exampleSimulator.js",
+    #     "simulator": "xgds_planner2.ExampleSimulator",
+    # },
+    "GenericVehicle": {
+        "schemaSource": "apps/xgds_planner2/js/xgds_planner2/planner/genericVehiclePlanSchema.json",
+        "librarySource": "apps/xgds_planner2/js/xgds_planner2/planner/genericVehiclePlanLibrary.json",
+        "simulatorUrl": "xgds_planner2/js/planner/genericVehicleSimulator.js",
+        "simulator": "genericVehicle.Simulator",  # the namespace within the simulator js
     }
 }
 
