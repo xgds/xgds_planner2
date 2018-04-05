@@ -60,6 +60,31 @@ _.extend(genericVehicle.Simulator.prototype, {
 
     startSegment: function(segment, context) {},
     endSegment: function(segment, context) {
+		var segmentDistance = 0;
+		var nextCoords = this.geoJsonToCoords(context.nextStation.get('geometry'));
+		var distanceVector = geo.calculateDiffMeters(nextCoords, this.coordinates);
+		var segmentDistance = geo.norm(distanceVector);
+        segment._segmentLength = segmentDistance;
+        this.distanceTraveled = this.distanceTraveled + segmentDistance;
+
+        var hintedSpeed = segment.get('hintedSpeed');
+        if (_.isUndefined(hintedSpeed) || _.isNull(hintedSpeed) || hintedSpeed < 0) {
+            hintedSpeed = context.plan.get('defaultSpeed');
+        }
+        var segmentDriveTime =  Math.round(segmentDistance / hintedSpeed);
+        var derivedInfo = segment.get('derivedInfo');
+        if (_.isUndefined(derivedInfo) || _.isNull(derivedInfo)){
+        	derivedInfo = {};
+        	segment.set('derivedInfo', derivedInfo);
+        }
+        if ('totalTime' in derivedInfo){
+            derivedInfo['durationSeconds'] = derivedInfo['totalTime'];
+        } else {
+            derivedInfo['durationSeconds'] = segmentDriveTime;
+        }
+        derivedInfo['distanceMeters'] = segmentDistance;
+        this.elapsedTime = this.elapsedTime + derivedInfo['durationSeconds'];
+        this.coordinates = nextCoords;
     },
 
     executeCommand: function(command, context) {
