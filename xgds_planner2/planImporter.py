@@ -17,6 +17,8 @@
 import os
 import time
 import datetime
+import json
+import copy
 
 from django.conf import settings
 
@@ -98,7 +100,6 @@ class PlanImporter(object):
                 print "no platform, you need to pass the plan Schema" + name
                 return
         importer.setDefaultMeta(meta, path, planSchema)
-
         planDoc = importer.importPlanFromBuffer(buf, meta, planSchema)
 
         dbPlan = PLAN_MODEL()
@@ -114,5 +115,35 @@ class PlanImporter(object):
 
 class BlankPlanImporter(PlanImporter):
 
-    def importPlanFromBuffer(self, buf, meta, planSchema):
+    def importPlanFromBuffer(self, buf, meta, planSchema, dbPlan):
         return planDocFromPlanDict(meta, planSchema.getSchema())
+
+
+class XPJsonPlanImporter(PlanImporter):
+
+    def importPlanFromBuffer(self, buf, meta, schema):
+        resultDict = copy.deepcopy(meta);
+        planDict = planDocCleanSimInfo(buf)
+        resultDict.update(planDict)
+        planDoc = planDocFromPlanDict(resultDict, schema.schema)
+        return planDoc
+
+
+def planDocCleanSimInfo(rawData):
+    data = json.loads(rawData)
+
+    if '_simInfo' in data:
+        del data['_simInfo']
+    seq = data['sequence']
+    for child in data['sequence']:
+        if '_simInfo' in child:
+            del child['_simInfo']
+
+    return data
+
+def populatePlanFromJson(dbPlan, rawData, overWriteUuid):
+    data = planDocCleanSimInfo(rawData)
+
+    dbPlan.extractFromJson(overWriteDateModified=True, overWriteUuid=overWriteUuid)
+
+

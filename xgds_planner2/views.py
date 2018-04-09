@@ -65,6 +65,7 @@ from xgds_planner2 import (models,
 from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
+from xgds_planner2.planImporter import populatePlanFromJson
 from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay
 from xgds_core.util import insertIntoPath
@@ -132,15 +133,6 @@ def handleCallbacks(request, plan, mode):
             if foundMethod:
                 plan = foundMethod(request, plan)
     return plan
-
-
-def populatePlanFromJson(plan, rawData):
-    data = json.loads(rawData)
-    for k, v in data.iteritems():
-        if k == "_simInfo":
-            continue
-        plan.jsonPlan[k] = v
-    plan.extractFromJson(overWriteDateModified=True)
 
 
 def plan_save_from_relay(request, plan_id):
@@ -480,8 +472,10 @@ def planCreate(request):
 
 def planImport(request):
     if request.method == 'GET':
-        messages.info(request, 'You can create a ' +  settings.XGDS_PLANNER2_PLAN_MONIKER + ' by importing a kml file containing a LineString.')
-        messages.info(request, 'Alternately you can import a csv file, which must have column headers of latitude and longitude.')
+        messages.info(request, 'Create a ' + settings.XGDS_PLANNER2_PLAN_MONIKER + ' by importing:')
+        messages.info(request, 'a kml file containing a LineString')
+        messages.info(request, 'a csv file, with column headers of latitude and longitude')
+        messages.info(request, 'an xpJson file')
         form = ImportPlanForm()
     elif request.method == 'POST':
         form = ImportPlanForm(request.POST, request.FILES)

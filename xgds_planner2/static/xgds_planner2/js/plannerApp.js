@@ -651,10 +651,9 @@ var DEBUG_EVENTS = false;
 			if(recursive == true){
 				var sequence = container.get('sequence');
 				if(!_.isEmpty(sequence)) {
-					for (var i=0; i < sequence.length; i++){
-						var element = sequence.models[i];
+					sequence.forEach(function(element) {
 						app.getValidationsAsList(element, match, recursive, result, remove);
-					}
+					});
 				}
 			}
 			return result;
