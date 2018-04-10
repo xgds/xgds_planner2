@@ -141,7 +141,7 @@ def planDocCleanSimInfo(rawData):
 
     return data
 
-def populatePlanFromJson(dbPlan, rawData, overWriteUuid):
+def populatePlanFromJson(dbPlan, rawData, overWriteUuid=False):
     data = planDocCleanSimInfo(rawData)
 
     dbPlan.extractFromJson(overWriteDateModified=True, overWriteUuid=overWriteUuid)
