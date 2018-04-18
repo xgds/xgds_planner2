@@ -115,7 +115,7 @@ class PlanImporter(object):
 
 class BlankPlanImporter(PlanImporter):
 
-    def importPlanFromBuffer(self, buf, meta, planSchema, dbPlan):
+    def importPlanFromBuffer(self, buf, meta, planSchema):
         return planDocFromPlanDict(meta, planSchema.getSchema())
 
 
@@ -134,16 +134,9 @@ def planDocCleanSimInfo(rawData):
 
     if '_simInfo' in data:
         del data['_simInfo']
-    seq = data['sequence']
     for child in data['sequence']:
         if '_simInfo' in child:
             del child['_simInfo']
 
     return data
-
-def populatePlanFromJson(dbPlan, rawData, overWriteUuid=False):
-    data = planDocCleanSimInfo(rawData)
-
-    dbPlan.extractFromJson(overWriteDateModified=True, overWriteUuid=overWriteUuid)
-
 
