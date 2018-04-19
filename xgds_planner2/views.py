@@ -66,7 +66,7 @@ from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
-from xgds_core.views import get_handlebars_templates, addRelay
+from xgds_core.views import get_handlebars_templates, addRelay, setState
 from xgds_core.util import insertIntoPath
 
 from xgds_map_server.forms import MapSearchForm
@@ -677,6 +677,7 @@ def startFlightTracking(request, flightName):
         messages.error(request, 'Flight not found: ' + flightName)
     return redirect(reverse('error'))
 
+
 def stopFlightTracking(request, flightName):
     try:
         flight = FLIGHT_MODEL.get().objects.get(name=flightName)
@@ -715,17 +716,20 @@ def startFlight(request, uuid):
         # make this flight active
         foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
         if not foundFlight:
-#            if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
             newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
             newlyActive.save()
 
-        flight.startFlightExtras(request, flight)
+        flight.startFlightExtras(request)
+
+        setState(flight.name, flight.start_time, values=model_to_dict(flight), notes='Flight Started')
+
     return manageFlights(request, errorString)
 
 
 def stopFlight(request, uuid):
     errorString = doStopFlight(request, uuid)
     return manageFlights(request, errorString)
+
 
 def doStopFlight(request, uuid):
     errorString = ""
@@ -752,6 +756,8 @@ def doStopFlight(request, uuid):
                 active.delete()
             except ObjectDoesNotExist:
                 errorString = 'Flight IS NOT ACTIVE'
+
+            setState(flight.name, end=flight.end_time, active=False, notes='Flight Ended')
 
     except:
         traceback.print_exc()
