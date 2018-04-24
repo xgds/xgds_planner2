@@ -278,7 +278,7 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         
         return {'id': station.id, 
                 'name': station.name,
-                'type': settings.XGDS_PLANNER2_STATION_MONIKER,
+                'type': settings.XGDS_PLANNER_STATION_MONIKER,
                 'commands': tsequence,
                 'geometry': station.geometry,
                 'notes': station.notes,
@@ -306,19 +306,19 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         segment.id = segment.id[-(len(segment.id)-segment.id.rfind('_')-1):]
         return {'id': segment.id, 
                 'name': segment.name,
-                'type': settings.XGDS_PLANNER2_SEGMENT_MONIKER,
+                'type': settings.XGDS_PLANNER_SEGMENT_MONIKER,
                 'commands': tsequence,
                 'notes': segment.notes, 
                 'distanceMeters': distanceMeters, 
                 'durationSeconds': durationSeconds}
 
     def transformStationCommand(self, command, context):
-        command.type = settings.XGDS_PLANNER2_COMMAND_MONIKER
+        command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
         return command
 
     def transformSegmentCommand(self, command, context):
-        command.type = settings.XGDS_PLANNER2_COMMAND_MONIKER
+        command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
         return command
 

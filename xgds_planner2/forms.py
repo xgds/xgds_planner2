@@ -25,10 +25,10 @@ from xgds_planner2.models import getPlanSchema, GroupFlight
 
 
 class CreatePlanForm(forms.Form):
-    planNumber = forms.IntegerField(label=settings.XGDS_PLANNER2_PLAN_MONIKER + ' number')
-    planVersion = forms.CharField(label=settings.XGDS_PLANNER2_PLAN_MONIKER + ' version', max_length=1, initial='A')
+    planNumber = forms.IntegerField(label=settings.XGDS_PLANNER_PLAN_MONIKER + ' number')
+    planVersion = forms.CharField(label=settings.XGDS_PLANNER_PLAN_MONIKER + ' version', max_length=1, initial='A')
     platform = forms.ChoiceField(choices=[], required=True)
-    site = forms.ChoiceField(choices=[], required=False, label=settings.XGDS_MAP_SERVER_SITE_MONIKER, initial=settings.XGDS_PLANNER2_DEFAULT_SITE)
+    site = forms.ChoiceField(choices=[], required=False, label=settings.XGDS_MAP_SERVER_SITE_MONIKER, initial=settings.XGDS_PLANNER_DEFAULT_SITE)
 
     def __init__(self, *args, **kwargs):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
@@ -91,7 +91,7 @@ class GroupFlightForm(forms.Form):
         
     #get the latest GroupFlight, and increment the prefix
     def initializeLetter(self, dateprefix):
-        GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
+        GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_GROUP_FLIGHT_MODEL)
         try:
             last = GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=dateprefix).order_by('name').last()
             self.fields['prefix'].initial = chr(ord(last.name[-1]) + 1)
@@ -108,7 +108,7 @@ class GroupFlightForm(forms.Form):
     
     def initializeVehicleChoices(self):
         CHOICES = []
-        VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+        VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_VEHICLE_MODEL)
         if (VEHICLE_MODEL.get().objects.count() > 0):
             for vehicle in VEHICLE_MODEL.get().objects.all().order_by('name'):
                 CHOICES.append((vehicle.name, vehicle.name))

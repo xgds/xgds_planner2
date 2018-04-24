@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block siteSection %}{{siteLabel}} {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}{% endblock siteSection %}
+{% block siteSection %}{{siteLabel}} {{ settings.XGDS_PLANNER_PLAN_MONIKER }}{% endblock siteSection %}
 
 {% block sitemenu-content-secondary %}
 {% include "xgds_planner2/planner2_subnav.html" %}
@@ -9,7 +9,7 @@
 {% block content %}
 {{ block.super }}
 
-<h6>{{siteLabel}} {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</h6>
+<h6>{{siteLabel}} {{ settings.XGDS_PLANNER_PLAN_MONIKER }}</h6>
 
 {% if messages %}
 <div class="error-message upload-error">

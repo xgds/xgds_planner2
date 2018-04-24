@@ -17,7 +17,7 @@
 {% endblock %}
 						
 {% block contents %}
-	<h4>Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }} </h4>
+	<h4>Create {{ settings.XGDS_PLANNER_FLIGHT_MONIKER }} </h4>
   <form action="{% url 'planner2_addGroupFlight' %}" method="post">
 	<table>
   	{{groupFlightForm.as_table }}

@@ -74,12 +74,12 @@ from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 _template_cache = None
 
-PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
-PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL)
-ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
-FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
-GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_GROUP_FLIGHT_MODEL)
-VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_VEHICLE_MODEL)
+PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_MODEL)
+PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_EXECUTION_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_ACTIVE_FLIGHT_MODEL)
+FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_FLIGHT_MODEL)
+GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_GROUP_FLIGHT_MODEL)
+VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_VEHICLE_MODEL)
 
 def plan_help(request):
     return render(request,
@@ -88,7 +88,7 @@ def plan_help(request):
 
 
 def plan_tests(request, plan_id, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
+    templates = get_handlebars_templates(settings.XGDS_PLANNER_HANDLEBARS_DIRS, 'XGDS_PLANNER_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -122,11 +122,11 @@ def aggregate_handlebars_templates(request):
     Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS), 'XGDS_PLANNER2_HANDLEBARS_DIRS'), content_type='application/json')
+    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER_HANDLEBARS_DIRS), 'XGDS_PLANNER_HANDLEBARS_DIRS'), content_type='application/json')
 
 
 def handleCallbacks(request, plan, mode):
-    for callback_mode, methodName, callback_type in settings.XGDS_PLANNER2_CALLBACK:
+    for callback_mode, methodName, callback_type in settings.XGDS_PLANNER_CALLBACK:
         if callback_mode==mode and callback_type==settings.PYTHON:
             foundMethod = getClassByName(methodName)
             if foundMethod:
@@ -269,7 +269,7 @@ def plan_bearing_distance_view(request, plan_id):
     return render(request,
                   'xgds_planner2/bearingDistancePlan.html',
                   {'plan_uuid': plan.uuid,
-                   'handlebar_path': settings.XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH})
+                   'handlebar_path': settings.XGDS_PLANNER_PLAN_BEARING_HANDLEBAR_PATH})
 
 
 def plan_bearing_distance_top_view(request, plan_id):
@@ -281,7 +281,7 @@ def plan_bearing_distance_top_view(request, plan_id):
 
 
 def plan_editor_app(request, plan_id=None, editable=True):
-    templates = get_handlebars_templates(settings.XGDS_PLANNER2_HANDLEBARS_DIRS, 'XGDS_PLANNER2_HANDLEBARS_DIRS')
+    templates = get_handlebars_templates(settings.XGDS_PLANNER_HANDLEBARS_DIRS, 'XGDS_PLANNER_HANDLEBARS_DIRS')
 
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     dirty = False
@@ -335,11 +335,11 @@ def plan_editor_app(request, plan_id=None, editable=True):
 
     return render(request,
                   'xgds_planner2/planner_app.html',
-                  getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context))
+                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context))
 
 
 def addToEditorContext(context):
-    '''Override and register your method in XGDS_PLANNER2_EDITOR_CONTEXT_METHOD if you want to add to the context
+    '''Override and register your method in XGDS_PLANNER_EDITOR_CONTEXT_METHOD if you want to add to the context
     Must add a json dictionary called extras; contents of this dictionary will be inserted into appOptions.
     '''
     return context
@@ -358,7 +358,7 @@ def planIndex(request):
                }
     return render(request,
                   'xgds_planner2/planIndex.html',
-                  getClassByName(settings.XGDS_PLANNER2_EDITOR_CONTEXT_METHOD)(context),
+                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context),
                   )
 
 
@@ -480,7 +480,7 @@ def planCreate(request):
 
 def planImport(request):
     if request.method == 'GET':
-        messages.info(request, 'Create a ' + settings.XGDS_PLANNER2_PLAN_MONIKER + ' by importing:')
+        messages.info(request, 'Create a ' + settings.XGDS_PLANNER_PLAN_MONIKER + ' by importing:')
         messages.info(request, 'a kml file containing a LineString')
         messages.info(request, 'a csv file, with column headers of latitude and longitude')
         messages.info(request, 'an xpJson file')
@@ -834,8 +834,8 @@ def schedulePlans(request, redirect=True):
                     pe.flight = flight
                     pe.plan = plan
                     
-                    if settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD:
-                        pe = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, pe)
+                    if settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD:
+                        pe = getClassByName(settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD)(request, pe)
                         
                     pe.save()
                     
@@ -881,9 +881,9 @@ def schedulePlanActiveFlight(request, vehicleName, planPK):
             lastPE = PLAN_EXECUTION_MODEL.get()()
             lastPE.flight = flight
             
-            if settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD:
+            if settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD:
                 # this will fail we don't have what we need ...
-                lastPE = getClassByName(settings.XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD)(request, lastPE)
+                lastPE = getClassByName(settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD)(request, lastPE)
                 
         lastPE.pk = None
         lastPE.plan_id = planPK
@@ -1082,7 +1082,7 @@ def relayAddGroupFlight(request):
 
 
 def getSiteFrames():
-    if not settings.XGDS_PLANNER2_SITE_FRAMES:
+    if not settings.XGDS_PLANNER_SITE_FRAMES:
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
         try:
             platforms.remove("test")
@@ -1097,10 +1097,10 @@ def getSiteFrames():
                 for site in sites:
                     try:
                         if site.alternateCrs:
-                            settings.XGDS_PLANNER2_SITE_FRAMES.append(site)
+                            settings.XGDS_PLANNER_SITE_FRAMES.append(site)
                     except:
                         pass
-    return settings.XGDS_PLANNER2_SITE_FRAMES
+    return settings.XGDS_PLANNER_SITE_FRAMES
 
 
 def getClosestSiteFrame(lat, lon):
@@ -1157,7 +1157,7 @@ def toggleReadOnly(request):
 
 def mapJsonPlan(request, uuid=None, pk=None):
     ''' Return the json of the plan via uuid or pk '''
-    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_MODEL)
     try:
         if uuid:
             plan = PLAN_MODEL.get().objects.get(uuid=uuid)
@@ -1172,7 +1172,7 @@ def mapJsonPlan(request, uuid=None, pk=None):
 
 
 def getActiveFlights(vehicle=None):
-    ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
+    ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_ACTIVE_FLIGHT_MODEL)
 
     if not vehicle:
         return ACTIVE_FLIGHTS_MODEL.get().objects.all()
@@ -1273,7 +1273,7 @@ def updateJson(plan, newJsonObj):
     
     
 def planImportXPJson(request):
-    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_MODEL)
+    PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_MODEL)
     try:
         form = UploadXPJsonForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1353,4 +1353,4 @@ def getGroupFlightSummary(request, groupFlightName):
                       {'groupFlight': group},
                       )
     except:
-        raise Http404("%s %s does not exist" % (settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER, groupFlightName))
+        raise Http404("%s %s does not exist" % (settings.XGDS_PLANNER_GROUP_FLIGHT_MONIKER, groupFlightName))

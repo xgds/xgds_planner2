@@ -18,7 +18,7 @@ table.planIndex td.exportFormat a {
 </style>
 {% endblock cssExtras %}
 
-{% block siteSection %}{{settings.XGDS_PLANNER2_PLAN_MONIKER}} Index{% endblock siteSection %}
+{% block siteSection %}{{settings.XGDS_PLANNER_PLAN_MONIKER}} Index{% endblock siteSection %}
 
 {% block sitemenu-content-secondary %}
 {% include "xgds_planner2/planner2_subnav.html" %}
@@ -32,13 +32,13 @@ table.planIndex td.exportFormat a {
 	<div class="btn-group mr-auto" role="group">
 		<input class="btn btn-primary" type="submit"  id="deleteButton" value="Delete Selected" role="button" ></input>
 		<input class="btn btn-primary" type="button" id="toggle_button" value="Toggle Lock" ></input>
-	{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+	{% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
 		<input class="btn btn-primary" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
 	{% endif %}
 	</div>
 	<div class="btn-group" role="group">
-	<a href="{% url 'planner2_planImport' %}"  role="button" class="btn btn-primary" > Import {{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</a>
-	<a href={% if XGDS_PLANNER2_CREATE_URL %} "{{ XGDS_PLANNER2_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="btn btn-primary" role="button"> Create {{settings.XGDS_PLANNER2_PLAN_MONIKER}}</a>
+	<a href="{% url 'planner2_planImport' %}"  role="button" class="btn btn-primary" > Import {{ settings.XGDS_PLANNER_PLAN_MONIKER }}</a>
+	<a href={% if XGDS_PLANNER_CREATE_URL %} "{{ XGDS_PLANNER_CREATE_URL }}" {% else %} "{% url 'planner2_planCreate' %}" {% endif %} class="btn btn-primary" role="button"> Create {{settings.XGDS_PLANNER_PLAN_MONIKER}}</a>
 	</div>
 </div>
 <table id="dataTable" class="planIndex">
@@ -54,7 +54,7 @@ table.planIndex td.exportFormat a {
     <th>Time</th>
     <th>#Stn</th>
     <th>#Commands</th>
-    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
     <th>Scheduled</th>
     {% endif %}
     <th>Export</th>
@@ -73,7 +73,7 @@ table.planIndex td.exportFormat a {
     <td class="right">{{ plan.estimatedDurationSeconds | secstohms }}</td>
     <td class="center">{{ plan.numStations }}</td>
     <td >{{ plan.numCommands }} &nbsp;&nbsp;{{ plan.getSummaryOfCommandsByType|safe }}</td>
-    {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+    {% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
 	    <td style="width:150px;">{% if plan.executions %}{% for execution in plan.executions.all %} {% timezone plan.jsonPlan.site.alternateCrs.properties.timezone %}{{ execution.planned_start_time|date:"Y-m-d H:i e"}}{% endtimezone %}<br/>{% endfor %}{% endif %}</td>
     {% endif %}
     <td class="exportFormat">
@@ -92,18 +92,18 @@ table.planIndex td.exportFormat a {
 </table>
 </form>
 
-{% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+{% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
 <div id="scheduleDialog" style="display:none">
 	<form name='ScheduleForm' id="scheduleForm" action="{% url 'planner2_schedulePlans' %}" method="post">
 		<input type="hidden" name="planIds" id="id_planIds"></input>
 		<p>Schedule selected plans</p>
 		<table>
 		<tr>
-			<td>{{ settings.XGDS_PLANNER2_PLAN_MONIKER }}</td>
+			<td>{{ settings.XGDS_PLANNER_PLAN_MONIKER }}</td>
 			<td><span class="planlist"></span></td>
 		</tr>
 		<tr>
-			<td><label for="id_flight">{{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}</label></td>
+			<td><label for="id_flight">{{settings.XGDS_PLANNER_FLIGHT_MONIKER}}</label></td>
 			<td><select name="flight" id="id_flight"> {% for flight in flight_names %} 
 		        <option value="{{ flight }}">{{ flight }} </option>
 		        {% endfor %}
@@ -208,7 +208,7 @@ $("#deleteButton").click(function() {
 	};
 
 	 $(document).ready( function () {
-	     {% if settings.XGDS_PLANNER2_SCHEDULE_INCLUDED %}
+	     {% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
 		     addDateTimePicker("id_schedule_date", defaultTimeZone);
 	     {% endif %}
 	   

@@ -153,9 +153,10 @@ _thisDir = os.path.dirname(__file__)
 # list of (formatCode, extension, exporterClass)
 XGDS_PLANNER_PLAN_EXPORTERS = (
     ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
+    ('bearing_distance', '.bdj', 'xgds_planner2.planExporter.BearingDistanceJsonPlanExporter'),
     ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
     ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
-    ('pml', '.pml', 'xgds_planner2.pmlPlanExporter.PmlPlanExporter'),
+#    ('pml', '.pml', 'xgds_planner2.pmlPlanExporter.PmlPlanExporter'),
 )
 
 # list of (formatCode, extension, importerClass)
@@ -166,40 +167,40 @@ XGDS_PLANNER_PLAN_IMPORTERS = (
 )
 
 # kml root from xgds_map_server
-XGDS_PLANNER2_LAYER_FEED_URL = "/xgds_map_server/treejson/"
+XGDS_PLANNER_LAYER_FEED_URL = "/xgds_map_server/treejson/"
 
-XGDS_PLANNER2_LINE_WIDTH_PIXELS = 3
+XGDS_PLANNER_LINE_WIDTH_PIXELS = 3
 
-XGDS_PLANNER2_PLAN_MODEL = "xgds_planner2.Plan"
-XGDS_PLANNER2_PLAN_MONIKER = "Plan"
-XGDS_PLANNER2_FLIGHT_MODEL = "xgds_planner2.Flight"
-XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL = "xgds_planner2.ActiveFlight"
-XGDS_PLANNER2_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
-XGDS_PLANNER2_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
-XGDS_PLANNER2_FLIGHT_MONIKER = "Flight"
-XGDS_PLANNER2_GROUP_FLIGHT_MONIKER = "Group Flight"
-XGDS_PLANNER2_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
-XGDS_PLANNER2_STATION_MONIKER = "Station"
-XGDS_PLANNER2_STATION_MONIKER_PLURAL = "Stations"
-XGDS_PLANNER2_SEGMENT_MONIKER = "Segment"
-XGDS_PLANNER2_SEGMENT_MONIKER_PLURAL = "Segments"
-XGDS_PLANNER2_COMMAND_MONIKER = "Command"
-XGDS_PLANNER2_COMMAND_MONIKER_PLURAL = "Commands"
+XGDS_PLANNER_PLAN_MODEL = "xgds_planner2.Plan"
+XGDS_PLANNER_PLAN_MONIKER = "Plan"
+XGDS_PLANNER_FLIGHT_MODEL = "xgds_planner2.Flight"
+XGDS_PLANNER_ACTIVE_FLIGHT_MODEL = "xgds_planner2.ActiveFlight"
+XGDS_PLANNER_GROUP_FLIGHT_MODEL = "xgds_planner2.GroupFlight"
+XGDS_PLANNER_VEHICLE_MODEL = 'xgds_planner2.Vehicle'
+XGDS_PLANNER_FLIGHT_MONIKER = "Flight"
+XGDS_PLANNER_GROUP_FLIGHT_MONIKER = "Group Flight"
+XGDS_PLANNER_PLAN_EXECUTION_MODEL = "xgds_planner2.PlanExecution"
+XGDS_PLANNER_STATION_MONIKER = "Station"
+XGDS_PLANNER_STATION_MONIKER_PLURAL = "Stations"
+XGDS_PLANNER_SEGMENT_MONIKER = "Segment"
+XGDS_PLANNER_SEGMENT_MONIKER_PLURAL = "Segments"
+XGDS_PLANNER_COMMAND_MONIKER = "Command"
+XGDS_PLANNER_COMMAND_MONIKER_PLURAL = "Commands"
 
 #TODO to have a default site frame in the creation form, set this to the site id from your WITHIN plan library.
-XGDS_PLANNER2_DEFAULT_SITE = ('IRG', 'Ames')
+XGDS_PLANNER_DEFAULT_SITE = ('IRG', 'Ames')
 
 # Method to add stuff to context for plan editor, override and register your own method if you need it.
 # It must add a json dictionary called extras
-XGDS_PLANNER2_EDITOR_CONTEXT_METHOD = 'xgds_planner2.views.addToEditorContext'
+XGDS_PLANNER_EDITOR_CONTEXT_METHOD = 'xgds_planner2.views.addToEditorContext'
 
 # Method to add stuff to planExecution if you are not doing the basic planExecution.
 # This gets invoked from schedulePlans call in views.py
-XGDS_PLANNER2_SCHEDULE_EXTRAS_METHOD = None
+XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD = None
 
 
 # OVERRIDE this in your sitesettings to have a custom plan create, note that since it's in site settings you can't have a reverse lookup.
-XGDS_PLANNER2_CREATE_URL = "/xgds_planner2/plan/create"
+XGDS_PLANNER_CREATE_URL = "/xgds_planner2/plan/create"
 
 # Schema used to be set in the settings, now they are set in the PlanSchema database table.
 # XGDS_PLANNER_SCHEMAS = [
@@ -253,33 +254,33 @@ XGDS_PLANNER_COMMAND_RENDERERS = {}
 # TEMPLATE_CONTEXT_PROCESSORS = (global_settings.TEMPLATE_CONTEXT_PROCESSORS + (
 #     ...
 #     'geocamUtil.context_processors.settings'
-XGDS_PLANNER2_SCHEDULE_INCLUDED = None
+XGDS_PLANNER_SCHEDULE_INCLUDED = None
 
 # Test skipping variables. Set to true if code somewhere else overrides
 # some functionality in the planner.
-XGDS_PLANNER2_TEST_SKIP_INDEX = False
-XGDS_PLANNER2_TEST_SKIP_EDIT = False
-XGDS_PLANNER2_TEST_SKIP_DOC = False
-XGDS_PLANNER2_TEST_SKIP_PLAN_REST = False
-XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT = False
-XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE = False
-XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN = False
+XGDS_PLANNER_TEST_SKIP_INDEX = False
+XGDS_PLANNER_TEST_SKIP_EDIT = False
+XGDS_PLANNER_TEST_SKIP_DOC = False
+XGDS_PLANNER_TEST_SKIP_PLAN_REST = False
+XGDS_PLANNER_TEST_SKIP_PLAN_EXPORT = False
+XGDS_PLANNER_TEST_SKIP_CREATE_PLAN_PAGE = False
+XGDS_PLANNER_TEST_SKIP_CREATE_PLAN = False
 
-XGDS_PLANNER2_HANDLEBARS_DIRS = [os.path.join('xgds_planner2', 'templates', 'handlebars'),
+XGDS_PLANNER_HANDLEBARS_DIRS = [os.path.join('xgds_planner2', 'templates', 'handlebars'),
                                  os.path.join('xgds_map_server', 'templates', 'handlebars', 'search')]
 
-XGDS_PLANNER2_PLAN_BEARING_HANDLEBAR_PATH = 'xgds_planner2/templates/xgds_planner2/bearingDistancePlan.handlebars'
-# XGDS_PLANNER2_LINKS_LOADED_CALLBACK: The fully qualified name of an
+XGDS_PLANNER_PLAN_BEARING_HANDLEBAR_PATH = 'xgds_planner2/templates/xgds_planner2/bearingDistancePlan.handlebars'
+# XGDS_PLANNER_LINKS_LOADED_CALLBACK: The fully qualified name of an
 # extra JavaScript callback to call after the links tab is loaded.
-XGDS_PLANNER2_LINKS_LOADED_CALLBACK = 'null'
+XGDS_PLANNER_LINKS_LOADED_CALLBACK = 'null'
 
 # This is used to hold a map of site frames, so we can convert lat/long to the closest site frame.
 # It is initialized by calling views.getSiteFrames().
-XGDS_PLANNER2_SITE_FRAMES = []
+XGDS_PLANNER_SITE_FRAMES = []
 
 XGDS_MAP_SERVER_JS_MAP = getOrCreateDict('XGDS_MAP_SERVER_JS_MAP')
 XGDS_MAP_SERVER_JS_MAP['Plan'] = {'ol': 'xgds_planner2/js/olPlanMap.js',
-                                  'model': XGDS_PLANNER2_PLAN_MODEL,
+                                  'model': XGDS_PLANNER_PLAN_MODEL,
                                   'hiddenColumns': ['stations', 'type', 'id']}
 
 XGDS_DATA_MASKED_FIELDS = getOrCreateDict('XGDS_DATA_MASKED_FIELDS')
@@ -295,7 +296,7 @@ XGDS_DATA_MASKED_FIELDS['xgds_planner2'] = {'Plan': ['uuid',
                                                      ]
                                             }
 # If you have callbacks to be connected to the planner, register them as follows
-# XGDS_PLANNER2_CALLBACK = [(MODIFY,'my.planner.modify.callback', PYTHON),
+# XGDS_PLANNER_CALLBACK = [(MODIFY,'my.planner.modify.callback', PYTHON),
 #                           (SAVE,'my.planner.save.callback', JAVASCRIPT)] 
 # they will be executed in order either when the plan is modified or when the plan is saved.
 # If it is a Python method, it will happen on the back end after modification or save.
@@ -307,16 +308,16 @@ DELETE = 'Delete'
 JAVASCRIPT = 'JavaScript'
 PYTHON = 'Python'
 EXEC = 'Exec'
-XGDS_PLANNER2_CALLBACK = []
+XGDS_PLANNER_CALLBACK = []
 
 # If you will be plotting values in the flot plot chart, register functions here.
 # You must also then include the javascript library that has that function implemented.
 # Dictionary should be: legible name: namespace of library
 
-XGDS_PLANNER2_PLOTS = {}
+XGDS_PLANNER_PLOTS = {}
 
 # Uncomment the below to see plannerSamplePlot.js, and include it in planner_app_base
-# XGDS_PLANNER2_PLOTS['Sample'] = 'sample_plot'
+# XGDS_PLANNER_PLOTS['Sample'] = 'sample_plot'
 
 # Turn on to enable plan validation support and UI
-XGDS_PLANNER2_VALIDATION = False
+XGDS_PLANNER_VALIDATION = False

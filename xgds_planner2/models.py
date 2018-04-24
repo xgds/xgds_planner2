@@ -197,7 +197,7 @@ class AbstractFlight(models.Model):
                             })
         if self.plans:
             myplan = self.plans[0].plan
-            children.append({"title": settings.XGDS_PLANNER2_PLAN_MONIKER, 
+            children.append({"title": settings.XGDS_PLANNER_PLAN_MONIKER, 
                              "selected": False, 
                              "tooltip": "Plan for " + self.name, 
                              "key": self.uuid + "_plan", 
@@ -228,7 +228,7 @@ class AbstractFlight(models.Model):
     
     @property
     def plans(self):
-        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(flight=self)
+        return LazyGetModelByName(settings.XGDS_PLANNER_PLAN_EXECUTION_MODEL).get().objects.filter(flight=self)
 
     def stopTracking(self):
         if settings.PYRAPTORD_SERVICE is True:
@@ -502,7 +502,7 @@ class AbstractPlan(models.Model):
     
     @property
     def executions(self):
-        return LazyGetModelByName(settings.XGDS_PLANNER2_PLAN_EXECUTION_MODEL).get().objects.filter(plan=self)
+        return LazyGetModelByName(settings.XGDS_PLANNER_PLAN_EXECUTION_MODEL).get().objects.filter(plan=self)
 
 
     def __unicode__(self):

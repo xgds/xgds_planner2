@@ -19,8 +19,8 @@
 from django.conf import settings
 from geocamUtil.loader import LazyGetModelByName
 
-ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_ACTIVE_FLIGHT_MODEL)
-FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER2_FLIGHT_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_ACTIVE_FLIGHT_MODEL)
+FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_FLIGHT_MODEL)
 
 def getFlight(event_time, vehicle):
     """ Returns the flight that contains that event_time """

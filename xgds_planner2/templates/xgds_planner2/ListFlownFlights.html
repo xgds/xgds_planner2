@@ -3,7 +3,7 @@
 {% load tz %}
 {% load static %}
 
-{% block siteSection %} Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER }} {% endblock %}
+{% block siteSection %} Manage {{ settings.XGDS_PLANNER_FLIGHT_MONIKER }} {% endblock %}
 
 {% block nav %}
     {% nav "planner2.manageFlight" %}
@@ -30,8 +30,8 @@
 			<label for="id_today" style="display:inline"><input type="checkbox" class="mr-1" name="today" id="id_today" {% if request.session.today %} checked="checked" {%endif %} ></input>Today</label>
 		</form>
 		<div class="btn-group" role="group">
-			<a class="btn btn-primary" role="button" href="{% url 'planner2_addGroupFlight' %}" >Create {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
-			<a class="btn btn-primary" role="button" href="{% url 'planner2_manage' %}" >Manage {{ settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s</a>
+			<a class="btn btn-primary" role="button" href="{% url 'planner2_addGroupFlight' %}" >Create {{ settings.XGDS_PLANNER_FLIGHT_MONIKER}}s</a>
+			<a class="btn btn-primary" role="button" href="{% url 'planner2_manage' %}" >Manage {{ settings.XGDS_PLANNER_FLIGHT_MONIKER}}s</a>
 			<a class="btn btn-primary" role="button" href="{% url 'planner2_manageFlightHelp' %}" target="help">Help</a>
 		</div>
 	</div>
@@ -105,7 +105,7 @@ $('#id_today').change(function(e){
 
 $(document).ready( function () {
     defaultOptions['language'] = {
-        "lengthMenu": "Display _MENU_ {{settings.XGDS_PLANNER2_FLIGHT_MONIKER}}s & {{ settings.XGDS_PLANNER2_PLAN_MONIKER}}s"
+        "lengthMenu": "Display _MENU_ {{settings.XGDS_PLANNER_FLIGHT_MONIKER}}s & {{ settings.XGDS_PLANNER_PLAN_MONIKER}}s"
       };
     defaultOptions['ordering'] = false;
 	var dataTable = $('#dataTable').dataTable(defaultOptions);

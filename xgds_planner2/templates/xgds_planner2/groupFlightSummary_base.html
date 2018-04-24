@@ -10,7 +10,7 @@
 
 {% if groupFlight %}
 {% with groupFlight.pk|stringformat:"s" as group_pk %}
-<h5>{{ settings.XGDS_PLANNER2_GROUP_FLIGHT_MONIKER}}: {{ groupFlight.name }}</h5>
+<h5>{{ settings.XGDS_PLANNER_GROUP_FLIGHT_MONIKER}}: {{ groupFlight.name }}</h5>
 {% block groupFlightContents %}
 {% if groupFlight.view_url %}
 <a href="{{ groupFlight.view_url }}" target="" class="font-weight-bold">View</a>
@@ -38,7 +38,7 @@
 {% with pe.plan as plan %}
 {% block planExporters %}
 <tr>
-<td>{{settings.XGDS_PLANNER2_PLAN_MONIKER}}</td>
+<td>{{settings.XGDS_PLANNER_PLAN_MONIKER}}</td>
 <td>
 {% for exporter in plan.getExporters %}
       {% if exporter.label == 'kml' %}
@@ -50,7 +50,7 @@
 </td>
 </tr>
 <tr>
-<td>{{settings.XGDS_PLANNER2_PLAN_MONIKER}}</td>
+<td>{{settings.XGDS_PLANNER_PLAN_MONIKER}}</td>
 <td><a href="{% url 'plan_bearing_distance' plan.id %}" style="text-decoration:none" target="_blank">
       	Summary
       </a>

@@ -93,7 +93,7 @@
               success: $.proxy(function(data) {
             	  var filledTemplate = template({ 'plan':data,
 								            	  'defaultTimeZone':'{{TIME_ZONE}}',
-								            	  'plan_moniker': '{{settings.XGDS_PLANNER2_PLAN_MONIKER}}'});
+								            	  'plan_moniker': '{{settings.XGDS_PLANNER_PLAN_MONIKER}}'});
             	  $("#planContent").append(filledTemplate);
             	  $("#plan_duration_value").append(printedDuration(runningTotalDuration));
             	  $("#plan_distance_value").append(sprintf('%0.2f m', runningTotalDistance));

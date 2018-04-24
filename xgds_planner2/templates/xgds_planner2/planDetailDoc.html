@@ -40,7 +40,7 @@ textarea {
 
 {% block content %}
 {{ block.super }}
-<div class="section-title">{{ settings.XGDS_PLANNER2_PLAN_MONIKER }} Details</div>
+<div class="section-title">{{ settings.XGDS_PLANNER_PLAN_MONIKER }} Details</div>
 <div class="entry"><span class="label">Name:</span><span class="data">{{ plan_json.name }}</span></div>
 <div class="entry"><span class="label">Creator:</span><span class="data">{{ plan_json.creator }}</span></div>
 <div class="entry"><span class="label">{{settings.XGDS_MAP_SERVER_SITE_MONIKER}}:</span><span class="data">{{ plan_json.site.name }}</span></div>

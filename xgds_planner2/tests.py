@@ -42,38 +42,38 @@ class xgds_planner2Test(TestCase):
     def setUp(self):
         logging.disable(logging.WARNING)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_INDEX',
-                    settings.XGDS_PLANNER2_TEST_SKIP_INDEX),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_INDEX',
+                    settings.XGDS_PLANNER_TEST_SKIP_INDEX),
             "index test set to be skipped")
     def test_index(self):
         response = self.client.get(reverse('planner2_index'))
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_EDIT',
-                    settings.XGDS_PLANNER2_TEST_SKIP_EDIT),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_EDIT',
+                    settings.XGDS_PLANNER_TEST_SKIP_EDIT),
             'edit test set to be skipped')
     def test_edit(self):
         self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_edit', args=['1']))
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_DOC',
-                    settings.XGDS_PLANNER2_TEST_SKIP_DOC),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_DOC',
+                    settings.XGDS_PLANNER_TEST_SKIP_DOC),
             'doc test set to be skipped')
     def test_doc(self):
         response = self.client.get(reverse('planner2_doc', args=['1']))
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_REST',
-                    settings.XGDS_PLANNER2_TEST_SKIP_PLAN_REST),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_PLAN_REST',
+                    settings.XGDS_PLANNER_TEST_SKIP_PLAN_REST),
             'plan rest test set to be skipped')
     def test_plan_save_json(self):
         self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_plan_save_json', args=['1', 'test']))
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT',
-                    settings.XGDS_PLANNER2_TEST_SKIP_PLAN_EXPORT),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_PLAN_EXPORT',
+                    settings.XGDS_PLANNER_TEST_SKIP_PLAN_EXPORT),
             'plan export test set to be skipped')
     def test_plan_export(self):
         response = self.client.get(reverse('planner2_planExport',
@@ -81,16 +81,16 @@ class xgds_planner2Test(TestCase):
                                    follow=True)
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE',
-                    settings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN_PAGE),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_CREATE_PLAN_PAGE',
+                    settings.XGDS_PLANNER_TEST_SKIP_CREATE_PLAN_PAGE),
             'plan create page test set to be skipped')
     def test_create_plan_page(self):
         self.client.login(**self.login_info)
         response = self.client.get(reverse('planner2_planCreate'))
         self.assertEquals(response.status_code, 200)
 
-    @skipIf(getattr(settings, 'XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN',
-                    settings.XGDS_PLANNER2_TEST_SKIP_CREATE_PLAN),
+    @skipIf(getattr(settings, 'XGDS_PLANNER_TEST_SKIP_CREATE_PLAN',
+                    settings.XGDS_PLANNER_TEST_SKIP_CREATE_PLAN),
             'create plan test set to be skipped')
     def test_create_plan(self):
         self.client.login(**self.login_info)
