@@ -69,7 +69,6 @@ from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay, setState
 from xgds_core.util import insertIntoPath
 
-from xgds_map_server.forms import MapSearchForm
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 
 _template_cache = None
@@ -306,7 +305,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
     context = {
             'templates': templates,
             'app': 'xgds_planner2/js/plannerApp.js',
-            'saveSearchForm': MapSearchForm(),
+            #'saveSearchForm': MapSearchForm(),
             'searchForms': getSearchForms(),
             'flight_names': json.dumps(getAllFlightNames()),
             'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),

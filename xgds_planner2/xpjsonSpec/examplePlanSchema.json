@@ -63,7 +63,8 @@
           "id": "presetCode",
           "name": "Preset code",
           "valueType": "string",
-          "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands"
+          "notes": "Identifier for the command preset in the PlanLibrary, included in id field of commands",
+          "visible": false
         }
       ]
     },
@@ -171,7 +172,16 @@
       "name": "speed",
       "units": {
         "m/s": 1.0,
+        "meters/sec": 1.0,
         "mph": 2.2369363
+      }
+    },
+    {
+      "type": "UnitSpec",
+      "name": "angle",
+      "units": {
+        "degrees": 1.0,
+        "radians": 0.0174533
       }
     }
   ]

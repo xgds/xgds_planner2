@@ -1,558 +1,564 @@
 {
-    "type": "object",
-    "properties": {
+  "type": "object",
+  "properties": {
 
-        "type": {
-            "enum": ["PlanSchema"],
+    "type": {
+      "enum": ["PlanSchema"],
+      "required": true
+    },
+
+    "name": {
+      "type": "string"
+    },
+
+    "notes": {
+      "type": "string"
+    },
+
+    "id": {
+      "type": "string"
+    },
+
+    "xpjson": {
+      "type": "string",
+      "required": true
+    },
+
+    "subject": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+
+    "creator": {
+      "type": "string"
+    },
+
+    "modifier": {
+      "type": "string"
+    },
+
+    "contributors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+
+    "dateCreated": {
+      "type": ["number", "string"]
+    },
+
+    "dateModified": {
+      "type": ["number", "string"]
+    },
+
+    "paramSpecs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["ParamSpec"],
             "required": true
-        },
-
-        "name": {
+          },
+          "name": {
             "type": "string"
-        },
-
-        "notes": {
+          },
+          "notes": {
             "type": "string"
-        },
-
-        "id": {
+          },
+          "id": {
             "type": "string"
-        },
-
-        "xpjson": {
+          },
+          "parent": {
+            "type": "string"
+          },
+          "valueType": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon",
+              "GeometryCollection",
+              "date-time",
+              "targetId"
+            ],
+            "required": true
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          },
+          "multipleOf": {
+            "type": "number"
+          },
+          "default": {
+            "type": "any"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "any"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "editable": {
+            "type": "boolean"
+          },
+          "widget": {
             "type": "string",
-            "required": true
-        },
-
-        "subject": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-
-        "creator": {
-            "type": "string"
-        },
-        
-        "modifier": {
-            "type": "string"
-        },
-
-        "contributors": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-
-        "dateCreated": {
-            "type": ["number", "string"]
-        },
-
-        "dateModified": {
-            "type": ["number", "string"]
-        },
-
-        "paramSpecs": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["ParamSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "parent": {
-                        "type": "string"
-                    },
-                    "valueType": {
-                        "enum": [
-                            "string",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "Point",
-                            "MultiPoint",
-                            "LineString",
-                            "MultiLineString",
-                            "Polygon",
-                            "MultiPolygon",
-                            "GeometryCollection",
-                            "date-time",
-                            "targetId"
-                        ],
-                        "required": true
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "multipleOf": {
-                        "type": "number"
-                    },
-                    "default": {
-                        "type": "any"
-                    },
-                    "choices": {
-                        "type": "array",
-                        "items": {
-                            "type": "array",
-                            "items": [
-                                {
-                                    "type": "any"
-                                },
-                                {
-                                    "type": "string"
-                                }
-                            ]
-                        }
-                    },
-                    "visible": {
-                        "type": "boolean"
-                    },
-                    "editable": {
-                        "type": "boolean"
-                    },
-                    "widget": {
-                        "type": "string",
-                        "required": false
-                    },
-                    "onChange": {
-                        "type": "string",
-                        "required": false
-                    }
-                }
-            }
-        },
-
-        "commandSpecs": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["CommandSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "uuid": {
-          				"type": "string",
-          				"required": true
-        			},
-        			"stopCommandUuid": {
-          				"type": "string"
-        			},
-        			"stopCommandType": {
-          				"type": "string"
-        			},
-                    "parent": {
-                        "type": "string"
-                    },
-                    "abstract": {
-                        "type": "boolean"
-                    },
-                    "blocking": {
-                        "type": "boolean"
-                    },
-                    "scopeTerminate": {
-                        "type": "boolean"
-                    },
-                    "allowedInPlan": {
-                        "type": "boolean"
-                    },
-                    "allowedInStation": {
-                        "type": "boolean"
-                    },
-                    "allowedInSegment": {
-                        "type": "boolean"
-                    },
-                    "color": {
-                        "type": "string"
-                    },
-                    "params": {
-                        "type": "array",
-                        "items": {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "enum": ["ParamSpec"],
-                                    "required": true
-                                },
-                                "name": {
-                                    "type": "string"
-                                },
-                                "notes": {
-                                    "type": "string"
-                                },
-                                "id": {
-                                    "type": "string"
-                                },
-                                "parent": {
-                                    "type": "string"
-                                },
-                                "valueType": {
-                                    "enum": [
-                                        "string",
-                                        "integer",
-                                        "number",
-                                        "boolean",
-                                        "Point",
-                                        "MultiPoint",
-                                        "LineString",
-                                        "MultiLineString",
-                                        "Polygon",
-                                        "MultiPolygon",
-                                        "GeometryCollection",
-                                        "date-time",
-                                        "targetId"
-                                    ]
-                                },
-                                "minimum": {
-                                    "type": "number"
-                                },
-                                "maximum": {
-                                    "type": "number"
-                                },
-                                "multipleOf": {
-                      				"type": "number"
-                    			},
-                                "choices": {
-                                    "type": "array"
-                                },
-                                "default": {
-                                    "type": "any"
-                                },
-                                "required": {
-                                    "type": "boolean"
-                                },
-                                "visible": {
-                                    "type": "boolean"
-                                },
-                                "editable": {
-                                    "type": "boolean"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-
-        "planParams": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["ParamSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "uuid": {
-            			"type": "string",
-            			"required": true
-        			},
-        			"derivedInfo": {
-                        "type": "object"
-                    },
-                    "parent": {
-                        "type": "string"
-                    },
-                    "valueType": {
-                        "enum": [
-                            "string",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "Point",
-                            "MultiPoint",
-                            "LineString",
-                            "MultiLineString",
-                            "Polygon",
-                            "MultiPolygon",
-                            "GeometryCollection",
-                            "date-time",
-                            "targetId"
-                        ]
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "choices": {
-                        "type": "array"
-                    },
-                    "default": {
-                        "type": "any"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "visible": {
-                        "type": "boolean"
-                    },
-                    "editable": {
-                        "type": "boolean"
-                    }
-                }
-            }
-        },
-
-        "targetParams": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["ParamSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "required": true
-                    },
-                    "derivedInfo": {
-                        "type": "object"
-                    },
-                    "parent": {
-                        "type": "string"
-                    },
-                    "valueType": {
-                        "enum": [
-                            "string",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "Point",
-                            "MultiPoint",
-                            "LineString",
-                            "MultiLineString",
-                            "Polygon",
-                            "MultiPolygon",
-                            "GeometryCollection",
-                            "date-time",
-                            "targetId"
-                        ]
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "choices": {
-                        "type": "array"
-                    },
-                    "default": {
-                        "type": "any"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "visible": {
-                        "type": "boolean"
-                    },
-                    "editable": {
-                        "type": "boolean"
-                    }
-                }
-            }
-        },
-
-        "stationParams": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["ParamSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "required": true
-                    },
-                    "derivedInfo": {
-                        "type": "object"
-                    },
-                    "parent": {
-                        "type": "string"
-                    },
-                    "valueType": {
-                        "enum": [
-                            "string",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "Point",
-                            "MultiPoint",
-                            "LineString",
-                            "MultiLineString",
-                            "Polygon",
-                            "MultiPolygon",
-                            "GeometryCollection",
-                            "date-time",
-                            "targetId"
-                        ]
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "choices": {
-                        "type": "array"
-                    },
-                    "default": {
-                        "type": "any"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "visible": {
-                        "type": "boolean"
-                    },
-                    "editable": {
-                        "type": "boolean"
-                    },
-                    "userDuration": {
-                        "type": "number",
-                        "unit": "seconds"
-                    }
-                }
-            }
-        },
-
-        "segmentParams": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {
-                        "enum": ["ParamSpec"],
-                        "required": true
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "notes": {
-                        "type": "string"
-                    },
-                    "id": {
-                        "type": "string"
-                    },
-                    "uuid": {
-                        "type": "string",
-                        "required": true
-                    },
-                    "derivedInfo": {
-                        "type": "object"
-                    },
-                    "parent": {
-                        "type": "string"
-                    },
-                    "valueType": {
-                        "enum": [
-                            "string",
-                            "integer",
-                            "number",
-                            "boolean",
-                            "Point",
-                            "MultiPoint",
-                            "LineString",
-                            "MultiLineString",
-                            "Polygon",
-                            "MultiPolygon",
-                            "GeometryCollection",
-                            "date-time",
-                            "targetId"
-                        ]
-                    },
-                    "minimum": {
-                        "type": "number"
-                    },
-                    "maximum": {
-                        "type": "number"
-                    },
-                    "choices": {
-                        "type": "array"
-                    },
-                    "default": {
-                        "type": "any"
-                    },
-                    "required": {
-                        "type": "boolean"
-                    },
-                    "visible": {
-                        "type": "boolean"
-                    },
-                    "editable": {
-                        "type": "boolean"
-                    }
-                }
-            }
-        },
-
-        "planIdFormat": {
-            "type": "string"
-        },
-
-        "pathElementIdFormat": {
-            "type": "string"
-        },
-
-        "commandIdFormat": {
-            "type": "string"
+            "required": false
+          },
+          "onChange": {
+            "type": "string",
+            "required": false
+          }
         }
-        
+      }
+    },
+
+    "commandSpecs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["CommandSpec"],
+            "required": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "required": true,
+            "visible": false
+          },
+          "stopCommandUuid": {
+            "type": "string",
+            "visible": false
+          },
+          "stopCommandType": {
+            "type": "string"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "abstract": {
+            "type": "boolean"
+          },
+          "blocking": {
+            "type": "boolean"
+          },
+          "scopeTerminate": {
+            "type": "boolean"
+          },
+          "allowedInPlan": {
+            "type": "boolean"
+          },
+          "allowedInStation": {
+            "type": "boolean"
+          },
+          "allowedInSegment": {
+            "type": "boolean"
+          },
+          "color": {
+            "type": "string"
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "enum": ["ParamSpec"],
+                  "required": true
+                },
+                "name": {
+                  "type": "string"
+                },
+                "notes": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "parent": {
+                  "type": "string"
+                },
+                "valueType": {
+                  "enum": [
+                    "string",
+                    "integer",
+                    "number",
+                    "boolean",
+                    "Point",
+                    "MultiPoint",
+                    "LineString",
+                    "MultiLineString",
+                    "Polygon",
+                    "MultiPolygon",
+                    "GeometryCollection",
+                    "date-time",
+                    "targetId"
+                  ]
+                },
+                "minimum": {
+                  "type": "number"
+                },
+                "maximum": {
+                  "type": "number"
+                },
+                "multipleOf": {
+                  "type": "number"
+                },
+                "choices": {
+                  "type": "array"
+                },
+                "default": {
+                  "type": "any"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "visible": {
+                  "type": "boolean"
+                },
+                "editable": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "planParams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["ParamSpec"],
+            "required": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "required": true,
+            "visible": false
+          },
+          "derivedInfo": {
+            "type": "object"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "valueType": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon",
+              "GeometryCollection",
+              "date-time",
+              "targetId"
+            ]
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          },
+          "choices": {
+            "type": "array"
+          },
+          "default": {
+            "type": "any"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "editable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+
+    "targetParams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["ParamSpec"],
+            "required": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "required": true,
+            "visible": false
+          },
+          "derivedInfo": {
+            "type": "object"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "valueType": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon",
+              "GeometryCollection",
+              "date-time",
+              "targetId"
+            ]
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          },
+          "choices": {
+            "type": "array"
+          },
+          "default": {
+            "type": "any"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "editable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+
+    "stationParams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["ParamSpec"],
+            "required": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "required": true,
+            "visible": false
+          },
+          "derivedInfo": {
+            "type": "object"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "valueType": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon",
+              "GeometryCollection",
+              "date-time",
+              "targetId"
+            ]
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          },
+          "choices": {
+            "type": "array"
+          },
+          "default": {
+            "type": "any"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "editable": {
+            "type": "boolean"
+          },
+          "userDuration": {
+            "type": "number",
+            "unit": "seconds"
+          }
+        }
+      }
+    },
+
+    "segmentParams": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["ParamSpec"],
+            "required": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "uuid": {
+            "type": "string",
+            "required": true,
+            "visible": false
+          },
+          "derivedInfo": {
+            "type": "object"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "valueType": {
+            "enum": [
+              "string",
+              "integer",
+              "number",
+              "boolean",
+              "Point",
+              "MultiPoint",
+              "LineString",
+              "MultiLineString",
+              "Polygon",
+              "MultiPolygon",
+              "GeometryCollection",
+              "date-time",
+              "targetId"
+            ]
+          },
+          "minimum": {
+            "type": "number"
+          },
+          "maximum": {
+            "type": "number"
+          },
+          "choices": {
+            "type": "array"
+          },
+          "default": {
+            "type": "any"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "visible": {
+            "type": "boolean"
+          },
+          "editable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+
+    "planIdFormat": {
+      "type": "string"
+    },
+
+    "pathElementIdFormat": {
+      "type": "string"
+    },
+
+    "commandIdFormat": {
+      "type": "string"
     }
+
+  }
 }
