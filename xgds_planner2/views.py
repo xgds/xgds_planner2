@@ -1,4 +1,4 @@
-#__BEGIN_LICENSE__
+# __BEGIN_LICENSE__
 # Copyright (c) 2015, United States Government, as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All rights reserved.
@@ -12,7 +12,7 @@
 # under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
-#__END_LICENSE__
+# __END_LICENSE__
 # pylint: disable=W0702
 import sys
 import pytz
@@ -26,14 +26,11 @@ from uuid import uuid4
 
 from dateutil.parser import parse as dateparser
 from django.forms.models import model_to_dict
-from django.contrib import messages 
+from django.contrib import messages
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.urlresolvers import reverse
-from django.shortcuts import redirect
 from django.conf import settings
 
-from django.db.utils import IntegrityError
 from django.http import (HttpResponseRedirect,
                          HttpResponse,
                          Http404,
@@ -43,7 +40,6 @@ from django.http import (HttpResponseRedirect,
 from django.shortcuts import render, get_object_or_404
 from django.template import RequestContext
 from django.views.decorators.cache import never_cache
-
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
 from geocamUtil import timezone
@@ -66,7 +62,8 @@ from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
-from xgds_core.views import get_handlebars_templates, addRelay, setState
+from xgds_core.views import get_handlebars_templates, addRelay, setState, getAllFlightNames, getActiveFlights, \
+    getTodaysGroupFlights, manageFlights
 from xgds_core.util import insertIntoPath
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -75,10 +72,11 @@ _template_cache = None
 
 PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_MODEL)
 PLAN_EXECUTION_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_EXECUTION_MODEL)
-ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_ACTIVE_FLIGHT_MODEL)
-FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_FLIGHT_MODEL)
-GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_GROUP_FLIGHT_MODEL)
-VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_VEHICLE_MODEL)
+ACTIVE_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_CORE_ACTIVE_FLIGHT_MODEL)
+FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_CORE_FLIGHT_MODEL)
+GROUP_FLIGHT_MODEL = LazyGetModelByName(settings.XGDS_CORE_GROUP_FLIGHT_MODEL)
+VEHICLE_MODEL = LazyGetModelByName(settings.XGDS_CORE_VEHICLE_MODEL)
+
 
 def plan_help(request):
     return render(request,
@@ -97,20 +95,24 @@ def plan_tests(request, plan_id, editable=True):
         plan_json.url = plan.get_absolute_url()
 
     planSchema = models.getPlanSchema(plan_json.platform.name)
-    
+
     return render(request,
                   'xgds_planner2/planner_tests.html',
                   {'templates': templates,
-                   'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
-                   'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
+                   'plan_schema_json': planSchema.getJsonSchema(),
+                   # xpjson.dumpDocumentToString(planSchema.getSchema()),
+                   'plan_library_json': planSchema.getJsonLibrary(),
+                   # xpjson.dumpDocumentToString(planSchema.getLibrary()),
                    'plan_json': json.dumps(plan_json),
                    'plan_name': plan.name,
                    'plan_index_json': json.dumps(plan_index_json()),
                    'editable': editable,
                    'simulatorUrl': planSchema.simulatorUrl,
                    'simulator': planSchema.simulator,
-                   'placemark_circle_url': request.build_absolute_uri(staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')),
-                   'placemark_circle_highlighted_url': request.build_absolute_uri(staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')),
+                   'placemark_circle_url': request.build_absolute_uri(
+                       staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')),
+                   'placemark_circle_highlighted_url': request.build_absolute_uri(
+                       staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')),
                    'plan_links_json': json.dumps(plan.getLinks()),
                    'plan_namedURLs_json': json.dumps(plan.namedURLs),
                    })
@@ -121,12 +123,14 @@ def aggregate_handlebars_templates(request):
     Return a JSON object containing all the Handlebars templates in the
     appropriate templates directory, indexed by name.
     """
-    return HttpResponse(json.dumps(get_handlebars_templates(settings.XGDS_PLANNER_HANDLEBARS_DIRS), 'XGDS_PLANNER_HANDLEBARS_DIRS'), content_type='application/json')
+    return HttpResponse(
+        json.dumps(get_handlebars_templates(settings.XGDS_PLANNER_HANDLEBARS_DIRS), 'XGDS_PLANNER_HANDLEBARS_DIRS'),
+        content_type='application/json')
 
 
 def handleCallbacks(request, plan, mode):
     for callback_mode, methodName, callback_type in settings.XGDS_PLANNER_CALLBACK:
-        if callback_mode==mode and callback_type==settings.PYTHON:
+        if callback_mode == mode and callback_type == settings.PYTHON:
             foundMethod = getClassByName(methodName)
             if foundMethod:
                 plan = foundMethod(request, plan)
@@ -151,14 +155,14 @@ def plan_save_from_relay(request, plan_id):
         plan = PLAN_MODEL.get()(pk=plan_id)
     populatePlanFromJson(plan, request.POST['jsonPlan'])
     plan.save()
-    return JsonResponse({"status":"success","planPK":plan.pk})
+    return JsonResponse({"status": "success", "planPK": plan.pk})
 
 
 # TODO - make entry in urls.py for this method!
 def get_last_changed_planID_for_user_json(request, username):
     plan = PLAN_MODEL.get().objects.filter(creator__username=username).order_by('-dateModified')[0]
-    planMetadata = {"planID":plan.id, "planUUID":plan.uuid, "planName":plan.name,
-                    "lastModified":plan.dateModified, "username":username}
+    planMetadata = {"planID": plan.id, "planUUID": plan.uuid, "planName": plan.name,
+                    "lastModified": plan.dateModified, "username": username}
     return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
 
 
@@ -176,9 +180,10 @@ def plan_save_json(request, plan_id, jsonPlanId=None):
         populatePlanFromJson(plan, request.body)
         plan.jsonPlan.modifier = request.user.username
         plan.save()
-        
+
         plan = handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps({"jsonPlan":json.dumps(plan.jsonPlan)}), reverse('planner2_save_plan_from_relay', kwargs={'plan_id':plan.pk}), update=True)
+        addRelay(plan, None, json.dumps({"jsonPlan": json.dumps(plan.jsonPlan)}),
+                 reverse('planner2_save_plan_from_relay', kwargs={'plan_id': plan.pk}), update=True)
         return HttpResponse(json.dumps(plan.jsonPlan), content_type='application/json')
 
     elif request.method == "POST":
@@ -194,7 +199,7 @@ def plan_save_json(request, plan_id, jsonPlanId=None):
         plan.jsonPlan.creator = request.user.username
         plan.jsonPlan.modifier = request.user.username
 
-        #make sure it is not read only
+        # make sure it is not read only
         plan.readOnly = False
         plan.save()  # need to save to get the new pk
 
@@ -210,15 +215,16 @@ def plan_save_json(request, plan_id, jsonPlanId=None):
         updateAllUuids(planDict)
         plan.jsonPlan = json.dumps(exporter.exportPlan(planDict, schema.schema))
         plan.uuid = planDict.uuid
-        
+
         plan.save()
         handleCallbacks(request, plan, settings.SAVE)
-        addRelay(plan, None, json.dumps({"jsonPlan":plan.jsonPlan}), reverse('planner2_save_plan_from_relay',  kwargs={'plan_id':plan.pk}))
+        addRelay(plan, None, json.dumps({"jsonPlan": plan.jsonPlan}),
+                 reverse('planner2_save_plan_from_relay', kwargs={'plan_id': plan.pk}))
 
-#         response = {}
-#         response["msg"] = "New plan created"
-#         response["data"] = newid
-        
+        #         response = {}
+        #         response["msg"] = "New plan created"
+        #         response["data"] = newid
+
         return HttpResponse(plan.jsonPlan, content_type='application/json')
 
 
@@ -232,7 +238,7 @@ def updateAllUuids(planDict):
                     child.uuid = makeUuid()
     return planDict
 
-    
+
 def plan_detail_doc(request, plan_id=None):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     plan_json = plan.jsonPlan
@@ -290,7 +296,7 @@ def plan_editor_app(request, plan_id=None, editable=True):
     if "None" in plan.jsonPlan.url:
         plan.jsonPlan.url = plan.get_absolute_url()
         dirty = True
-        
+
     if dirty:
         plan.save()
 
@@ -303,34 +309,34 @@ def plan_editor_app(request, plan_id=None, editable=True):
         pass
 
     context = {
-            'templates': templates,
-            'app': 'xgds_planner2/js/plannerApp.js',
-            #'saveSearchForm': MapSearchForm(),
-            'searchForms': getSearchForms(),
-            'flight_names': json.dumps(getAllFlightNames()),
-            'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
-            'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
-            'plan_json': json.dumps(plan.jsonPlan),
-            'plan_name': plan.name,
-            'plan_execution': pe,
-            'plan_index_json': json.dumps(plan_index_json()),
-            'editable': editable and not plan.readOnly,
-            'simulatorUrl': planSchema.simulatorUrl,
-            'simulator': planSchema.simulator,
-            'placemark_circle_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
-            ),
-            'placemark_circle_highlighted_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
-            ),
-            'placemark_directional_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_directional.png')
-            ),
-            'placemark_selected_directional_url': request.build_absolute_uri(
-                staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png')
-            ),
-            'plan_links_json': json.dumps(plan.getLinks())
-        }
+        'templates': templates,
+        'app': 'xgds_planner2/js/plannerApp.js',
+        # 'saveSearchForm': MapSearchForm(),
+        'searchForms': getSearchForms(),
+        'flight_names': json.dumps(getAllFlightNames()),
+        'plan_schema_json': planSchema.getJsonSchema(),  # xpjson.dumpDocumentToString(planSchema.getSchema()),
+        'plan_library_json': planSchema.getJsonLibrary(),  # xpjson.dumpDocumentToString(planSchema.getLibrary()),
+        'plan_json': json.dumps(plan.jsonPlan),
+        'plan_name': plan.name,
+        'plan_execution': pe,
+        'plan_index_json': json.dumps(plan_index_json()),
+        'editable': editable and not plan.readOnly,
+        'simulatorUrl': planSchema.simulatorUrl,
+        'simulator': planSchema.simulator,
+        'placemark_circle_url': request.build_absolute_uri(
+            staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
+        ),
+        'placemark_circle_highlighted_url': request.build_absolute_uri(
+            staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
+        ),
+        'placemark_directional_url': request.build_absolute_uri(
+            staticfiles_storage.url('xgds_planner2/images/placemark_directional.png')
+        ),
+        'placemark_selected_directional_url': request.build_absolute_uri(
+            staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png')
+        ),
+        'plan_links_json': json.dumps(plan.getLinks())
+    }
 
     return render(request,
                   'xgds_planner2/planner_app.html',
@@ -398,7 +404,8 @@ def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=Fals
             if name.endswith(entry.extension):
                 exporterClass = entry.exporterClass
         if exporterClass is None:
-            return HttpResponseBadRequest('could not infer export format to use: "format" query parameter not set and extension not recognized for filename "%s"' % name)
+            return HttpResponseBadRequest(
+                'could not infer export format to use: "format" query parameter not set and extension not recognized for filename "%s"' % name)
 
     exporter = exporterClass()
     if time:
@@ -408,7 +415,7 @@ def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=Fals
             exporter.initPlan(dbPlan, context)
         except:
             pass
-        
+
     if outputDirectory:
         # output the exported file to a directory
         exporter.exportDbPlanToPath(dbPlan, os.path.join(outputDirectory, name), request)
@@ -460,12 +467,11 @@ def planCreate(request):
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
             dbPlan.jsonPlan["name"] = planId
-            dbPlan.jsonPlan["uuid"] = dbPlan.uuid # makeUuid()
+            dbPlan.jsonPlan["uuid"] = dbPlan.uuid  # makeUuid()
             dbPlan.name = planId
 
             dbPlan.save()
             handleCallbacks(request, dbPlan, settings.SAVE)
-
 
             # redirect to plan editor on newly created plan
             return HttpResponseRedirect(reverse('planner2_edit', args=[dbPlan.pk]))
@@ -474,7 +480,7 @@ def planCreate(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form,
-                   'siteLabel':'Create'})
+                   'siteLabel': 'Create'})
 
 
 def planImport(request):
@@ -492,7 +498,7 @@ def planImport(request):
                          for f in ('planNumber', 'planVersion')])
             meta['creator'] = request.user.username
             planSchema = models.getPlanSchema(form.cleaned_data['platform'])
-            
+
             # set the site
             siteID = form.cleaned_data['site']
             if siteID:
@@ -516,7 +522,7 @@ def planImport(request):
             importer = choosePlanImporter.chooseImporter(form.cleaned_data['sourceFile'].name)
             f = request.FILES['sourceFile']
             buf = ''.join([chunk for chunk in f.chunks()])
-    
+
             dbPlan = importer.importPlan('tempName',
                                          buf=buf,
                                          meta=meta,
@@ -525,7 +531,7 @@ def planImport(request):
             # bit of a hack, setting the name from the id
             planId = dbPlan.jsonPlan.id
             dbPlan.jsonPlan["name"] = planId
-            dbPlan.jsonPlan["uuid"] = dbPlan.uuid # makeUuid()
+            dbPlan.jsonPlan["uuid"] = dbPlan.uuid  # makeUuid()
             dbPlan.name = planId
 
             dbPlan.save()
@@ -540,6 +546,7 @@ def planImport(request):
                   {'form': form,
                    'siteLabel': 'Import'})
 
+
 def plan_delete(request):
     picks = request.POST.getlist('picks')
     for i in picks:
@@ -548,7 +555,7 @@ def plan_delete(request):
             plan.deleted = True
             plan.save()
             handleCallbacks(request, plan, settings.DELETE)
-            
+
     return HttpResponseRedirect(reverse('planner2_index'))
 
 
@@ -563,7 +570,7 @@ def getPlanIndexKml(request):
         relUrl = reverse('planner2_planExport', args=[plan.uuid, fname])
         restUrl = insertIntoPath(relUrl, 'rest')
         url = request.build_absolute_uri(restUrl)
-#         print(url)
+        #         print(url)
         out.write("""
 <NetworkLink>
   <name>%(name)s</name>
@@ -578,190 +585,8 @@ def getPlanIndexKml(request):
     return wrapKmlDjango(out.getvalue())
 
 
-def processNameToDate(flight):
-    result = {}
-    if (len(flight.name) >= 8):
-        year = flight.name[0:4].encode()
-        month = flight.name[4:6].encode()
-        day = flight.name[6:8].encode()
-        result = {"year": year, "month": month, "day": day}
-    return result
-
-
-def getGroupFlights():
-    return GROUP_FLIGHT_MODEL.get().objects.exclude(name="").order_by('name')
-
-
-def getAllFlights(today=False, reverseOrder=False):
-    orderby = 'name'
-    if reverseOrder:
-        orderby = '-name'
-    if not today:
-        return FLIGHT_MODEL.get().objects.all().order_by(orderby)
-    else:
-        now = timezone.localtime(datetime.datetime.now(pytz.utc))
-        todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
-        return FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
-    
-def getAllGroupFlights(today=False, reverseOrder=False):
-    orderby = 'name'
-    if reverseOrder:
-        orderby = '-name'
-    if not today:
-        return GROUP_FLIGHT_MODEL.get().objects.all().order_by(orderby)
-    else:
-        now = timezone.localtime(datetime.datetime.now(pytz.utc))
-        todayname = "%04d%02d%02d" % (now.year, now.month, now.day)
-        return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=(todayname)).order_by(orderby)
-
-
-def getAllFlightNames(year="ALL", onlyWithPlan=False, reverseOrder=True):
-    orderby = 'name'
-    if reverseOrder:
-        orderby = '-name'
-    flightList = FLIGHT_MODEL.get().objects.exclude(name="").order_by(orderby)
-    flightNames = ["-----"]
-    if flightList:
-        for flight in flightList:
-            if (flight.name):
-                flightNames.append(flight.name)
-    return flightNames
-
-
-def updateTodaySession(request):
-    if not request.is_ajax() or not request.method == 'POST':
-        return HttpResponseNotAllowed(['POST'])
-    todayChecked = request.POST.get('today')
-    todayValue = todayChecked == unicode('true')
-    request.session['today'] = todayValue
-    return HttpResponse('ok')
-
-
-def manageFlights(request, errorString=""):
-    today = request.session.get('today', False)
-    return render(request,
-                  "xgds_planner2/ManageFlights.html",
-                  {'groups': getAllGroupFlights(today=today),
-                   "errorstring": errorString},
-                  )
-
-
-def listFlownFlights(request, errorString=""):
-    today = request.session.get('today', False)
-    return render(request,
-                  "xgds_planner2/ListFlownFlights.html",
-                  {'groups': getAllGroupFlights(today=today),
-                   "errorstring": errorString},
-                  )
-
-
-def manageHelp(request):
-    return render(request,
-                  "xgds_planner2/ManageFlightHelp.html")
-
-
 def oltest(request):
     return render(request, "xgds_planner2/oltest.html")
-
-
-def startFlightTracking(request, flightName):
-    try:
-        flight = FLIGHT_MODEL.get().objects.get(name=flightName)
-        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-            flight.startTracking()
-            messages.info(request, "Tracking started: " + flightName)
-        else:
-            messages.error(request, "This server is not a tracking provider")
-    except FLIGHT_MODEL.get().DoesNotExist:
-        messages.error(request, 'Flight not found: ' + flightName)
-    return redirect(reverse('error'))
-
-
-def stopFlightTracking(request, flightName):
-    try:
-        flight = FLIGHT_MODEL.get().objects.get(name=flightName)
-        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-            flight.stopTracking()
-            messages.info(request, "Tracking stopped: " + flightName)
-        else:
-            messages.error(request, "This server is not a tracking provider")
-    except FLIGHT_MODEL.get().DoesNotExist:
-        messages.error(request, 'Flight not found: ' + flightName)
-    return redirect(reverse('error'))
-
-
-def startFlight(request, uuid):
-    errorString = ""
-    try:
-        flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
-        # This next line is to avoid replication problems. If we are not the track provider (e.g. ground server) we wait for times to replicate.
-        if settings.GEOCAM_TRACK_SERVER_TRACK_PROVIDER:
-            if not flight.start_time:
-                flight.start_time = datetime.datetime.now(pytz.utc)
-            flight.end_time = None
-            flight.save()
-    except FLIGHT_MODEL.get().DoesNotExist:
-        errorString = "Flight not found"
-
-    if flight:
-        # end any other active flight that is with the same vehicle
-        try:
-            conflictingFlights = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__vehicle__pk=flight.vehicle.pk)
-            for cf in conflictingFlights:
-                doStopFlight(request, cf.flight.uuid)
-        except:
-            pass
-        
-        # make this flight active
-        foundFlight = ACTIVE_FLIGHT_MODEL.get().objects.filter(flight__pk=flight.pk)
-        if not foundFlight:
-            newlyActive = ACTIVE_FLIGHT_MODEL.get()(flight=flight)
-            newlyActive.save()
-
-        flight.startFlightExtras(request)
-
-        setState(flight.name, flight.start_time, values=model_to_dict(flight), notes='Flight Started')
-
-    return manageFlights(request, errorString)
-
-
-def stopFlight(request, uuid):
-    errorString = doStopFlight(request, uuid)
-    return manageFlights(request, errorString)
-
-
-def doStopFlight(request, uuid):
-    errorString = ""
-    try:
-        flight = FLIGHT_MODEL.get().objects.get(uuid=uuid)
-        if not flight.start_time:
-            errorString = "Flight has not been started"
-        else:
-            flight.end_time = datetime.datetime.now(pytz.utc)
-            flight.save()
-            try:
-                flight.stopFlightExtras(request, flight)
-            except:
-                print 'error in stop flight extras for %s' % flight.name
-                traceback.print_exc()
-
-            # kill the plans
-            for pe in flight.plans.all():
-                if pe.start_time:
-                    pe.end_time = flight.end_time
-                    pe.save()
-            try:
-                active = ACTIVE_FLIGHT_MODEL.get().objects.get(flight__pk=flight.pk)
-                active.delete()
-            except ObjectDoesNotExist:
-                errorString = 'Flight IS NOT ACTIVE'
-
-            setState(flight.name, end=flight.end_time, active=False, notes='Flight Ended')
-
-    except:
-        traceback.print_exc()
-        errorString = "Flight not found"
-    return errorString
 
 
 def schedulePlans(request, redirect=True):
@@ -791,16 +616,17 @@ def schedulePlans(request, redirect=True):
                     firstPlan = pe.plan
                 else:
                     firstPlan = plans[0]
-                local_date = utcToTimeZone(original_schedule_date, str(firstPlan.jsonPlan.site.alternateCrs.properties.timezone))
+                local_date = utcToTimeZone(original_schedule_date,
+                                           str(firstPlan.jsonPlan.site.alternateCrs.properties.timezone))
                 prefix = "%04d%02d%02d" % (local_date.year, local_date.month, local_date.day)
 
             flight_name = request.POST['flight']
-            
+
             # see if flight name matches prefix, if not go by the date
             if prefix and flight_name:
                 if not flight_name.startswith(prefix):
                     flight_name = None
-                    
+
             try:
                 flight = FLIGHT_MODEL.get().objects.get(name=flight_name)
             except FLIGHT_MODEL.get().DoesNotExist:
@@ -832,29 +658,32 @@ def schedulePlans(request, redirect=True):
                     pe.planned_start_time = schedule_date
                     pe.flight = flight
                     pe.plan = plan
-                    
+
                     if settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD:
                         pe = getClassByName(settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD)(request, pe)
-                        
+
                     pe.save()
-                    
+
                     # relay the new plan execution
                     peDict = pe.toSimpleDict()
                     del peDict['flight']
                     del peDict['plan']
-                    addRelay(pe, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
+                    addRelay(pe, None, json.dumps(peDict, cls=DatetimeJsonEncoder),
+                             reverse('planner2_relaySchedulePlan'))
 
                     lastPlanExecution = pe
         except:
             traceback.print_exc()
-            return HttpResponse(json.dumps({'Success':"False", 'msg': 'Plan not scheduled'}), content_type='application/json', status=406)
+            return HttpResponse(json.dumps({'Success': "False", 'msg': 'Plan not scheduled'}),
+                                content_type='application/json', status=406)
             pass
     if redirect:
         return HttpResponseRedirect(reverse('planner2_index'))
     else:
         if lastPlanExecution:
-            return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder), content_type='application/json')
-        return HttpResponse(json.dumps({'Success':"True", 'msg': 'Plan scheduled'}), content_type='application/json')
+            return HttpResponse(json.dumps(lastPlanExecution.toSimpleDict(), cls=DatetimeJsonEncoder),
+                                content_type='application/json')
+        return HttpResponse(json.dumps({'Success': "True", 'msg': 'Plan scheduled'}), content_type='application/json')
 
 
 def schedulePlanActiveFlight(request, vehicleName, planPK):
@@ -862,7 +691,7 @@ def schedulePlanActiveFlight(request, vehicleName, planPK):
     try:
         vehicle = VEHICLE_MODEL.get().objects.get(name=vehicleName)
         activeFlights = getActiveFlights(vehicle=vehicle)
-        flight = activeFlights[0].flight # there can be only one
+        flight = activeFlights[0].flight  # there can be only one
         # we must have existing plan executions, let's copy the last one
         if not flight.plans:
             # it might not have come from this vehicle
@@ -874,32 +703,32 @@ def schedulePlanActiveFlight(request, vehicleName, planPK):
                             lastPE = flight.plans.last()
         else:
             lastPE = flight.plans.last()
-        
+
         if not lastPE:
             # make a totally new one. should never be able to get to this state.
             lastPE = PLAN_EXECUTION_MODEL.get()()
             lastPE.flight = flight
-            
+
             if settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD:
                 # this will fail we don't have what we need ...
                 lastPE = getClassByName(settings.XGDS_PLANNER_SCHEDULE_EXTRAS_METHOD)(request, lastPE)
-                
+
         lastPE.pk = None
         lastPE.plan_id = planPK
         lastPE.planned_start_time = timezone.now()
         lastPE.start_time = None
         lastPE.end_time = None
         lastPE.save()
-        
+
         peDict = lastPE.toSimpleDict()
         del peDict['flight']
         del peDict['plan']
         addRelay(lastPE, None, json.dumps(peDict, cls=DatetimeJsonEncoder), reverse('planner2_relaySchedulePlan'))
         return JsonResponse(peDict);
-    
+
     except Exception, e:
         return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
-    
+
 
 def relaySchedulePlan(request):
     """ Schedule a plan with same plan execution pk from the post dictionary
@@ -907,24 +736,25 @@ def relaySchedulePlan(request):
     """
     try:
         form_dict = json.loads(request.POST.get('serialized_form'))
-            
+
         try:
             id = form_dict['id']
-            preexisting= PLAN_EXECUTION_MODEL.get().get(pk=id)
+            preexisting = PLAN_EXECUTION_MODEL.get().get(pk=id)
 
-            #TODO this should never happen, we should not have flights on multiple servers with the same name
+            # TODO this should never happen, we should not have flights on multiple servers with the same name
             print '********DUPLICATE PLAN EXECUTION ***** WAS ATTEMPTED TO RELAY WITH PK %d' % (id)
         except:
             pass
-        
+
         # we are good it does not exist
         newPlanExecution = PLAN_EXECUTION_MODEL.get()(**form_dict)
         newPlanExecution.save()
         return JsonResponse(model_to_dict(newPlanExecution))
-        
+
     except Exception, e:
         traceback.print_exc()
         return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
+
 
 def startPlan(request, pe_id):
     errorString = ""
@@ -962,124 +792,6 @@ def deletePlanExecution(request, pe_id):
     return manageFlights(request, errorString)
 
 
-def addGroupFlight(request):
-    from xgds_planner2.forms import GroupFlightForm
-    errorString = None
-    groupFlight = None
-    newFlights = []
-
-    if request.method != 'POST':
-        groupFlightForm = GroupFlightForm()
-        return render(request,
-                      "xgds_planner2/AddGroupFlight.html", 
-                      {'groupFlightForm': groupFlightForm,
-                       'groupFlights': getGroupFlights(),
-                       'errorstring': errorString})
-
-    if request.method == 'POST':
-        form = GroupFlightForm(request.POST)
-        if form.is_valid():
-            groupFlight = GROUP_FLIGHT_MODEL.get()()
-            groupFlight.name = form.cleaned_data['date'].strftime('%Y%m%d') + form.cleaned_data['prefix']
-            groupFlight.notes = form.cleaned_data['notes']
-            try:
-                groupFlight.save()
-            except IntegrityError, strerror:
-                errorString = "Problem Creating Group Flight: {%s}" % strerror
-                return render(request,
-                              "xgds_planner2/AddGroupFlight.html",
-                              {'groupFlightForm': form,
-                               'groupFlights': getGroupFlights(),
-                               'errorstring': errorString},
-                              )
-
-            for vehicle in form.cleaned_data['vehicles']:
-                newFlight = FLIGHT_MODEL.get()()
-                newFlight.group = groupFlight
-
-                newFlight.vehicle = VEHICLE_MODEL.get().objects.get(name=vehicle)
-                newFlight.name = groupFlight.name + "_" + vehicle
-
-                newFlight.locked = False
-                newFlight.uuid = uuid4()
-
-                try:
-                    newFlight.save(force_insert=True)
-                    newFlights.append(newFlight)
-                except IntegrityError, strerror:
-                    errorString = "Problem Creating Flight: {%s}" % strerror
-                    return render(request,
-                                  "xgds_planner2/AddGroupFlight.html",
-                                  {'groupFlightForm': form,
-                                   'groupFlights': getGroupFlights(),
-                                   'errorstring': errorString},
-                                  )
-        else:
-            errorString = form.errors
-            return render(request,
-                          "xgds_planner2/AddGroupFlight.html", 
-                          {'groupFlightForm': form,
-                           'groupFlights': getGroupFlights(),
-                           'errorstring': errorString},
-                          )
-
-    # add relay ...
-    if groupFlight:
-        addRelay(groupFlight, None, json.dumps({'name': groupFlight.name, 'id': groupFlight.pk, 'notes': groupFlight.notes}), reverse('planner2_relayAddGroupFlight'))
-        for f in newFlights:
-            addRelay(f, None, json.dumps({'group_id': groupFlight.pk, 'vehicle_id': f.vehicle.pk, 'name': f.name, 'uuid': str(f.uuid), 'id': f.id}), reverse('planner2_relayAddFlight'))
-            
-    return HttpResponseRedirect(reverse('planner2_manage', args=[]))
-
-
-def relayAddFlight(request):
-    """ Add a flight with same pk and uuid from the post dictionary
-    """
-    try:
-        try:
-            flightName = request.POST.get('name')
-            preexisting= FLIGHT_MODEL.get().get(name=flightName)
-            preexisting.name = 'BAD' + preexisting.name
-            preexisting.save()
-
-            #TODO this should never happen, we should not have flights on multiple servers with the same name
-            print '********DUPLICATE FLIGHT***** %s WAS ATTEMPTED TO RELAY WITH PK %d' % (flightName, request.POST.get('id'))
-        except:
-            pass
-        
-        # we are good it does not exist
-        form_dict = json.loads(request.POST.get('serialized_form'))
-        newFlight = FLIGHT_MODEL.get()(**form_dict)
-        newFlight.save()
-        return JsonResponse(model_to_dict(newFlight))
-    except Exception, e:
-        traceback.print_exc()
-        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
-
-
-def relayAddGroupFlight(request):
-    """ Add a group flight with same pk and uuid from the post dictionary
-    """
-    try:        
-        try:
-            gfName = request.POST.get('name')
-            preexisting= GROUP_FLIGHT_MODEL.get().get(name=gfName)
-            preexisting.name = 'BAD' + preexisting.name
-            preexisting.save()
-            #TODO this should never happen, we should not have flights on multiple servers with the same name
-            print '********DUPLICATE GROUP FLIGHT***** %s WAS ATTEMPTED TO RELAY WITH PK %d' % (gfName, request.POST.get('id'))
-        except:
-            pass
-
-        form_dict = json.loads(request.POST.get('serialized_form'))
-        newGroupFlight = GROUP_FLIGHT_MODEL.get()(**form_dict)
-        newGroupFlight.save()
-        return JsonResponse(model_to_dict(newGroupFlight))
-    except Exception, e:
-        traceback.print_exc()
-        return JsonResponse({'status': 'fail', 'exception': str(e)}, status=406)
-
-
 def getSiteFrames():
     if not settings.XGDS_PLANNER_SITE_FRAMES:
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
@@ -1113,14 +825,14 @@ def getClosestSiteFrame(lat, lon):
         myUTM = (UTM_location[0], UTM_location[1])
         # return (UTMEasting, UTMNorthing, zoneNumber, zoneLetter)
 
-#  "alternateCrs": {
-#                 "type": "roversw",
-#                 "properties": {
-#                     "originNorthing": 4141835,
-#                     "originEasting": 582724,
-#                     "projection": "utm",
-#                     "zone": 10,
-#                     "zoneLetter": "N",
+        #  "alternateCrs": {
+        #                 "type": "roversw",
+        #                 "properties": {
+        #                     "originNorthing": 4141835,
+        #                     "originEasting": 582724,
+        #                     "projection": "utm",
+        #                     "zone": 10,
+        #                     "zoneLetter": "N",
         closestSite = None
         smallestDiff = None
         for site in getSiteFrames():
@@ -1170,45 +882,6 @@ def mapJsonPlan(request, uuid=None, pk=None):
                             content_type="application/json")
 
 
-def getActiveFlights(vehicle=None):
-    ACTIVE_FLIGHTS_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_ACTIVE_FLIGHT_MODEL)
-
-    if not vehicle:
-        return ACTIVE_FLIGHTS_MODEL.get().objects.all()
-    else:
-        # filter by vehicle
-        return ACTIVE_FLIGHTS_MODEL.get().objects.filter(flight__vehicle=vehicle)
-
-def getActiveFlightFlights(vehicle=None):
-    activeFlights = getActiveFlights(vehicle)
-    flights = FLIGHT_MODEL.get().objects.filter(active__in=activeFlights)
-    return flights
-
-def activeFlightsTreeNodes(request):
-    activeFlights = getActiveFlights()
-    result = []
-    for aFlight in activeFlights:
-        result.append(aFlight.flight.getTreeJson())
-    json_data = json.dumps(result, indent=4)
-    return HttpResponse(content=json_data,
-                        content_type="application/json")
-
-
-def completedFlightsTreeNodes(request):
-    flights = FLIGHT_MODEL.get().objects.exclude(end_time__isnull=True)
-    result = []
-    for f in flights:
-        result.append(f.getTreeJson())
-    json_data = json.dumps(result, indent=4)
-    return HttpResponse(content=json_data,
-                        content_type="application/json")
-    
-def flightTreeNodes(request, flight_id):
-    flight = FLIGHT_MODEL.get().objects.get(id=flight_id)
-    json_data = json.dumps(flight.getTreeJsonChildren(), indent=4)
-    return HttpResponse(content=json_data,
-                        content_type="application/json")
-
 def plansTreeNodes(request):
     plans = PLAN_MODEL.get().objects.filter(deleted=False)
     result = []
@@ -1252,25 +925,26 @@ def replaceElement(sequence, newElement):
     for index, el in enumerate(sequence):
         if (el['uuid'] == seekUuid):
             sequence[index] = newElement
-            return 
+            return
+
 
 def updateJson(plan, newJsonObj):
     mergedJson = plan.jsonPlan
     originalSequence = mergedJson['sequence']
     incomingSequence = newJsonObj['sequence']
     del newJsonObj['sequence']
-    
+
     # first deal with the top level plan; we have already verified its uuid 
     updateDictionary(mergedJson, newJsonObj)
-    
+
     # then deal with all of the nested elements in the sequence
     for pathElement in incomingSequence:
         replaceElement(originalSequence, pathElement)
-            
+
     plan.save()
     # does not call the callbacks here; this is probably called DURING a callback
-    
-    
+
+
 def planImportXPJson(request):
     PLAN_MODEL = LazyGetModelByName(settings.XGDS_PLANNER_PLAN_MODEL)
     try:
@@ -1280,30 +954,33 @@ def planImportXPJson(request):
             try:
                 plan = PLAN_MODEL.get().objects.get(uuid=planUuid)
             except:
-                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Wrong UUID, plan not found'}), content_type='application/json', status=406)
+                return HttpResponse(json.dumps({'Success': "False", 'responseText': 'Wrong UUID, plan not found'}),
+                                    content_type='application/json', status=406)
             incoming = request.FILES['file']
             newJson = handle_uploading_xpjson(incoming)
             if (len(newJson) > 0):
                 newJsonObj = json.loads(newJson, 'UTF-8')
                 foundUuid = newJsonObj['uuid']
                 if (foundUuid != planUuid):
-                    return HttpResponse(json.dumps({'Success':"False", 'responseText': 'Loaded JSON is for a different plan; UUID of plans do not match.'}), content_type='application/json', status=406)
+                    return HttpResponse(json.dumps({'Success': "False",
+                                                    'responseText': 'Loaded JSON is for a different plan; UUID of plans do not match.'}),
+                                        content_type='application/json', status=406)
                 isValid = validateJson(newJsonObj)
                 if isValid == True:
                     updateJson(plan, newJsonObj)
-                    return HttpResponse(json.dumps({'Success':"True"}))
+                    return HttpResponse(json.dumps({'Success': "True"}))
                 else:
-                    return HttpResponse(json.dumps({'Success':"False", 'responseText': isValid}), content_type='application/json', status=406)
+                    return HttpResponse(json.dumps({'Success': "False", 'responseText': isValid}),
+                                        content_type='application/json', status=406)
             else:
-                return HttpResponse(json.dumps({'Success':"False", 'responseText': 'JSON Empty'}), content_type='application/json', status=406)
+                return HttpResponse(json.dumps({'Success': "False", 'responseText': 'JSON Empty'}),
+                                    content_type='application/json', status=406)
     except Exception:
         traceback.print_exc()
         exc_type, exc_value, exc_traceback = sys.exc_info()
-        return HttpResponse(json.dumps({'Success':"False", 'responseText': exc_value['message']}), content_type='application/json', status=406)
+        return HttpResponse(json.dumps({'Success': "False", 'responseText': exc_value['message']}),
+                            content_type='application/json', status=406)
 
-def getTodaysGroupFlights():
-    today = timezone.localtime(timezone.now()).date()
-    return GROUP_FLIGHT_MODEL.get().objects.filter(name__startswith=today.strftime('%Y%m%d'))
 
 def getTodaysPlans():
     letters = []
@@ -1320,7 +997,8 @@ def getTodaysPlans():
                         letters.append(letter)
                         plans.append(plan)
     return zip(letters, plans)
-                        
+
+
 def getTodaysPlanFiles(request, fileFormat='.kml'):
     todaysPlans = getTodaysPlans()
     letters = []
@@ -1342,14 +1020,3 @@ def getTodaysPlansJson(request):
         for theTuple in todaysPlans:
             result[theTuple[0]] = theTuple[1].jsonPlan
     return JsonResponse(result, encoder=DatetimeJsonEncoder)
-
-
-def getGroupFlightSummary(request, groupFlightName):
-    try:
-        group = GROUP_FLIGHT_MODEL.get().objects.get(name=groupFlightName)
-        return render(request,
-                      "xgds_planner2/groupFlightSummary.html",
-                      {'groupFlight': group},
-                      )
-    except:
-        raise Http404("%s %s does not exist" % (settings.XGDS_PLANNER_GROUP_FLIGHT_MONIKER, groupFlightName))
