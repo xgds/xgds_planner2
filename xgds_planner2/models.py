@@ -37,7 +37,7 @@ from xgds_planner2 import xpjson, statsPlanExporter
 from geocamUtil.loader import LazyGetModelByName
 from geocamPycroraptor2.views import getPyraptordClient, stopPyraptordServiceIfRunning
 
-from xgds_core.models import NamedURL, NameManager
+from xgds_core.models import NamedURL, NameManager, HasFlight
 
 # pylint: disable=C1001,E1101
 
@@ -53,7 +53,7 @@ from xgds_core.models import NamedURL, NameManager
 
 PLAN_SCHEMA_CACHE = {}
 
-class AbstractPlanExecution(models.Model):
+class AbstractPlanExecution(models.Model, HasFlight):
     """
     Relationship table for managing
     flight to plan's many to many relationship.
