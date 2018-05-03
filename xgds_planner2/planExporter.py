@@ -73,6 +73,7 @@ class PlanExporter(object):
         """
         pass
 
+
 class JsonPlanExporter(PlanExporter):
     """
     A base class for plan exporters that produce JSON.
@@ -322,7 +323,6 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
         return command
 
-        
     def exportDbPlan(self, dbPlan, request):
         try:
             platform = dbPlan.jsonPlan['platform']

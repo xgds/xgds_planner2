@@ -223,6 +223,8 @@ class AbstractPlan(models.Model):
         """
         result = {}
         result["KML"] = reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})
+        result["Summary"] = reverse('plan_bearing_distance', kwargs={'plan_id': self.pk})
+
         for exporter in self.getExporters():
             result[exporter.label] = exporter.url
         return result
