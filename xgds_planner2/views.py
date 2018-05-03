@@ -269,11 +269,12 @@ def fixTimezonesInPlans():
                     break;
 
 
-def plan_bearing_distance_view(request, plan_id):
+def plan_bearing_distance_view(request, plan_id, crs=False):
     plan = PLAN_MODEL.get().objects.get(pk=plan_id)
     return render(request,
                   'xgds_planner2/bearingDistancePlan.html',
                   {'plan_uuid': plan.uuid,
+                   'crs_coords': crs,
                    'handlebar_path': settings.XGDS_PLANNER_PLAN_BEARING_HANDLEBAR_PATH})
 
 

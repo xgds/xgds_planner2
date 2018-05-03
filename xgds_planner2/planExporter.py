@@ -23,8 +23,10 @@ from django.conf import settings
 
 from geocamUtil.dotDict import convertToDotDictRecurse, DotDict
 from geocamUtil import geomath
-from geocamUtil.UserUtil import getUserName
+
 import models
+import xpjson
+
 
 # pylint: disable=W0223
 
@@ -244,6 +246,31 @@ class XpjsonPlanExporter(JsonPlanExporter):
         return dbPlan.jsonPlan
 
 
+class CrsJsonPlanExporter(TreeWalkPlanExporter):
+    """
+    Export the plan with coordinates in the local coordinate reference frame.
+    Uses the alternate CRS system.
+    """
+
+    label = "crsJson"
+
+    def initPlan(self, plan, context):
+        if plan.site.alternateCrs:
+            plan.site.crs = plan.site.alternateCrs
+            plan.site.alternateCrs = None
+            context['transform'] = xpjson.getCrsTransform(plan.site.crs)
+
+    def transformStation(self, station, tsequence, context):
+        if 'transform' in context:
+            if station.geometry and station.geometry.get('coordinates'):
+                xform = context['transform']
+                station.geometry['coordinates'] = xform(station.geometry['coordinates'])
+        return station
+
+    def serializeExportedObject(self, obj):
+        return xpjson.dumpDocumentToString(obj)
+
+
 class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     """
     Returns json of the plan including durations, bearings and distances
@@ -284,7 +311,6 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
                 'geometry': station.geometry,
                 'notes': station.notes,
                 'tolerance': station.tolerance,
-                'userDuration': station.userDuration,
                 'durationSeconds': durationSeconds,
                 'bearing': bearing}
 
