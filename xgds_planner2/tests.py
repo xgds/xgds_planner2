@@ -95,5 +95,5 @@ class xgds_planner2Test(TestCase):
     def test_create_plan(self):
         self.client.login(**self.login_info)
         response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(len(models.Plan.objects.all()), 2)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(models.Plan.objects.all()), 1)

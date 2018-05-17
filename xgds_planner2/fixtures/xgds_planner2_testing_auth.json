@@ -1,14 +1,14 @@
 [
     {
         "fields": {
-            "date_joined": "2013-12-08T17:58:59",
+            "date_joined": "2013-12-08T17:58:59Z",
             "email": "vagrant@bog.us",
             "first_name": "",
             "groups": [],
             "is_active": true,
             "is_staff": true,
             "is_superuser": true,
-            "last_login": "2013-12-08T18:01:03",
+            "last_login": "2013-12-08T18:01:03Z",
             "last_name": "",
             "password": "pbkdf2_sha256$10000$Y0angbDoQtUx$nUQXGTCk165r8NZm9KjcDwdESDI2aVWIHP62+lXEU0I=",
             "user_permissions": [],

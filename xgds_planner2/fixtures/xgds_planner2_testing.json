@@ -2,9 +2,9 @@
     {
         "fields": {
             "creator": 1,
-            "dateModified": "2013-12-09T02:12:55",
+            "dateModified": "2013-12-09T02:12:55Z",
             "estimatedDurationSeconds": null,
-            "jsonPlan": "{\"platform\": {\"name\": \"test\"}, \"url\": \"\", \"xpjson\": \"0.1\", \"id\":\"A\"}",
+            "jsonPlan": "{\"name\": \"testaplan\", \"platform\": {\"name\": \"GenericVehicle\", \"type\": \"Platform\"}, \"url\": \"\", \"xpjson\": \"0.2\", \"type\": \"Plan\", \"id\":\"A\", \"serverId\": 1, \"planVersion\": \"A\"}",
             "lengthMeters": 0.0,
             "name": "test_cntr_vagrant_1_A",
             "numCommands": 0,
