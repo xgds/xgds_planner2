@@ -13,7 +13,6 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
-
 import json
 import logging
 import traceback
@@ -308,11 +307,14 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
                 'name': station.name,
                 'type': settings.XGDS_PLANNER_STATION_MONIKER,
                 'commands': tsequence,
-                'geometry': station.geometry,
+                'geometry': self.getStationGeometry(station, context),
                 'notes': station.notes,
                 'tolerance': station.tolerance,
                 'durationSeconds': durationSeconds,
                 'bearing': bearing}
+    
+    def getStationGeometry(self, station, context):
+        return station.geometry
 
     def transformSegment(self, segment, tsequence, context):
         derivedInfo = segment.derivedInfo; 
@@ -339,15 +341,27 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
                 'distanceMeters': distanceMeters, 
                 'durationSeconds': durationSeconds}
 
-    def transformStationCommand(self, command, context):
+    SKIP_COMMAND_KEYS = ["duration", "id", "instrument", "name", "notes", "presetCode", "presetName", "timing", "type", "uuid"]
+    def transformCommand(self, command, context):
         command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
+        notes = ''
+        if notes in command:
+            notes = command.notes
+        if not notes:
+            notes = ''
+        for key, value in command.iteritems():
+            if key not in self.SKIP_COMMAND_KEYS:
+                notes += ' %s: %s' % (key, str(value))
+        command.notes = notes
+
         return command
 
+    def transformStationCommand(self, command, context):
+        return self.transformCommand(command, context)
+
     def transformSegmentCommand(self, command, context):
-        command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
-        command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
-        return command
+        return self.transformCommand(command, context)
 
     def exportDbPlan(self, dbPlan, request):
         try:
@@ -361,3 +375,19 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
             traceback.print_exc()
             logging.warning('exportDbPlan: could not save plan %s', dbPlan.name)
             raise  # FIX
+
+
+class BearingDistanceCRSJsonPlanExporter(BearingDistanceJsonPlanExporter):
+    """
+    Returns json of the plan including durations, bearings and distances, with station coordinates in the local CRS
+    """
+
+    def initPlan(self, plan, context):
+        super(BearingDistanceCRSJsonPlanExporter, self).initPlan(plan, context)
+        if plan.site.alternateCrs:
+            plan.site.crs = plan.site.alternateCrs
+            plan.site.alternateCrs = None
+            context['transform'] = xpjson.getCrsTransform(plan.site.crs)
+
+    def getStationGeometry(self, station, context):
+        return {'coordinates':context['transform'](station.geometry['coordinates'])}

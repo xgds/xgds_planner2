@@ -150,10 +150,16 @@ PIPELINE['JAVASCRIPT']['simulator'] = {'source_filenames': ('xgds_planner2/js/pl
 
 _thisDir = os.path.dirname(__file__)
 
-# list of (formatCode, extension, exporterClass)
+# Set to true to make the bearing distance be in crs units
+XGDS_PLANNER_CRS_UNITS_DEFAULT = False
+
+# list of (formatCode, extension, exporterClass).  This is the entire list of everything that
+# xgds_planner provides; remove anything you won't be using.
 XGDS_PLANNER_PLAN_EXPORTERS = (
     ('xpjson', '.json', 'xgds_planner2.planExporter.XpjsonPlanExporter'),
     ('bearing_distance', '.bdj', 'xgds_planner2.planExporter.BearingDistanceJsonPlanExporter'),
+    ('bearing_distance', '.cbdj', 'xgds_planner2.planExporter.BearingDistanceCRSJsonPlanExporter'),
+    ('crsjson', '.crsjson', 'xgds_planner2.planExporter.CrsJsonPlanExporter'),
     ('kml', '.kml', 'xgds_planner2.kmlPlanExporter.KmlPlanExporter'),
     ('stats', '-stats.json', 'xgds_planner2.statsPlanExporter.StatsPlanExporter'),
 #    ('pml', '.pml', 'xgds_planner2.pmlPlanExporter.PmlPlanExporter'),

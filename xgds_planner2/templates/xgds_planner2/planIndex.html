@@ -82,7 +82,8 @@ table.planIndex td.exportFormat a {
           {{ exporter.label }} 
         </a>
       {% endfor %}
-      <a href="{% url 'plan_bearing_distance' plan.id %}" style="text-decoration:none">
+
+      <a href="{% if settings.XGDS_PLANNER_CRS_UNITS_DEFAULT %}{% url 'plan_bearing_distance_crs' plan.id %}{% else %}{% url 'plan_bearing_distance' plan.id %}{% endif %}" style="text-decoration:none">
       	Summary
       </a>
     </td>

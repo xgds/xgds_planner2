@@ -221,9 +221,13 @@ class AbstractPlan(models.Model):
         The links tab wil be populated with the name, value contents of this dictionary as links,
         name is the string displayed and link is what will be opened
         """
-        result = {}
-        result["KML"] = reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})
-        result["Summary"] = reverse('plan_bearing_distance', kwargs={'plan_id': self.pk})
+        result = {"KML": reverse('planner2_planExport', kwargs={'uuid': self.uuid, 'name': self.name + '.kml'})}
+        kwargs = {'plan_id':self.pk,
+                  'crs': settings.XGDS_PLANNER_CRS_UNITS_DEFAULT}
+        if settings.XGDS_PLANNER_CRS_UNITS_DEFAULT:
+            result["SummaryCRS"] = reverse('plan_bearing_distance_crs', kwargs=kwargs)
+        else:
+            result["Summary"] = reverse('plan_bearing_distance', kwargs=kwargs)
 
         for exporter in self.getExporters():
             result[exporter.label] = exporter.url
