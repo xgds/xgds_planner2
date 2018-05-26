@@ -254,14 +254,6 @@ app.views.PlanPlotView = Marionette.View.extend({
 		if (force) {
 			// update start time 
 			var startEnd = this.getStartEndMoments(force);
-			// this broke the plot for new plans.  Clearly not needed.
-//			if (startEnd !== undefined && startEnd.start !== undefined){
-//				if (newOptions == null){
-//					newOptions = this.plotOptions['xaxis'];
-//				}
-//				newOptions.min = startEnd.start.toDate().getTime();
-//				newOptions.max = startEnd.end.toDate().getTime();
-//			}
 
 		}
 		if (newOptions != null){
@@ -437,24 +429,6 @@ app.views.PlanPlotView = Marionette.View.extend({
 			var timePercentage = secondsFromStart / planDurationSeconds;
 			var suggestedBucket = Math.round(timePercentage * numDataBuckets);
 			var foundIndex = suggestedBucket;
-
-			// verify time in data
-			// spot checked and the algorithm seems to always pick good buckets
-			/*
-			var plotData = this.plot.getData();
-			if (this.sampleData == undefined) {
-				for (var i=0; i<plotData.length; i++){
-					label = plotData[i].label;
-					if (label !== undefined){
-						this.sampleData = plotData[i];
-						i = plotData.length;
-					}
-				}
-			}
-			if (this.sampleData != undefined){
-				var dataAtIndex = this.sampleData.data[foundIndex];
-				// otherwise we would check the time of this one, check previous and next and see which is closest.
-			} */
 
 			if (this.lastDataIndex != foundIndex){
 				this.lastDataIndex = foundIndex;
