@@ -707,7 +707,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 			this.updateTimeValue(time);
 		}
 	},
-	updateDataValue(label, value){
+	updateDataValue: function(label, value){
 		// show the value from the plot below the plot.
 		var labelValue = ('#' + label + '_value');
 		var labelValue = labelValue.split(' ').join('_');
@@ -719,7 +719,7 @@ app.views.PlanPlotView = Marionette.View.extend({
 		}
 
 	},
-	updateTimeValue(newTime){
+	updateTimeValue: function(newTime){
 		//TODO update the time for the slider maybe
 	},
 	handleResize: function(event) {
