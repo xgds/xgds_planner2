@@ -32,6 +32,8 @@ class CreatePlanForm(forms.Form):
         super(CreatePlanForm, self).__init__(*args, **kwargs)
         platforms = sorted(settings.XGDS_PLANNER_SCHEMAS.keys())
         try:
+            if len(platforms) > 1:
+                platforms.remove("GenericVehicle")
             platforms.remove("test")
         except ValueError:
             pass
