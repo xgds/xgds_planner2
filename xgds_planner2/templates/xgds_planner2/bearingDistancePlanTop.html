@@ -5,7 +5,7 @@
   <head>
   	<meta charset="utf-8">
     <title>
-    {% block title %}{% block siteSection %}{% endblock siteSection%} {% block siteTitle %}BASALT{% endblock siteTitle%}{% endblock title%}
+    {% block title %}{% block siteSection %}{% endblock siteSection%} {% block siteTitle %}{{ settings.SITE_TITLE }}{% endblock siteTitle%}{% endblock title%}
     </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     {% block cssMain %}
