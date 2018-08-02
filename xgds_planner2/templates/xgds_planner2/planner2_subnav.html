@@ -2,8 +2,10 @@
 {% load nav %}
 		<li class='nav-item {% currentnav planner2_index planner2_planCreate planner2_planImport*%}'><a class='nav-link {% currentnav planner2_index planner2_planCreate planner2_planImport*%}' href="{% url 'planner2_index' %}"> List {{ settings.XGDS_PLANNER_PLAN_MONIKER }}s </a></li>
 		{% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
+            {% if settings.XGDS_CORE_SHOW_FLIGHT_MANAGEMENT %}
 		<li class='nav-item  {% currentnav xgds_core_manage xgds_core_startFlight xgds_core_stopFlight planner2_startPlan planner2_stopPlan planner2_group_flight_summary xgds_core_addGroupFlight%}'>
 			<a class='nav-link  {% currentnav xgds_core_manage xgds_core_startFlight xgds_core_stopFlight planner2_startPlan planner2_stopPlan xgds_core_addGroupFlight%}' href="{% url 'xgds_core_manage' %}">Manage {{settings.XGDS_CORE_FLIGHT_MONIKER}}s</a></li>
+                {% endif %}
 		{% endif %}
 		<!-- 
 	    <li class='nav-item {% currentnav planner2_help %}'><a class='nav-link {% currentnav planner2_help %}' href="{% url 'planner2_help' %}">Planner Help</a></li>
