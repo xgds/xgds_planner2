@@ -252,7 +252,7 @@ class AbstractPlan(models.Model):
         result['id'] = self.uuid
         result['author'] = self.jsonPlan.creator
         result['name'] = self.jsonPlan.name
-        result['type'] = 'AbstractPlan'
+        result['type'] = 'Plan'
         if self.jsonPlan.notes:
             result['notes'] = self.jsonPlan.notes
         else:

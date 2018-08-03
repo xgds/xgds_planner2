@@ -16,7 +16,7 @@
 
 // render json plan information on the openlayers map (as a layer from the tree)
 
-var AbstractPlan = {
+var Plan = {
         initStyles: function() {
             if (_.isUndefined(this.styles)){
                 this.styles = {};
@@ -58,10 +58,13 @@ var AbstractPlan = {
             var allFeatures = [];
             var coords = [];
             var coord;
-            for (var i = 0; i < planJson.stations.length; i++){
-                coord = transform(planJson.stations[i].coords);
-                coords.push(coord);
-                allFeatures.push(this.constructStation(planJson.stations[i], coord));
+            for (var i = 0; i < planJson.sequence.length; i++){
+                var element = planJson.sequence[i];
+                if  (element.type == "Station") {
+                    coord = transform(element.geometry.coordinates);
+                    coords.push(coord);
+                    allFeatures.push(this.constructStation(element, coord));
+                }
             }
             var lineFeature = new ol.Feature({
                 name: planJson.name,
@@ -91,8 +94,8 @@ var AbstractPlan = {
             }
             formattedString = formattedString + "</table>"; 
             var data = ["Notes:", stationJson.notes,
-                        "Lat:", stationJson.coords[1],
-                        "Lon:", stationJson.coords[0]];
+                        "Lat:", stationJson.geometry.coordinates[1],
+                        "Lon:", stationJson.geometry.coordinates[0]];
             feature['popup'] = vsprintf(formattedString, data);
         },
         setupLinePopup: function(feature, planJson) {
