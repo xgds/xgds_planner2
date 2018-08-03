@@ -92,8 +92,13 @@ var Plan = {
                 formattedString = formattedString + trString;
                 
             }
-            formattedString = formattedString + "</table>"; 
-            var data = ["Notes:", stationJson.notes,
+            formattedString = formattedString + "</table>";
+            var notes = "";
+            if (!_.isUndefined(stationJson.notes)){
+                notes = stationJson.notes;
+            }
+
+            var data = ["Notes:", notes,
                         "Lat:", stationJson.geometry.coordinates[1],
                         "Lon:", stationJson.geometry.coordinates[0]];
             feature['popup'] = vsprintf(formattedString, data);
