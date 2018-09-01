@@ -10,14 +10,28 @@
   "sites": [
     {
       "type": "Site",
-      "name": "NASA Ames Marscape",
-      "id": "ARC",
-      "crs": {
-        "type": "name",
+      "id": "IRG",
+      "name": "Ames",
+      "notes": "NASA Ames Roverscape",
+      "alternateCrs": {
+        "type": "roversw",
         "properties": {
-          "name": "urn:ogc:def:crs:OGC:1.3:CRS84"
+          "originNorthing": 4141835,
+          "originEasting": 582724,
+          "projection": "utm",
+          "zone": 10,
+          "zoneLetter": "N",
+          "frame": "RoverscapeSiteFrameZDown",
+          "zDirection": "down",
+          "label": "Ames Site Frame",
+          "coordinateLabel": "X, Y",
+          "coordinateNotes": "X=Northing Y=Easting",
+          "coordinateMapping": "lat, lon",
+          "timezone": "America/Los_Angeles"
         }
-      }
+      },
+      "bbox": [37.420289, -122.064721,
+        37.419226, -122.065580]
     }
   ],
 

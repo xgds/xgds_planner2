@@ -185,11 +185,15 @@ class TreeWalkPlanExporter(PlanExporter):
             if elt.type == 'Station':
                 ctx.parent = ctx.station = elt
                 ctx.prevStation, ctx.nextStation = self.getBracketingStations(plan, index, True)
-                tsequence.append(self.exportStation(elt, ctx))
+                exported_station = self.exportStation(elt, ctx)
+                if exported_station:
+                    tsequence.append(exported_station)
             elif elt.type == 'Segment':
                 ctx.parent = ctx.segment = elt
                 ctx.prevStation, ctx.nextStation = self.getBracketingStations(plan, index)
-                tsequence.append(self.exportSegment(elt, ctx))
+                exported_segment = self.exportSegment(elt, ctx)
+                if exported_segment:
+                    tsequence.append(exported_segment)
             else:
                 print 'exportPlan: cannot process element of type %s in Plan.sequence' % elt.type
 
