@@ -76,7 +76,7 @@ class StatsPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     def transformSegment(self, segment, tsequence, context):
         self.numSegments += 1
         segmentLength = getDistanceMeters(context.prevStation.geometry['coordinates'],
-                                               context.nextStation.geometry['coordinates'])
+                                          context.nextStation.geometry['coordinates'])
         self.lengthMeters += segmentLength
         if hasattr(segment, "hintedSpeed"):
                 speed = float(segment.hintedSpeed)
