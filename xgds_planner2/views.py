@@ -887,7 +887,7 @@ def plansTreeNodes(request):
     plans = PLAN_MODEL.get().objects.filter(deleted=False)
     result = []
     for plan in plans:
-        result.append(plan.getTreeJson())
+        result.append(plan.get_tree_json())
     json_data = json.dumps(result, indent=4)
     return HttpResponse(content=json_data,
                         content_type="application/json")

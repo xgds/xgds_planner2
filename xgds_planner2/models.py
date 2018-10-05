@@ -273,7 +273,7 @@ class AbstractPlan(models.Model):
         result['stations'] = stations
         return result
 
-    def getTreeJson(self):
+    def get_tree_json(self):
         result = {"title": self.name,
                   "key": self.uuid,
                   "tooltip": self.jsonPlan.notes,
