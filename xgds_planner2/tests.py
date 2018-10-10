@@ -14,7 +14,7 @@
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
 
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.test.utils import override_settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
@@ -26,7 +26,7 @@ import logging
 
 
 @override_settings(PIPELINE_ENABLED=False)
-class xgds_planner2Test(TestCase):
+class xgds_planner2Test(TransactionTestCase):
     """
     Right now for this to work it REQUIRES the test schema to exist in the siteSettings, and it to have been prepped.
     TODO: make this not a requirement, and instead have setup and teardown methods here in this test that will do what we need, including prep and destroy.
