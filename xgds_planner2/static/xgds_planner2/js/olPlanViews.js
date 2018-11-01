@@ -248,7 +248,7 @@ $(function() {
             getFirstStationCoords: function() {
                 var startStation = this.collection.at(0);
                 if (!_.isUndefined(startStation)) {
-                    return transform(startStation.get('geometry').coordinates);
+                    return {location:transform(startStation.get('geometry').coordinates), rotation:null};
                 }
                 return undefined;
             },
@@ -256,7 +256,7 @@ $(function() {
             getLastStationCoords: function() {
                 var endStation = this.collection.at(this.collection.length - 1);
                 if (!_.isUndefined(endStation)) {
-                    return transform(endStation.get('geometry').coordinates);
+                    return {location:transform(endStation.get('geometry').coordinates), rotation:null};
                 }
                 return undefined;
             },
