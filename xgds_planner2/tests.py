@@ -20,7 +20,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from unittest import skipIf
 
-from xgds_planner2 import models
+from xgds_planner2.models import Plan
 
 import logging
 
@@ -96,4 +96,4 @@ class xgds_planner2Test(TransactionTestCase):
         self.client.login(**self.login_info)
         response = self.client.post(reverse('planner2_planCreate'), self.test_plan_data)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(models.Plan.objects.all()), 1)
+        self.assertEqual(len(Plan.objects.all()), 1)
