@@ -15,6 +15,23 @@
 </script>
 
 <script type="x-template/underscore" id="application_contents">
+
+    {% block layers %}
+        <div id="layers_modal" class="modal hide fade">
+            <div class="modal-dialog" role="dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Control Map Layers</h5>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body mt-0 pt-0">
+                        <div id="layers" ></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endblock layers %}
+
 	<div id="toolbar" class="container-fluid">
     </div>
     <div id="controllers" >
@@ -29,6 +46,11 @@
 				<ul class="nav justify-content-end">
 					<i class="fa fa-lock pinDiv gray-light"></i>
 				</ul>
+                <div id="overmap" class="mb-1 mt-negative-1rem">
+                    <button id="layers_button" type="button" class="btn btn-primary" data-backdrop=false data-toggle="modal" data-target="#layers_modal">
+                        Layers
+                    </button>
+                </div>
 				<div id="map"></div>
     			<div id="postmap" ></div>
     			<div id="postpostmap" ></div>
@@ -182,7 +204,7 @@
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/lib/string-format.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}usng.js/usng.js'></script>
+    <script type="text/javascript" src='{{ EXTERNAL_URL }}usng.js/dist/usng.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-file-download/src/Scripts/jquery.fileDownload.js'></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.js" ></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}flot/jquery.flot.js" ></script>

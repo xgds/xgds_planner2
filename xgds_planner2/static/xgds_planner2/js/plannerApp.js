@@ -22,12 +22,14 @@ var DEBUG_EVENTS = false;
 	xGDS.PlannerRootView = xGDS.RootView.extend({
 		regions: {
 			mapRegion: '#map',
+			layersRegion: '#layers',
 			toolbar: '#toolbar',
 			tabs: '#tabs',
 			plot: '#plot-container',
 			validation: '#validation',
 		},
 		onRender: function() {
+			this.showChildView('layersRegion', new app.views.FancyTreeView());
 			app.map = new app.views.OLPlanView();
 			this.showChildView('mapRegion', app.map);
 			this.showChildView('toolbar', new app.views.ToolbarView());
