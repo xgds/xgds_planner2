@@ -174,7 +174,9 @@
         commandMonikerPlural: '{{ settings.XGDS_PLANNER_COMMAND_MONIKER_PLURAL }}',
         settingsLive: {{ settings.GEOCAM_UTIL_LIVE_MODE|yesno:'true,false' }},
         plots: {{ settings.XGDS_PLANNER_PLOTS|safe }},
-        validation: {{ settings.XGDS_PLANNER_VALIDATION|yesno:"true,false" }}
+        validation: {{ settings.XGDS_PLANNER_VALIDATION|yesno:"true,false" }},
+        searchOptions: { fitMap: false },
+
      };
 
         {% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
