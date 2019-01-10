@@ -375,10 +375,22 @@ def plan_index_json():
         plans_json.append({
             'id': plan.pk,
             'name': plan.name,
-            'url': plan.get_absolute_url()
+            'url': plan.get_absolute_url(),
+            'dateModified': plan.dateModified.isoformat(),
+            'creator': plan.creator.username if plan.creator else "",
+            'numStations': plan.numStations,
+            'numSegments': plan.numSegments,
+            'numCommands': plan.numCommands,
+            'lengthMeters': plan.lengthMeters,
+            'estimatedDurationsSeconds': plan.estimatedDurationSeconds
         })
 
     return plans_json
+
+
+def getPlanIndexJson(request):
+    return HttpResponse(json.dumps(plan_index_json()),
+                        content_type='application/json')
 
 
 def getDbPlan(uuid):

@@ -20,6 +20,7 @@ from xgds_planner2 import views
 
 urlpatterns = [
     url(r'^planIndex\.kml$', views.getPlanIndexKml, {}, name='planner2_planIndexKml'),
+    url(r'^planIndexJson$', views.getPlanIndexJson, {}, name='planner2_planIndexJson'),
     url(r'^plan/(?P<plan_id>[^/]+)$', views.plan_save_from_relay, {}, name="planner2_save_plan_from_relay"),
     url(r'^plan/(?P<plan_id>[^/]+)/(?P<jsonPlanId>[^/\.]+)\.json$', views.plan_save_json, {}, name="planner2_plan_save_json"),
     url(r'^plan/save/(?P<plan_id>[^/]+)$', views.plan_save_json, {}, name="planner2_plan_save_json"),
