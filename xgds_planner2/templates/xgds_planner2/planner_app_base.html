@@ -206,7 +206,7 @@
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-forms/distribution/backbone-forms.min.js'></script>
     <script type="text/javascript" src='{{ EXTERNAL_URL }}string-format/lib/string-format.js'></script>
-    <script type="text/javascript" src='{{ EXTERNAL_URL }}usng.js/dist/usng.js'></script>
+<!--    <script type="text/javascript" src="{% static 'usng.js' %}"></script> --> <!-- already included by Django pipeline.  I think? -->
     <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-file-download/src/Scripts/jquery.fileDownload.js'></script>
     <script type="text/javascript" src="{{ EXTERNAL_URL }}gridstack/dist/gridstack.min.js" ></script>
 	<script type="text/javascript" src="{{ EXTERNAL_URL }}flot/jquery.flot.js" ></script>
