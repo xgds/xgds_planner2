@@ -309,6 +309,8 @@ def plan_editor_app(request, plan_id=None, editable=True):
     except:
         pass
 
+    # Remove build_absolute_uri from placemark pngs below. Should not need since rendering in browser and it appears to
+    # break portmapping through router (e.g. at TRAC).
     context = {
         'templates': templates,
         'app': 'xgds_planner2/js/plannerApp.js',
@@ -324,18 +326,10 @@ def plan_editor_app(request, plan_id=None, editable=True):
         'editable': editable and not plan.readOnly,
         'simulatorUrl': planSchema.simulatorUrl,
         'simulator': planSchema.simulator,
-        'placemark_circle_url': request.build_absolute_uri(
-            staticfiles_storage.url('xgds_planner2/images/placemark_circle.png')
-        ),
-        'placemark_circle_highlighted_url': request.build_absolute_uri(
-            staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png')
-        ),
-        'placemark_directional_url': request.build_absolute_uri(
-            staticfiles_storage.url('xgds_planner2/images/placemark_directional.png')
-        ),
-        'placemark_selected_directional_url': request.build_absolute_uri(
-            staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png')
-        ),
+        'placemark_circle_url': staticfiles_storage.url('xgds_planner2/images/placemark_circle.png'),
+        'placemark_circle_highlighted_url': staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png'),
+        'placemark_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional.png'),
+        'placemark_selected_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png'),
         'plan_links_json': json.dumps(plan.getLinks())
     }
 
