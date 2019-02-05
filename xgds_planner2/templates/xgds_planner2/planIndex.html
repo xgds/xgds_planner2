@@ -30,11 +30,25 @@ table.planIndex td.exportFormat a {
 <form name='PlanForm' action="{% url 'planner2_delete' %}" method="post">
 <div class="d-flex justify-content-end" style="width: 100%;">
 	<div class="btn-group mr-auto" role="group">
-		<input class="btn btn-primary" type="submit"  id="deleteButton" value="Delete Selected" role="button" ></input>
-		<input class="btn btn-primary" type="button" id="toggle_button" value="Toggle Lock" ></input>
+		<button class="btn btn-primary" type="button"  id="deleteButton" >Delete Selected</button>
+		<button class="btn btn-primary" type="button" id="toggle_button" >Toggle Lock</button>
 	{% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
-		<input class="btn btn-primary" type="button" onclick="showScheduleDialog()" id="schedule_button" value="Schedule Selected" ></input>
+		<button class="btn btn-primary" type="button" onclick="showScheduleDialog()" id="schedule_button" >
+            Schedule Selected
+        </button>
 	{% endif %}
+	{% if rest_services %}
+        <button class="btn btn-primary dropdown-toggle" type="button" id="restExportDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Export Selected
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="restExportDropdown">
+            {% for service in rest_services %}
+              <a class="restMenu dropdown-item" id="{{ service.name }}" href="#" data-toggle="tooltip"
+                 title="{{ service.description }}">{{ service.display_name }}</a>
+            {% endfor %}
+        </div>
+	{% endif %}
+        <div class="text-success" id="statusLine">&nbsp;</div>
 	</div>
 	<div class="btn-group" role="group">
 	<a href="{% url 'planner2_planImport' %}"  role="button" class="btn btn-primary" > Import {{ settings.XGDS_PLANNER_PLAN_MONIKER }}</a>
@@ -212,7 +226,9 @@ $("#deleteButton").click(function() {
 	     {% if settings.XGDS_PLANNER_SCHEDULE_INCLUDED %}
 		     addDateTimePicker("id_schedule_date", defaultTimeZone);
 	     {% endif %}
-	   
+
+         $('[data-toggle="tooltip"]').tooltip();
+
 		var dataTable = $('#dataTable').dataTable( defaultOptions);
 		$(window).resize(function(){ 
 			$('div.dataTables_scrollBody').css('height',calcDataTableHeight());
@@ -240,7 +256,41 @@ $("#deleteButton").click(function() {
 		                }
 		            });
 		        });
-		
+
+		// handle the REST export menu
+     		$('.restMenu.dropdown-item').click(function(menuItem)
+		        {
+				    var planIds = []
+				    $('.check').each(function(i, obj) {
+						if($(this).is(":checked")) {
+						    planIds.push($(this).val());
+						}
+					});
+				    $.ajax(
+		            {
+		                url: "{% url 'planner2_externalExport' %}",
+		                type: "POST",
+		                data: {'pids':planIds, 'serviceName':menuItem.currentTarget.id},
+		                dataType: "json",
+		                success: function(data)
+		                {
+		                    if (parseInt(data.status) != 200) {
+		                        $("#statusLine").removeClass("text-success");
+		                        $("#statusLine").addClass("text-danger");
+                                $("#statusLine").text("Plan export failed.  Check server log" + " (" + data.status + ").");
+                            }
+		                    else {
+		                        $("#statusLine").addClass("text-success");
+		                        $("#statusLine").removeClass("text-danger");
+                                $("#statusLine").text(data.planNames.join(", ") + ' submitted to ' +
+                                    data.serviceDisplayName + " (" + data.status + ").");
+                            }
+		                }
+		            });
+				    console.log(menuItem.currentTarget.id);
+				    console.log("REST export for: " + planIds);
+		        });
+
 		// handle the master checkbox
 		 $('#pick_master').val($(this).is(':checked'));
 

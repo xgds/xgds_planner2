@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^help/$', views.plan_help, {}, name='planner2_help'),
     url(r'^delete/$', views.plan_delete, {}, name="planner2_delete"),
     url(r'^toggleReadOnly/$', views.toggleReadOnly, {}, name="planner2_toggleReadOnly"),
+    url(r'^externalExport/$', views.externalServiceExport, {}, name="planner2_externalExport"),
     url(r'^schedulePlans/$', views.schedulePlans, {}, "planner2_schedulePlans"),
     url(r'^schedulePlan/$', views.schedulePlans, {'redirect': False}, "planner2_schedulePlan_ajax"),
     url(r'startPlan/(?P<pe_id>[\w-]+)$', views.startPlan, {}, 'planner2_startPlan'),

@@ -22,6 +22,7 @@ from cStringIO import StringIO
 import datetime
 import json
 import traceback
+import requests
 from uuid import uuid4
 
 from dateutil.parser import parse as dateparser
@@ -64,6 +65,7 @@ from xgds_planner2.xpjson import loadDocumentFromDict
 from xgds_map_server.views import getSearchForms
 from xgds_core.views import get_handlebars_templates, addRelay, setState, getAllFlightNames, getActiveFlights, \
     getTodaysGroupFlights, manageFlights
+from xgds_core.models import RemoteRestService
 from xgds_core.util import insertIntoPath
 
 from geocamUtil.datetimeJsonEncoder import DatetimeJsonEncoder
@@ -82,6 +84,11 @@ def plan_help(request):
     return render(request,
                   'xgds_planner2/planner_help.html',
                   {"settings": settings})
+
+
+def my_module():
+    # Get path to module minus the "views" at the end.
+    return ".".join(sys.modules[__name__].__name__.split(".")[:-1])
 
 
 def plan_tests(request, plan_id, editable=True):
@@ -116,6 +123,11 @@ def plan_tests(request, plan_id, editable=True):
                    'plan_links_json': json.dumps(plan.getLinks()),
                    'plan_namedURLs_json': json.dumps(plan.namedURLs),
                    })
+
+
+def get_rest_services():
+    myRestServices = RemoteRestService.objects.filter(module=my_module())
+    return myRestServices
 
 
 def aggregate_handlebars_templates(request):
@@ -354,7 +366,8 @@ def planIndex(request):
     """
     context = {'plans': PLAN_MODEL.get().objects.filter(deleted=False),
                'flight_names': getAllFlightNames(),
-               'exporters': choosePlanExporter.PLAN_EXPORTERS
+               'exporters': choosePlanExporter.PLAN_EXPORTERS,
+               'rest_services': get_rest_services()
                }
     return render(request,
                   'xgds_planner2/planIndex.html',
@@ -368,6 +381,7 @@ def plan_index_json():
     for plan in plan_objs:
         plans_json.append({
             'id': plan.pk,
+            'uuid': plan.uuid,
             'name': plan.name,
             'url': plan.get_absolute_url(),
             'dateModified': plan.dateModified.isoformat(),
@@ -387,16 +401,19 @@ def getPlanIndexJson(request):
                         content_type='application/json')
 
 
-def getDbPlan(uuid):
-    return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
+def getDbPlan(uuid, idIsPK=False):
+    if idIsPK:
+        return get_object_or_404(PLAN_MODEL.get(), id=uuid)
+    else:
+        return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
 
 
-def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=False):
+def planExport(request, uuid, name, time=None, outputDirectory=None, isAjax=False, idIsPK=False):
     """
     Normally plan export urls are built up by the planExporter.url
     but some exporters (pml) can take a time.
     """
-    dbPlan = getDbPlan(uuid)
+    dbPlan = getDbPlan(uuid, idIsPK)
 
     formatCode = request.GET.get('format')
     if formatCode is not None:
@@ -871,6 +888,47 @@ def toggleReadOnly(request):
             except:
                 pass
     return HttpResponseRedirect(reverse('planner2_index'))
+
+
+def externalServiceExport(request):
+    """ export selected plan JSON to an external HTTP/REST based service"""
+    if request.method == 'POST':
+        serviceName = request.POST.get('serviceName')
+        pids = request.POST.getlist('pids[]')
+        restService = RemoteRestService.objects.get(name=serviceName)
+        print "Exporting plan(s)", pids, " to", restService.display_name, restService.serviceUrl
+        planNameList = []
+        planContentList = []
+        for item in pids:
+            try:
+                plan = PLAN_MODEL.get().objects.get(id=int(item))
+                planContentList.append({"name":plan.name, "jsonPlan":plan.jsonPlan})
+                planNameList.append(plan.name)
+            except:
+                pass
+
+        headers = {"replyurl": reverse("planner2_report_export_status"),
+                   "replyids": json.dumps(pids),
+                   "content-type": "application/json"}
+        try:
+            resp = requests.post(restService.serviceUrl, data=json.dumps(planContentList), headers=headers)
+            requestStatus = resp.status_code
+        except Exception as e:
+            print e
+            requestStatus = 500
+
+        result = {"status":requestStatus, "planNames":planNameList, "serviceName":serviceName,
+                  "serviceDisplayName":restService.display_name}
+    return HttpResponse(content=json.dumps(result),
+                        content_type="application/json")
+
+
+def reportExportStatus(request):
+    if request.method == 'POST':
+        exportStatus = request.POST.get('exportStatus')
+
+    return HttpResponse(content="OK",
+                        content_type="application/json")
 
 
 def mapJsonPlan(request, uuid=None, pk=None):
