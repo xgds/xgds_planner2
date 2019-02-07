@@ -403,7 +403,10 @@ def getPlanIndexJson(request):
 
 def getDbPlan(uuid, idIsPK=False):
     if idIsPK:
-        return get_object_or_404(PLAN_MODEL.get(), id=uuid)
+        try:
+            return get_object_or_404(PLAN_MODEL.get(), id=uuid)
+        except:
+            return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
     else:
         return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
 
