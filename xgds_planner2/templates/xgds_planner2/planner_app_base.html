@@ -111,7 +111,7 @@
   /* for some reason compressing this in the css does not work so it's separate in the planner_app */
   @import url('{{ EXTERNAL_URL }}backbone-forms/distribution/templates/old.css');
   @import url('{{ EXTERNAL_URL }}openlayers/dist/ol.css');
-  @import url("{% static 'geocamUtil/css/datatable.css' %}");
+  @import url("{% static 'geocamUtil/css/datatable.css'%}");
   @import url('{{ EXTERNAL_URL }}jquery.fancytree/dist/skin-lion/ui.fancytree.min.css');
   @import url("{% static 'xgds_map_server/css/fancytree_custom.css' %}");
   @import url("{% static 'xgds_map_server/css/xgds_map_server.css' %}");
@@ -127,11 +127,9 @@
 {% include "xgds_notes2/NoteCSS.html" %}
 {% endif %}
 
-
 <div id="application" >
 </div>
 {% endblock content %}
-
 
 {% block scripts %}
     {# javascript 'compiled_planner_app' #}
@@ -199,8 +197,6 @@
      <script type="text/javascript" src="{{ EXTERNAL_URL }}moment-duration-format/lib/moment-duration-format.js"></script>
      <script type="text/javascript" src="{% static 'xgds_core/js/datatablesUtils.js' %}"></script>
      <script type="text/javascript" src="{{ EXTERNAL_URL }}datatables.net-plugins/sorting/datetime-moment.js"></script>
-
-
      <script type="text/javascript" src='{{ EXTERNAL_URL }}jquery-migrate/dist/jquery-migrate.min.js'></script>
      <script type="text/javascript" src='{{ EXTERNAL_URL }}pure-uuid/uuid.js'></script>
  	 <script type="text/javascript" src='{{ EXTERNAL_URL }}backbone-relational/backbone-relational.js'></script>
@@ -274,11 +270,11 @@
 	    	{% block plannerInitializers %}
 	    	{% endblock plannerInitializers %}
 	    	var gridstackOptions = {
-	        cellHeight: 100,
-	        verticalMargin: 10,
-	        width: 12,
-	        float: false
-	    };
+                cellHeight: 100,
+                verticalMargin: 10,
+                width: 12,
+                float: false
+            };
 	    	xgds_gridstack.initializeGridstack(gridstackOptions);
 
 	    	{% block plannerGridstack %}
