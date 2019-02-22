@@ -347,6 +347,8 @@ def plan_editor_app(request, plan_id=None, editable=True):
 
     return render(request,
                   'xgds_planner2/planner_app.html',
+                  {'help_content_path': 'xgds_planner2/help/editPlan.rst',
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER},
                   getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context))
 
 
@@ -368,9 +370,12 @@ def planIndex(request):
                'flight_names': getAllFlightNames(),
                'exporters': choosePlanExporter.PLAN_EXPORTERS,
                'rest_services': get_rest_services()
+
                }
     return render(request,
                   'xgds_planner2/planIndex.html',
+                  {'help_content_path': 'xgds_planner2/help/index.rst',
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER},
                   getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context),
                   )
 
@@ -507,6 +512,8 @@ def planCreate(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form,
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER,
+                   'help_content_path': 'xgds_planner2/help/planCreate.rst',
                    'siteLabel': 'Create'})
 
 
@@ -571,6 +578,8 @@ def planImport(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form,
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER,
+                   'help_content_path': 'xgds_planner2/help/import.rst',
                    'siteLabel': 'Import'})
 
 
