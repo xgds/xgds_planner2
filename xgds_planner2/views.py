@@ -342,13 +342,13 @@ def plan_editor_app(request, plan_id=None, editable=True):
         'placemark_circle_highlighted_url': staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png'),
         'placemark_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional.png'),
         'placemark_selected_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png'),
-        'plan_links_json': json.dumps(plan.getLinks())
+        'plan_links_json': json.dumps(plan.getLinks()),
+        'help_content_path': 'xgds_planner2/help/editPlan.rst',
+        'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
     }
 
     return render(request,
                   'xgds_planner2/planner_app.html',
-                  {'help_content_path': 'xgds_planner2/help/editPlan.rst',
-                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER},
                   getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context))
 
 
@@ -369,13 +369,13 @@ def planIndex(request):
     context = {'plans': PLAN_MODEL.get().objects.filter(deleted=False),
                'flight_names': getAllFlightNames(),
                'exporters': choosePlanExporter.PLAN_EXPORTERS,
-               'rest_services': get_rest_services()
-
+               'rest_services': get_rest_services(),
+               'help_content_path': 'xgds_planner2/help/index.rst',
+               'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
                }
+
     return render(request,
                   'xgds_planner2/planIndex.html',
-                  {'help_content_path': 'xgds_planner2/help/index.rst',
-                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER},
                   getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context),
                   )
 
