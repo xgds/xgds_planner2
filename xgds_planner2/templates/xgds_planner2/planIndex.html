@@ -147,15 +147,12 @@ table.planIndex td.exportFormat a {
 <script type="text/javascript">
 var defaultTimeZone = '{{settings.TIME_ZONE}}';
 
-$( "#PlanForm" ).submit(function( event ) {
-	  event.preventDefault();
-	});
 $("#deleteButton").click(function() {
 	var question = []
 	var deathRow = []
 	$('.check').each(function(i, obj) {
 		if($(this).is(":checked")) {
-			deathRow.push($(this).val());
+			deathRow.push(parseInt($(this).val()));
 			var editthingy = $("#edit_" + $(this).val());
 			var ques = editthingy.text();
 			question.push(ques);
@@ -164,7 +161,18 @@ $("#deleteButton").click(function() {
 	if (deathRow.length > 0){
 		var returnVal = confirm("Are you sure you want to delete these plans ? " + question.toString());
 		if (returnVal) {
-			$("#PlanForm").submit();
+		    $.ajax({
+              url: '/xgds_planner2/delete/',
+                method: 'post',
+                data: {'picks': deathRow},
+                dataType: 'json',
+              success: $.proxy(function(data) {
+            	  location.reload();
+              }, this),
+              error: $.proxy(function(data){
+                  alert('Error deleting plans.');
+              }, this)
+            });
 		}
 	}
 });

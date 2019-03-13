@@ -584,15 +584,18 @@ def planImport(request):
 
 
 def plan_delete(request):
-    picks = request.POST.getlist('picks')
+    picks = request.POST.getlist('picks[]')
     for i in picks:
-        plan = PLAN_MODEL.get().objects.get(id=i)
-        if plan:
-            plan.deleted = True
-            plan.save()
-            handleCallbacks(request, plan, settings.DELETE)
+        try:
+            plan = PLAN_MODEL.get().objects.get(id=int(i))
+            if plan:
+                plan.deleted = True
+                plan.save()
+                handleCallbacks(request, plan, settings.DELETE)
+        except:
+            traceback.print_exc()
 
-    return HttpResponseRedirect(reverse('planner2_index'))
+    return JsonResponse({"status": "success", "picks": picks})
 
 
 @never_cache
