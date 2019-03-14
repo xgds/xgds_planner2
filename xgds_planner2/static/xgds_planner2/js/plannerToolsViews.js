@@ -22,13 +22,16 @@ app.views.PlanToolsView = Marionette.View.extend({
         'click #ok-button': 'okClicked',
         'click #btn-reverse': 'reverseStations',
     },
+
     initialize: function() {
         this.listenTo(app.vent, 'clearAppendTool', this.clearAppendTool);
         this.listenTo(app.vent, 'setAppendError', this.setAppendError);
     },
-    templateContext: {
-    	planIndex: app.planIndex,
-    	moniker: app.options.planMoniker
+    templateContext: function() {
+        return{
+                planIndex: app.planIndex,
+                moniker: app.options.planMoniker
+        };
     },
     onAttach: function() {
         if (app.options.readOnly) {
@@ -49,7 +52,7 @@ app.views.PlanToolsView = Marionette.View.extend({
         this.$('#ok-button').attr('disabled', 'true');
         this.$('#append-error').empty();
         app.reversePlanOnAppend = this.$('#reverse-plan').is(':checked');
-        app.prependPlanOnAppend = this.$('#prepend-plan').is(':checked');
+        app.prependPlanOnAppend = this.$('#prepend-plan').hasClass('active');
         $.getJSON(planUrl).done(this.appendPlan).error(this.failAppendPlan);
     },
     failAppendPlan: function() {

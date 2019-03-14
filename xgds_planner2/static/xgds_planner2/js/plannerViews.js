@@ -249,9 +249,9 @@ app.views.ToolbarView = Marionette.View.extend({
     },
 
     tipMap : {
-    		'edit': 'Shift click to delete stations, click & drag the blue dot to edit.',
-        'add': 'Click to add stations to end.',
-        'clear': 'Click and drag to pan map.  Select Add button to add stations.'
+    		'edit': 'Shift click to delete ' + app.options.stationMoniker + 's, click & drag the blue dot to edit.',
+            'add': 'Click to add ' + app.options.stationMoniker + 's to end.',
+            'clear': 'Click and drag to pan map.  Select Add button to add stations.'
     },
     updateTip: function(eventName) {
         var msg = this.tipMap[eventName];
