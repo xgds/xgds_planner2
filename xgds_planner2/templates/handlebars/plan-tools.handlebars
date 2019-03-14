@@ -18,10 +18,15 @@
   <div class="tool-entry">
     <fieldset>
     <span id="select-title">{{moniker}} Placement:</span>
-    <input type="radio" name="plan-placement" id="prepend-plan" class="tool-input" checked="checked">
-    <label for="prepend-plan" style="display:inline-block;">Before</label>&nbsp;&nbsp;
-    <input type="radio" name="plan-placement" id="append-plan" class="tool-input">
-    <label for="append-plan" style="display:inline-block;">After</label>
+        <div class="btn-group" role="group" data-toggle="buttons">
+            <label class="btn btn-primary" id="prepend-plan">
+                <input type="radio"   autocomplete="off"/>Before
+            </label>
+            <label class="btn btn-primary active" id="append-plan">
+                <input type="radio"   autocomplete="off" checked/>After
+            </label>
+        </div>
+
     </fieldset>
   </div><div class="tool-entry">
     <input type="checkbox" id="reverse-plan" class="tool-input">
