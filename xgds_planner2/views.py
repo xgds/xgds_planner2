@@ -347,9 +347,11 @@ def plan_editor_app(request, plan_id=None, editable=True):
         'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
     }
 
+    updated_context = getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context)
+
     return render(request,
                   'xgds_planner2/planner_app.html',
-                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context))
+                  updated_context)
 
 
 def addToEditorContext(context):
@@ -374,9 +376,11 @@ def planIndex(request):
                'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
                }
 
+    updated_context = getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context)
+
     return render(request,
                   'xgds_planner2/planIndex.html',
-                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context),
+                  updated_context,
                   )
 
 
