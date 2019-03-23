@@ -1,18 +1,30 @@
 
-**Import** lets you TODO.
+**Import {{settings.XGDS_PLANNER_PLAN_MONIKER }}** lets you create a new {{settings.XGDS_PLANNER_PLAN_MONIKER }} via an import.
 
-Section 1:
--------------
+Import {{settings.XGDS_PLANNER_PLAN_MONIKER }} currently supports:
+ * kml files containing a LineString
+ * csv files with column headers including latitude and longitude, and optionally name and notes.  Extra columns may be present but they will be ignored
+ * xpJson files exported from xGDS
 
-TODO write help
+The options are the same as when creating a new {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
+Options
+-------
 
-Section 2:
-----------
+{{settings.XGDS_PLANNER_PLAN_MONIKER }} number:
+    Used to generate the original name and ids within the {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
-TODO write more help
+{{settings.XGDS_PLANNER_PLAN_MONIKER }} version:
+    Used to set the original version and ids within the {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
+Platform:
+    What vehicle this {{settings.XGDS_PLANNER_PLAN_MONIKER }} is for.
 
+Region:
+    What region on the map contains this {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
+
+Sourcefile:
+    The kml, csv or xpJson file you wish to import.
 
 
 .. o __BEGIN_LICENSE__

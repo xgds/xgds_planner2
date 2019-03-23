@@ -1,18 +1,21 @@
+**Create {{settings.XGDS_PLANNER_PLAN_MONIKER }}** lets you create a new {{settings.XGDS_PLANNER_PLAN_MONIKER }}
 
-**Create Plan** lets you TODO.
+Once the {{settings.XGDS_PLANNER_PLAN_MONIKER }} has been created you may rename it in the *Meta* tab section of the editor.
 
-Section 1:
--------------
+Options
+-------
 
-TODO write help
+{{settings.XGDS_PLANNER_PLAN_MONIKER }} number:
+    Used to generate the original name and ids within the {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
+{{settings.XGDS_PLANNER_PLAN_MONIKER }} version:
+    Used to set the original version and ids within the {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
-Section 2:
-----------
+Platform:
+    What vehicle this {{settings.XGDS_PLANNER_PLAN_MONIKER }} is for.
 
-TODO write more help
-
-
+Region:
+    What region on the map contains this {{settings.XGDS_PLANNER_PLAN_MONIKER }}.
 
 
 .. o __BEGIN_LICENSE__

@@ -1,16 +1,43 @@
 
-**Index** lets you TODO.
-
-Section 1:
--------------
-
-TODO write help
+**List {{settings.XGDS_PLANNER_PLAN_MONIKER }}** lets you view and manage {{ settings.XGDS_PLANNER_PLAN_MONIKER}}s.
 
 
-Section 2:
-----------
+{{settings.XGDS_PLANNER_PLAN_MONIKER}} Table:
+---------------------------------------------
 
-TODO write more help
+The table contains the {{settings.XGDS_PLANNER_PLAN_MONIKER}}s which have not been deleted.
+You can search within the table by typing the search term in the search bar at the top.
+
+ * To view or edit a {{settings.XGDS_PLANNER_PLAN_MONIKER}}, click on its name.
+ * To sort the table, click on the up or down arrow next to the name of the column you wish to sort on.
+ * To export a {{settings.XGDS_PLANNER_PLAN_MONIKER}}, click on the appropriate format in the Export column.
+
+
+Creating a {{settings.XGDS_PLANNER_PLAN_MONIKER}}:
+--------------------------------------------------
+
+Click on the *Create {{settings.XGDS_PLANNER_PLAN_MONIKER}}* button.
+
+Importing a {{settings.XGDS_PLANNER_PLAN_MONIKER}}:
+---------------------------------------------------
+
+Click on the *Import {{settings.XGDS_PLANNER_PLAN_MONIKER}}* button.
+
+Deleting {{settings.XGDS_PLANNER_PLAN_MONIKER}}s:
+---------------------------------------------------
+
+ * Click on the checkbox to the left of the {{settings.XGDS_PLANNER_PLAN_MONIKER}}(s) you wish to delete.
+ * Click on the *Delete Selected* button.
+ * Verify in the confirmation dialog that you wish to delete the selected plans
+
+Locking and unlocking {{settings.XGDS_PLANNER_PLAN_MONIKER}}s:
+--------------------------------------------------------------
+
+ {{settings.XGDS_PLANNER_PLAN_MONIKER}}s can be locked, which prohibits all users from editing them.
+
+ * Click on the checkbox to the left of the {{settings.XGDS_PLANNER_PLAN_MONIKER}}(s) you wish to lock or unlock.
+ * Click on the *Toggle lock* button.
+ * You will see a lock next to the locked plans.
 
 
 

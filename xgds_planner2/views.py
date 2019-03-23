@@ -525,7 +525,7 @@ def planImport(request):
     if request.method == 'GET':
         messages.info(request, 'Create a ' + settings.XGDS_PLANNER_PLAN_MONIKER + ' by importing:')
         messages.info(request, 'a kml file containing a LineString')
-        messages.info(request, 'a csv file, with column headers of latitude and longitude')
+        messages.info(request, 'a csv file, with column headers of latitude and longitude, and optional name and notes')
         messages.info(request, 'an xpJson file')
         form = ImportPlanForm()
     elif request.method == 'POST':

@@ -19,17 +19,22 @@ import csv
 from xgds_planner2.planImporter import PlanImporter, planDocFromPlanDict
 
 
-def planDictFromCoords(coords, meta):
+def planDictFromCoords(coords, meta, names=None, notes=None):
     plan = meta.copy()
     n = len(coords)
     for i, lonLat in enumerate(coords):
-        plan['sequence'].append({
+        seq_dict = {
             'type': 'Station',
             'geometry': {
                 'type': 'Point',
                 'coordinates': lonLat
             }
-        })
+        }
+        if names and names[i]:
+            seq_dict['name'] = names[i]
+        if notes and notes[i]:
+            seq_dict['notes'] = notes[i]
+        plan['sequence'].append(seq_dict)
         if i != n - 1:
             plan['sequence'].append({
                 'type': 'Segment'
@@ -48,10 +53,18 @@ class CSVPlanImporter(PlanImporter):
     def importPlanFromBuffer(self, buf, meta, schema):
         csvReader = csv.DictReader(buf.splitlines())
         coords = []
+        notes = []
+        names = []
         for row in list(csvReader):
             longitude = float(row['longitude'])
             latitude = float(row['latitude'])
+            if 'name' in row:
+                names.append(row['name'])
+            if 'note' in row:
+                notes.append(row['note'])
+            elif 'notes' in row:
+                notes.append(row['notes'])
             coords.append([longitude, latitude])
-        planDict = planDictFromCoords(coords, meta)
+        planDict = planDictFromCoords(coords, meta, names, notes)
         planDoc = planDocFromPlanDict(planDict, schema.schema)
         return planDoc
