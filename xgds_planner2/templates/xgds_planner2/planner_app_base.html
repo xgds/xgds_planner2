@@ -188,6 +188,9 @@
             	appOptions[key] = extras[key];
             }
         {% endif %}
+
+    {% block postAppOptions %}
+    {% endblock postAppOptions %}
     </script>
     {% javascript 'simulator' %}
     {% include "MapJS.html" %}
