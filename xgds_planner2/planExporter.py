@@ -302,21 +302,27 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
             nlon, nlat = context.nextStation.geometry['coordinates']
             diff = geomath.calculateDiffMeters([nlon, nlat], [plon, plat])
             bearing = geomath.getBearingDegrees(diff)
+
         derivedInfo = station.derivedInfo; 
         durationSeconds = 0 #TODO calculate
         if derivedInfo:
             durationSeconds = derivedInfo['durationSeconds']
         station.id = station.id[-(len(station.id)-station.id.rfind('_')-1):]
         
-        return {'id': station.id, 
-                'name': station.name,
-                'type': settings.XGDS_PLANNER_STATION_MONIKER,
-                'commands': tsequence,
-                'geometry': self.getStationGeometry(station, context),
-                'notes': station.notes,
-                'tolerance': station.tolerance,
-                'durationSeconds': durationSeconds,
-                'bearing': bearing}
+        result = {'id': station.id,
+                  'name': station.name,
+                  'type': settings.XGDS_PLANNER_STATION_MONIKER,
+                  'commands': tsequence,
+                  'geometry': self.getStationGeometry(station, context),
+                  'notes': station.notes,
+                  'tolerance': station.tolerance,
+                  'durationSeconds': durationSeconds,
+                  'bearing': bearing}
+        if hasattr(station, 'heading'):
+            result['heading'] = station.heading
+        if hasattr(station, 'depth'):
+            result['depth'] = station.depth
+        return result
     
     def getStationGeometry(self, station, context):
         return station.geometry
