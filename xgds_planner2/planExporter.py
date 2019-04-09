@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import json
 import logging
 import traceback
@@ -349,8 +350,9 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     def transformCommand(self, command, context):
         command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
+
         notes = ''
-        if notes in command:
+        if 'notes' in command:
             notes = command.notes
         if not notes:
             notes = ''
