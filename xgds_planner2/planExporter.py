@@ -13,6 +13,7 @@
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
 #__END_LICENSE__
+
 import json
 import logging
 import traceback
@@ -301,21 +302,27 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
             nlon, nlat = context.nextStation.geometry['coordinates']
             diff = geomath.calculateDiffMeters([nlon, nlat], [plon, plat])
             bearing = geomath.getBearingDegrees(diff)
+
         derivedInfo = station.derivedInfo; 
         durationSeconds = 0 #TODO calculate
         if derivedInfo:
             durationSeconds = derivedInfo['durationSeconds']
         station.id = station.id[-(len(station.id)-station.id.rfind('_')-1):]
         
-        return {'id': station.id, 
-                'name': station.name,
-                'type': settings.XGDS_PLANNER_STATION_MONIKER,
-                'commands': tsequence,
-                'geometry': self.getStationGeometry(station, context),
-                'notes': station.notes,
-                'tolerance': station.tolerance,
-                'durationSeconds': durationSeconds,
-                'bearing': bearing}
+        result = {'id': station.id,
+                  'name': station.name,
+                  'type': settings.XGDS_PLANNER_STATION_MONIKER,
+                  'commands': tsequence,
+                  'geometry': self.getStationGeometry(station, context),
+                  'notes': station.notes,
+                  'tolerance': station.tolerance,
+                  'durationSeconds': durationSeconds,
+                  'bearing': bearing}
+        if hasattr(station, 'heading'):
+            result['heading'] = station.heading
+        if hasattr(station, 'depth'):
+            result['depth'] = station.depth
+        return result
     
     def getStationGeometry(self, station, context):
         return station.geometry
@@ -349,8 +356,9 @@ class BearingDistanceJsonPlanExporter(JsonPlanExporter, TreeWalkPlanExporter):
     def transformCommand(self, command, context):
         command.type = settings.XGDS_PLANNER_COMMAND_MONIKER
         command.id = command.id[-(len(command.id)-command.id.rfind('_')-1):]
+
         notes = ''
-        if notes in command:
+        if 'notes' in command:
             notes = command.notes
         if not notes:
             notes = ''

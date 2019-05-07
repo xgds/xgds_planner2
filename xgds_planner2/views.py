@@ -342,12 +342,16 @@ def plan_editor_app(request, plan_id=None, editable=True):
         'placemark_circle_highlighted_url': staticfiles_storage.url('xgds_planner2/images/placemark_circle_highlighted.png'),
         'placemark_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional.png'),
         'placemark_selected_directional_url': staticfiles_storage.url('xgds_planner2/images/placemark_directional_highlighted.png'),
-        'plan_links_json': json.dumps(plan.getLinks())
+        'plan_links_json': json.dumps(plan.getLinks()),
+        'help_content_path': 'xgds_planner2/help/editPlan.rst',
+        'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
     }
+
+    updated_context = getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context)
 
     return render(request,
                   'xgds_planner2/planner_app.html',
-                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context))
+                  updated_context)
 
 
 def addToEditorContext(context):
@@ -367,11 +371,16 @@ def planIndex(request):
     context = {'plans': PLAN_MODEL.get().objects.filter(deleted=False),
                'flight_names': getAllFlightNames(),
                'exporters': choosePlanExporter.PLAN_EXPORTERS,
-               'rest_services': get_rest_services()
+               'rest_services': get_rest_services(),
+               'help_content_path': 'xgds_planner2/help/index.rst',
+               'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER
                }
+
+    updated_context = getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context)
+
     return render(request,
                   'xgds_planner2/planIndex.html',
-                  getClassByName(settings.XGDS_PLANNER_EDITOR_CONTEXT_METHOD)(context),
+                  updated_context,
                   )
 
 
@@ -403,7 +412,10 @@ def getPlanIndexJson(request):
 
 def getDbPlan(uuid, idIsPK=False):
     if idIsPK:
-        return get_object_or_404(PLAN_MODEL.get(), id=uuid)
+        try:
+            return get_object_or_404(PLAN_MODEL.get(), id=uuid)
+        except:
+            return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
     else:
         return get_object_or_404(PLAN_MODEL.get(), uuid=uuid)
 
@@ -504,6 +516,8 @@ def planCreate(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form,
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER,
+                   'help_content_path': 'xgds_planner2/help/planCreate.rst',
                    'siteLabel': 'Create'})
 
 
@@ -511,7 +525,7 @@ def planImport(request):
     if request.method == 'GET':
         messages.info(request, 'Create a ' + settings.XGDS_PLANNER_PLAN_MONIKER + ' by importing:')
         messages.info(request, 'a kml file containing a LineString')
-        messages.info(request, 'a csv file, with column headers of latitude and longitude')
+        messages.info(request, 'a csv file, with column headers of latitude and longitude, and optional name and notes')
         messages.info(request, 'an xpJson file')
         form = ImportPlanForm()
     elif request.method == 'POST':
@@ -568,19 +582,24 @@ def planImport(request):
     return render(request,
                   'xgds_planner2/planCreate.html',
                   {'form': form,
+                   'title': 'List %ss' % settings.XGDS_PLANNER_PLAN_MONIKER,
+                   'help_content_path': 'xgds_planner2/help/import.rst',
                    'siteLabel': 'Import'})
 
 
 def plan_delete(request):
-    picks = request.POST.getlist('picks')
+    picks = request.POST.getlist('picks[]')
     for i in picks:
-        plan = PLAN_MODEL.get().objects.get(id=i)
-        if plan:
-            plan.deleted = True
-            plan.save()
-            handleCallbacks(request, plan, settings.DELETE)
+        try:
+            plan = PLAN_MODEL.get().objects.get(id=int(i))
+            if plan:
+                plan.deleted = True
+                plan.save()
+                handleCallbacks(request, plan, settings.DELETE)
+        except:
+            traceback.print_exc()
 
-    return HttpResponseRedirect(reverse('planner2_index'))
+    return JsonResponse({"status": "success", "picks": picks})
 
 
 @never_cache
