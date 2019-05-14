@@ -45,8 +45,8 @@ app.views.ToolbarView = Marionette.View.extend({
         'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); this.updateTip('clear');},
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
-        'click #btn-save': function() { this.doSavePlan(); },
-        'click #btn-fetch': function() { this.doFetchPlan(); },
+        'click #btn-save': function() { this.doSavePlan(); analytics.trackAction('plan','save', document.location);},
+        'click #btn-fetch': function() { this.doFetchPlan(); analytics.trackAction('plan','reload', document.location);},
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); }
@@ -321,6 +321,7 @@ app.views.ToolbarView = Marionette.View.extend({
                     app.currentPlan.set('uuid', null);
                     app.currentPlan.save();
                     $(this).dialog('close');
+                    analytics.trackAction('plan','save_as', document.location);
                 }
             },
             position: {
@@ -850,6 +851,8 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
     	if (this.collection.length == 1){
     		this.$el.find("#commandButtonRow").show();
     	}
+    	analytics.trackAction('plan', 'activity_add', app.currentPlan.id);
+
     },
     onRemoveChild: function(){
     	if (this.collection.length == 0){
@@ -1043,6 +1046,7 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             var showParent = 'showItem:' + selectParent.get('type').toLowerCase();
             app.vent.trigger(showParent, selectParent);
         }
+        analytics.trackAction('plan', 'activity_delete', app.currentPlan.id);
     },
     
     killStation: function() {
@@ -1059,6 +1063,8 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
         var commands = app.vent.request('selectedCommands');
         app.copiedCommands = new Array();
         app.copiedCommands.push.apply(app.copiedCommands, commands);
+        analytics.trackAction('plan', 'activity_copy', app.currentPlan.id);
+
         //app.vent.request('unselectAllCommands');
     },
 
@@ -1072,6 +1078,8 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
         	cclone.set('uuid', new UUID(4).format());
         	
         	commands.add(cclone);
+        	analytics.trackAction('plan', 'activity_paste', app.currentPlan.id);
+
             //TODO now you can paste a command into a container that should not contain it. Verify permitted, or validate.
             /*
             if (cut) {
@@ -1108,6 +1116,8 @@ app.views.CommandSequenceCollectionView = Marionette.TemplateCollectionView.exte
             
 //            app.vent.request('unselectAllCommands');
             app.vent.trigger('cutAfterPaste');
+
+            analytics.trackAction('plan', 'activity_cut', app.currentPlan.id);
 
         }
     }

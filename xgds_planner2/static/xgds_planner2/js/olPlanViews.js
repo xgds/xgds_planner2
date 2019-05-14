@@ -294,6 +294,7 @@ $(function() {
                             app.State.stationSelected = station;
                             app.vent.trigger('itemSelected:station', station);
                             app.vent.trigger('station:add', station);
+                            analytics.trackAction('plan', 'station_add', document.location);
                             
                         }, this);
                     }
@@ -398,6 +399,8 @@ $(function() {
                 	if (model.get('type') == 'Station'){
                 	    // delete the station
                 	    var killedSegment = this.collection.removeStation(model);
+                	    analytics.trackAction('plan', 'station_delete', document.location);
+
                 	}
                 }
             },
@@ -434,6 +437,7 @@ $(function() {
 	                            app.Actions.action();
 	                            app.vent.trigger('modifyEnd');
 	                			app.vent.trigger('station:modifyEnd');
+	                			analytics.trackAction('plan', 'station_edit', document.location);
 
 	                        }, this);
 	                    this.segmentModifier = new ol.interaction.Modify({
