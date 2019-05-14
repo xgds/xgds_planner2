@@ -74,7 +74,7 @@ app.views.PlanToolsView = Marionette.View.extend({
             app.vent.trigger('clearAppendTool');
             return;
         }
-        analytics.trackAction('plan', 'append', document.location);
+        analytics.trackAction('plan', 'append', app.currentPlan.id);
 
         if (app.reversePlanOnAppend)
             data.sequence.reverse();
@@ -133,7 +133,7 @@ app.views.PlanToolsView = Marionette.View.extend({
         app.currentPlan.get('sequence').models.reverse();
         app.currentPlan.get('sequence').resequence();
         app.vent.trigger('plan:reverse');
-        analytics.trackAction('plan', 'reverse', document.location);
+        analytics.trackAction('plan', 'reverse', app.currentPlan.id);
     },
     disableForReadOnly: function() {
         this.$('#btn-reverse').attr('disabled', 'true');

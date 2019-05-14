@@ -45,8 +45,8 @@ app.views.ToolbarView = Marionette.View.extend({
         'click #btn-navigate': function() { app.vent.trigger('mapmode', 'navigate'); this.updateTip('clear');},
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
-        'click #btn-save': function() { this.doSavePlan(); analytics.trackAction('plan','save', document.location);},
-        'click #btn-fetch': function() { this.doFetchPlan(); analytics.trackAction('plan','reload', document.location);},
+        'click #btn-save': function() { this.doSavePlan(); analytics.trackAction('plan','save', app.currentPlan.id);},
+        'click #btn-fetch': function() { this.doFetchPlan(); analytics.trackAction('plan','reload', app.currentPlan.id);},
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
         'click #btn-redo': function() { app.Actions.redo(); }
@@ -321,7 +321,7 @@ app.views.ToolbarView = Marionette.View.extend({
                     app.currentPlan.set('uuid', null);
                     app.currentPlan.save();
                     $(this).dialog('close');
-                    analytics.trackAction('plan','save_as', document.location);
+                    analytics.trackAction('plan','save_as', app.currentPlan.id);
                 }
             },
             position: {
