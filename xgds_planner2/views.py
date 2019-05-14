@@ -921,7 +921,7 @@ def externalServiceExport(request):
         for item in pids:
             try:
                 plan = PLAN_MODEL.get().objects.get(id=int(item))
-                planContentList.append({"name":plan.name, "jsonPlan":plan.jsonPlan})
+                planContentList.append(plan.jsonPlan)
                 planNameList.append(plan.name)
             except:
                 pass
