@@ -114,7 +114,7 @@ class AbstractPlan(models.Model):
     jsonPlan = ExtrasDotField()
 
     # a place to put an auto-generated summary of the plan
-    summary = models.CharField(max_length=256)
+    summary = models.CharField(max_length=4096)
 
     # allow users to mark plans as deleted.  remember to use this field!
     deleted = models.BooleanField(blank=True, default=False)
