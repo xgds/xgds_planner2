@@ -59,6 +59,7 @@ from xgds_planner2 import (models,
                            choosePlanImporter,
                            planImporter,
                            fillIdsPlanExporter)
+from xgds_planner2.kmlPlanExporter import KmlPlanExporter
 from xgds_planner2.forms import UploadXPJsonForm, CreatePlanForm, ImportPlanForm
 from xgds_planner2.models import getPlanSchema
 from xgds_planner2.xpjson import loadDocumentFromDict
@@ -178,6 +179,35 @@ def get_last_changed_planID_for_user_json(request, username):
     return HttpResponse(json.dumps(planMetadata, cls=DatetimeJsonEncoder), content_type='application/json')
 
 
+def get_plan_kml(plan):
+    exporter = KmlPlanExporter()
+    kmlStr = exporter.exportDbPlan(plan, None)
+    return kmlStr
+
+def plan_notify_save(plan, notifyFlag):
+        restService = RemoteRestService.objects.get(name="notifyPlanSave")
+        print "Send save/notify for", plan.name, " to", restService.display_name, restService.serviceUrl
+        notifyEvent = {
+            "eventType": "save",
+            "eventTimestamp": datetime.datetime.now(pytz.utc).isoformat(),
+            "userNotification": notifyFlag,
+            "planId": plan.pk,
+            "planName": plan.name,
+            "planContent": plan.jsonPlan,
+            "planKml": get_plan_kml(plan)
+        }
+
+        headers = {"replyurl": "",
+                   "replyids": str(plan.pk),
+                   "content-type": "application/json"}
+        try:
+            resp = requests.post(restService.serviceUrl, data=json.dumps(notifyEvent), headers=headers)
+            requestStatus = resp.status_code
+        except Exception as e:
+            print e
+            requestStatus = 500
+    
+    
 def plan_save_json(request, plan_id, jsonPlanId=None):
     """
     Read and write plan JSON.
@@ -192,6 +222,10 @@ def plan_save_json(request, plan_id, jsonPlanId=None):
         populatePlanFromJson(plan, request.body)
         plan.jsonPlan.modifier = request.user.username
         plan.save()
+        notifySave = plan.jsonPlan["notifySave"]
+        if notifySave:
+            print "*** NOTIFY SAVE CALLBACK ***"
+            plan_notify_save(plan, notifySave)
 
         plan = handleCallbacks(request, plan, settings.SAVE)
         addRelay(plan, None, json.dumps({"jsonPlan": json.dumps(plan.jsonPlan)}),
@@ -932,6 +966,8 @@ def externalServiceExport(request):
         try:
             resp = requests.post(restService.serviceUrl, data=json.dumps(planContentList), headers=headers)
             requestStatus = resp.status_code
+            if requestStatus != 200:
+                print "Error status code from external service:", requestStatus, resp.text
         except Exception as e:
             print e
             requestStatus = 500

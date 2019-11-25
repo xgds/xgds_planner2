@@ -46,6 +46,7 @@ app.views.ToolbarView = Marionette.View.extend({
         'click #btn-reposition': function() { app.vent.trigger('mapmode', 'reposition'); this.updateTip('edit'); },
         'click #btn-addStations': function() { app.vent.trigger('mapmode', 'addStations'); this.updateTip('add');},
         'click #btn-save': function() { this.doSavePlan(); },
+        'click #btn-savenotify': function() { this.doSavePlan(true); },
         'click #btn-fetch': function() { this.doFetchPlan(); },
         'click #btn-saveas': function() { this.showSaveAsDialog(); },
         'click #btn-undo': function() { app.Actions.undo(); },
@@ -96,11 +97,12 @@ app.views.ToolbarView = Marionette.View.extend({
        });
     },
     
-    doSavePlan: function() {
+    doSavePlan: function(notify=false) {
 	    	app.simulatePlan(); 
 	    	this.saving = true;
 	    	var context = this;
-	    	this.updateSaveStatus('saving');
+	        this.updateSaveStatus('saving');
+	        app.currentPlan.attributes.notifySave = notify;
 	    	app.currentPlan.save(app.currentPlan.attributes, {success: function(model, response, options) {context.saveWorked(model, response, options);},
 	    												      error: function(model, response, options) {context.saveError(model, response, options);}});
     },
