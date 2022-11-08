@@ -17,29 +17,28 @@ example, in terms of overriding templates.
 """
 
 
+import copy
 import json
 import logging
-import copy
 import os
 import re
 
 from xgds_planner2 import xpjson
 
-
-LTE_SYMBOL = '&#8804;'
-GTE_SYMBOL = '&#8805;'
+LTE_SYMBOL = "&#8804;"
+GTE_SYMBOL = "&#8805;"
 
 PARAMS_TABLE_COLUMNS = (
-    'parameter',
-    'type',
-    'unit',
-    'default',
-    'constraints',
-    'notes',
-    'other',
+    "parameter",
+    "type",
+    "unit",
+    "default",
+    "constraints",
+    "notes",
+    "other",
 )
 
-DOC_TEMPLATE_HTML = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+DOC_TEMPLATE_HTML = """<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html>
 <head><style>
 %(style)s
@@ -48,9 +47,9 @@ DOC_TEMPLATE_HTML = '''<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <h1 class="title">%(title)s</h1>
 %(commands)s
 </body></html>
-'''
+"""
 
-STYLE_SHEET = '''
+STYLE_SHEET = """
 body {
   font-family: Sans-Serif;
 }
@@ -111,9 +110,9 @@ td.inner_table {
   padding: 0px;
 }
 
-'''
+"""
 
-COMMAND_SPEC_TEMPLATE_HTML = '''
+COMMAND_SPEC_TEMPLATE_HTML = """
 <div class="commandSpec">
   <div class="commandSpecId"><a name="command_%(id)s">%(id)s</a></div>
   <div class="commandSpecNotes">%(notes)s</div>
@@ -121,18 +120,18 @@ COMMAND_SPEC_TEMPLATE_HTML = '''
     %(paramsTable)s
   </div>
 </div>
-'''
+"""
 
 DEFAULT_DICTIONARY_SETTINGS = {
-    'title': 'Command Dictionary',
-    'styleSheet': STYLE_SHEET,
-    'docTemplateHtml': DOC_TEMPLATE_HTML,
-    'commandSpecTemplateHtml': COMMAND_SPEC_TEMPLATE_HTML,
-    'includeIndex': True,
+    "title": "Command Dictionary",
+    "styleSheet": STYLE_SHEET,
+    "docTemplateHtml": DOC_TEMPLATE_HTML,
+    "commandSpecTemplateHtml": COMMAND_SPEC_TEMPLATE_HTML,
+    "includeIndex": True,
     # 'includeCommandSpecNameField': True,
     # 'includeCommandSpecNotesField': True,
-    'includeCommandSpecNameField': False,
-    'includeCommandSpecNotesField': False,
+    "includeCommandSpecNameField": False,
+    "includeCommandSpecNotesField": False,
 }
 
 
@@ -144,7 +143,7 @@ def appendField(d, entry, text):
     if entry not in d:
         d[entry] = text
     else:
-        d[entry] += '; ' + text
+        d[entry] += "; " + text
 
 
 def htmlRepr(val):
@@ -156,7 +155,7 @@ def htmlRepr(val):
     escaping, but I'm too lazy to look it up right now.
     """
     if isinstance(val, (str, unicode)):
-        return '&quot;%s&quot;' % val
+        return "&quot;%s&quot;" % val
     else:
         return str(val)
 
@@ -170,32 +169,32 @@ def getParamChoicesTableHtml(choices):
 
     def p(x):
         rlist.append(x)
-        rlist.append('\n')
+        rlist.append("\n")
 
     p('<table class="param_choices">')
-    p('  <tr>')
-    for header in ('name', 'value'):
+    p("  <tr>")
+    for header in ("name", "value"):
         p('    <th class="param_choices_%s">%s</th>' % (header, header.capitalize()))
-    p('  </tr>')
+    p("  </tr>")
     for value, name in choices:
-        p('  <tr>')
+        p("  <tr>")
         p('    <td class="param_choices_name">%s</td>' % name)
         p('    <td class="param_choices_value">%s</td>' % htmlRepr(value))
-        p('  </tr>')
-    p('</table>')
+        p("  </tr>")
+    p("</table>")
 
-    return ''.join(rlist)
+    return "".join(rlist)
 
 
 def prettify(s):
-    s = re.sub('([a-z])([A-Z])', lambda m: m.group(1) + ' ' + m.group(2), s)
+    s = re.sub("([a-z])([A-Z])", lambda m: m.group(1) + " " + m.group(2), s)
     s = s[0].capitalize() + s[1:]
     return s
 
 
 def prettifySuperscript(s):
     if isinstance(s, basestring):
-        return re.sub(r'\^(\-?\d+)', lambda m: ('<sup>%s</sup>' % m.group(1)), s)
+        return re.sub(r"\^(\-?\d+)", lambda m: ("<sup>%s</sup>" % m.group(1)), s)
     else:
         return s
 
@@ -211,62 +210,60 @@ def getParamInfo(p):
 
     result = {}
 
-    result['type'] = p.valueType
-    result['notes'] = p.notes
-    result['unit'] = prettifySuperscript(p.unit)
+    result["type"] = p.valueType
+    result["notes"] = p.notes
+    result["unit"] = prettifySuperscript(p.unit)
 
     if p.name is not None:
-        result['parameter'] = p.name
+        result["parameter"] = p.name
     else:
-        result['parameter'] = prettify(p.id)
+        result["parameter"] = prettify(p.id)
 
     if p.choices is not None:
         # logging.debug('%s', json.dumps(p.choices, sort_keys=True, indent=4))
-        appendField(result, 'constraints', getParamChoicesTableHtml(p.choices))
+        appendField(result, "constraints", getParamChoicesTableHtml(p.choices))
 
     if p.editable is False:
-        appendField(result, 'other', 'uneditable')
+        appendField(result, "other", "uneditable")
 
     if p.maxLength is not None:
-        appendField(result, 'constraints', 'length < %s' % params.maxLength)
+        appendField(result, "constraints", "length < %s" % params.maxLength)
 
     if p.minimum is not None and p.maximum is not None:
         if p.strictMinimum:
-            minSymbol = '<'
+            minSymbol = "<"
         else:
             minSymbol = LTE_SYMBOL
         if p.strictMaximum:
-            maxSymbol = '<'
+            maxSymbol = "<"
         else:
             maxSymbol = LTE_SYMBOL
-        constraint = ('%s %s val %s %s'
-                      % (p.minimum, minSymbol,
-                         maxSymbol, p.maximum))
-        appendField(result, 'constraints', constraint)
+        constraint = "%s %s val %s %s" % (p.minimum, minSymbol, maxSymbol, p.maximum)
+        appendField(result, "constraints", constraint)
     elif p.minimum is not None:
         if p.strictMinimum:
-            symbol = '>'
+            symbol = ">"
         else:
             symbol = GTE_SYMBOL
-        constraint = ('val %s %s'
-                      % (symbol, p.minimum))
-        appendField(result, 'constraints', constraint)
+        constraint = "val %s %s" % (symbol, p.minimum)
+        appendField(result, "constraints", constraint)
     elif p.maximum is not None:
         if p.strictMaximum:
-            symbol = '<'
+            symbol = "<"
         else:
             symbol = LTE_SYMBOL
-        constraint = ('val %s %s'
-                      % (symbol, p.maximum))
-        appendField(result, 'constraints', constraint)
+        constraint = "val %s %s" % (symbol, p.maximum)
+        appendField(result, "constraints", constraint)
 
     if p.default is not None:
-        result['default'] = '<span style="font-family: \'Courier\';">' + htmlRepr(p.default) + '</span>'
+        result["default"] = (
+            "<span style=\"font-family: 'Courier';\">" + htmlRepr(p.default) + "</span>"
+        )
 
     if p.default is None and p.required is True:
-        result['default'] = 'required'
+        result["default"] = "required"
     if p.visible is False:
-        appendField(result, 'other', 'hidden')
+        appendField(result, "other", "hidden")
 
     # logging.debug('%s', json.dumps(result, sort_keys=True, indent=4))
 
@@ -282,36 +279,38 @@ def getInfoTableHtml(columns, rows, tableClass):
     @tableClass is the HTML class to put on the HTML table element, available for CSS styling.
     """
 
-    nonEmptyColumns = [c
-                       for c in columns
-                       if not all([(row.get(c) is None or row[c] == '')
-                                   for row in rows])]
+    nonEmptyColumns = [
+        c
+        for c in columns
+        if not all([(row.get(c) is None or row[c] == "") for row in rows])
+    ]
 
     rlist = []
+
     def p(x):
         rlist.append(x)
-        rlist.append('\n')
+        rlist.append("\n")
 
     p('<table class="%s">' % tableClass)
-    p('  <tr>')
+    p("  <tr>")
     for c in nonEmptyColumns:
         p('    <th class="%s_%s">%s</th>' % (tableClass, c, c.capitalize()))
-    p('  </tr>')
+    p("  </tr>")
 
     for row in rows:
-        p('  <tr>')
+        p("  <tr>")
         for c in nonEmptyColumns:
             val = row.get(c)
             if val is None:
-                val = ''
-            classTag = '%s_%s' % (tableClass, c)
-            if '<table' in val:
-                classTag += ' inner_table'
+                val = ""
+            classTag = "%s_%s" % (tableClass, c)
+            if "<table" in val:
+                classTag += " inner_table"
             p('    <td class="%s">%s</td>' % (classTag, val))
-        p('  </tr>')
-    p('</table>')
+        p("  </tr>")
+    p("</table>")
 
-    return ''.join(rlist)
+    return "".join(rlist)
 
 
 def getCommandSpecInfo(settings, commandSpec):
@@ -326,29 +325,25 @@ def getCommandSpecInfo(settings, commandSpec):
     paramIds = set([p.id for p in commandSpec.params])
     params = [getParamInfo(p) for p in commandSpec.params]
 
-    if settings['includeCommandSpecNameField'] and 'name' not in paramIds:
+    if settings["includeCommandSpecNameField"] and "name" not in paramIds:
         nameParam = {
-            'parameter': 'Name',
-            'type': 'string',
-            'default': '(auto-generated)',
-            'notes': 'Optionally, specify a meaningful name for an instance of the command, to appear in summary views of the plan',
+            "parameter": "Name",
+            "type": "string",
+            "default": "(auto-generated)",
+            "notes": "Optionally, specify a meaningful name for an instance of the command, to appear in summary views of the plan",
         }
         params = [nameParam] + params
 
-    if settings['includeCommandSpecNotesField'] and 'notes' not in paramIds:
+    if settings["includeCommandSpecNotesField"] and "notes" not in paramIds:
         notesParam = {
-            'parameter': 'Notes',
-            'type': 'string',
-            'default': '',
-            'notes': 'A place to put arbitrary notes, for example, clarifying the intent of the command',
+            "parameter": "Notes",
+            "type": "string",
+            "default": "",
+            "notes": "A place to put arbitrary notes, for example, clarifying the intent of the command",
         }
         params.append(notesParam)
 
-    return {
-        'id': commandSpec.id,
-        'notes': commandSpec.notes or '',
-        'params': params
-    }
+    return {"id": commandSpec.id, "notes": commandSpec.notes or "", "params": params}
 
 
 def getCommandSpecHtml(commandSpecTemplateHtml, commandInfo):
@@ -358,11 +353,13 @@ def getCommandSpecHtml(commandSpecTemplateHtml, commandInfo):
 
     Uses @commandSpecTemplateHtml as the boilerplate string template.
     """
-    paramsTable = getInfoTableHtml(PARAMS_TABLE_COLUMNS, commandInfo['params'], 'params')
+    paramsTable = getInfoTableHtml(
+        PARAMS_TABLE_COLUMNS, commandInfo["params"], "params"
+    )
     return commandSpecTemplateHtml % {
-        'id': commandInfo['id'],
-        'notes': commandInfo['notes'],
-        'paramsTable': paramsTable
+        "id": commandInfo["id"],
+        "notes": commandInfo["notes"],
+        "paramsTable": paramsTable,
     }
 
 
@@ -379,51 +376,52 @@ def writeCommandDictionary(inSchemaPath, outHtmlPath, **kwargs):
 
     def p(x):
         hlist.append(x)
-        hlist.append('\n')
+        hlist.append("\n")
 
     commandSpecs = sorted(schema.commandSpecs, key=lambda spec: spec.id)
 
-    if settings['includeIndex']:
+    if settings["includeIndex"]:
         p('<div class="command_index">')
         p('  <h6 class="title">Index</h6>')
-        p('  <ul>')
+        p("  <ul>")
         for c in commandSpecs:
             p('    <li><a href="#command_%s">%s</a></li>' % (c.id, c.id))
-        p('  </ul>')
-        p('</div>')
+        p("  </ul>")
+        p("</div>")
 
     for c in commandSpecs:
         # logging.debug('%s', json.dumps(getCommandSpecInfo(settings, c), sort_keys=True, indent=4))
         commandInfo = getCommandSpecInfo(settings, c)
-        chtml = getCommandSpecHtml(settings['commandSpecTemplateHtml'], commandInfo)
+        chtml = getCommandSpecHtml(settings["commandSpecTemplateHtml"], commandInfo)
         p(chtml)
 
-    outHtmlText = settings['docTemplateHtml'] % {
-        'title': settings['title'],
-        'style': settings['styleSheet'],
-        'commands': ''.join(hlist)
+    outHtmlText = settings["docTemplateHtml"] % {
+        "title": settings["title"],
+        "style": settings["styleSheet"],
+        "commands": "".join(hlist),
     }
-    with open(outHtmlPath, 'w') as outHtmlStream:
+    with open(outHtmlPath, "w") as outHtmlStream:
         outHtmlStream.write(outHtmlText)
-    logging.info('wrote output to %s', outHtmlPath)
+    logging.info("wrote output to %s", outHtmlPath)
 
 
 def main():
     import optparse
-    parser = optparse.OptionParser(__doc__+'\n\n')
+
+    parser = optparse.OptionParser(__doc__ + "\n\n")
     opts, args = parser.parse_args()
     if len(args) == 2:
         inSchemaPath, outHtmlPath = args
     elif len(args) == 1:
         inSchemaPath = args[0]
-        outHtmlPath = os.path.splitext(inSchemaPath)[0] + '.html'
-        outHtmlPath = outHtmlPath.replace('PlanSchema', 'CommandDictionary')
+        outHtmlPath = os.path.splitext(inSchemaPath)[0] + ".html"
+        outHtmlPath = outHtmlPath.replace("PlanSchema", "CommandDictionary")
     else:
-        parser.error('expected exactly 1 or 2 args')
-    logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+        parser.error("expected exactly 1 or 2 args")
+    logging.basicConfig(level=logging.DEBUG, format="%(message)s")
     writeCommandDictionary(inSchemaPath, outHtmlPath)
     # writeCommandDictionary('/vagrant/xgds_basalt/apps/xgds_planner2/xpjsonSpec/examplePlanSchema.json', 'exampleCommandDictionary.html')
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
