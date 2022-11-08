@@ -22,8 +22,15 @@ import json
 import logging
 import os
 import re
+import six
 import sys
-from collections import Mapping, OrderedDict, deque
+from collections import OrderedDict, deque
+
+try:
+    from collections import Mapping
+except ImportError:
+    # Python 3
+    from collections.abc import Mapping
 
 import iso8601
 
@@ -39,6 +46,12 @@ from xgds_planner2 import dotDict
 from xgds_planner2.dotDict import DotDict
 
 # pylint: disable=R0911,C0204
+
+# Python 3 compatibility
+if not hasattr(__builtins__, "basestring"):
+    basestring = (str, bytes)
+    unicode = str
+    long = int
 
 
 THIS_MODULE = sys.modules[__name__]
@@ -283,12 +296,14 @@ class InheritDict(Mapping):
             func = self.useLocalValOnly
         else:
             func = self.localValOverridesParentVal
-        getLocalVal = lambda: self.localDict[key]
-        getParentVal = lambda: self.parent[key]
+        def getLocalVal():
+            return self.localDict[key]
+        def getParentVal():
+            return self.parent[key]
         return func(getLocalVal, getParentVal)
 
     def __iter__(self):
-        possibleKeys = set(self.localDict.iterkeys()).union(self.parent.iterkeys())
+        possibleKeys = set(self.localDict.keys()).union(self.parent.keys())
         return (k for k in possibleKeys if k in self)
 
     def __len__(self):
@@ -465,13 +480,11 @@ class TypedObjectMetaClass(type):
 ######################################################################
 
 
+@six.add_metaclass(TypedObjectMetaClass)
 class TypedObject(object):
     """
     Implements the TypedObject type from the XPJSON spec.
     """
-
-    __metaclass__ = TypedObjectMetaClass
-
     type = Field("string", required=True)
     name = Field("string")
     notes = Field("string")
@@ -530,7 +543,7 @@ class TypedObject(object):
 
     def checkFields(self):
         # validate fields declared in XPJSON spec
-        for fieldName, spec in self.fields.iteritems():
+        for fieldName, spec in self.fields.items():
             val = self.get(fieldName)
             if val is None:
                 assert not spec.required, "required field %s missing from %s" % (
@@ -558,7 +571,7 @@ class TypedObject(object):
                 self._objDict[fieldName] = val
 
         # validate fields declared in PlanSchema
-        for fieldName, paramSpec in self._schemaParams.iteritems():
+        for fieldName, paramSpec in self._schemaParams.items():
             val = self.get(fieldName)
             reason = paramSpec.invalidParamValueReason(val)
             assert reason is None, "%s; %s should match ParamSpec %s in %s" % (
@@ -573,7 +586,7 @@ class TypedObject(object):
 
         # warn about unknown fields
         if CHECK_UNKNOWN_FIELDS:
-            for k in self._objDict.iterkeys():
+            for k in self._objDict.keys():
                 if k not in self.fields and k not in self._schemaParams:
                     logging.warning("unknown field %s in object %s", k, self._objDict)
 
@@ -588,7 +601,7 @@ class UnitSpec(TypedObject):
     def isUnitsValid(self, unitsDict):
         if not isinstance(unitsDict, (dict, dotDict.DotDict)):
             return False
-        for unitName, relativeSize in unitsDict.iteritems():
+        for unitName, relativeSize in unitsDict.items():
             if not (
                 isValueOfType(unitName, "string")
                 and isValueOfType(relativeSize, "number")
@@ -723,9 +736,10 @@ class CommandSpec(ClassSpec):
         return re.match(r"\#[0-9a-fA-F]{6}", s) is not None
 
     def isValidCommand(self, cmd):
-        for fieldName, paramSpec in self.paramsLookup.iteritems():
+        for fieldName, paramSpec in self.paramsLookup.items():
             if not paramSpec.isValidParamValue(cmd.get(fieldName)):
                 return False
+        return True
 
 
 class Document(TypedObject):
@@ -944,7 +958,7 @@ def transformBottomUp(obj, func, **kwargs):
     else:
         return func(
             dict(
-                ((k, transformBottomUp(v, func, **kwargs)) for k, v in obj.iteritems())
+                ((k, transformBottomUp(v, func, **kwargs)) for k, v in obj.items())
             ),
             **kwargs
         )
@@ -957,7 +971,7 @@ def transformTopDown(obj, func):
         return obj
     else:
         return DotDict(
-            ((k, transformTopDown(v, func)) for k, v in func(obj).iteritems())
+            ((k, transformTopDown(v, func)) for k, v in func(obj).items())
         )
 
 
@@ -979,7 +993,8 @@ def loadDictFromPath(path):
     """
     Load a DotDict from the JSON-format file at path *path*.
     """
-    return loadDictFromFile(file(path, "r"))
+    with open(path, "r") as f:
+        return loadDictFromFile(f)
 
 
 class NoSchemaError(Exception):
@@ -1015,9 +1030,8 @@ def dumpDictToPath(path, obj):
     """
     Dump a DotDict in to the specified path in (pretty indented) JSON format.
     """
-    f = open(path, "w")
-    f.write(dumpDictToString(obj))
-    f.close()
+    with open(path, "w") as f:
+        f.write(dumpDictToString(obj))
 
 
 def dumpDocumentToString(doc):

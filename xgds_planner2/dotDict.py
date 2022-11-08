@@ -9,7 +9,7 @@ import json
 
 def convertToDotDictRecurse(struct):
     if isinstance(struct, dict):
-        for k, v in struct.iteritems():
+        for k, v in struct.items():
             struct[k] = convertToDotDictRecurse(v)
         return DotDict(struct)
     elif isinstance(struct, list):

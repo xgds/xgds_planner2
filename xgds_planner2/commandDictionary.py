@@ -16,14 +16,19 @@ to lend themselves to that. However, it's fairly configurable, for
 example, in terms of overriding templates.
 """
 
-
+import argparse
 import copy
-import json
 import logging
 import os
 import re
 
 from xgds_planner2 import xpjson
+from xgds_planner2 import dotDict
+
+# Python 3 compatibility
+if not hasattr(__builtins__, "basestring"):
+    basestring = (str, bytes)
+    unicode = str
 
 LTE_SYMBOL = "&#8804;"
 GTE_SYMBOL = "&#8805;"
@@ -227,7 +232,7 @@ def getParamInfo(p):
         appendField(result, "other", "uneditable")
 
     if p.maxLength is not None:
-        appendField(result, "constraints", "length < %s" % params.maxLength)
+        appendField(result, "constraints", "length < %s" % p.maxLength)
 
     if p.minimum is not None and p.maximum is not None:
         if p.strictMinimum:
@@ -372,6 +377,8 @@ def writeCommandDictionary(inSchemaPath, outHtmlPath, **kwargs):
     settings.update(kwargs)
     xpjson.CHECK_UNKNOWN_FIELDS = False  # suppress some warnings
     schema = xpjson.loadDocument(inSchemaPath)
+    # schema = xpjson.loadDocument(inSchemaPath, fillInDefaults=True)
+    # schema = dotDict.convertToDotDictRecurse(xpjson.loadDocument(inSchemaPath))
     hlist = []
 
     def p(x):
@@ -406,21 +413,27 @@ def writeCommandDictionary(inSchemaPath, outHtmlPath, **kwargs):
 
 
 def main():
-    import optparse
-
-    parser = optparse.OptionParser(__doc__ + "\n\n")
-    opts, args = parser.parse_args()
-    if len(args) == 2:
-        inSchemaPath, outHtmlPath = args
-    elif len(args) == 1:
-        inSchemaPath = args[0]
-        outHtmlPath = os.path.splitext(inSchemaPath)[0] + ".html"
-        outHtmlPath = outHtmlPath.replace("PlanSchema", "CommandDictionary")
-    else:
-        parser.error("expected exactly 1 or 2 args")
+    parser = argparse.ArgumentParser(description=__doc__ + "\n\n",
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument(
+        "inSchemaPath",
+        help="input XPJSON schema path",
+    )
+    parser.add_argument(
+        "outHtmlPath",
+        help="output HTML command dictionary path",
+        nargs="?",
+        default=None,
+    )
+    args = parser.parse_args()
+    if args.outHtmlPath is None:
+        args.outHtmlPath = os.path.splitext(args.inSchemaPath)[0] + ".html"
+        args.outHtmlPath = args.outHtmlPath.replace("PlanSchema", "CommandDictionary")
     logging.basicConfig(level=logging.DEBUG, format="%(message)s")
-    writeCommandDictionary(inSchemaPath, outHtmlPath)
-    # writeCommandDictionary('/vagrant/xgds_basalt/apps/xgds_planner2/xpjsonSpec/examplePlanSchema.json', 'exampleCommandDictionary.html')
+    # writeCommandDictionary(args.inSchemaPath, args.outHtmlPath)
+    writeCommandDictionary(args.inSchemaPath, args.outHtmlPath,
+                           includeCommandSpecNameField=False,
+                           includeCommandSpecNotesField=False)
 
 
 if __name__ == "__main__":
