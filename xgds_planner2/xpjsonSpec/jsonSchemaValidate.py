@@ -15,16 +15,20 @@
 # specific language governing permissions and limitations under the License.
 # __END_LICENSE__
 
-# Python 2.6+ or use simplejson
+"""
+Script for validating json files using the jsonschema library.
+"""
+
+import argparse
 import json
 
-# pip install jsonschema
 import jsonschema
 
 
 def jsonSchemaValidateJson(obj, schemaPath):
-    print("Validating against %s" % (schemaPath), end="")
-    schema = json.loads(file(schemaPath).read())
+    print("Validating against %s" % (schemaPath))
+    with open(schemaPath, "r") as f:
+        schema = json.loads(f.read())
 
     # throws exception on failure
     jsonschema.validate(obj, schema)
@@ -33,19 +37,25 @@ def jsonSchemaValidateJson(obj, schemaPath):
 
 
 def jsonSchemaValidate(objPath, schemaPath):
-    print("Validating %s against %s" % (objPath, schemaPath), end="")
-    obj = json.loads(file(objPath).read())
+    print("Validating %s against %s" % (objPath, schemaPath))
+    with open(objPath, "r") as f:
+        obj = json.loads(f.read())
     return jsonSchemaValidateJson(obj, schemaPath)
 
 
 def main():
-    import optparse
-
-    parser = optparse.OptionParser("usage: %prog <object.json> <schema.json>")
-    _opts, args = parser.parse_args()
-    if len(args) != 2:
-        parser.error("expected exactly 2 args")
-    jsonSchemaValidate(args[0], args[1])
+    parser = argparse.ArgumentParser(description=__doc__ + "\n\n",
+                                     formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument(
+        "objPath",
+        help="json file to validate",
+    )
+    parser.add_argument(
+        "schemaPath",
+        help="jsonschema schema to validate against",
+    )
+    args = parser.parse_args()
+    jsonSchemaValidate(args.objPath, args.schemaPath)
 
 
 if __name__ == "__main__":
