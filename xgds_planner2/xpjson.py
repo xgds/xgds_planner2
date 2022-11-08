@@ -34,8 +34,8 @@ except ImportError:
     # doing plan validation.
     pass
 
-from geocamUtil import dotDict
-from geocamUtil.dotDict import DotDict
+from xgds_planner2 import dotDict
+from xgds_planner2.dotDict import DotDict
 
 # pylint: disable=R0911,C0204
 

@@ -37,13 +37,13 @@ setup(
     url='',
     author='Trey Smith',
     author_email='',
+    license='Apache License 2.0',
     description=DESC,
     long_description=read_file('README'),
     packages=find_packages(),
     include_package_data=True,
     install_requires=read_file('requirements.txt'),
     classifiers=[
-        'License :: OSI Approved :: NASA Open Source Agreement',
-        'Framework :: Django',
+        'License :: OSI Approved :: Apache Software License',
     ],
 )

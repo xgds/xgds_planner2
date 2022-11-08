@@ -1,7 +1,0 @@
-<ul>
-{{#group presets "type"}}
-  {{#each items}}
-  <li data-tem-id="presetCode" data-preset-name="{{firstDefined name presetName}}" class="preset-sequence-item add-preset" style="background-color: {{getColor type}}">{{firstDefined name presetName}}{{#if timing}}<span class="duration">{{timing}}</span>{{/if}}</li>
-  {{/each}}
-{{/group}}
-</ul>
