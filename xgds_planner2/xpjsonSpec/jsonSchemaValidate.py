@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#__BEGIN_LICENSE__
+# __BEGIN_LICENSE__
 # Copyright (c) 2015, United States Government, as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All rights reserved.
@@ -13,7 +13,7 @@
 # under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 # CONDITIONS OF ANY KIND, either express or implied. See the License for the
 # specific language governing permissions and limitations under the License.
-#__END_LICENSE__
+# __END_LICENSE__
 
 # Python 2.6+ or use simplejson
 import json
@@ -23,28 +23,30 @@ import jsonschema
 
 
 def jsonSchemaValidateJson(obj, schemaPath):
-    print 'Validating against %s' % (schemaPath),
+    print("Validating against %s" % (schemaPath), end="")
     schema = json.loads(file(schemaPath).read())
 
     # throws exception on failure
     jsonschema.validate(obj, schema)
 
-    print 'PASSED'
-    
-    
+    print("PASSED")
+
+
 def jsonSchemaValidate(objPath, schemaPath):
-    print 'Validating %s against %s' % (objPath, schemaPath),
+    print("Validating %s against %s" % (objPath, schemaPath), end="")
     obj = json.loads(file(objPath).read())
     return jsonSchemaValidateJson(obj, schemaPath)
 
 
 def main():
     import optparse
-    parser = optparse.OptionParser('usage: %prog <object.json> <schema.json>')
+
+    parser = optparse.OptionParser("usage: %prog <object.json> <schema.json>")
     _opts, args = parser.parse_args()
     if len(args) != 2:
-        parser.error('expected exactly 2 args')
+        parser.error("expected exactly 2 args")
     jsonSchemaValidate(args[0], args[1])
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
