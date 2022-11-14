@@ -48,7 +48,7 @@ from xgds_planner2.dotDict import DotDict
 # pylint: disable=R0911,C0204
 
 # Python 3 compatibility
-if not hasattr(__builtins__, "basestring"):
+if sys.version_info.major > 2:
     basestring = (str, bytes)
     unicode = str
     long = int
