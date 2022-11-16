@@ -1,4 +1,6 @@
-This fork of https://github.com/xgds/xgds_planner2 discards most of the
-code, leaving only the XPJSON parsing and validation, in order to drop
-most of the external dependencies and simplify porting what's left to
-Python 3.
+The just_xpjson branch of https://github.com/xgds/xgds_planner2 discards
+most of the code, leaving only the XPJSON parsing and validation, in
+order to drop most of the external dependencies and simplify porting
+what's left to Python 3.
+
+The current version works under both Python 2 and Python 3.
